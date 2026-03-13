@@ -50,23 +50,33 @@ import { startVaccinationReminderJob } from "./src/services/vaccinationReminderS
 import { seedVaccinationSchedules } from "./src/services/vaccinationSeedService.js";
 import { initFcm } from "./src/utils/fcm.js";
 
-// --- Firebase Admin init (optional - needs FIREBASE_SERVICE_ACCOUNT env) ---
+// --- Firebase Admin init (optional) ---
+// FIREBASE_SERVICE_ACCOUNT → JSON içeriği (string olarak) veya dosya yolu
 (async () => {
-  const saPath = process.env.FIREBASE_SERVICE_ACCOUNT;
-  if (saPath && fs.existsSync(saPath)) {
-    try {
-      const { default: admin } = await import("firebase-admin");
-      const serviceAccount = JSON.parse(fs.readFileSync(saPath, "utf8"));
-      if (!admin.apps.length) {
-        admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-      }
-      initFcm(admin);
-      console.log("✅ Firebase Admin initialized");
-    } catch (e) {
-      console.warn("⚠️  Firebase Admin init failed:", e.message);
-    }
-  } else {
+  const saEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!saEnv) {
     console.log("ℹ️  FCM disabled (FIREBASE_SERVICE_ACCOUNT not set)");
+    return;
+  }
+  try {
+    const { default: admin } = await import("firebase-admin");
+    let serviceAccount;
+    // JSON string mi, dosya yolu mu?
+    if (saEnv.trim().startsWith("{")) {
+      serviceAccount = JSON.parse(saEnv);
+    } else if (fs.existsSync(saEnv)) {
+      serviceAccount = JSON.parse(fs.readFileSync(saEnv, "utf8"));
+    } else {
+      console.warn("⚠️  FCM: FIREBASE_SERVICE_ACCOUNT dosyası bulunamadı:", saEnv);
+      return;
+    }
+    if (!admin.apps.length) {
+      admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+    }
+    initFcm(admin);
+    console.log("✅ Firebase Admin initialized");
+  } catch (e) {
+    console.warn("⚠️  Firebase Admin init failed:", e.message);
   }
 })();
 

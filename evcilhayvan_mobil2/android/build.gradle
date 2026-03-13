@@ -1,0 +1,36 @@
+// android/build.gradle
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.google.gms:google-services:4.4.2")
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+// Derleme klasörünü ortak bir yere al
+rootProject.buildDir = "../build"
+
+// Alt projelerin (app, plugins vs.) build klasörleri
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+
+// app projesinin önce değerlendirilmesini sağla
+subprojects {
+    project.evaluationDependsOn(":app")
+}
+
+// Temizleme task'i
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

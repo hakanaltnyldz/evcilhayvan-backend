@@ -38,3 +38,8 @@ build/
 
 # Cache
 .cache/
+
+# Firebase secrets (NEVER commit these)
+*serviceAccount*.json
+*firebase-adminsdk*.json
+evcilhayvan_mobil2/android/app/google-services.json
