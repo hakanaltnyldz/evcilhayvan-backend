@@ -75,6 +75,5 @@ const VeterinarySchema = new mongoose.Schema(
 VeterinarySchema.index({ location: "2dsphere" });
 VeterinarySchema.index({ name: "text", address: "text" });
 VeterinarySchema.index({ source: 1, isActive: 1 });
-VeterinarySchema.index({ googlePlaceId: 1 });
 
 export default mongoose.model("Veterinary", VeterinarySchema);
