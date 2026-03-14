@@ -200,9 +200,10 @@ export async function updatePet(req, res) {
 // GET /api/pets
 export async function listPets(req, res) {
   try {
-    const { species, vaccinated, q, page = 1, limit = 10, type, lat, lng, radiusKm } = req.query;
+    const { species, breed, vaccinated, q, page = 1, limit = 10, type, lat, lng, radiusKm } = req.query;
     const filter = { isActive: true };
     if (species) filter.species = species;
+    if (breed) filter.breed = { $regex: new RegExp(`^${breed}$`, 'i') };
     if (type) {
       const normalizedType = String(type).toLowerCase();
       if (["adoption", "mating"].includes(normalizedType)) {
