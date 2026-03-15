@@ -367,6 +367,69 @@ export async function deleteMessageForMe(req, res) {
   }
 }
 
+export async function sendAudioMessage(req, res) {
+  try {
+    const { conversationId } = req.params;
+    const senderId = req.user.sub;
+
+    if (!req.file) {
+      return sendError(res, 400, "Ses dosyasi gerekli", "file_required");
+    }
+
+    const conversation = await Conversation.findOne({ _id: conversationId, participants: senderId });
+    if (!conversation) {
+      return sendError(res, 404, "Sohbet bulunamadi veya yetkiniz yok", "conversation_not_found");
+    }
+
+    const audioUrl = `/uploads/${req.file.filename}`;
+    const message = await Message.create({
+      conversationId,
+      sender: senderId,
+      senderId,
+      text: '[Ses Mesajı]',
+      type: 'AUDIO',
+      audioUrl,
+      readBy: [senderId],
+    });
+
+    conversation.lastMessage = '[Ses Mesajı]';
+    conversation.lastMessageAt = message.createdAt;
+    await conversation.save();
+
+    const populated = await message.populate("sender", "name email avatarUrl");
+
+    if (io?.to) {
+      io.to(`conv:${conversationId}`).emit("message:new", {
+        _id: populated._id,
+        conversationId: populated.conversationId,
+        text: populated.text,
+        type: populated.type,
+        audioUrl: populated.audioUrl,
+        createdAt: populated.createdAt,
+        sender: {
+          _id: populated.sender._id,
+          name: populated.sender.name,
+          email: populated.sender.email,
+          avatarUrl: populated.sender.avatarUrl,
+        },
+      });
+      const receiverId = conversation.participants.find((p) => String(p) !== String(senderId));
+      if (receiverId) {
+        sendPush([String(receiverId)], {
+          title: populated.sender?.name || "Yeni Mesaj",
+          body: "🎤 Ses mesajı gönderdi",
+          data: { type: "message", conversationId: String(conversationId) },
+        }).catch(() => {});
+      }
+    }
+
+    return sendOk(res, 201, { message: populated });
+  } catch (err) {
+    console.error("[sendAudioMessage]", err);
+    return sendError(res, 500, "Ses mesaji gonderilemedi", "internal_error", err.message);
+  }
+}
+
 export async function sendImageMessage(req, res) {
   try {
     const { conversationId } = req.params;

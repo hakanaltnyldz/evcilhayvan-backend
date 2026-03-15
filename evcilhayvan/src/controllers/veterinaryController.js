@@ -4,10 +4,37 @@ import User from "../models/User.js";
 import Conversation from "../models/Conversation.js";
 import { sendError, sendOk } from "../utils/apiResponse.js";
 import { recordAudit } from "../utils/audit.js";
-import {
-  searchNearbyVets as googleSearch,
-  mapGoogleResultToVet,
-} from "../services/googlePlacesService.js";
+
+// OpenStreetMap Overpass API ile yakın veteriner kliniği ara (ücretsiz)
+async function osmSearchVets(lat, lng, radiusMeters = 5000) {
+  const query = `[out:json][timeout:10];
+(
+  node["amenity"="veterinary"](around:${radiusMeters},${lat},${lng});
+  way["amenity"="veterinary"](around:${radiusMeters},${lat},${lng});
+);
+out center body;`;
+  const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
+  if (!res.ok) throw new Error("Overpass API hatası: " + res.status);
+  const data = await res.json();
+  return data.elements || [];
+}
+
+function mapOsmResultToVet(el, lat, lng) {
+  const tags = el.tags || {};
+  const elLat = el.lat ?? el.center?.lat ?? lat;
+  const elLng = el.lon ?? el.center?.lon ?? lng;
+  return {
+    name: tags.name || tags["name:tr"] || "Veteriner Kliniği",
+    address: [tags["addr:street"], tags["addr:housenumber"], tags["addr:city"]]
+      .filter(Boolean).join(", ") || tags["addr:full"] || null,
+    phone: tags.phone || tags["contact:phone"] || null,
+    website: tags.website || tags["contact:website"] || null,
+    location: { type: "Point", coordinates: [elLng, elLat] },
+    source: "osm",
+    isActive: true,
+  };
+}
 
 // GET /api/veterinaries
 export async function listVets(req, res) {
@@ -84,7 +111,7 @@ export async function getNearbyVets(req, res) {
   }
 }
 
-// GET /api/veterinaries/google-search
+// GET /api/veterinaries/google-search  (artık OSM Overpass kullanıyor)
 export async function googleSearchVets(req, res) {
   try {
     const { lat, lng, radiusKm = 5 } = req.query;
@@ -93,22 +120,21 @@ export async function googleSearchVets(req, res) {
     }
 
     const radiusMeters = Number(radiusKm) * 1000;
-    const googleResults = await googleSearch(Number(lat), Number(lng), radiusMeters);
+    const osmResults = await osmSearchVets(Number(lat), Number(lng), radiusMeters);
 
-    // Google sonuclarini DB'ye upsert et
-    const upsertedIds = [];
-    for (const result of googleResults) {
-      if (!result.place_id) continue;
-      const mapped = mapGoogleResultToVet(result);
-      const vet = await Veterinary.findOneAndUpdate(
-        { googlePlaceId: result.place_id },
-        { $set: mapped },
-        { upsert: true, new: true }
+    // OSM sonuçlarını DB'ye upsert et (osmId benzersiz anahtar)
+    for (const el of osmResults) {
+      if (!el.id) continue;
+      const osmId = String(el.id);
+      const mapped = mapOsmResultToVet(el, Number(lat), Number(lng));
+      await Veterinary.findOneAndUpdate(
+        { googlePlaceId: `osm_${osmId}` },
+        { $set: { ...mapped, googlePlaceId: `osm_${osmId}` } },
+        { upsert: true }
       );
-      upsertedIds.push(vet._id);
     }
 
-    // Hem Google hem de manuel kayitlari getir
+    // Tüm yakın kayıtları döndür
     const vets = await Veterinary.find({
       isActive: true,
       location: {
@@ -119,10 +145,16 @@ export async function googleSearchVets(req, res) {
       },
     }).limit(100);
 
-    return sendOk(res, 200, { vets, googleResultCount: googleResults.length });
+    return sendOk(res, 200, { vets, osmResultCount: osmResults.length });
   } catch (err) {
-    console.error("[googleSearchVets]", err);
-    return sendError(res, 500, "Google arama basarisiz", "internal_error", err.message);
+    console.error("[googleSearchVets/OSM]", err);
+    // Fallback: sadece DB'deki kayıtları döndür
+    try {
+      const vets = await Veterinary.find({ isActive: true }).limit(50);
+      return sendOk(res, 200, { vets, osmResultCount: 0 });
+    } catch {
+      return sendError(res, 500, "Veteriner arama basarisiz", "internal_error", err.message);
+    }
   }
 }
 

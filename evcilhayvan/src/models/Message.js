@@ -28,6 +28,10 @@ const messageSchema = new Schema(
       type: String,
       default: null,
     },
+    audioUrl: {
+      type: String,
+      default: null,
+    },
     type: {
       type: String,
       enum: ["TEXT", "IMAGE", "AUDIO", "SYSTEM"],

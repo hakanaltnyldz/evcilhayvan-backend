@@ -11,6 +11,7 @@ import {
   getMessages,
   sendMessage,
   sendImageMessage,
+  sendAudioMessage,
   markMessagesRead,
   createOrGetConversation,
   deleteConversation,
@@ -35,6 +36,17 @@ const imageUpload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
+const audioUpload = multer({
+  storage: _storage,
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype?.startsWith("audio/") || file.originalname?.endsWith('.m4a') || file.originalname?.endsWith('.aac')) {
+      return cb(null, true);
+    }
+    cb(new Error("Only audio files allowed"));
+  },
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
+
 router.use(authRequired());
 
 router.get("/", getMyConversations);
@@ -57,6 +69,13 @@ router.post(
   [param("conversationId").isMongoId().withMessage("Gecersiz Sohbet ID")],
   imageUpload.single("image"),
   sendImageMessage
+);
+
+router.post(
+  "/:conversationId/messages/audio",
+  [param("conversationId").isMongoId().withMessage("Gecersiz Sohbet ID")],
+  audioUpload.single("audio"),
+  sendAudioMessage
 );
 
 router.post(

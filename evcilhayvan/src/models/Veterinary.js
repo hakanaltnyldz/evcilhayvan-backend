@@ -28,7 +28,7 @@ const VeterinarySchema = new mongoose.Schema(
     // Kaynak takibi
     source: {
       type: String,
-      enum: ["google_places", "manual"],
+      enum: ["google_places", "osm", "manual"],
       default: "manual",
     },
     googlePlaceId: { type: String, unique: true, sparse: true },
@@ -52,6 +52,10 @@ const VeterinarySchema = new mongoose.Schema(
     acceptsOnlineAppointments: { type: Boolean, default: false },
     appointmentSlotMinutes: { type: Number, default: 30 },
     workingHours: { type: [WorkingHoursSchema], default: [] },
+
+    // Uygulama içi değerlendirme
+    averageRating: { type: Number, default: 0, min: 0, max: 5 },
+    reviewCount: { type: Number, default: 0 },
 
     // Hizmet verilen turler
     speciesServed: {
