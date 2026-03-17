@@ -4,6 +4,7 @@ import cors from "cors";
 import fs from "fs";
 import helmet from "helmet";
 import morgan from "morgan";
+import rateLimit from "express-rate-limit";
 import mongoose from "mongoose";
 import path from "path";
 import { createServer } from "http";
@@ -108,11 +109,45 @@ export function isUserOnline(userId) {
   return sockets && sockets.size > 0;
 }
 
+// ─── Rate Limiting ─────────────────────────────────────────────────────────
+// Genel API: dakikada 100 istek
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Çok fazla istek gönderildi. Lütfen biraz bekleyin.", code: "rate_limit" },
+  skip: (req) => req.path === "/api/health",
+});
+
+// Auth endpointleri: 15 dakikada 20 deneme (brute-force koruması)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Çok fazla giriş denemesi. 15 dakika sonra tekrar deneyin.", code: "auth_rate_limit" },
+});
+
+// Yükleme endpointleri: dakikada 10
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Çok fazla yükleme isteği.", code: "upload_rate_limit" },
+});
+
 // Middlewares
 app.use(cors({ origin: config.corsOrigins, credentials: true }));
 app.use(express.json({ limit: "2mb" }));
 app.use(helmet());
-app.use(morgan("dev"));
+app.use(morgan(config.env === "production" ? "combined" : "dev"));
+app.use("/api", globalLimiter);
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/register", authLimiter);
+app.use("/api/auth/forgot-password", authLimiter);
+app.use("/api/uploads", uploadLimiter);
 app.use((req, res, next) => {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.charset = "utf-8";

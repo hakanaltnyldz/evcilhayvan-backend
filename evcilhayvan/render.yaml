@@ -19,7 +19,11 @@ services:
       - key: JWT_EXPIRES
         value: 7d
       - key: CORS_ORIGIN
+        # Mobil uygulama için wildcard gerekli (native HTTP istekler origin header göndermez)
+        # Web panel varsa: https://admin.patiarkadasi.com,https://patiarkadasi.com şeklinde ekle
         value: "*"
+      - key: FIREBASE_SERVICE_ACCOUNT
+        sync: false
       - key: SENDER_EMAIL
         sync: false
       - key: SENDGRID_API_KEY

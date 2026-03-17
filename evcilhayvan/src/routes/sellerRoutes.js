@@ -2,7 +2,9 @@ import { Router } from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { body } from "express-validator";
 import { authRequired } from "../middlewares/auth.js";
+import { handleValidation } from "../middlewares/validate.js";
 import { applySeller } from "../controllers/sellerApplicationController.js";
 import {
   createSellerProduct,
@@ -52,8 +54,15 @@ const productUpload = multer({
 
 router.post("/seller/apply", authRequired(), applySeller);
 
+const productValidators = [
+  body("name").notEmpty().trim().isLength({ max: 200 }).withMessage("Ürün adı gerekli (max 200 karakter)"),
+  body("price").isFloat({ min: 0.01, max: 999999 }).withMessage("Geçerli bir fiyat giriniz"),
+  body("stock").isInt({ min: 0, max: 99999 }).withMessage("Stok 0 veya daha büyük olmalı"),
+  body("category").optional().isMongoId().withMessage("Geçersiz kategori ID"),
+];
+
 // Product routes
-router.post("/seller/products", authRequired(["seller", "admin"]), createSellerProduct);
+router.post("/seller/products", authRequired(["seller", "admin"]), productValidators, handleValidation, createSellerProduct);
 router.post("/seller/products/with-images", authRequired(["seller", "admin"]), productUpload.array("images", 5), createSellerProductWithImages);
 router.post("/seller/products/:id/images", authRequired(["seller", "admin"]), productUpload.array("images", 5), uploadProductImages);
 router.get("/seller/products", authRequired(["seller", "admin"]), getSellerProducts);
