@@ -49,6 +49,7 @@ import adminRoutes from "./src/routes/adminRoutes.js";
 import { startVaccinationReminderJob } from "./src/services/vaccinationReminderService.js";
 import { seedVaccinationSchedules } from "./src/services/vaccinationSeedService.js";
 import { startBirthdayReminderJob } from "./src/services/birthdayReminderService.js";
+import { startAppointmentReminderJob } from "./src/services/appointmentReminderService.js";
 import { initFcm } from "./src/utils/fcm.js";
 
 // --- Firebase Admin init (optional) ---
@@ -188,6 +189,8 @@ export async function startServer() {
       startVaccinationReminderJob(io);
       // Dogum gunu hatirlatma job'ini baslat
       startBirthdayReminderJob(io);
+      // Randevu hatirlatma job'ini baslat (24h once FCM + socket)
+      startAppointmentReminderJob(io);
     });
   } catch (err) {
     console.error("Mongo connection error:", err.message);

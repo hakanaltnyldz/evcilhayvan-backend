@@ -8,6 +8,7 @@ import {
   getSellerOrders,
   updateOrderStatus,
   getSellerOrderStats,
+  getSellerRevenueChart,
 } from "../controllers/orderController.js";
 
 const router = Router();
@@ -34,5 +35,8 @@ router.patch("/seller/orders/:id/status", authRequired(["seller", "admin"]), upd
 
 // Satıcı sipariş istatistikleri
 router.get("/seller/orders/stats", authRequired(["seller", "admin"]), getSellerOrderStats);
+
+// Satıcı aylık gelir grafiği (son 6 ay)
+router.get("/seller/orders/chart", authRequired(["seller", "admin"]), getSellerRevenueChart);
 
 export default router;

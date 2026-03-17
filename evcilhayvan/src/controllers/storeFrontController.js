@@ -111,36 +111,60 @@ export async function getCategories(_req, res) {
 }
 
 export async function getStorefrontProducts(req, res) {
-  console.log("[getStorefrontProducts] >>> Called");
   try {
-    const { category, q, search } = req.query;
+    const {
+      category,
+      q, search,
+      sort = "newest",
+      minPrice, maxPrice,
+      page = 1, limit = 20,
+    } = req.query;
+
     const filter = { isActive: true };
     if (category) filter.category = category;
+
     const term = q || search;
     if (term) filter.name = { $regex: term, $options: "i" };
 
-    // Debug: Tüm ürünleri kontrol et
-    const allProducts = await Product.find({}).lean();
-    console.log("[getStorefrontProducts] Total products in DB:", allProducts.length);
-    if (allProducts.length > 0) {
-      console.log("[getStorefrontProducts] Sample product:", JSON.stringify({
-        id: allProducts[0]._id,
-        name: allProducts[0].name,
-        isActive: allProducts[0].isActive,
-        store: allProducts[0].store,
-      }));
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      filter.price = {};
+      if (minPrice !== undefined) filter.price.$gte = Number(minPrice);
+      if (maxPrice !== undefined) filter.price.$lte = Number(maxPrice);
     }
 
-    const products = await Product.find(filter)
-      .populate("category", "name slug icon color")
-      .populate("store", "name description logoUrl")
-      .sort({ createdAt: -1 })
-      .lean();
+    const sortMap = {
+      newest:     { createdAt: -1 },
+      oldest:     { createdAt:  1 },
+      price_asc:  { price:      1 },
+      price_desc: { price:     -1 },
+      name_asc:   { name:       1 },
+    };
+    const sortObj = sortMap[sort] ?? sortMap.newest;
 
-    console.log("[getStorefrontProducts] Found", products.length, "active products");
-    return sendOk(res, 200, { products });
+    const pageNum  = Math.max(1, parseInt(page,  10) || 1);
+    const limitNum = Math.min(50, parseInt(limit, 10) || 20);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [products, total] = await Promise.all([
+      Product.find(filter)
+        .populate("category", "name slug icon color")
+        .populate("store", "name description logoUrl")
+        .sort(sortObj)
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+      Product.countDocuments(filter),
+    ]);
+
+    return sendOk(res, 200, {
+      products,
+      total,
+      page: pageNum,
+      limit: limitNum,
+      hasMore: skip + products.length < total,
+    });
   } catch (err) {
-    console.error("[getStorefrontProducts] !!! ERROR:", err);
+    console.error("[getStorefrontProducts] Error:", err.message);
     return sendError(res, 500, "Urunler alinamadi", "internal_error", err.message);
   }
 }

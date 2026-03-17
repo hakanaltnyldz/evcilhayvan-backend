@@ -403,3 +403,51 @@ export async function getSellerOrderStats(req, res) {
     return sendError(res, 500, "Istatistikler alinamadi", "internal_error", err.message);
   }
 }
+
+// Son 6 ayın aylık gelir + sipariş grafiği  GET /api/seller/orders/chart
+export async function getSellerRevenueChart(req, res) {
+  try {
+    const sellerId = req.user?.sub;
+    const sellerProducts = await Product.find({ seller: sellerId }).select("_id");
+    const productIds = sellerProducts.map(p => p._id);
+
+    const now = new Date();
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+
+    const orders = await Order.find({
+      "items.product": { $in: productIds },
+      createdAt: { $gte: sixMonthsAgo },
+      status: { $ne: "cancelled" },
+    }).select("items createdAt status");
+
+    // Build map: "YYYY-MM" → { revenue, count }
+    const monthMap = {};
+    for (let i = 0; i < 6; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      monthMap[key] = { revenue: 0, orders: 0 };
+    }
+
+    for (const order of orders) {
+      const key = `${order.createdAt.getFullYear()}-${String(order.createdAt.getMonth() + 1).padStart(2, "0")}`;
+      if (!monthMap[key]) continue;
+      const sellerItems = order.items.filter(item =>
+        productIds.some(pid => pid.toString() === item.product?.toString())
+      );
+      const sellerTotal = sellerItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      monthMap[key].revenue += sellerTotal;
+      monthMap[key].orders += 1;
+    }
+
+    const chart = Object.entries(monthMap).map(([month, data]) => ({
+      month,
+      revenue: Math.round(data.revenue * 100) / 100,
+      orders: data.orders,
+    }));
+
+    return sendOk(res, 200, { chart });
+  } catch (err) {
+    console.error("[getSellerRevenueChart] error", err);
+    return sendError(res, 500, "Grafik verisi alinamadi", "internal_error", err.message);
+  }
+}

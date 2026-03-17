@@ -34,6 +34,8 @@ const AppointmentSchema = new mongoose.Schema(
     cancelledBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     cancelReason: { type: String, trim: true },
     vetNotes: { type: String, trim: true, maxlength: 2000 },
+
+    reminderSent: { type: Boolean, default: false },
   },
   {
     timestamps: true,
