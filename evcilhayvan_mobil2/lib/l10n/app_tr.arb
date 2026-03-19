@@ -1,0 +1,311 @@
+{
+  "@@locale": "tr",
+
+  "appName": "Evcil Hayvan",
+  "@appName": {"description": "Uygulama adı"},
+
+  "login": "Giriş Yap",
+  "logout": "Çıkış Yap",
+  "register": "Kayıt Ol",
+  "email": "E-posta",
+  "password": "Şifre",
+  "forgotPassword": "Şifremi Unuttum",
+  "resetPassword": "Şifreyi Sıfırla",
+  "name": "Ad Soyad",
+  "save": "Kaydet",
+  "cancel": "Vazgeç",
+  "delete": "Sil",
+  "edit": "Düzenle",
+  "confirm": "Onayla",
+  "back": "Geri",
+  "close": "Kapat",
+  "retry": "Tekrar Dene",
+  "loading": "Yükleniyor...",
+  "error": "Hata",
+  "success": "Başarılı",
+  "noData": "Veri bulunamadı",
+  "send": "Gönder",
+
+  "tabHome": "Sahiplen",
+  "tabMessages": "Sohbetler",
+  "tabVet": "Veteriner",
+  "tabStore": "Mağaza",
+  "tabProfile": "Profil",
+
+  "homeTitle": "İlanlar",
+  "homeSearchHint": "Tür, ırk ara...",
+  "homeNearby": "Yakınımdakiler",
+  "homeNoAds": "Henüz ilan yok",
+  "homeNoAdsDesc": "Yakınında ilan bulunamadı.",
+  "homeAdoptionTab": "Sahiplendirme",
+  "homeMatingTab": "Eşleştirme",
+
+  "petDetailTitle": "İlan Detayı",
+  "petDetailAge": "Yaş",
+  "petDetailBreed": "Irk",
+  "petDetailGender": "Cinsiyet",
+  "petDetailVaccinated": "Aşılı",
+  "petDetailOwner": "Sahip",
+  "petDetailContact": "İletişime Geç",
+  "petDetailAdopt": "Sahiplenmek İstiyorum",
+
+  "createPetTitle": "İlan Oluştur",
+  "createPetName": "Hayvan Adı",
+  "createPetSpecies": "Tür",
+  "createPetBreed": "Irk",
+  "createPetAge": "Yaş (ay)",
+  "createPetGender": "Cinsiyet",
+  "createPetBio": "Hakkında",
+  "createPetPhotos": "Fotoğraflar",
+  "createPetAddPhoto": "Fotoğraf Ekle",
+  "createPetSubmit": "İlanı Yayınla",
+
+  "matingTitle": "Eşleştirme Bul",
+  "matingSubtitle": "Evcil dostların için uygun eşleşmeleri keşfet.",
+  "matingSpecies": "Tür",
+  "matingGender": "Cinsiyet",
+  "matingMaxDistance": "Maksimum mesafe: {km} km",
+  "@matingMaxDistance": {
+    "placeholders": {
+      "km": {"type": "int"}
+    }
+  },
+  "matingRequests": "Eşleştirme istekleri",
+  "matingEndTitle": "Hepsi bu kadar!",
+  "matingEndDesc": "Yakınında başka profil bulunamadı.",
+  "matingRefresh": "Yenile",
+  "matingEmptyTitle": "Filtreleri gevşetmeyi deneyin",
+  "matingEmptyDesc": "Yakınında henüz uygun eşleşme bulunamadı.",
+  "matingAll": "Tümü",
+  "matingMale": "Erkek",
+  "matingFemale": "Dişi",
+  "matingLikeStamp": "LIKE",
+  "matingNopeStamp": "NOPE",
+  "matingVaccinated": "Aşılı",
+
+  "messagesTitle": "Sohbetler",
+  "messagesEmpty": "Henüz sohbet yok",
+  "messagesEmptyDesc": "İlanlardan biriyle iletişime geç.",
+  "messagesTypeHint": "Mesaj yaz...",
+  "messagesSend": "Gönder",
+  "messagesImage": "Resim gönder",
+  "messagesDeleted": "[silindi]",
+
+  "matchRequestsTitle": "Eşleştirme İstekleri",
+  "matchRequestsInbox": "Gelen",
+  "matchRequestsOutbox": "Gönderilen",
+  "matchRequestsEmpty": "İstek yok",
+  "matchRequestAccept": "Kabul Et",
+  "matchRequestReject": "Reddet",
+  "matchRequestCancel": "İptal Et",
+
+  "profileTitle": "Profil",
+  "profileEdit": "Profili Düzenle",
+  "profileMyPets": "İlanlarım",
+  "profileSettings": "Ayarlar",
+  "profileLogout": "Çıkış Yap",
+  "profileSeller": "Satıcı",
+  "profileMember": "Üye",
+  "profileSince": "Katılım: {date}",
+  "@profileSince": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+
+  "settingsTitle": "Ayarlar",
+  "settingsDarkMode": "Karanlık Mod",
+  "settingsLanguage": "Dil",
+  "settingsLanguageTr": "Türkçe",
+  "settingsLanguageEn": "English",
+  "settingsReview": "Uygulamayı Değerlendir",
+  "settingsPrivacy": "Gizlilik Politikası",
+  "settingsNotifications": "Bildirimler",
+  "settingsLogout": "Çıkış Yap",
+
+  "vetTitle": "Veterinerler",
+  "vetSearch": "Veteriner ara...",
+  "vetNoResults": "Veteriner bulunamadı",
+  "vetDistance": "{km} km uzakta",
+  "@vetDistance": {
+    "placeholders": {
+      "km": {"type": "String"}
+    }
+  },
+  "vetAppointment": "Randevu Al",
+  "vetVaccination": "Aşı Takvimi",
+  "vetReminders": "Hatırlatmalar",
+
+  "storeTitle": "Mağaza",
+  "storeSearch": "Ürün ara...",
+  "storeCart": "Sepet",
+  "storeCheckout": "Siparişi Tamamla",
+  "storeMyOrders": "Siparişlerim",
+  "storeAddToCart": "Sepete Ekle",
+  "storeOutOfStock": "Stok Yok",
+  "storeOrderPlaced": "Sipariş Oluşturuldu",
+
+  "lostFoundTitle": "Kayıp & Bulunan",
+  "lostFoundReport": "İlan Ekle",
+  "lostFoundLost": "Kayıp",
+  "lostFoundFound": "Bulunan",
+
+  "eventsTitle": "Etkinlikler",
+  "eventsJoin": "Katıl",
+  "eventsLeave": "Ayrıl",
+
+  "sitterTitle": "Evcil Hayvan Bakıcısı",
+  "sitterBecomeSitter": "Bakıcı Ol",
+  "sitterBook": "Rezervasyon Yap",
+  "sitterMyBookings": "Rezervasyonlarım",
+
+  "adoptionApply": "Başvur",
+  "adoptionMyApps": "Başvurularım",
+
+  "notificationsTitle": "Bildirimler",
+  "notificationsEmpty": "Bildirim yok",
+  "notificationsClearAll": "Tümünü Temizle",
+
+  "favoritesTitle": "Favorilerim",
+  "favoritesEmpty": "Favori ilanınız yok",
+
+  "hello": "Merhaba, {name}!",
+  "@hello": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+
+  "genderMale": "Erkek",
+  "genderFemale": "Dişi",
+  "genderUnknown": "Bilinmiyor",
+
+  "speciesDog": "Köpek",
+  "speciesCat": "Kedi",
+  "speciesBird": "Kuş",
+  "speciesFish": "Balık",
+  "speciesOther": "Diğer",
+
+  "advertTypeAdoption": "Sahiplendirme",
+  "advertTypeMating": "Eşleştirme",
+
+  "privacyPolicyTitle": "Gizlilik Politikası",
+
+  "reviewDialogTitle": "Uygulamayı Puanla",
+  "reviewDialogDesc": "Uygulamamızı beğendiniz mi? Puanlamanız bize çok yardımcı olur.",
+
+  "errorGeneric": "Bir hata oluştu. Lütfen tekrar deneyin.",
+  "errorNetwork": "İnternet bağlantısı yok.",
+  "errorUnauthorized": "Oturum süresi doldu. Lütfen tekrar giriş yapın.",
+  "errorNotFound": "Bulunamadı.",
+
+  "yes": "Evet",
+  "no": "Hayır",
+  "or": "veya",
+  "km": "km",
+  "month": "ay",
+  "year": "yıl",
+  "months": "{count} aylık",
+  "@months": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "years": "{count} yaş",
+  "@years": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "settingsSectionAccount": "Hesabım",
+  "settingsSectionAccountSub": "Profilini güncelle, güvenlik ayarlarını yönet.",
+  "settingsSectionStore": "Mağaza Yönetimi",
+  "settingsSectionStoreSub": "Mağazanı ve siparişlerini yönet.",
+  "settingsSectionNotif": "Bildirimler",
+  "settingsSectionNotifSub": "Topluluktan geri kalma, kontrol tamamen sende.",
+  "settingsSectionAppExp": "Uygulama Deneyimi",
+  "settingsSectionAppExpSub": "Görünüm ve kişisel tercihlerini özelleştir.",
+  "settingsSectionSupport": "Destek",
+  "settingsSectionSupportSub": "Yardıma mı ihtiyacın var? Sana yardımcı olalım.",
+
+  "settingsEditProfile": "Profili Düzenle",
+  "settingsEditProfileSub": "Kişisel bilgilerini ve biyografini güncelle",
+  "settingsChangePassword": "Şifreyi Değiştir",
+  "settingsChangePasswordSub": "E-posta üzerinden yeni bir şifre oluştur",
+  "settingsMyOrders": "Siparişlerim",
+  "settingsMyOrdersSub": "Sipariş geçmişini görüntüle ve takip et",
+  "settingsMyFavorites": "Favorilerim",
+  "settingsMyFavoritesSub": "Beğendiğin ürünleri görüntüle",
+
+  "settingsMyStore": "Mağazam",
+  "settingsMyStoreSub": "Mağaza bilgilerini görüntüle ve düzenle",
+  "settingsIncomingOrders": "Gelen Siparişler",
+  "settingsIncomingOrdersSub": "Mağazana gelen siparişleri yönet",
+  "settingsManageProducts": "Ürünlerimi Yönet",
+  "settingsManageProductsSub": "Ürün ekle, düzenle veya stok güncelle",
+
+  "settingsNotifChat": "Sohbet bildirimleri",
+  "settingsNotifChatSub": "Yeni mesaj ve sohbet isteklerinden haberdar ol",
+  "settingsNotifMatch": "Eşleşme uyarıları",
+  "settingsNotifMatchSub": "Yeni eşleşmelerde anında bildirim al",
+  "settingsAutoChat": "Eşleşmelerde sohbeti otomatik hazırla",
+  "settingsAutoChatSub": "Eşleşme oluştuğunda sohbet ekranını hızlıca aç",
+
+  "settingsCompactCards": "Kartları kompakt göster",
+  "settingsCompactCardsSub": "Liste görünümünde daha fazla içerik gör",
+  "settingsDarkModeSub": "Gözlerin için daha konforlu koyu tema",
+  "settingsLanguageSub": "Uygulama dilini değiştir",
+  "settingsExportData": "Verilerimi dışa aktar",
+  "settingsExportDataSub": "İlan ve sohbet geçmişini e-posta olarak iste",
+
+  "settingsHelp": "SSS ve Yardım Merkezi",
+  "settingsContact": "Destek ile iletişime geç",
+  "settingsShare": "Uygulamayı Paylaş",
+  "settingsShareSub": "Arkadaşlarına öner",
+
+  "profileTabMyAds": "Sahiplendirme İlanlarım",
+  "profileTabMatingAds": "Eşleştirme İlanlarım",
+  "profileAdoptionCount": "Sahiplendirme",
+  "profileMatingCount": "Eşleştirme",
+  "profileViewCount": "Görüntülenme",
+  "profileNewAdoption": "Sahiplendirme",
+  "profileNewMating": "Eşleştirme",
+
+  "homeGreeting": "Merhaba",
+  "homeShortcutMating": "Eşleştir",
+  "homeShortcutLost": "Kayıp",
+  "homeShortcutEvents": "Etkinlik",
+  "homeShortcutSitter": "Bakıcı",
+  "homeShortcutAi": "Pati AI",
+  "homeShortcutFeed": "Feed",
+  "homeShortcutSearch": "Ara",
+  "homeUpcomingAppointments": "Yaklaşan Randevular",
+  "homeNearbyAds": "Yakınımdaki İlanlar",
+
+  "navMessages": "Sohbetler",
+  "navAdopt": "Sahiplen",
+  "navVet": "Veteriner",
+  "navStore": "Mağaza",
+  "navProfile": "Profil",
+
+  "darkModeOn": "Karanlık mod açık",
+  "darkModeOff": "Karanlık mod kapalı",
+  "languageLabel": "Dil / Language",
+  "selectLanguage": "Dil Seçin",
+
+  "today": "Bugün",
+  "tomorrow": "Yarın",
+  "profileCompleteTitle": "Profili tamamla",
+  "profileCompletePhoto": "Fotoğraf",
+  "profileCompleteCity": "Şehir",
+  "profileCompleteAbout": "Hakkımda",
+
+  "searchMessages": "Mesajlarda ara...",
+  "noSearchResults": "\"{query}\" için sonuç bulunamadı",
+  "@noSearchResults": {
+    "placeholders": {
+      "query": {"type": "String"}
+    }
+  }
+}

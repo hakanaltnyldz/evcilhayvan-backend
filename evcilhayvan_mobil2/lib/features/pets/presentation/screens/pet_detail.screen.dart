@@ -2,12 +2,14 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/pets/data/repositories/pets_repository.dart';
 import 'package:evcilhayvan_mobil2/features/pets/domain/models/pet_model.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
@@ -68,35 +70,42 @@ class PetDetailScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Pet Name and Type Badge
-                          _buildNameSection(context, pet),
+                          _buildNameSection(context, pet)
+                              .animate().fadeIn(duration: 250.ms).slideY(begin: 0.05, duration: 250.ms),
                           const SizedBox(height: 20),
 
                           // Quick Info Cards
-                          _buildQuickInfoCards(context, pet),
+                          _buildQuickInfoCards(context, pet)
+                              .animate(delay: 60.ms).fadeIn(duration: 260.ms).slideY(begin: 0.05, duration: 260.ms),
                           const SizedBox(height: 24),
 
                           // Bio Section
                           if (pet.bio?.isNotEmpty == true) ...[
-                            _buildBioSection(context, pet),
+                            _buildBioSection(context, pet)
+                                .animate(delay: 120.ms).fadeIn(duration: 260.ms).slideY(begin: 0.05, duration: 260.ms),
                             const SizedBox(height: 24),
                           ],
 
                           // Details Grid
-                          _buildDetailsSection(context, pet),
+                          _buildDetailsSection(context, pet)
+                              .animate(delay: 160.ms).fadeIn(duration: 260.ms).slideY(begin: 0.05, duration: 260.ms),
                           const SizedBox(height: 24),
 
                           // Health Info
-                          _buildHealthSection(context, pet),
+                          _buildHealthSection(context, pet)
+                              .animate(delay: 200.ms).fadeIn(duration: 260.ms).slideY(begin: 0.05, duration: 260.ms),
                           const SizedBox(height: 24),
 
                           // Location Section
                           if (pet.latitude != null && pet.longitude != null) ...[
-                            _LocationSection(pet: pet),
+                            _LocationSection(pet: pet)
+                                .animate(delay: 240.ms).fadeIn(duration: 260.ms),
                             const SizedBox(height: 24),
                           ],
 
                           // Owner Section
-                          _buildOwnerSection(context, pet),
+                          _buildOwnerSection(context, pet)
+                              .animate(delay: 280.ms).fadeIn(duration: 260.ms).slideY(begin: 0.05, duration: 260.ms),
                           const SizedBox(height: 16),
 
                           // Owner Banner (if owner)
@@ -231,7 +240,7 @@ class PetDetailScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.cardColor,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 16, offset: const Offset(0, 6)),
@@ -391,26 +400,34 @@ class PetDetailScreen extends ConsumerWidget {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            // Image
-            GestureDetector(
-              onTap: pet.photos.isNotEmpty
-                  ? () => _showImageZoom(context, '$apiBaseUrl${pet.photos[0]}')
-                  : null,
-              child: Hero(
-                tag: heroTag,
-                child: pet.photos.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: '$apiBaseUrl${pet.photos[0]}',
-                        fit: BoxFit.cover,
-                        placeholder: (_, __) => Container(
-                          color: AppPalette.heroGradient.first.withOpacity(0.3),
-                          child: const Center(child: CircularProgressIndicator(color: Colors.white)),
-                        ),
-                        errorWidget: (_, __, ___) => _buildPlaceholderImage(context),
-                      )
-                    : _buildPlaceholderImage(context),
+            // Image gallery (PageView for multiple photos)
+            if (pet.photos.length > 1)
+              _PhotoGallery(
+                photos: pet.photos,
+                apiBaseUrl: apiBaseUrl,
+                heroTag: heroTag,
+                onTap: (url) => _showImageZoom(context, url),
+              )
+            else
+              GestureDetector(
+                onTap: pet.photos.isNotEmpty
+                    ? () => _showImageZoom(context, '$apiBaseUrl${pet.photos[0]}')
+                    : null,
+                child: Hero(
+                  tag: heroTag,
+                  child: pet.photos.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: '$apiBaseUrl${pet.photos[0]}',
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) => Container(
+                            color: AppPalette.heroGradient.first.withOpacity(0.3),
+                            child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+                          ),
+                          errorWidget: (_, __, ___) => _buildPlaceholderImage(context),
+                        )
+                      : _buildPlaceholderImage(context),
+                ),
               ),
-            ),
             // Gradient overlay
             Container(
               decoration: BoxDecoration(
@@ -660,7 +677,7 @@ class PetDetailScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -715,7 +732,7 @@ class PetDetailScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -792,7 +809,7 @@ class PetDetailScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -1019,7 +1036,7 @@ class _QuickInfoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -1203,7 +1220,7 @@ class _LocationSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -1309,7 +1326,7 @@ class _LocationSection extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: context.cardColor,
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
@@ -1422,7 +1439,7 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
     return Container(
       padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).padding.bottom + 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.cardColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -1860,9 +1877,9 @@ class _PetSelectionModal extends StatelessWidget {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.7,
       ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: context.cardColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1958,9 +1975,9 @@ class _PetSelectionCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: context.subtleBorder),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.03),
@@ -2098,6 +2115,75 @@ class _QrInfoRow extends StatelessWidget {
               fontSize: 13,
               color: valueColor ?? Colors.black87,
             )),
+      ],
+    );
+  }
+}
+
+// ── Çoklu Fotoğraf Galerisi ─────────────────────────────────────────────────
+class _PhotoGallery extends StatefulWidget {
+  final List<String> photos;
+  final String apiBaseUrl;
+  final String heroTag;
+  final void Function(String url) onTap;
+
+  const _PhotoGallery({
+    required this.photos,
+    required this.apiBaseUrl,
+    required this.heroTag,
+    required this.onTap,
+  });
+
+  @override
+  State<_PhotoGallery> createState() => _PhotoGalleryState();
+}
+
+class _PhotoGalleryState extends State<_PhotoGallery> {
+  int _current = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        PageView.builder(
+          itemCount: widget.photos.length,
+          onPageChanged: (i) => setState(() => _current = i),
+          itemBuilder: (context, i) {
+            final url = widget.photos[i].startsWith('http')
+                ? widget.photos[i]
+                : '${widget.apiBaseUrl}${widget.photos[i]}';
+            return GestureDetector(
+              onTap: () => widget.onTap(url),
+              child: i == 0
+                  ? Hero(
+                      tag: widget.heroTag,
+                      child: CachedNetworkImage(imageUrl: url, fit: BoxFit.cover),
+                    )
+                  : CachedNetworkImage(imageUrl: url, fit: BoxFit.cover),
+            );
+          },
+        ),
+        // Dot indicator
+        Positioned(
+          bottom: 12,
+          left: 0,
+          right: 0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(widget.photos.length, (i) {
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: i == _current ? 16 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: i == _current ? Colors.white : Colors.white54,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              );
+            }),
+          ),
+        ),
       ],
     );
   }

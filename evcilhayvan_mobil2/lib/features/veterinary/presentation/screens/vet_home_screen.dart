@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/appointment_repository.dart';
 import '../../data/repositories/vaccination_repository.dart';
 import '../../data/repositories/veterinary_repository.dart';
@@ -57,7 +59,7 @@ class _VetHomeScreenState extends ConsumerState<VetHomeScreen> with SingleTicker
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: Text('Veteriner', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+          title: Text(AppLocalizations.of(context)!.vetTitle, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
           bottom: TabBar(
             controller: _tabController,
             labelColor: AppPalette.primary,
@@ -136,7 +138,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.cardColor,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4)),
@@ -253,7 +255,7 @@ class _QuickActionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.cardColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(color: color.withOpacity(0.15), blurRadius: 10, offset: const Offset(0, 4)),

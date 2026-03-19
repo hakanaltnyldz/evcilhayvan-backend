@@ -1,9 +1,12 @@
 // lib/main.dart
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:evcilhayvan_mobil2/core/services/fcm_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:evcilhayvan_mobil2/router/app_router.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_theme.dart';
@@ -15,10 +18,18 @@ import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('tr', null);
-  // Firebase — graceful if google-services.json not added yet
-  try {
-    await Firebase.initializeApp();
-  } catch (_) {}
+  await Firebase.initializeApp();
+
+  // ─── Crashlytics ─────────────────────────────────────────────────────────
+  // Flutter framework hataları → Crashlytics'e gönder
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  // Async/isolate hataları (zone dışında kaçan istisnalar)
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
+  await FcmService.init();
   final onboardingSeen = await loadOnboardingSeen();
 
   // Load saved locale once before runApp (avoids calling load() on every build)

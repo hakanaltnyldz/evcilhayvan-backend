@@ -77,6 +77,35 @@ class VeterinaryModel {
     this.userId,
   });
 
+  Map<String, dynamic> toJson() => {
+        '_id': id,
+        'name': name,
+        if (address != null) 'address': address,
+        if (phone != null) 'phone': phone,
+        if (email != null) 'email': email,
+        if (website != null) 'website': website,
+        if (description != null) 'description': description,
+        'photos': photos,
+        'location': (latitude != null && longitude != null)
+            ? {
+                'type': 'Point',
+                'coordinates': [longitude, latitude],
+              }
+            : null,
+        'source': source,
+        if (googlePlaceId != null) 'googlePlaceId': googlePlaceId,
+        if (googleRating != null) 'googleRating': googleRating,
+        'googleReviewCount': googleReviewCount,
+        'isVerified': isVerified,
+        'isActive': isActive,
+        'services': services,
+        'acceptsOnlineAppointments': acceptsOnlineAppointments,
+        'appointmentSlotMinutes': appointmentSlotMinutes,
+        'workingHours': workingHours.map((e) => e.toJson()).toList(),
+        'speciesServed': speciesServed,
+        if (userId != null) 'userId': userId,
+      };
+
   factory VeterinaryModel.fromJson(Map<String, dynamic> json) {
     final loc = json['location'];
     double? lat, lng;

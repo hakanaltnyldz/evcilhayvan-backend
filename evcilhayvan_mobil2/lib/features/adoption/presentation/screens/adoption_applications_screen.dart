@@ -1,0 +1,481 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
+import 'package:evcilhayvan_mobil2/core/http.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
+import '../../data/repositories/adoption_repository.dart';
+import '../../domain/models/adoption_application.dart';
+
+class AdoptionApplicationsScreen extends ConsumerStatefulWidget {
+  const AdoptionApplicationsScreen({super.key});
+
+  @override
+  ConsumerState<AdoptionApplicationsScreen> createState() => _AdoptionApplicationsScreenState();
+}
+
+class _AdoptionApplicationsScreenState extends ConsumerState<AdoptionApplicationsScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Sahiplendirme Basvurulari'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: AppPalette.primary,
+          unselectedLabelColor: AppPalette.onSurfaceVariant,
+          indicatorColor: AppPalette.primary,
+          tabs: const [
+            Tab(text: 'Gelen Basvurular'),
+            Tab(text: 'Gonderdiklerim'),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _InboxTab(),
+          _SentTab(),
+        ],
+      ),
+    );
+  }
+}
+
+class _InboxTab extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final inboxAsync = ref.watch(inboxAdoptionApplicationsProvider);
+
+    return inboxAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Hata: $e')),
+      data: (applications) {
+        if (applications.isEmpty) {
+          return _emptyState(context, Icons.inbox, 'Gelen basvuru yok', 'Sahiplendirme ilanlariniza gelen basvurular burada gorunecek.');
+        }
+        return RefreshIndicator(
+          onRefresh: () async => ref.invalidate(inboxAdoptionApplicationsProvider),
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: applications.length,
+            itemBuilder: (context, index) => _ApplicationCard(
+              application: applications[index],
+              isInbox: true,
+              onAccept: () => _respond(context, ref, applications[index], 'accept'),
+              onReject: () => _respond(context, ref, applications[index], 'reject'),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _respond(BuildContext context, WidgetRef ref, AdoptionApplication app, String action) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(action == 'accept' ? 'Basvuruyu Kabul Et' : 'Basvuruyu Reddet'),
+        content: Text(action == 'accept'
+            ? 'Bu basvuruyu kabul etmek istediginize emin misiniz? Mesajlasma baslatilacaktir.'
+            : 'Bu basvuruyu reddetmek istediginize emin misiniz?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Vazgec')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(action == 'accept' ? 'Kabul Et' : 'Reddet',
+                style: TextStyle(color: action == 'accept' ? Colors.green : Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      final repo = ref.read(adoptionRepositoryProvider);
+      final result = await repo.respondToApplication(app.id, action);
+      ref.invalidate(inboxAdoptionApplicationsProvider);
+
+      if (context.mounted) {
+        if (action == 'accept' && result.conversationId != null) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Basvuru kabul edildi! Mesajlasma baslatildi.')));
+          context.pushNamed('chat', pathParameters: {'conversationId': result.conversationId!});
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(action == 'accept' ? 'Basvuru kabul edildi' : 'Basvuru reddedildi')),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red));
+      }
+    }
+  }
+}
+
+class _SentTab extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sentAsync = ref.watch(sentAdoptionApplicationsProvider);
+
+    return sentAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Hata: $e')),
+      data: (applications) {
+        if (applications.isEmpty) {
+          return _emptyState(context, Icons.outbox, 'Gonderilen basvuru yok', 'Sahiplendirme ilanlarına yaptığınız basvurular burada gorunecek.');
+        }
+        return RefreshIndicator(
+          onRefresh: () async => ref.invalidate(sentAdoptionApplicationsProvider),
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: applications.length,
+            itemBuilder: (context, index) => _ApplicationCard(
+              application: applications[index],
+              isInbox: false,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+Widget _emptyState(BuildContext context, IconData icon, String title, String subtitle) {
+  final theme = Theme.of(context);
+  return Center(
+    child: Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 64, color: AppPalette.onSurfaceVariant.withOpacity(0.3)),
+          const SizedBox(height: 16),
+          Text(title, style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Text(subtitle, textAlign: TextAlign.center, style: theme.textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant)),
+        ],
+      ),
+    ),
+  );
+}
+
+class _ApplicationCard extends StatelessWidget {
+  final AdoptionApplication application;
+  final bool isInbox;
+  final VoidCallback? onAccept;
+  final VoidCallback? onReject;
+
+  const _ApplicationCard({required this.application, required this.isInbox, this.onAccept, this.onReject});
+
+  Color get _statusColor {
+    switch (application.status) {
+      case 'ACCEPTED': return Colors.green;
+      case 'REJECTED': return Colors.red;
+      case 'CANCELLED': return Colors.grey;
+      default: return Colors.orange;
+    }
+  }
+
+  String get _statusText {
+    switch (application.status) {
+      case 'ACCEPTED': return 'Kabul Edildi';
+      case 'REJECTED': return 'Reddedildi';
+      case 'CANCELLED': return 'Iptal Edildi';
+      default: return 'Beklemede';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final listing = application.listing;
+    final applicant = application.applicantUser;
+    final dateStr = '${application.createdAt.day.toString().padLeft(2, '0')}.${application.createdAt.month.toString().padLeft(2, '0')}.${application.createdAt.year}';
+
+    final imageUrl = listing != null && listing.images.isNotEmpty
+        ? (listing.images.first.startsWith('http') ? listing.images.first : '$apiBaseUrl${listing.images.first}')
+        : null;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: context.cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 3))],
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                // Pet image
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: imageUrl != null
+                        ? CachedNetworkImage(imageUrl: imageUrl, fit: BoxFit.cover, errorWidget: (_, __, ___) => _placeholder())
+                        : _placeholder(),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        listing?.name ?? 'Ilan',
+                        style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      if (isInbox && applicant != null)
+                        Text('Basvuran: ${applicant.name}', style: theme.textTheme.bodySmall?.copyWith(color: AppPalette.onSurfaceVariant))
+                      else if (listing?.species != null)
+                        Text(listing!.species!, style: theme.textTheme.bodySmall?.copyWith(color: AppPalette.onSurfaceVariant)),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.calendar_today, size: 12, color: Colors.grey[400]),
+                          const SizedBox(width: 4),
+                          Text(dateStr, style: theme.textTheme.labelSmall?.copyWith(color: Colors.grey)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(_statusText, style: theme.textTheme.labelSmall?.copyWith(color: _statusColor, fontWeight: FontWeight.w600)),
+                ),
+              ],
+            ),
+          ),
+          // Not
+          if (application.note != null && application.note!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(application.note!, style: theme.textTheme.bodySmall, maxLines: 3, overflow: TextOverflow.ellipsis),
+              ),
+            ),
+          // Süreç zaman çizelgesi
+          _ApplicationTimeline(status: application.status),
+
+          // Aksiyonlar (sadece inbox + PENDING)
+          if (isInbox && application.status == 'PENDING')
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: onReject,
+                      icon: const Icon(Icons.close, size: 18),
+                      label: const Text('Reddet'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.red),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: onAccept,
+                      icon: const Icon(Icons.check, size: 18),
+                      label: const Text('Kabul Et'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          // Accepted -> mesajlasma butonu
+          if (application.status == 'ACCEPTED' && application.conversationId != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => context.pushNamed('chat', pathParameters: {'conversationId': application.conversationId!}),
+                  icon: const Icon(Icons.chat),
+                  label: const Text('Mesajlasma'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppPalette.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _placeholder() {
+    return Container(
+      color: AppPalette.background,
+      child: const Center(child: Icon(Icons.pets, color: AppPalette.onSurfaceVariant)),
+    );
+  }
+}
+
+// ─── Başvuru Süreci Zaman Çizelgesi ─────────────────────────────────────────
+
+class _ApplicationTimeline extends StatelessWidget {
+  final String status;
+
+  const _ApplicationTimeline({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final steps = _buildSteps(status);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      child: Row(
+        children: [
+          for (int i = 0; i < steps.length; i++) ...[
+            _TimelineStep(
+              label: steps[i].$1,
+              state: steps[i].$2,
+            ),
+            if (i < steps.length - 1)
+              Expanded(
+                child: Container(
+                  height: 2,
+                  color: steps[i].$2 == _StepState.done
+                      ? Colors.green.withOpacity(0.6)
+                      : Colors.grey.shade300,
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  List<(String, _StepState)> _buildSteps(String status) {
+    switch (status) {
+      case 'ACCEPTED':
+        return [
+          ('Başvuru', _StepState.done),
+          ('İnceleme', _StepState.done),
+          ('Onay', _StepState.done),
+          ('Tamamlandı', _StepState.done),
+        ];
+      case 'REJECTED':
+        return [
+          ('Başvuru', _StepState.done),
+          ('İnceleme', _StepState.done),
+          ('Reddedildi', _StepState.error),
+          ('', _StepState.inactive),
+        ];
+      case 'CANCELLED':
+        return [
+          ('Başvuru', _StepState.done),
+          ('İptal', _StepState.error),
+          ('', _StepState.inactive),
+          ('', _StepState.inactive),
+        ];
+      default: // PENDING
+        return [
+          ('Başvuru', _StepState.done),
+          ('İnceleme', _StepState.active),
+          ('Karar', _StepState.inactive),
+          ('Tamamlandı', _StepState.inactive),
+        ];
+    }
+  }
+}
+
+enum _StepState { done, active, error, inactive }
+
+class _TimelineStep extends StatelessWidget {
+  final String label;
+  final _StepState state;
+
+  const _TimelineStep({required this.label, required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    if (label.isEmpty) return const SizedBox(width: 28);
+
+    Color color;
+    IconData icon;
+    switch (state) {
+      case _StepState.done:
+        color = Colors.green;
+        icon = Icons.check_circle_rounded;
+        break;
+      case _StepState.active:
+        color = Colors.orange;
+        icon = Icons.radio_button_checked_rounded;
+        break;
+      case _StepState.error:
+        color = Colors.red;
+        icon = Icons.cancel_rounded;
+        break;
+      case _StepState.inactive:
+        color = Colors.grey.shade300;
+        icon = Icons.circle_outlined;
+        break;
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: color, size: 18),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 9,
+            color: state == _StepState.inactive ? Colors.grey.shade400 : color,
+            fontWeight: state == _StepState.active ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+}

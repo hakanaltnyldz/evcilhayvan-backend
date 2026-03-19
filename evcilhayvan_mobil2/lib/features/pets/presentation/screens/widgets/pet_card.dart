@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:evcilhayvan_mobil2/config/app_config.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/shimmer_box.dart';
 import 'package:evcilhayvan_mobil2/features/pets/domain/models/pet_model.dart';
 
 class PetCard extends StatefulWidget {
@@ -87,17 +88,7 @@ class _PetImage extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: '${AppConfig.current.apiBaseUrl}${pet.photos[0]}',
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Color(0xFFE5E3FF),
-                              Color(0xFFFDE4DF),
-                            ],
-                          ),
-                        ),
-                        child: const Center(child: CircularProgressIndicator()),
-                      ),
+                      placeholder: (context, url) => const ShimmerBox(height: 210),
                       errorWidget: (context, url, error) => _fallback(),
                     )
                   : _fallback(),

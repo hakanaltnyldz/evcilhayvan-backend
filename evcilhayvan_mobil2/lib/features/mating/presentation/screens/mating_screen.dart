@@ -4,8 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/shimmer_box.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/mating/data/repositories/mating_repository.dart';
 import 'package:evcilhayvan_mobil2/features/mating/domain/models/mating_profile.dart';
@@ -745,6 +749,8 @@ class _SwipeCard extends StatelessWidget {
                 ? Image.network(
                     profile.primaryImageUrl,
                     fit: BoxFit.cover,
+                    loadingBuilder: (_, child, progress) =>
+                        progress == null ? child : const ShimmerBox(),
                     errorBuilder: (_, __, ___) => const _CardImagePlaceholder(),
                   )
                 : const _CardImagePlaceholder(),
@@ -977,14 +983,16 @@ class _ActionBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InteractiveScale(
       onTap: onTap,
+      scale: 0.88,
+      duration: const Duration(milliseconds: 120),
       child: Container(
         width: size,
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.white,
+          color: context.cardColor,
           boxShadow: [
             BoxShadow(
               color: color.withOpacity(0.35),

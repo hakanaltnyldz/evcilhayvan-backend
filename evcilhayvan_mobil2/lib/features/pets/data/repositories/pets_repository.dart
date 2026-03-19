@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
+import 'package:evcilhayvan_mobil2/core/services/cache_service.dart';
 import 'package:evcilhayvan_mobil2/features/pets/domain/models/pet_model.dart';
 
 class LikeResult {
@@ -108,6 +109,9 @@ class PetsRepository {
     double? lat,
     double? lng,
     double? radiusKm,
+    String? species,
+    bool? vaccinated,
+    String? breed,
   }) {
     return _guard(() async {
       final response = await _dio.get('/api/adverts', queryParameters: {
@@ -117,6 +121,9 @@ class PetsRepository {
         if (lat != null) 'lat': lat,
         if (lng != null) 'lng': lng,
         if (radiusKm != null) 'radiusKm': radiusKm,
+        if (species != null) 'species': species,
+        if (vaccinated != null) 'vaccinated': vaccinated.toString(),
+        if (breed != null) 'breed': breed,
       });
       final List<dynamic> raw = response.data['items'] ?? [];
       return (
@@ -346,10 +353,32 @@ final matingAdvertsProvider = FutureProvider<List<Pet>>((ref) {
   return repository.getMatingAdverts();
 });
 
-final myPetsProvider = FutureProvider<List<Pet>>((ref) {
-  final repository = ref.watch(petsRepositoryProvider);
-  return repository.getMyPets();
-});
+// myPetsProvider — stale-while-revalidate (TTL 30min)
+class _MyPetsNotifier extends AsyncNotifier<List<Pet>> {
+  static const _cacheKey = 'cache_my_pets_v1';
+
+  @override
+  Future<List<Pet>> build() async {
+    final repo = ref.read(petsRepositoryProvider);
+    return CacheService.staleWhileRevalidate<List<Pet>>(
+      key: _cacheKey,
+      ttl: const Duration(minutes: 30),
+      fetch: () => repo.getMyPets(),
+      fromJson: (raw) =>
+          (raw as List).map((e) => Pet.fromJson(e as Map<String, dynamic>)).toList(),
+      toJson: (list) => list.map((e) => e.toJson()).toList(),
+      onUpdate: (fresh) => state = AsyncData(fresh),
+    );
+  }
+
+  Future<void> refresh() async {
+    await CacheService.invalidate(_cacheKey);
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() => ref.read(petsRepositoryProvider).getMyPets());
+  }
+}
+
+final myPetsProvider = AsyncNotifierProvider<_MyPetsNotifier, List<Pet>>(_MyPetsNotifier.new);
 
 final myAdvertsProvider = FutureProvider.autoDispose.family<List<Pet>, String?>((ref, advertType) {
   final repository = ref.watch(petsRepositoryProvider);
@@ -437,6 +466,8 @@ class PaginatedAdvertsNotifier extends StateNotifier<PaginatedAdvertsState> {
 
   double? _lat;
   double? _lng;
+  String? _species;
+  String? _breed;
 
   void setLocation(double lat, double lng) {
     _lat = lat;
@@ -446,6 +477,11 @@ class PaginatedAdvertsNotifier extends StateNotifier<PaginatedAdvertsState> {
   void clearLocation() {
     _lat = null;
     _lng = null;
+  }
+
+  void setFilter({String? species, String? breed}) {
+    _species = species;
+    _breed = breed;
   }
 
   Future<void> loadMore() async {
@@ -460,6 +496,8 @@ class PaginatedAdvertsNotifier extends StateNotifier<PaginatedAdvertsState> {
         lat: _lat,
         lng: _lng,
         radiusKm: (_lat != null) ? 25 : null,
+        species: _species,
+        breed: _breed,
       );
       state = state.copyWith(
         items: [...state.items, ...result.items],
@@ -486,4 +524,156 @@ final adoptionPaginatedProvider =
 final matingPaginatedProvider =
     StateNotifierProvider<PaginatedAdvertsNotifier, PaginatedAdvertsState>(
   (ref) => PaginatedAdvertsNotifier(ref.read(petsRepositoryProvider), 'mating'),
+);
+
+// ─── Yakındaki İlanlar ────────────────────────────────────────────────────────
+
+class NearbyAdsFilter {
+  final String? advertType;  // null = tümü
+  final String? species;     // null = tümü
+  final bool? vaccinated;    // null = fark etmez
+  final double radiusKm;
+  final String? breed;       // null = tümü
+
+  const NearbyAdsFilter({
+    this.advertType,
+    this.species,
+    this.vaccinated,
+    this.radiusKm = 25,
+    this.breed,
+  });
+
+  NearbyAdsFilter copyWith({
+    Object? advertType = _sentinel,
+    Object? species = _sentinel,
+    Object? vaccinated = _sentinel,
+    double? radiusKm,
+    Object? breed = _sentinel,
+  }) {
+    return NearbyAdsFilter(
+      advertType: advertType == _sentinel ? this.advertType : advertType as String?,
+      species: species == _sentinel ? this.species : species as String?,
+      vaccinated: vaccinated == _sentinel ? this.vaccinated : vaccinated as bool?,
+      radiusKm: radiusKm ?? this.radiusKm,
+      breed: breed == _sentinel ? this.breed : breed as String?,
+    );
+  }
+
+  int get activeCount =>
+      (advertType != null ? 1 : 0) +
+      (species != null ? 1 : 0) +
+      (vaccinated != null ? 1 : 0) +
+      (breed != null ? 1 : 0);
+}
+
+const _sentinel = Object();
+
+class NearbyAdsState {
+  final List<Pet> items;
+  final bool isLoading;
+  final bool hasMore;
+  final int page;
+  final String? error;
+  final double? lat;
+  final double? lng;
+  final bool locationLoading;
+  final NearbyAdsFilter filter;
+
+  const NearbyAdsState({
+    this.items = const [],
+    this.isLoading = false,
+    this.hasMore = true,
+    this.page = 0,
+    this.error,
+    this.lat,
+    this.lng,
+    this.locationLoading = false,
+    this.filter = const NearbyAdsFilter(),
+  });
+
+  NearbyAdsState copyWith({
+    List<Pet>? items,
+    bool? isLoading,
+    bool? hasMore,
+    int? page,
+    String? error,
+    bool clearError = false,
+    double? lat,
+    double? lng,
+    bool? locationLoading,
+    NearbyAdsFilter? filter,
+  }) {
+    return NearbyAdsState(
+      items: items ?? this.items,
+      isLoading: isLoading ?? this.isLoading,
+      hasMore: hasMore ?? this.hasMore,
+      page: page ?? this.page,
+      error: clearError ? null : (error ?? this.error),
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
+      locationLoading: locationLoading ?? this.locationLoading,
+      filter: filter ?? this.filter,
+    );
+  }
+}
+
+class NearbyAdsNotifier extends StateNotifier<NearbyAdsState> {
+  NearbyAdsNotifier(this._repository) : super(const NearbyAdsState());
+
+  final PetsRepository _repository;
+  static const _limit = 10;
+
+  void setLocation(double lat, double lng) {
+    state = state.copyWith(lat: lat, lng: lng, locationLoading: false);
+    _reset();
+  }
+
+  void setLocationLoading(bool v) => state = state.copyWith(locationLoading: v);
+
+  void setError(String msg) => state = state.copyWith(error: msg, locationLoading: false);
+
+  void applyFilter(NearbyAdsFilter filter) {
+    state = state.copyWith(filter: filter);
+    _reset();
+  }
+
+  Future<void> _reset() async {
+    state = state.copyWith(items: [], page: 0, hasMore: true, clearError: true);
+    await loadMore();
+  }
+
+  Future<void> refresh() => _reset();
+
+  Future<void> loadMore() async {
+    if (state.isLoading || !state.hasMore || state.lat == null) return;
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final nextPage = state.page + 1;
+      final f = state.filter;
+      final result = await _repository.getPetsPaginated(
+        advertType: f.advertType,
+        page: nextPage,
+        limit: _limit,
+        lat: state.lat,
+        lng: state.lng,
+        radiusKm: f.radiusKm,
+        species: f.species,
+        vaccinated: f.vaccinated,
+        breed: f.breed,
+      );
+      state = state.copyWith(
+        items: [...state.items, ...result.items],
+        isLoading: false,
+        hasMore: result.hasMore,
+        page: nextPage,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+}
+
+final nearbyAdsProvider =
+    StateNotifierProvider<NearbyAdsNotifier, NearbyAdsState>(
+  (ref) => NearbyAdsNotifier(ref.read(petsRepositoryProvider)),
 );

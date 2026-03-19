@@ -1,11 +1,16 @@
 import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/services/fcm_service.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/socket_service.dart';
 import 'package:evcilhayvan_mobil2/core/providers/socket_provider.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
@@ -26,6 +31,11 @@ class MainShell extends ConsumerStatefulWidget {
 class _MainShellState extends ConsumerState<MainShell> {
   int _selectedIndex = 0;
   final List<StreamSubscription> _socketSubscriptions = [];
+  StreamSubscription<String>? _fcmRouteSub;
+
+  // ─── Çevrimdışı banner ────────────────────────────────────────────────────
+  bool _isOffline = false;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
 
   static const List<String?> _routeNames = [
     'messages', // 0: Sohbetler
@@ -39,10 +49,41 @@ class _MainShellState extends ConsumerState<MainShell> {
   void initState() {
     super.initState();
     _initSocketConnection();
+    _initConnectivity();
+    _initFcmDeepLinks();
+  }
+
+  void _initFcmDeepLinks() {
+    // Arka planda bildirime tıklanınca navigate et
+    _fcmRouteSub = FcmService.routeStream.listen((route) {
+      if (mounted) context.go(route);
+    });
+    // Uygulama tamamen kapalıyken açılan bildirim
+    FcmService.checkInitialMessage();
+  }
+
+  void _initConnectivity() {
+    _connectivitySub = Connectivity().onConnectivityChanged.listen((results) {
+      final offline = results.every((r) => r == ConnectivityResult.none);
+      if (offline != _isOffline) {
+        setState(() => _isOffline = offline);
+        if (!offline && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('İnternet bağlantısı yeniden kuruldu'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
+    _connectivitySub?.cancel();
+    _fcmRouteSub?.cancel();
     for (final sub in _socketSubscriptions) {
       sub.cancel();
     }
@@ -53,8 +94,11 @@ class _MainShellState extends ConsumerState<MainShell> {
       socketService.offEvent('adoption:new_application');
       socketService.offEvent('adoption:accepted');
       socketService.offEvent('lostfound:new');
+      socketService.offEvent('advert:expiry_warning');
       socketService.offEvent('sitter:new_booking');
       socketService.offEvent('sitter:booking_update');
+      socketService.offEvent('pet:birthday');
+      socketService.offEvent('appointment:reminder');
     } catch (_) {}
     super.dispose();
   }
@@ -270,6 +314,60 @@ class _MainShellState extends ConsumerState<MainShell> {
       } catch (_) {}
     });
 
+    // Pet birthday listener
+    socketService.onEvent('pet:birthday', (data) {
+      if (!mounted) return;
+      try {
+        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
+        notifier.addNotification(AppNotification(
+          id: 'bday_${d['petId'] ?? DateTime.now().millisecondsSinceEpoch}',
+          type: NotificationType.vaccinationReminder,
+          title: 'Doğum Günü! 🎂',
+          body: d['message']?.toString() ?? 'Dostunuzun doğum günü bugün!',
+          data: {'petId': d['petId']?.toString()},
+          createdAt: DateTime.now(),
+        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(d['message']?.toString() ?? 'Dostunuzun doğum günü bugün! 🎂'),
+            backgroundColor: Colors.pink.shade400,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      } catch (_) {}
+    });
+
+    // Randevu hatırlatıcısı
+    socketService.onEvent('appointment:reminder', (data) {
+      if (!mounted) return;
+      try {
+        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
+        final petName = d['petName']?.toString() ?? 'Evcil hayvanınız';
+        final vetName = d['vetName']?.toString() ?? 'Veteriner';
+        final dateStr = d['dateStr']?.toString() ?? '';
+        notifier.addNotification(AppNotification(
+          id: 'appt_${d['appointmentId'] ?? DateTime.now().millisecondsSinceEpoch}',
+          type: NotificationType.vaccinationReminder,
+          title: '🗓️ Randevu Hatırlatıcısı',
+          body: '$petName için yarın $vetName randevunuz var. $dateStr',
+          data: {'appointmentId': d['appointmentId']?.toString()},
+          createdAt: DateTime.now(),
+        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('🗓️ $petName için yarın $vetName randevunuz var!'),
+            backgroundColor: Colors.teal.shade600,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'Görüntüle',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
+          ),
+        );
+      } catch (_) {}
+    });
+
     // Lost & Found nearby listener
     socketService.onEvent('lostfound:new', (data) {
       if (!mounted) return;
@@ -286,6 +384,33 @@ class _MainShellState extends ConsumerState<MainShell> {
           data: {'reportId': d['id']?.toString()},
           createdAt: DateTime.now(),
         ));
+      } catch (_) {}
+    });
+
+    socketService.onEvent('advert:expiry_warning', (data) {
+      if (!mounted) return;
+      try {
+        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
+        notifier.addNotification(AppNotification(
+          id: 'expiry_${d['petId'] ?? DateTime.now().millisecondsSinceEpoch}',
+          type: NotificationType.general,
+          title: 'İlan Süresi Dolmak Üzere',
+          body: d['message'] as String? ?? '"${d['petName']}" ilanınızın süresi doluyor.',
+          data: {'petId': d['petId']?.toString()},
+          createdAt: DateTime.now(),
+        ));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(d['message'] as String? ?? '"${d['petName']}" ilanınızın süresi doluyor.'),
+              action: SnackBarAction(
+                label: 'İlanlarım',
+                onPressed: () => context.goNamed('profile'),
+              ),
+              duration: const Duration(seconds: 6),
+            ),
+          );
+        }
       } catch (_) {}
     });
   }
@@ -330,18 +455,67 @@ class _MainShellState extends ConsumerState<MainShell> {
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        body: widget.child,
+        // Rehber Pati — uygulama içi AI navigasyon asistanı
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(bottom: 76),
+          child: FloatingActionButton.small(
+            onPressed: () => context.pushNamed('guide'),
+            backgroundColor: AppPalette.primary,
+            foregroundColor: Colors.white,
+            elevation: 4,
+            tooltip: 'Rehber Pati',
+            child: const Icon(Icons.assistant_rounded, size: 20),
+          )
+              .animate(
+                onPlay: (ctrl) => ctrl.repeat(reverse: true, period: const Duration(seconds: 3)),
+              )
+              .scale(
+                begin: const Offset(1, 1),
+                end: const Offset(1.1, 1.1),
+                duration: 900.ms,
+                curve: Curves.easeInOut,
+              ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        body: Column(
+          children: [
+            // ─── Çevrimdışı banner ────────────────────────────────────────
+            AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              child: _isOffline
+                  ? Container(
+                      width: double.infinity,
+                      color: Colors.red.shade700,
+                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.wifi_off, color: Colors.white, size: 16),
+                          SizedBox(width: 8),
+                          Text(
+                            'İnternet bağlantısı yok',
+                            style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+            Expanded(child: widget.child),
+          ],
+        ),
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: DecoratedBox(
+          child: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppPalette.background.withOpacity(0.94),
-                  theme.colorScheme.surfaceVariant.withOpacity(0.9),
+                  context.scaffoldBg.withOpacity(0.97),
+                  theme.colorScheme.surfaceVariant.withOpacity(0.95),
                 ],
               ),
               borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: context.subtleBorder, width: 0.5),
               boxShadow: [
                 BoxShadow(
                   color: theme.colorScheme.primary.withOpacity(0.18),
@@ -350,46 +524,38 @@ class _MainShellState extends ConsumerState<MainShell> {
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(32),
-              child: BottomNavigationBar(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                currentIndex: _selectedIndex,
-                onTap: (index) => _onItemTapped(index, context),
-                type: BottomNavigationBarType.fixed,
-                showSelectedLabels: true,
-                showUnselectedLabels: false,
-                selectedItemColor: theme.colorScheme.primary,
-                unselectedItemColor: theme.colorScheme.onSurfaceVariant,
-                items: const <BottomNavigationBarItem>[
-                  BottomNavigationBarItem(
-                    icon: _MessagesNavIcon(isActive: false),
-                    activeIcon: _MessagesNavIcon(isActive: true),
-                    label: 'Sohbetler',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.pets_outlined),
-                    activeIcon: Icon(Icons.pets),
-                    label: 'Sahiplen',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.local_hospital_outlined),
-                    activeIcon: Icon(Icons.local_hospital),
-                    label: 'Veteriner',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.store_mall_directory_outlined),
-                    activeIcon: Icon(Icons.store),
-                    label: 'Magaza',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.person_outline),
-                    activeIcon: Icon(Icons.person),
-                    label: 'Profil',
-                  ),
-                ],
-              ),
+            child: _PillNavBar(
+              selectedIndex: _selectedIndex,
+              onTap: (index) => _onItemTapped(index, context),
+              items: [
+                _PillNavItem(
+                  icon: Icons.chat_bubble_outline,
+                  activeIcon: Icons.chat_bubble,
+                  label: AppLocalizations.of(context)?.navMessages ?? 'Sohbetler',
+                  customIcon: const _MessagesNavIcon(isActive: false),
+                  customActiveIcon: const _MessagesNavIcon(isActive: true),
+                ),
+                _PillNavItem(
+                  icon: Icons.pets_outlined,
+                  activeIcon: Icons.pets,
+                  label: AppLocalizations.of(context)?.navAdopt ?? 'Sahiplen',
+                ),
+                _PillNavItem(
+                  icon: Icons.local_hospital_outlined,
+                  activeIcon: Icons.local_hospital,
+                  label: AppLocalizations.of(context)?.navVet ?? 'Veteriner',
+                ),
+                _PillNavItem(
+                  icon: Icons.store_mall_directory_outlined,
+                  activeIcon: Icons.store,
+                  label: AppLocalizations.of(context)?.navStore ?? 'Mağaza',
+                ),
+                _PillNavItem(
+                  icon: Icons.person_outline,
+                  activeIcon: Icons.person,
+                  label: AppLocalizations.of(context)?.navProfile ?? 'Profil',
+                ),
+              ],
             ),
           ),
         ),
@@ -503,4 +669,135 @@ String? _resolveAvatarUrl(String? path) {
   if (path == null || path.isEmpty) return null;
   if (path.startsWith('http')) return path;
   return '$apiBaseUrl$path';
+}
+
+// ─── Floating Pill Nav Bar ───────────────────────────────────────────────────
+
+class _PillNavItem {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final Widget? customIcon;
+  final Widget? customActiveIcon;
+
+  const _PillNavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    this.customIcon,
+    this.customActiveIcon,
+  });
+}
+
+class _PillNavBar extends StatelessWidget {
+  const _PillNavBar({
+    required this.selectedIndex,
+    required this.onTap,
+    required this.items,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onTap;
+  final List<_PillNavItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          for (int i = 0; i < items.length; i++)
+            Expanded(
+              child: _PillNavItemWidget(
+                item: items[i],
+                isSelected: selectedIndex == i,
+                onTap: () => onTap(i),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PillNavItemWidget extends StatelessWidget {
+  const _PillNavItemWidget({
+    required this.item,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final _PillNavItem item;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+    final mutedColor = theme.colorScheme.onSurfaceVariant;
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeInOut,
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 14 : 8,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? primaryColor.withOpacity(0.12) : Colors.transparent,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Icon with scale animation
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+              child: item.customIcon != null
+                  ? (isSelected
+                      ? KeyedSubtree(key: const ValueKey('active'), child: item.customActiveIcon ?? item.customIcon!)
+                      : KeyedSubtree(key: const ValueKey('inactive'), child: item.customIcon!))
+                  : Icon(
+                      isSelected ? item.activeIcon : item.icon,
+                      key: ValueKey(isSelected),
+                      color: isSelected ? primaryColor : mutedColor,
+                      size: 22,
+                    ),
+            ),
+            // Label slides in when selected
+            AnimatedSize(
+              duration: const Duration(milliseconds: 260),
+              curve: Curves.easeInOut,
+              child: isSelected
+                  ? Padding(
+                      padding: const EdgeInsets.only(left: 6),
+                      child: Text(
+                        item.label,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: primaryColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      )
+          .animate(key: ValueKey(isSelected))
+          .scale(
+            begin: isSelected ? const Offset(0.9, 0.9) : const Offset(1.0, 1.0),
+            end: const Offset(1.0, 1.0),
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+          ),
+    );
+  }
 }

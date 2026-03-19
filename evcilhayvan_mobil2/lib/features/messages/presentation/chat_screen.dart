@@ -1,13 +1,18 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:record/record.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:evcilhayvan_mobil2/core/socket_service.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
 import 'package:evcilhayvan_mobil2/core/providers/socket_provider.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
@@ -69,10 +74,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   bool _showScrollToBottom = false;
   bool _isInitialized = false; // CRITICAL: Prevent double initialization
 
+  // Ses kaydı
+  final AudioRecorder _audioRecorder = AudioRecorder();
+  bool _isRecording = false;
+  String? _recordingPath;
+
   // Conversation detayları
   Conversation? _conversation;
   String? _actualReceiverName;
   String? _actualReceiverAvatar;
+
+  // Mesaj arama
+  bool _isSearching = false;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
+
+  // Typing indicator
+  bool _isOtherTyping = false;
 
   List<_ChatEntry> _buildEntries() {
     final entries = <_ChatEntry>[];
@@ -325,6 +343,94 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
+  Future<void> _startRecording() async {
+    try {
+      final hasPermission = await _audioRecorder.hasPermission();
+      if (!hasPermission) {
+        _showInfoSnack('Mikrofon izni gerekli.');
+        return;
+      }
+      final dir = await getTemporaryDirectory();
+      _recordingPath = '${dir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      await _audioRecorder.start(
+        const RecordConfig(encoder: AudioEncoder.aacLc, bitRate: 64000),
+        path: _recordingPath!,
+      );
+      setState(() => _isRecording = true);
+    } catch (e) {
+      _showInfoSnack('Kayıt başlatılamadı: $e');
+    }
+  }
+
+  Future<void> _stopAndSendRecording() async {
+    if (!_isRecording) return;
+    try {
+      final path = await _audioRecorder.stop();
+      setState(() => _isRecording = false);
+      if (path == null) return;
+      final audioFile = File(path);
+      if (!await audioFile.exists()) return;
+      await _sendAudioMessage(audioFile);
+    } catch (e) {
+      setState(() => _isRecording = false);
+      _showInfoSnack('Ses gönderilemedi: $e');
+    }
+  }
+
+  Future<void> _sendAudioMessage(File audioFile) async {
+    if (_isSending) return;
+    final currentUser = ref.read(authProvider);
+    if (currentUser == null) return;
+
+    setState(() => _isSending = true);
+    final pendingMessage = Message(
+      id: 'local-audio-${DateTime.now().millisecondsSinceEpoch}',
+      conversationId: widget.conversationId,
+      sender: currentUser,
+      text: '[Ses Mesajı]',
+      type: 'AUDIO',
+      createdAt: DateTime.now(),
+      audioUrl: audioFile.path,
+    );
+    setState(() => _messages.add(pendingMessage));
+    _scrollToBottom();
+
+    try {
+      final repo = ref.read(messageRepositoryProvider);
+      final saved = await repo.sendAudioMessage(
+        conversationId: widget.conversationId,
+        audioFile: audioFile,
+      );
+      setState(() {
+        final index = _messages.indexWhere((m) => m.id == pendingMessage.id);
+        if (index != -1) {
+          _messages[index] = saved;
+        }
+      });
+      _socketService.sendMessage(
+        conversationId: saved.conversationId,
+        message: {
+          '_id': saved.id,
+          'conversationId': saved.conversationId,
+          'text': saved.text,
+          'type': saved.type,
+          'audioUrl': saved.audioUrl,
+          'createdAt': saved.createdAt.toIso8601String(),
+          'sender': {
+            '_id': saved.sender.id,
+            'name': saved.sender.name,
+            'email': saved.sender.email,
+          },
+        },
+      );
+    } catch (e) {
+      setState(() => _messages.removeWhere((m) => m.id == pendingMessage.id));
+      _showInfoSnack('Ses gönderilemedi: $e');
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
+  }
+
   Future<void> _sendImageMessage(File imageFile) async {
     if (_isSending) return;
 
@@ -438,28 +544,47 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: AppPalette.accentGradient),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: IconButton(
-                  onPressed: _isSending ? null : _sendMessage,
-                  icon: _isSending
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(
-                          Icons.send_rounded,
-                          color: Colors.white,
+              child: _isRecording
+                  ? GestureDetector(
+                      onLongPressEnd: (_) => _stopAndSendRecording(),
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade400,
+                          borderRadius: BorderRadius.circular(18),
                         ),
-                ),
-              ),
+                        child: const Icon(Icons.stop_rounded, color: Colors.white),
+                      ),
+                    )
+                  : DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: AppPalette.accentGradient),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: _controller.text.isEmpty
+                          ? GestureDetector(
+                              onLongPress: _startRecording,
+                              onLongPressEnd: (_) => _stopAndSendRecording(),
+                              child: const Padding(
+                                padding: EdgeInsets.all(10),
+                                child: Icon(Icons.mic_rounded, color: Colors.white),
+                              ),
+                            )
+                          : IconButton(
+                              onPressed: _isSending ? null : _sendMessage,
+                              icon: _isSending
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Icon(Icons.send_rounded, color: Colors.white),
+                            ),
+                    ),
             ),
           ],
         ),
@@ -519,6 +644,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.initState();
     print('🔵 ChatScreen initState - conversationId: ${widget.conversationId}');
     _scrollController.addListener(_handleScrollPosition);
+    // Mikrofon/send butonunu yeniden render için controller değişimini dinle
+    _controller.addListener(() => setState(() {}));
 
     // CRITICAL FIX: Run initialization AFTER first frame to avoid ANR/crash
     // This allows the UI to render first, then load data asynchronously
@@ -560,8 +687,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     // Dispose controllers
     _controller.dispose();
+    _searchController.dispose();
     _scrollController.dispose();
     _inputFocusNode.dispose();
+    _audioRecorder.dispose();
 
     super.dispose();
     print('✅ ChatScreen disposed successfully');
@@ -637,12 +766,35 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             if (incoming.conversationId != widget.conversationId) return;
             final exists = _messages.any((m) => m.id == incoming.id);
             if (!exists && mounted) {
-              setState(() => _messages.add(incoming));
+              setState(() {
+                _messages.add(incoming);
+                _isOtherTyping = false; // hide typing indicator when message arrives
+              });
               _scrollToBottom();
             }
           } catch (e) {
             debugPrint('⚠️ Gelen mesaj parse edilemedi: $e');
           }
+        });
+
+        // Typing indicator events
+        _socketService.onEvent('user:typing', (data) {
+          if (!mounted) return;
+          try {
+            final d = data is Map ? Map<String, dynamic>.from(data as Map) : <String, dynamic>{};
+            if (d['conversationId'] == widget.conversationId) {
+              setState(() => _isOtherTyping = true);
+            }
+          } catch (_) {}
+        });
+        _socketService.onEvent('user:stopped_typing', (data) {
+          if (!mounted) return;
+          try {
+            final d = data is Map ? Map<String, dynamic>.from(data as Map) : <String, dynamic>{};
+            if (d['conversationId'] == widget.conversationId) {
+              setState(() => _isOtherTyping = false);
+            }
+          } catch (_) {}
         });
       } catch (e) {
         print('❌ Socket bağlantısı kurulamadı: $e');
@@ -886,7 +1038,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               height: 48,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                color: Colors.white,
+                color: context.cardColor,
               ),
               clipBehavior: Clip.antiAlias,
               child: petImage != null
@@ -974,7 +1126,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final currentUser = ref.watch(authProvider);
-    final entries = _buildEntries();
+    final allEntries = _buildEntries();
+    final entries = _isSearching && _searchQuery.isNotEmpty
+        ? allEntries
+            .where((e) =>
+                e.type == _ChatEntryType.message &&
+                (e.message?.text ?? '').toLowerCase().contains(_searchQuery.toLowerCase()))
+            .toList()
+        : allEntries;
 
     // Gerçek alıcı bilgilerini kullan (conversation'dan veya widget'tan)
     final displayName = _actualReceiverName ?? widget.receiverName;
@@ -1088,6 +1247,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
           actions: [
             IconButton(
+              icon: Icon(_isSearching ? Icons.search_off_rounded : Icons.search_rounded),
+              tooltip: _isSearching ? 'Aramayı Kapat' : 'Mesajlarda Ara',
+              onPressed: () {
+                setState(() {
+                  _isSearching = !_isSearching;
+                  if (!_isSearching) {
+                    _searchQuery = '';
+                    _searchController.clear();
+                  }
+                });
+              },
+            ),
+            IconButton(
               icon: const Icon(Icons.more_vert_rounded),
               onPressed: _showConversationActions,
             ),
@@ -1097,6 +1269,41 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           child: SafeArea(
             child: Column(
               children: [
+                // Arama çubuğu
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  child: _isSearching
+                      ? Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                          child: TextField(
+                            controller: _searchController,
+                            autofocus: true,
+                            decoration: InputDecoration(
+                              hintText: 'Mesajlarda ara...',
+                              prefixIcon: const Icon(Icons.search, size: 20),
+                              suffixIcon: _searchQuery.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear, size: 18),
+                                      onPressed: () {
+                                        setState(() {
+                                          _searchQuery = '';
+                                          _searchController.clear();
+                                        });
+                                      },
+                                    )
+                                  : null,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
+                              filled: true,
+                              fillColor: theme.colorScheme.surface,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              isDense: true,
+                            ),
+                            onChanged: (v) => setState(() => _searchQuery = v),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
                 // İlan kartı
                 _buildPetContextCard(theme),
                 Expanded(
@@ -1110,7 +1317,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 onRetry: _fetchMessages,
                               )
                             : entries.isEmpty
-                                ? const _EmptyChatState()
+                                ? _isSearching && _searchQuery.isNotEmpty
+                                    ? Center(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(Icons.search_off_rounded, size: 48, color: Colors.grey),
+                                            const SizedBox(height: 8),
+                                            Text('"$_searchQuery" için sonuç bulunamadı', style: theme.textTheme.bodyMedium),
+                                          ],
+                                        ),
+                                      )
+                                    : const _EmptyChatState()
                                 : ListView.builder(
                                     controller: _scrollController,
                                     physics: const BouncingScrollPhysics(),
@@ -1142,11 +1360,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                         otherParticipantId: _conversation?.otherParticipant.id,
                                         onReact: (emoji) => _reactToMessage(message, emoji),
                                         currentUserId: currentUser?.id,
-                                      );
+                                      )
+                                          .animate(key: ValueKey(message.id))
+                                          .fadeIn(duration: 180.ms, curve: Curves.easeOut)
+                                          .slideX(
+                                            begin: isMine ? 0.08 : -0.08,
+                                            duration: 180.ms,
+                                            curve: Curves.easeOut,
+                                          );
                                     },
                                   ),
                   ),
                 ),
+                // Typing indicator
+                if (_isOtherTyping)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16, bottom: 4),
+                    child: const _TypingDotsWidget(),
+                  ),
                 _buildComposer(theme),
               ],
             ),
@@ -1367,6 +1598,8 @@ class _MessageBubble extends StatelessWidget {
                 )
               else if (message.type == 'IMAGE' && message.imageUrl != null)
                 _buildImageContent(context, theme, textColor)
+              else if (message.type == 'AUDIO' && message.audioUrl != null)
+                _AudioBubble(audioUrl: message.audioUrl!, apiBaseUrl: apiBaseUrl)
               else
                 Text(
                   message.text,
@@ -1717,5 +1950,174 @@ class _FullScreenImageView extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// ── Ses Mesajı Bubble'ı ──────────────────────────────────────────────────────
+class _AudioBubble extends StatefulWidget {
+  final String audioUrl;
+  final String apiBaseUrl;
+
+  const _AudioBubble({required this.audioUrl, required this.apiBaseUrl});
+
+  @override
+  State<_AudioBubble> createState() => _AudioBubbleState();
+}
+
+class _AudioBubbleState extends State<_AudioBubble> {
+  final AudioPlayer _player = AudioPlayer();
+  bool _playing = false;
+  Duration _position = Duration.zero;
+  Duration _duration = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    _player.onPlayerStateChanged.listen((state) {
+      if (mounted) setState(() => _playing = state == PlayerState.playing);
+    });
+    _player.onPositionChanged.listen((pos) {
+      if (mounted) setState(() => _position = pos);
+    });
+    _player.onDurationChanged.listen((dur) {
+      if (mounted) setState(() => _duration = dur);
+    });
+    _player.onPlayerComplete.listen((_) {
+      if (mounted) setState(() { _playing = false; _position = Duration.zero; });
+    });
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
+
+  Future<void> _togglePlay() async {
+    if (_playing) {
+      await _player.pause();
+    } else {
+      final url = widget.audioUrl.startsWith('http')
+          ? widget.audioUrl
+          : widget.audioUrl.startsWith('/')
+              ? '${widget.apiBaseUrl}${widget.audioUrl}'
+              : widget.audioUrl;
+      if (widget.audioUrl.startsWith('/') || widget.audioUrl.startsWith('file://')) {
+        await _player.play(DeviceFileSource(widget.audioUrl));
+      } else {
+        await _player.play(UrlSource(url));
+      }
+    }
+  }
+
+  String _fmt(Duration d) {
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = _duration.inMilliseconds > 0
+        ? _position.inMilliseconds / _duration.inMilliseconds
+        : 0.0;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          onPressed: _togglePlay,
+          icon: Icon(_playing ? Icons.pause_circle : Icons.play_circle, size: 32),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+        const SizedBox(width: 8),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 120,
+              child: LinearProgressIndicator(
+                value: progress.clamp(0.0, 1.0),
+                minHeight: 4,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              '${_fmt(_position)} / ${_fmt(_duration)}',
+              style: const TextStyle(fontSize: 10),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Karşı tarafın yazdığını gösteren 3-nokta animasyonu.
+class _TypingDotsWidget extends StatefulWidget {
+  const _TypingDotsWidget();
+
+  @override
+  State<_TypingDotsWidget> createState() => _TypingDotsWidgetState();
+}
+
+class _TypingDotsWidgetState extends State<_TypingDotsWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))
+      ..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.7),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(18),
+          topRight: Radius.circular(18),
+          bottomRight: Radius.circular(18),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(3, (i) {
+          final delay = i * 0.2;
+          return AnimatedBuilder(
+            animation: _ctrl,
+            builder: (_, __) {
+              final t = (_ctrl.value - delay).clamp(0.0, 1.0);
+              final bounce = (t < 0.5 ? t * 2 : (1 - t) * 2);
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.6 + bounce * 0.4),
+                ),
+                transform: Matrix4.translationValues(0, -4 * bounce, 0),
+              );
+            },
+          );
+        }),
+      ),
+    )
+        .animate()
+        .fadeIn(duration: 200.ms)
+        .slideY(begin: 0.3, duration: 200.ms);
   }
 }

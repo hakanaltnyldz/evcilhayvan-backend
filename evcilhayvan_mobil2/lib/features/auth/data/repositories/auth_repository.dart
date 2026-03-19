@@ -27,9 +27,17 @@ final userPublicProfileProvider = FutureProvider.autoDispose
 class AuthNotifier extends StateNotifier<User?> {
   AuthNotifier(this.ref) : super(null) {
     _restoreSession();
+    // Token yenilenemiyor → otomatik logout + state temizle
+    ApiClient().onSessionExpired = _handleSessionExpired;
   }
 
   final Ref ref;
+
+  void _handleSessionExpired() {
+    if (state == null) return; // zaten çıkış yapmış
+    state = null;
+    // Router, state null olunca /login'e yönlendirir (app_router.dart redirect)
+  }
 
   Future<void> _restoreSession() async {
     final token = await ApiClient().tokenStorage.accessToken;
@@ -51,6 +59,12 @@ class AuthNotifier extends StateNotifier<User?> {
   Future<void> logout() async {
     await ref.read(authRepositoryProvider).logout();
     state = null;
+  }
+
+  @override
+  void dispose() {
+    ApiClient().onSessionExpired = null;
+    super.dispose();
   }
 }
 

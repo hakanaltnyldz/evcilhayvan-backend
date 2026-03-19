@@ -1,6 +1,7 @@
 // lib/features/auth/presentation/screens/profile_screen.dart
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -38,6 +39,10 @@ class ProfileScreen extends ConsumerWidget {
                 try {
                   await ref.read(petsRepositoryProvider).deletePet(petId);
                   ref.invalidate(myAdvertsProvider(advertType));
+                  ref.invalidate(myAdvertsProvider('adoption'));
+                  ref.invalidate(myAdvertsProvider('mating'));
+                  ref.invalidate(adoptionPaginatedProvider);
+                  ref.invalidate(matingPaginatedProvider);
                   Navigator.of(dialogContext).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('İlan başarıyla silindi.'), backgroundColor: Colors.green),
@@ -162,6 +167,9 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
 
+                // Profil tamamlama
+                _ProfileCompletionCard(user: currentUser, onEdit: () => context.pushNamed('edit-profile')),
+
                 // İstatistikler
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -282,7 +290,16 @@ class _ProfileHeader extends StatelessWidget {
                   child: avatarUrl == null
                       ? Text(initial, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold))
                       : null,
-                ),
+                )
+                    .animate(
+                      onPlay: (ctrl) => ctrl.repeat(reverse: true, period: const Duration(seconds: 3)),
+                    )
+                    .scale(
+                      begin: const Offset(1, 1),
+                      end: const Offset(1.06, 1.06),
+                      duration: 900.ms,
+                      curve: Curves.easeInOut,
+                    ),
                 Positioned(
                   bottom: 0,
                   right: 0,
@@ -386,14 +403,14 @@ class _StatsRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _StatItem(icon: Icons.pets, color: Colors.green, value: adoptionCount.toString(), label: 'Sahiplendirme'),
+          _StatItem(icon: Icons.pets, color: Colors.green, intValue: adoptionCount, label: 'Sahiplendirme'),
           Container(width: 1, height: 40, color: Colors.grey.shade200),
-          _StatItem(icon: Icons.favorite, color: Colors.purple, value: matingCount.toString(), label: 'Eşleştirme'),
+          _StatItem(icon: Icons.favorite, color: Colors.purple, intValue: matingCount, label: 'Eşleştirme'),
           Container(width: 1, height: 40, color: Colors.grey.shade200),
           _StatItem(
             icon: Icons.remove_red_eye_outlined,
             color: Colors.blue,
-            value: totalViews > 999 ? '${(totalViews / 1000).toStringAsFixed(1)}K' : totalViews.toString(),
+            intValue: totalViews,
             label: 'Görüntülenme',
           ),
         ],
@@ -405,10 +422,12 @@ class _StatsRow extends StatelessWidget {
 class _StatItem extends StatelessWidget {
   final IconData icon;
   final Color color;
-  final String value;
+  final int intValue;
   final String label;
 
-  const _StatItem({required this.icon, required this.color, required this.value, required this.label});
+  const _StatItem({required this.icon, required this.color, required this.intValue, required this.label});
+
+  String _formatValue(int v) => v > 999 ? '${(v / 1000).toStringAsFixed(1)}K' : v.toString();
 
   @override
   Widget build(BuildContext context) {
@@ -419,7 +438,15 @@ class _StatItem extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 22),
           const SizedBox(height: 4),
-          Text(value, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          TweenAnimationBuilder<int>(
+            tween: IntTween(begin: 0, end: intValue),
+            duration: const Duration(milliseconds: 900),
+            curve: Curves.easeOut,
+            builder: (_, v, __) => Text(
+              _formatValue(v),
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ),
           Text(
             label,
             style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
@@ -522,6 +549,7 @@ class _AdvertsTab extends ConsumerWidget {
     }
 
     return advertsAsync.when(
+      skipLoadingOnReload: false,
       data: (pets) {
         if (pets.isEmpty) {
           return RefreshIndicator(
@@ -636,3 +664,121 @@ String? _resolveAvatarUrl(String? url) {
   if (url.startsWith('http')) return url;
   return '$apiBaseUrl$url';
 }
+
+// ─── Profil Tamamlama Kartı ──────────────────────────────────────────────────
+
+class _ProfileCompletionCard extends StatelessWidget {
+  final User user;
+  final VoidCallback onEdit;
+
+  const _ProfileCompletionCard({required this.user, required this.onEdit});
+
+  static const _steps = [
+    (label: 'Fotoğraf ekle', field: 'avatar'),
+    (label: 'Şehir bilgisi', field: 'city'),
+    (label: 'Hakkımda yazısı', field: 'about'),
+  ];
+
+  int get _completedCount {
+    int count = 0;
+    if (user.avatarUrl != null && user.avatarUrl!.isNotEmpty) count++;
+    if (user.city != null && user.city!.isNotEmpty) count++;
+    if (user.about != null && user.about!.isNotEmpty) count++;
+    return count;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final completed = _completedCount;
+    final total = _steps.length;
+    if (completed == total) return const SizedBox.shrink(); // Profile fully complete
+
+    final percent = completed / total;
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+      child: GestureDetector(
+        onTap: onEdit,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: theme.colorScheme.primary.withOpacity(0.25)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.person_pin_outlined, size: 18),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Profili tamamla — ${(percent * 100).round()}%',
+                      style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  Text(
+                    '$completed/$total',
+                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: percent,
+                  minHeight: 6,
+                  backgroundColor: theme.colorScheme.surface,
+                  valueColor: AlwaysStoppedAnimation(theme.colorScheme.primary),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: [
+                  if (user.avatarUrl == null || user.avatarUrl!.isEmpty)
+                    _MissingChip(label: 'Fotoğraf'),
+                  if (user.city == null || user.city!.isEmpty)
+                    _MissingChip(label: 'Şehir'),
+                  if (user.about == null || user.about!.isEmpty)
+                    _MissingChip(label: 'Hakkımda'),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MissingChip extends StatelessWidget {
+  final String label;
+  const _MissingChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: Colors.orange.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange.withOpacity(0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.add_circle_outline, size: 12, color: Colors.orange),
+          const SizedBox(width: 4),
+          Text(label, style: const TextStyle(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+}
+

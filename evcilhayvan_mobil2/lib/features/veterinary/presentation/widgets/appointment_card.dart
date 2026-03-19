@@ -1,0 +1,114 @@
+import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
+import '../../domain/models/appointment_model.dart';
+
+class AppointmentCard extends StatelessWidget {
+  final AppointmentModel appointment;
+  final VoidCallback? onTap;
+
+  const AppointmentCard({super.key, required this.appointment, this.onTap});
+
+  Color get _statusColor {
+    switch (appointment.status) {
+      case 'confirmed':
+        return AppPalette.tertiary;
+      case 'cancelled':
+        return Colors.red;
+      case 'completed':
+        return Colors.blue;
+      case 'no_show':
+        return Colors.grey;
+      default:
+        return Colors.orange;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final date = appointment.date;
+    final dateStr = '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
+    final timeStr = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: context.cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 3)),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Date box
+            Container(
+              width: 56,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: AppPalette.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  Text('${date.day}', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: AppPalette.primary)),
+                  Text(_monthName(date.month), style: theme.textTheme.labelSmall?.copyWith(color: AppPalette.primary)),
+                ],
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    appointment.vet?.name ?? 'Veteriner',
+                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.access_time, size: 14, color: AppPalette.onSurfaceVariant),
+                      const SizedBox(width: 4),
+                      Text(timeStr, style: theme.textTheme.bodySmall),
+                      if (appointment.pet != null) ...[
+                        const SizedBox(width: 12),
+                        const Icon(Icons.pets, size: 14, color: AppPalette.onSurfaceVariant),
+                        const SizedBox(width: 4),
+                        Flexible(child: Text(appointment.pet!.name, style: theme.textTheme.bodySmall, overflow: TextOverflow.ellipsis)),
+                      ],
+                    ],
+                  ),
+                  if (appointment.reason != null) ...[
+                    const SizedBox(height: 4),
+                    Text(appointment.reason!, style: theme.textTheme.bodySmall?.copyWith(color: AppPalette.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: _statusColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(appointment.statusText, style: theme.textTheme.labelSmall?.copyWith(color: _statusColor, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _monthName(int month) {
+    const months = ['Oca', 'Sub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Agu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+    return months[(month - 1).clamp(0, 11)];
+  }
+}

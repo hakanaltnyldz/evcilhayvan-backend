@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/data/pet_breeds.dart';
 
 import '../../data/repositories/pets_repository.dart';
 import '../../domain/models/pet_model.dart';
@@ -33,12 +34,12 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _nameController;
-  late final TextEditingController _breedController;
   late final TextEditingController _ageController;
   late final TextEditingController _bioController;
-  LatLng? _selectedLocation;
+  LocationPickerResult? _selectedLocation;
 
   String _selectedSpecies = 'cat';
+  String? _selectedBreed;
   String _selectedGender = 'unknown';
   bool _isVaccinated = false;
   String _advertType = 'adoption';
@@ -57,21 +58,22 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
     final pet = widget.petToEdit;
     if (pet != null) {
       _nameController = TextEditingController(text: pet.name);
-      _breedController = TextEditingController(text: pet.breed);
       _ageController = TextEditingController(text: pet.ageMonths.toString());
       _bioController = TextEditingController(text: pet.bio);
       _selectedSpecies = pet.species;
+      _selectedBreed = pet.breed.isNotEmpty ? pet.breed : null;
       _selectedGender = pet.gender;
       _isVaccinated = pet.vaccinated;
       _advertType = pet.advertType.isNotEmpty ? pet.advertType : 'adoption';
       _imageUrls = [...pet.images];
       _videoUrls = [...pet.videos];
       if (pet.latitude != null && pet.longitude != null) {
-        _selectedLocation = LatLng(pet.latitude!, pet.longitude!);
+        _selectedLocation = LocationPickerResult(
+          latLng: LatLng(pet.latitude!, pet.longitude!),
+        );
       }
     } else {
       _nameController = TextEditingController();
-      _breedController = TextEditingController();
       _ageController = TextEditingController();
       _bioController = TextEditingController();
       _selectedLocation = null;
@@ -85,7 +87,6 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _breedController.dispose();
     _ageController.dispose();
     _bioController.dispose();
     super.dispose();
@@ -143,16 +144,18 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
       final repo = ref.read(petsRepositoryProvider);
 
       final age = int.parse(_ageController.text);
-      final breed = _breedController.text;
+      final breed = _selectedBreed ?? '';
       final bio = _bioController.text.isNotEmpty ? _bioController.text : null;
 
       Map<String, dynamic>? locationData;
       if (_selectedLocation != null) {
-        final lat = _selectedLocation!.latitude;
-        final lon = _selectedLocation!.longitude;
+        final lat = _selectedLocation!.latLng.latitude;
+        final lon = _selectedLocation!.latLng.longitude;
         locationData = {
           'type': 'Point',
           'coordinates': [lon, lat],
+          if (_selectedLocation!.address != null) 'address': _selectedLocation!.address,
+          if (_selectedLocation!.note != null) 'note': _selectedLocation!.note,
         };
       }
 
@@ -206,10 +209,12 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
   }
 
   Future<void> _pickLocation() async {
-    final result = await Navigator.of(context).push<LatLng>(
+    final result = await Navigator.of(context).push<LocationPickerResult>(
       MaterialPageRoute(
         builder: (_) => LocationPickerScreen(
-          initialPosition: _selectedLocation,
+          initialPosition: _selectedLocation?.latLng,
+          initialAddress: _selectedLocation?.address,
+          initialNote: _selectedLocation?.note,
         ),
       ),
     );
@@ -231,6 +236,8 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
       {'label': 'Kedi', 'value': 'cat'},
       {'label': 'Köpek', 'value': 'dog'},
       {'label': 'Kuş', 'value': 'bird'},
+      {'label': 'Balık', 'value': 'fish'},
+      {'label': 'Kemirgen', 'value': 'rodent'},
       {'label': 'Diğer', 'value': 'other'},
     ];
     const genderOptions = <Map<String, String>>[
@@ -377,7 +384,10 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                               selected: _selectedSpecies == option['value'],
                               onSelected: (selected) {
                                 if (selected) {
-                                  setState(() => _selectedSpecies = option['value']!);
+                                  setState(() {
+                                    _selectedSpecies = option['value']!;
+                                    _selectedBreed = null; // reset breed on species change
+                                  });
                                 }
                               },
                             );
@@ -457,11 +467,42 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                           },
                         ),
                         const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _breedController,
-                          decoration: inputDecoration(
-                            label: 'Cins',
-                            icon: Icons.pets_rounded,
+                        // Cins seçici
+                        GestureDetector(
+                          onTap: () async {
+                            final breeds = breedsFor(_selectedSpecies);
+                            final picked = await showModalBottomSheet<String>(
+                              context: context,
+                              isScrollControlled: true,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                              ),
+                              builder: (_) => _BreedPickerSheet(
+                                breeds: breeds,
+                                selected: _selectedBreed,
+                              ),
+                            );
+                            if (picked != null) setState(() => _selectedBreed = picked);
+                          },
+                          child: InputDecorator(
+                            decoration: inputDecoration(
+                              label: 'Cins',
+                              icon: Icons.pets_rounded,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  _selectedBreed ?? 'Seçiniz',
+                                  style: TextStyle(
+                                    color: _selectedBreed != null
+                                        ? theme.textTheme.bodyLarge?.color
+                                        : theme.hintColor,
+                                  ),
+                                ),
+                                Icon(Icons.arrow_drop_down, color: theme.hintColor),
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -476,16 +517,77 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.map_outlined),
-                          title: Text(_selectedLocation != null
-                              ? 'Konum seçildi'
-                              : 'Konum ekle'),
-                          subtitle: const Text('İl/ilçe seçimi için haritayı aç'),
-                          trailing: FilledButton(
-                            onPressed: _pickLocation,
-                            child: const Text('Haritayı aç'),
+                        InkWell(
+                          onTap: _pickLocation,
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: _selectedLocation != null
+                                    ? AppPalette.primary
+                                    : Colors.grey.shade300,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              color: _selectedLocation != null
+                                  ? AppPalette.primary.withOpacity(0.06)
+                                  : null,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  _selectedLocation != null
+                                      ? Icons.location_on
+                                      : Icons.add_location_alt_outlined,
+                                  color: _selectedLocation != null
+                                      ? AppPalette.primary
+                                      : Colors.grey,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _selectedLocation != null ? 'Konum seçildi' : 'Konum ekle',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: _selectedLocation != null
+                                              ? AppPalette.primary
+                                              : Colors.grey[700],
+                                        ),
+                                      ),
+                                      if (_selectedLocation?.address != null)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 2),
+                                          child: Text(
+                                            _selectedLocation!.address!,
+                                            style: const TextStyle(fontSize: 12, color: Colors.black87),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        )
+                                      else
+                                        const Text(
+                                          'İl/ilçe seçimi için haritayı aç',
+                                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                                        ),
+                                      if (_selectedLocation?.note != null)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 2),
+                                          child: Text(
+                                            '📝 ${_selectedLocation!.note!}',
+                                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(Icons.chevron_right, color: Colors.grey),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -589,6 +691,109 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
     );
   }
 }
+
+// ─── Breed Picker Bottom Sheet ────────────────────────────────────────────────
+
+class _BreedPickerSheet extends StatefulWidget {
+  final List<String> breeds;
+  final String? selected;
+
+  const _BreedPickerSheet({required this.breeds, this.selected});
+
+  @override
+  State<_BreedPickerSheet> createState() => _BreedPickerSheetState();
+}
+
+class _BreedPickerSheetState extends State<_BreedPickerSheet> {
+  final _searchCtrl = TextEditingController();
+  late List<String> _filtered;
+
+  @override
+  void initState() {
+    super.initState();
+    _filtered = widget.breeds;
+    _searchCtrl.addListener(_onSearch);
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onSearch() {
+    final q = _searchCtrl.text.toLowerCase();
+    setState(() {
+      _filtered = q.isEmpty
+          ? widget.breeds
+          : widget.breeds.where((b) => b.toLowerCase().contains(q)).toList();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.6,
+      maxChildSize: 0.9,
+      builder: (_, scrollCtrl) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                controller: _searchCtrl,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: 'Cins ara...',
+                  prefixIcon: const Icon(Icons.search),
+                  filled: true,
+                  fillColor: theme.colorScheme.surfaceVariant.withOpacity(0.4),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollCtrl,
+                itemCount: _filtered.length,
+                itemBuilder: (_, i) {
+                  final breed = _filtered[i];
+                  final isSelected = breed == widget.selected;
+                  return ListTile(
+                    title: Text(breed),
+                    trailing: isSelected ? const Icon(Icons.check, color: AppPalette.primary) : null,
+                    selected: isSelected,
+                    onTap: () => Navigator.of(context).pop(breed),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _MediaChip extends StatelessWidget {
   final String url;

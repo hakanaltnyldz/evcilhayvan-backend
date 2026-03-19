@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
+import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/pets/data/repositories/pets_repository.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
+import 'package:evcilhayvan_mobil2/core/data/pet_breeds.dart';
 import 'package:evcilhayvan_mobil2/features/pets/domain/models/pet_model.dart';
 import 'package:evcilhayvan_mobil2/features/notifications/providers/notification_provider.dart';
+import 'package:evcilhayvan_mobil2/features/veterinary/data/repositories/appointment_repository.dart';
 import 'widgets/pet_card.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -20,6 +25,45 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _nearbyActive = false;
   bool _locLoading = false;
+  String? _selectedSpecies;
+  String? _selectedBreed;
+
+  static const _speciesList = [
+    ('🐶 Köpek', 'dog'),
+    ('🐱 Kedi', 'cat'),
+    ('🐦 Kuş', 'bird'),
+    ('🐟 Balık', 'fish'),
+    ('🐹 Kemirgen', 'rodent'),
+    ('🐾 Diğer', 'other'),
+  ];
+
+  void _applyFilter({String? species, String? breed}) {
+    setState(() {
+      _selectedSpecies = species;
+      _selectedBreed = breed;
+    });
+    ref.read(adoptionPaginatedProvider.notifier).setFilter(species: species, breed: breed);
+    ref.read(matingPaginatedProvider.notifier).setFilter(species: species, breed: breed);
+    ref.read(adoptionPaginatedProvider.notifier).refresh();
+    ref.read(matingPaginatedProvider.notifier).refresh();
+  }
+
+  void _pickBreed() {
+    if (_selectedSpecies == null) return;
+    final breeds = breedsFor(_selectedSpecies!);
+    showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => _BreedPickerSheet(breeds: breeds, selected: _selectedBreed),
+    ).then((picked) {
+      if (picked != null) {
+        _applyFilter(species: _selectedSpecies, breed: picked == '__clear__' ? null : picked);
+      }
+    });
+  }
 
   Future<void> _toggleNearby() async {
     if (_nearbyActive) {
@@ -89,25 +133,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             _NotificationBell(),
           ],
           flexibleSpace: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFFc7d2fe), Color(0xFFeef2ff)],
+                colors: context.isDark
+                    ? [const Color(0xFF1E1C30), const Color(0xFF12111F)]
+                    : [const Color(0xFFc7d2fe), const Color(0xFFeef2ff)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
             ),
           ),
-          bottom: const TabBar(
+          bottom: TabBar(
             tabs: [
-              Tab(text: 'Sahiplendirme'),
-              Tab(text: 'Eşleştirme'),
+              Tab(text: AppLocalizations.of(context)?.homeAdoptionTab ?? 'Sahiplendirme'),
+              Tab(text: AppLocalizations.of(context)?.homeMatingTab ?? 'Eşleştirme'),
             ],
           ),
         ),
         body: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFFeef2ff), Color(0xFFF8F9FB)],
+              colors: context.isDark
+                  ? [const Color(0xFF12111F), const Color(0xFF0D0C1A)]
+                  : [const Color(0xFFeef2ff), const Color(0xFFF8F9FB)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -122,32 +170,90 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(height: 12),
                   const _QuickShortcutsRow(),
                   const SizedBox(height: 8),
-                  // Yakınımdakiler filter chip
-                  Row(
-                    children: [
-                      _locLoading
-                          ? const SizedBox(
-                              width: 20, height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2))
-                          : FilterChip(
-                              label: const Text('Yakınımdakiler'),
-                              avatar: Icon(
-                                Icons.near_me_rounded,
-                                size: 16,
-                                color: _nearbyActive ? Colors.white : null,
-                              ),
-                              selected: _nearbyActive,
-                              onSelected: (_) => _toggleNearby(),
-                              selectedColor:
-                                  Theme.of(context).colorScheme.primary,
+                  const _UpcomingRemindersWidget(),
+                  // Yakınımdakiler butonu + Tür filtresi
+                  SizedBox(
+                    height: 38,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        ActionChip(
+                          label: const Text('Yakınımdaki İlanlar'),
+                          avatar: const Icon(Icons.near_me_rounded, size: 16),
+                          onPressed: () => context.pushNamed('nearby-ads'),
+                          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          labelStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ..._speciesList.map((s) {
+                          final selected = _selectedSpecies == s.$2;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: FilterChip(
+                              label: Text(s.$1),
+                              selected: selected,
+                              onSelected: (_) {
+                                if (selected) {
+                                  _applyFilter(species: null, breed: null);
+                                } else {
+                                  _applyFilter(species: s.$2, breed: null);
+                                }
+                              },
+                              selectedColor: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                              checkmarkColor: Theme.of(context).colorScheme.primary,
                               labelStyle: TextStyle(
-                                color: _nearbyActive ? Colors.white : null,
-                                fontWeight: FontWeight.w500,
+                                color: selected ? Theme.of(context).colorScheme.primary : null,
+                                fontWeight: selected ? FontWeight.bold : null,
+                                fontSize: 12,
                               ),
+                              visualDensity: VisualDensity.compact,
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
                             ),
-                    ],
+                          );
+                        }),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  // Cins filtresi (tür seçiliyse)
+                  if (_selectedSpecies != null) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: _pickBreed,
+                          icon: const Icon(Icons.pets, size: 14),
+                          label: Text(
+                            _selectedBreed ?? 'Cins seç',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            visualDensity: VisualDensity.compact,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          ),
+                        ),
+                        if (_selectedBreed != null) ...[
+                          const SizedBox(width: 6),
+                          GestureDetector(
+                            onTap: () => _applyFilter(species: _selectedSpecies, breed: null),
+                            child: const Icon(Icons.cancel, size: 18, color: Colors.grey),
+                          ),
+                        ],
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () => _applyFilter(species: null, breed: null),
+                          style: TextButton.styleFrom(
+                            visualDensity: VisualDensity.compact,
+                            foregroundColor: Colors.red,
+                          ),
+                          child: const Text('Filtreyi temizle', style: TextStyle(fontSize: 12)),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 4),
                   Expanded(
                     child: TabBarView(
                       children: [
@@ -262,71 +368,36 @@ class _AnimatedHeader extends StatelessWidget {
 class _QuickShortcutsRow extends StatelessWidget {
   const _QuickShortcutsRow();
 
+  static const _shortcuts = [
+    (label: 'Eşleştir', icon: Icons.favorite_rounded, colors: [Color(0xFFFF6B6B), Color(0xFFFF8E8E)], route: 'mating'),
+    (label: 'Bakıcı\nBul', icon: Icons.pets_rounded, colors: [Color(0xFF56CCF2), Color(0xFF2F80ED)], route: 'sitters'),
+    (label: 'Etkinlik', icon: Icons.event_rounded, colors: [Color(0xFF6FCF97), Color(0xFF27AE60)], route: 'events'),
+    (label: 'Kayıp &\nBulunan', icon: Icons.location_searching_rounded, colors: [Color(0xFFF2994A), Color(0xFFEB5757)], route: 'lost-found'),
+    (label: 'Harita', icon: Icons.map_rounded, colors: [Color(0xFF11998E), Color(0xFF38EF7D)], route: 'map'),
+    (label: 'Feed', icon: Icons.dynamic_feed_rounded, colors: [Color(0xFF6C63FF), Color(0xFF9B8FFF)], route: 'feed'),
+    (label: 'Pati\nAsistan', icon: Icons.smart_toy_rounded, colors: [Color(0xFFFF7A59), Color(0xFFFF9F7F)], route: 'ai-assistant'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 90,
-      child: ListView(
+      child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
-        children: [
-          _ShortcutCard(
-            label: 'Eşleştir',
-            icon: Icons.favorite_rounded,
-            gradient: const LinearGradient(
-              colors: [Color(0xFFFF6B6B), Color(0xFFFF8E8E)],
-            ),
-            onTap: () => context.pushNamed('mating'),
-          ),
-          _ShortcutCard(
-            label: 'Bakıcı\nBul',
-            icon: Icons.pets_rounded,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF56CCF2), Color(0xFF2F80ED)],
-            ),
-            onTap: () => context.pushNamed('sitters'),
-          ),
-          _ShortcutCard(
-            label: 'Etkinlik',
-            icon: Icons.event_rounded,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF6FCF97), Color(0xFF27AE60)],
-            ),
-            onTap: () => context.pushNamed('events'),
-          ),
-          _ShortcutCard(
-            label: 'Kayıp &\nBulunan',
-            icon: Icons.location_searching_rounded,
-            gradient: const LinearGradient(
-              colors: [Color(0xFFF2994A), Color(0xFFEB5757)],
-            ),
-            onTap: () => context.pushNamed('lost-found'),
-          ),
-          _ShortcutCard(
-            label: 'Harita',
-            icon: Icons.map_rounded,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF11998E), Color(0xFF38EF7D)],
-            ),
-            onTap: () => context.pushNamed('map'),
-          ),
-          _ShortcutCard(
-            label: 'Feed',
-            icon: Icons.dynamic_feed_rounded,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF6C63FF), Color(0xFF9B8FFF)],
-            ),
-            onTap: () => context.pushNamed('feed'),
-          ),
-          _ShortcutCard(
-            label: 'Pati\nAsistan',
-            icon: Icons.smart_toy_rounded,
-            gradient: const LinearGradient(
-              colors: [Color(0xFFFF7A59), Color(0xFFFF9F7F)],
-            ),
-            onTap: () => context.pushNamed('ai-assistant'),
-          ),
-        ],
+        itemCount: _shortcuts.length,
+        itemBuilder: (context, i) {
+          final s = _shortcuts[i];
+          return _ShortcutCard(
+            label: s.label,
+            icon: s.icon,
+            gradient: LinearGradient(colors: s.colors),
+            onTap: () => context.pushNamed(s.route),
+          )
+              .animate(delay: Duration(milliseconds: 80 + i * 60))
+              .fadeIn(duration: 300.ms)
+              .slideX(begin: 0.15, duration: 300.ms, curve: Curves.easeOut);
+        },
       ),
     );
   }
@@ -433,8 +504,9 @@ class _AdvertsListState extends ConsumerState<_AdvertsList> {
 
     if (state.items.isEmpty) {
       return const EmptyState(
+        icon: Icons.pets,
         title: 'Henüz ilan yok',
-        subtitle: 'İlan eklendiğinde burada göreceksin.',
+        subtitle: 'Bu kategoride henüz ilan yok. İlk sen ekle!',
       );
     }
 
@@ -457,23 +529,19 @@ class _AdvertsListState extends ConsumerState<_AdvertsList> {
             );
           }
           final pet = state.items[index];
-          return TweenAnimationBuilder<double>(
-            key: ValueKey(pet.id),
-            tween: Tween(begin: 0, end: 1),
-            duration: Duration(milliseconds: (400 + (index * 60)).clamp(400, 800)),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, child) => Transform.translate(
-              offset: Offset(0, 24 * (1 - value)),
-              child: Opacity(opacity: value, child: child),
+          return PetCard(
+            pet: pet,
+            onTap: () => context.pushNamed(
+              'pet-detail',
+              pathParameters: {'id': pet.id},
             ),
-            child: PetCard(
-              pet: pet,
-              onTap: () => context.pushNamed(
-                'pet-detail',
-                pathParameters: {'id': pet.id},
-              ),
-            ),
-          );
+          )
+              .animate(
+                key: ValueKey(pet.id),
+                delay: Duration(milliseconds: (index * 55).clamp(0, 440)),
+              )
+              .fadeIn(duration: 280.ms, curve: Curves.easeOut)
+              .slideY(begin: 0.07, duration: 280.ms, curve: Curves.easeOut);
         },
       ),
     );
@@ -484,6 +552,11 @@ class _NotificationBell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final unreadCount = ref.watch(unreadCountProvider);
+    final bellIcon = unreadCount > 0
+        ? const Icon(Icons.notifications_outlined)
+            .animate(onPlay: (ctrl) => ctrl.repeat(period: const Duration(seconds: 4)))
+            .shake(hz: 4, duration: 500.ms, curve: Curves.easeInOut)
+        : const Icon(Icons.notifications_outlined);
     return IconButton(
       icon: Badge(
         isLabelVisible: unreadCount > 0,
@@ -491,7 +564,7 @@ class _NotificationBell extends ConsumerWidget {
           unreadCount > 99 ? '99+' : unreadCount.toString(),
           style: const TextStyle(fontSize: 10),
         ),
-        child: const Icon(Icons.notifications_outlined),
+        child: bellIcon,
       ),
       tooltip: 'Bildirimler',
       onPressed: () => context.pushNamed('notifications'),
@@ -579,6 +652,220 @@ class _PetCardSkeletonState extends State<_PetCardSkeleton>
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+}
+
+// ─── Cins Seçici ─────────────────────────────────────────────────────────────
+
+class _BreedPickerSheet extends StatefulWidget {
+  final List<String> breeds;
+  final String? selected;
+  const _BreedPickerSheet({required this.breeds, this.selected});
+
+  @override
+  State<_BreedPickerSheet> createState() => _BreedPickerSheetState();
+}
+
+class _BreedPickerSheetState extends State<_BreedPickerSheet> {
+  final _searchCtrl = TextEditingController();
+  late List<String> _filtered;
+
+  @override
+  void initState() {
+    super.initState();
+    _filtered = widget.breeds;
+    _searchCtrl.addListener(() {
+      final q = _searchCtrl.text.toLowerCase();
+      setState(() {
+        _filtered = q.isEmpty
+            ? widget.breeds
+            : widget.breeds.where((b) => b.toLowerCase().contains(q)).toList();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.6,
+      maxChildSize: 0.9,
+      builder: (_, scrollCtrl) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                controller: _searchCtrl,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: 'Cins ara...',
+                  prefixIcon: const Icon(Icons.search),
+                  filled: true,
+                  fillColor: theme.colorScheme.surfaceVariant.withOpacity(0.4),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: ListView.builder(
+                controller: scrollCtrl,
+                itemCount: _filtered.length,
+                itemBuilder: (_, i) {
+                  final breed = _filtered[i];
+                  final isSelected = breed == widget.selected;
+                  return ListTile(
+                    title: Text(breed),
+                    trailing: isSelected ? Icon(Icons.check, color: theme.colorScheme.primary) : null,
+                    selected: isSelected,
+                    onTap: () => Navigator.of(context).pop(breed),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Upcoming Reminders Widget ───────────────────────────────────────────────
+
+class _UpcomingRemindersWidget extends ConsumerWidget {
+  const _UpcomingRemindersWidget();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final apptAsync = ref.watch(myAppointmentsProvider);
+
+    return apptAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (appointments) {
+        final now = DateTime.now();
+        final twoDaysLater = now.add(const Duration(days: 2));
+        final upcoming = appointments
+            .where((a) =>
+                (a.status == 'pending' || a.status == 'confirmed') &&
+                a.date.isAfter(now.subtract(const Duration(hours: 1))) &&
+                a.date.isBefore(twoDaysLater))
+            .toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
+
+        if (upcoming.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                children: [
+                  const Icon(Icons.event_rounded, size: 14, color: Color(0xFF6C63FF)),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Yaklaşan Randevular',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: const Color(0xFF6C63FF),
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 72,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: upcoming.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (context, i) {
+                  final a = upcoming[i];
+                  final date = a.date;
+                  final isToday = date.day == now.day && date.month == now.month;
+                  final label = isToday ? 'Bugün' : 'Yarın';
+                  final time =
+                      '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+                  return GestureDetector(
+                    onTap: () => context.pushNamed('appointment-detail', pathParameters: {'id': a.id}),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF6C63FF), Color(0xFF9C8FFF)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF6C63FF).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.local_hospital_rounded, color: Colors.white, size: 20),
+                          const SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                a.vet?.name ?? 'Veteriner Randevusu',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '$label · $time',
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
         );
       },
     );

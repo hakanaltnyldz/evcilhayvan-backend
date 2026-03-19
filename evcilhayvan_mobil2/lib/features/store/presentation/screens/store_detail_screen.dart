@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart';
@@ -550,7 +551,7 @@ class _StoreProductsSkeletonSliver extends StatelessWidget {
           padding: const EdgeInsets.all(1.4),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
+              color: context.cardColor,
               borderRadius: BorderRadius.circular(18),
             ),
           ),
@@ -704,7 +705,7 @@ class _ErrorCard extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       margin: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(

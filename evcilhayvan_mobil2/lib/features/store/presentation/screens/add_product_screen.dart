@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/product_model.dart';
@@ -112,7 +113,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
       builder: (context) => Container(
         margin: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.cardColor,
           borderRadius: BorderRadius.circular(20),
         ),
         child: SafeArea(
@@ -306,7 +307,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.cardColor,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
@@ -460,7 +461,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.cardColor,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
@@ -718,7 +719,7 @@ class _FieldSkeleton extends StatelessWidget {
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7),
+        color: context.cardColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppPalette.storePrimary.withOpacity(0.18)),
       ),

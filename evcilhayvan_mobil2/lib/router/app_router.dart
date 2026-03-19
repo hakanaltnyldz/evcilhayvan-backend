@@ -91,9 +91,11 @@ import '../core/providers/onboarding_provider.dart';
 import '../features/search/presentation/global_search_screen.dart';
 import '../features/health/presentation/screens/health_journal_screen.dart';
 import '../features/ai/presentation/screens/ai_assistant_screen.dart';
+import '../features/ai/presentation/screens/guide_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
 import '../features/auth/presentation/screens/user_profile_screen.dart';
 import '../features/auth/presentation/screens/privacy_policy_screen.dart';
+import '../features/pets/presentation/screens/nearby_ads_screen.dart';
 
 // Auth gerektirmeyen sayfalar
 const _publicRoutes = {
@@ -106,6 +108,29 @@ const _publicRoutes = {
   '/splash',
   '/privacy-policy',
 };
+
+/// Tüm push rotalarında tutarlı fade + hafif slideY geçiş animasyonu.
+Page<void> _buildPage(GoRouterState state, Widget child) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 220),
+    reverseTransitionDuration: const Duration(milliseconds: 180),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.03),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -138,7 +163,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
   routes: [
-    // Alt navigasyonlu sayfalar
+    // Alt navigasyonlu sayfalar (tab geçişleri ayrı animasyon mekanizması kullanır)
     ShellRoute(
       builder: (BuildContext context, GoRouterState state, Widget child) {
         return MainShell(child: child);
@@ -185,75 +210,87 @@ final routerProvider = Provider<GoRouter>((ref) {
     GoRoute(
       path: '/splash',
       name: 'splash',
-      builder: (context, state) => const SplashScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const SplashScreen()),
     ),
     // Onboarding
     GoRoute(
       path: '/onboarding',
       name: 'onboarding',
-      builder: (context, state) => const OnboardingScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const OnboardingScreen()),
     ),
     // Health Journal
     GoRoute(
       path: '/health/:petId',
       name: 'health-journal',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final petId = state.pathParameters['petId']!;
         final extra = state.extra as Map<String, dynamic>?;
         final petName = extra?['petName'] as String? ?? 'Pet';
-        return HealthJournalScreen(petId: petId, petName: petName);
+        return _buildPage(state, HealthJournalScreen(petId: petId, petName: petName));
       },
     ),
 
+    // Yakındaki İlanlar
+    GoRoute(
+      path: '/nearby-ads',
+      name: 'nearby-ads',
+      pageBuilder: (context, state) => _buildPage(state, const NearbyAdsScreen()),
+    ),
     // Global Search
     GoRoute(
       path: '/search',
       name: 'search',
-      builder: (context, state) => const GlobalSearchScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const GlobalSearchScreen()),
     ),
     // AI Assistant
     GoRoute(
       path: '/ai-assistant',
       name: 'ai-assistant',
-      builder: (context, state) => const AiAssistantScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const AiAssistantScreen()),
+    ),
+    // Rehber Pati — uygulama içi navigasyon asistanı
+    GoRoute(
+      path: '/guide',
+      name: 'guide',
+      pageBuilder: (context, state) => _buildPage(state, const GuideScreen()),
     ),
 
     // Alt bar olmayan sayfalar
     GoRoute(
       path: '/login',
       name: 'login',
-      builder: (context, state) => const LoginScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const LoginScreen()),
     ),
     GoRoute(
       path: '/register',
       name: 'register',
-      builder: (context, state) => const RegisterScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const RegisterScreen()),
     ),
     GoRoute(
       path: '/verify-email',
       name: 'verify-email',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final String email = state.extra as String;
-        return VerificationScreen(email: email);
+        return _buildPage(state, VerificationScreen(email: email));
       },
     ),
     GoRoute(
       path: '/forgot-password',
       name: 'forgot-password',
-      builder: (context, state) => const ForgotPasswordScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const ForgotPasswordScreen()),
     ),
     GoRoute(
       path: '/reset-password',
       name: 'reset-password',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final String email = state.extra as String;
-        return ResetPasswordScreen(email: email);
+        return _buildPage(state, ResetPasswordScreen(email: email));
       },
     ),
     GoRoute(
       path: '/create-pet',
       name: 'create-pet',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         Pet? petToEdit;
         String? presetType;
         String? presetSpecies;
@@ -265,39 +302,39 @@ final routerProvider = Provider<GoRouter>((ref) {
           if (extra['advertType'] is String) presetType = extra['advertType'] as String;
           if (extra['species'] is String) presetSpecies = extra['species'] as String;
         }
-        return CreatePetScreen(
+        return _buildPage(state, CreatePetScreen(
           petToEdit: petToEdit,
           initialAdvertType: presetType,
           initialSpecies: presetSpecies,
-        );
+        ));
       },
     ),
     GoRoute(
       path: '/pet/:id',
       name: 'pet-detail',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final String petId = state.pathParameters['id']!;
-        return PetDetailScreen(petId: petId);
+        return _buildPage(state, PetDetailScreen(petId: petId));
       },
     ),
     GoRoute(
       path: '/mating',
       name: 'mating',
-      builder: (context, state) => const MatingScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const MatingScreen()),
     ),
     GoRoute(
       path: '/mating/requests',
       name: 'mating-requests',
-      builder: (context, state) => const MatchRequestsScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const MatchRequestsScreen()),
     ),
 
     // Chat
     GoRoute(
       path: '/chat/:conversationId',
       name: 'chat',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final String convId = state.pathParameters['conversationId']!;
-        String receiverName = 'KullanŽñcŽñ';
+        String receiverName = 'Kullanıcı';
         String? avatarUrl;
 
         final extra = state.extra;
@@ -308,160 +345,160 @@ final routerProvider = Provider<GoRouter>((ref) {
           receiverName = extra;
         }
 
-        return ChatScreen(
+        return _buildPage(state, ChatScreen(
           conversationId: convId,
           receiverName: receiverName,
           receiverAvatarUrl: avatarUrl,
-        );
+        ));
       },
     ),
 
     GoRoute(
       path: '/settings',
       name: 'settings',
-      builder: (context, state) => const SettingsScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const SettingsScreen()),
     ),
     GoRoute(
       path: '/edit-profile',
       name: 'edit-profile',
-      builder: (context, state) => const EditProfileScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const EditProfileScreen()),
     ),
     GoRoute(
       path: '/store/apply',
       name: 'store-apply',
-      builder: (context, state) => const ApplySellerScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const ApplySellerScreen()),
     ),
     GoRoute(
       path: '/store/add',
       name: 'store-add-product',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final product = state.extra is ProductModel ? state.extra as ProductModel : null;
-        return AddProductScreen(product: product);
+        return _buildPage(state, AddProductScreen(product: product));
       },
     ),
     GoRoute(
       path: '/store/checkout',
       name: 'store-checkout',
-      builder: (context, state) => const CheckoutScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const CheckoutScreen()),
     ),
     GoRoute(
       path: '/store/orders',
       name: 'my-orders',
-      builder: (context, state) => const MyOrdersScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const MyOrdersScreen()),
     ),
     GoRoute(
       path: '/store/cart',
       name: 'store-cart',
-      builder: (context, state) => const CartScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const CartScreen()),
     ),
     GoRoute(
       path: '/store/address/add',
       name: 'add-address',
-      builder: (context, state) => const AddAddressScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const AddAddressScreen()),
     ),
     // IMPORTANT: Dynamic route must come AFTER specific /store/* routes
     GoRoute(
       path: '/store/:storeId',
       name: 'store-detail',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final id = state.pathParameters['storeId']!;
-        return StoreDetailScreen(storeId: id);
+        return _buildPage(state, StoreDetailScreen(storeId: id));
       },
     ),
     GoRoute(
       path: '/seller/apply-new',
       name: 'seller-apply-new',
-      builder: (context, state) => const SellerApplyPage(),
+      pageBuilder: (context, state) => _buildPage(state, const SellerApplyPage()),
     ),
     GoRoute(
       path: '/admin/seller/applications',
       name: 'admin-seller-applications',
-      builder: (context, state) => const AdminApplicationsPage(),
+      pageBuilder: (context, state) => _buildPage(state, const AdminApplicationsPage()),
     ),
     GoRoute(
       path: '/seller/products',
       name: 'seller-products',
-      builder: (context, state) => const ProductsPage(),
+      pageBuilder: (context, state) => _buildPage(state, const ProductsPage()),
     ),
     GoRoute(
       path: '/seller/products/add',
       name: 'seller-product-add',
-      builder: (context, state) => const ProductAddPage(),
+      pageBuilder: (context, state) => _buildPage(state, const ProductAddPage()),
     ),
     GoRoute(
       path: '/store-new',
       name: 'store-new',
-      builder: (context, state) => const StoreHomeScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const StoreHomeScreen()),
     ),
     GoRoute(
       path: '/store-new/product/:id',
       name: 'store-new-product',
-      builder: (context, state) => ProductDetailPage(
+      pageBuilder: (context, state) => _buildPage(state, ProductDetailPage(
         id: state.pathParameters['id']!,
-      ),
+      )),
     ),
     GoRoute(
       path: '/product/:id',
       name: 'product-detail',
-      builder: (context, state) => ProductDetailPage(
+      pageBuilder: (context, state) => _buildPage(state, ProductDetailPage(
         id: state.pathParameters['id']!,
-      ),
+      )),
     ),
     GoRoute(
       path: '/store-new/cart',
       name: 'store-new-cart',
-      builder: (context, state) => const CartScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const CartScreen()),
     ),
     GoRoute(
       path: '/seller/dashboard',
       name: 'seller-dashboard',
-      builder: (context, state) => const SellerDashboardScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const SellerDashboardScreen()),
     ),
     GoRoute(
       path: '/seller/products/manage',
       name: 'product-management',
-      builder: (context, state) => const ProductManagementScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const ProductManagementScreen()),
     ),
     GoRoute(
       path: '/seller/orders',
       name: 'seller-orders',
-      builder: (context, state) => const SellerOrdersScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const SellerOrdersScreen()),
     ),
     GoRoute(
       path: '/stores',
       name: 'stores-list',
-      builder: (context, state) => const StoresListScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const StoresListScreen()),
     ),
     GoRoute(
       path: '/favorites',
       name: 'favorites',
-      builder: (context, state) => const FavoritesScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const FavoritesScreen()),
     ),
 
     // Bildirim ekrani
     GoRoute(
       path: '/notifications',
       name: 'notifications',
-      builder: (context, state) => const NotificationsScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const NotificationsScreen()),
     ),
 
     // Kayip & Bulunan ekranlari
     GoRoute(
       path: '/lost-found',
       name: 'lost-found',
-      builder: (context, state) => const LostFoundHomeScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const LostFoundHomeScreen()),
     ),
     GoRoute(
       path: '/lost-found/report',
       name: 'report-lost-found',
-      builder: (context, state) => const ReportLostFoundScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const ReportLostFoundScreen()),
     ),
     GoRoute(
       path: '/lost-found/:id',
       name: 'lost-found-detail',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final id = state.pathParameters['id']!;
-        return LostFoundDetailScreen(reportId: id);
+        return _buildPage(state, LostFoundDetailScreen(reportId: id));
       },
     ),
 
@@ -469,36 +506,36 @@ final routerProvider = Provider<GoRouter>((ref) {
     GoRoute(
       path: '/sitters',
       name: 'sitters',
-      builder: (context, state) => const SitterHomeScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const SitterHomeScreen()),
     ),
     GoRoute(
       path: '/sitters/bookings',
       name: 'sitter-bookings',
-      builder: (context, state) => const MyBookingsScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const MyBookingsScreen()),
     ),
     GoRoute(
       path: '/sitters/become',
       name: 'become-sitter',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final extra = state.extra;
         final existing = extra is PetSitterModel ? extra : null;
-        return BecomeSitterScreen(existing: existing);
+        return _buildPage(state, BecomeSitterScreen(existing: existing));
       },
     ),
     GoRoute(
       path: '/sitters/:id',
       name: 'sitter-detail',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final id = state.pathParameters['id']!;
-        return SitterDetailScreen(sitterId: id);
+        return _buildPage(state, SitterDetailScreen(sitterId: id));
       },
     ),
     GoRoute(
       path: '/sitter-booking',
       name: 'sitter-booking',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final sitter = state.extra as PetSitterModel;
-        return SitterBookingScreen(sitter: sitter);
+        return _buildPage(state, SitterBookingScreen(sitter: sitter));
       },
     ),
 
@@ -506,24 +543,24 @@ final routerProvider = Provider<GoRouter>((ref) {
     GoRoute(
       path: '/events',
       name: 'events',
-      builder: (context, state) => const EventsHomeScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const EventsHomeScreen()),
     ),
     GoRoute(
       path: '/events/create',
       name: 'create-event',
-      builder: (context, state) => const CreateEventScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const CreateEventScreen()),
     ),
     GoRoute(
       path: '/events/attending',
       name: 'my-events',
-      builder: (context, state) => const MyEventsScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const MyEventsScreen()),
     ),
     GoRoute(
       path: '/events/:id',
       name: 'event-detail',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final id = state.pathParameters['id']!;
-        return EventDetailScreen(eventId: id);
+        return _buildPage(state, EventDetailScreen(eventId: id));
       },
     ),
 
@@ -531,22 +568,22 @@ final routerProvider = Provider<GoRouter>((ref) {
     GoRoute(
       path: '/adoption/apply',
       name: 'adoption-apply',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final pet = state.extra as Pet;
-        return AdoptionApplyScreen(pet: pet);
+        return _buildPage(state, AdoptionApplyScreen(pet: pet));
       },
     ),
     GoRoute(
       path: '/adoption/applications',
       name: 'adoption-applications',
-      builder: (context, state) => const AdoptionApplicationsScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const AdoptionApplicationsScreen()),
     ),
 
     // Veteriner alt ekranlari
     GoRoute(
       path: '/veterinary/search',
       name: 'vet-search',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final extra = state.extra;
         bool nearMe = false;
         bool googleSearch = false;
@@ -554,89 +591,89 @@ final routerProvider = Provider<GoRouter>((ref) {
           nearMe = extra['nearMe'] == true;
           googleSearch = extra['googleSearch'] == true;
         }
-        return VetSearchScreen(nearMe: nearMe, googleSearch: googleSearch);
+        return _buildPage(state, VetSearchScreen(nearMe: nearMe, googleSearch: googleSearch));
       },
     ),
     GoRoute(
       path: '/veterinary/detail/:id',
       name: 'vet-detail',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final id = state.pathParameters['id']!;
-        return VetDetailScreen(vetId: id);
+        return _buildPage(state, VetDetailScreen(vetId: id));
       },
     ),
     GoRoute(
       path: '/veterinary/register',
       name: 'vet-register',
-      builder: (context, state) => const VetRegisterScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const VetRegisterScreen()),
     ),
     GoRoute(
       path: '/veterinary/appointment/create',
       name: 'appointment-create',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final extra = state.extra as Map<String, dynamic>;
-        return AppointmentCreateScreen(
+        return _buildPage(state, AppointmentCreateScreen(
           vetId: extra['vetId'] as String,
           vetName: extra['vetName'] as String,
-        );
+        ));
       },
     ),
     GoRoute(
       path: '/veterinary/appointment/:id',
       name: 'appointment-detail',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final id = state.pathParameters['id']!;
-        return AppointmentDetailScreen(appointmentId: id);
+        return _buildPage(state, AppointmentDetailScreen(appointmentId: id));
       },
     ),
     GoRoute(
       path: '/veterinary/vaccination/:petId',
       name: 'vaccination-calendar',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final petId = state.pathParameters['petId']!;
-        return VaccinationCalendarScreen(petId: petId);
+        return _buildPage(state, VaccinationCalendarScreen(petId: petId));
       },
     ),
     GoRoute(
       path: '/veterinary/vaccination/:petId/add',
       name: 'vaccination-add',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final petId = state.pathParameters['petId']!;
-        return VaccinationAddScreen(petId: petId);
+        return _buildPage(state, VaccinationAddScreen(petId: petId));
       },
     ),
     GoRoute(
       path: '/veterinary/reminders',
       name: 'vaccination-reminders',
-      builder: (context, state) => const VetHomeScreen(initialTabIndex: 2),
+      pageBuilder: (context, state) => _buildPage(state, const VetHomeScreen(initialTabIndex: 2)),
     ),
 
     // Harita Kesfet
     GoRoute(
       path: '/map',
       name: 'map',
-      builder: (context, state) => const MapDiscoverScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const MapDiscoverScreen()),
     ),
 
     // Sosyal Feed
     GoRoute(
       path: '/feed',
       name: 'feed',
-      builder: (context, state) => const FeedScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const FeedScreen()),
     ),
     GoRoute(
       path: '/feed/create',
       name: 'create-post',
-      builder: (context, state) => const CreatePostScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const CreatePostScreen()),
     ),
 
     // Kullanici public profili
     GoRoute(
       path: '/user/:userId',
       name: 'user-profile',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final userId = state.pathParameters['userId']!;
-        return UserProfileScreen(userId: userId);
+        return _buildPage(state, UserProfileScreen(userId: userId));
       },
     ),
 
@@ -644,7 +681,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     GoRoute(
       path: '/privacy-policy',
       name: 'privacy-policy',
-      builder: (context, state) => const PrivacyPolicyScreen(),
+      pageBuilder: (context, state) => _buildPage(state, const PrivacyPolicyScreen()),
     ),
   ],
   );

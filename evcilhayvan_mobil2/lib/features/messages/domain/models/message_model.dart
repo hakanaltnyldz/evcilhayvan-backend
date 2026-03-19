@@ -15,6 +15,7 @@ class Message {
   final Pet? relatedPet; // İlan bilgisi için
   final String? petId; // İlan ID'si
   final String? imageUrl; // Resim mesajı için
+  final String? audioUrl; // Ses mesajı için
   final Map<String, List<String>> reactions; // emoji -> [userId]
 
   Message({
@@ -29,6 +30,7 @@ class Message {
     this.relatedPet,
     this.petId,
     this.imageUrl,
+    this.audioUrl,
     this.reactions = const {},
   });
 
@@ -45,6 +47,7 @@ class Message {
       relatedPet: relatedPet,
       petId: petId,
       imageUrl: imageUrl,
+      audioUrl: audioUrl,
       reactions: reactions ?? this.reactions,
     );
   }
@@ -102,6 +105,7 @@ class Message {
       relatedPet: relatedPet,
       petId: petId,
       imageUrl: json['imageUrl']?.toString() ?? json['image']?.toString(),
+      audioUrl: json['audioUrl']?.toString(),
       reactions: _parseReactions(json['reactions']),
     );
   }

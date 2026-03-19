@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/adoption/data/repositories/adoption_repository.dart';
@@ -33,6 +35,7 @@ class MessagesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final safeIndex = initialTabIndex.clamp(0, 1);
     return DefaultTabController(
       length: 2,
@@ -41,11 +44,11 @@ class MessagesScreen extends ConsumerWidget {
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
-          title: const Text('Sohbetler'),
-          bottom: const TabBar(
+          title: Text(l10n.messagesTitle),
+          bottom: TabBar(
             tabs: [
-              Tab(text: 'Sohbetler'),
-              Tab(text: 'İstekler'),
+              Tab(text: l10n.messagesTitle),
+              Tab(text: l10n.matchRequestsTitle),
             ],
           ),
         ),
@@ -79,6 +82,7 @@ class _ConversationsTab extends ConsumerWidget {
           const _Header(),
           Expanded(
             child: conversationsAsync.when(
+              skipLoadingOnReload: true,
               data: (conversations) {
                 if (conversations.isEmpty) {
                   return const _EmptyConversations();
@@ -838,8 +842,8 @@ class _ConversationCard extends ConsumerWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AppPalette.background,
-              AppPalette.heroGradient.last.withOpacity(0.12),
+              context.subtleBackground,
+              theme.colorScheme.primary.withOpacity(0.08),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -972,12 +976,12 @@ class _EmptyConversations extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             Text(
-              'Henüz bir konuşma yok',
+              AppLocalizations.of(context)!.messagesEmpty,
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              'Evcil dostlar hakkında konuşmaya başlamak için ilanlardan birine göz at.',
+              AppLocalizations.of(context)!.messagesEmptyDesc,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,

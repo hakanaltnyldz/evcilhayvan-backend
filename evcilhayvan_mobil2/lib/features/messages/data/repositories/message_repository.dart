@@ -175,4 +175,29 @@ class MessageRepository {
       return Message.fromJson(payload);
     });
   }
+
+  /// Ses mesajı gönder
+  Future<Message> sendAudioMessage({
+    required String conversationId,
+    required File audioFile,
+  }) {
+    return _guard(() async {
+      final fileName = audioFile.path.split('/').last;
+      final formData = FormData.fromMap({
+        'audio': await MultipartFile.fromFile(
+          audioFile.path,
+          filename: fileName,
+        ),
+        'type': 'AUDIO',
+      });
+      final response = await _dio.post(
+        '/api/conversations/$conversationId/messages/audio',
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      final data = response.data as Map<String, dynamic>;
+      final payload = (data['message'] as Map<String, dynamic>?) ?? data;
+      return Message.fromJson(payload);
+    });
+  }
 }

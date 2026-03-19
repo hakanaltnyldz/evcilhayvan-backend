@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart' as store_data;
 import 'package:evcilhayvan_mobil2/features/store/domain/models/store_model.dart';
@@ -53,6 +55,7 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
   Timer? _searchDebounce;
   String? _selectedCategory;
   String _query = '';
+  String _sort = 'newest';
 
   void _onSearchChanged(String text) {
     _searchDebounce?.cancel();
@@ -88,6 +91,7 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
     final productsProvider = catalog.storeProductsProvider((
       category: _selectedCategory,
       q: _query.isNotEmpty ? _query : null,
+      sort: _sort,
     ));
 
     final productsAsync = ref.watch(productsProvider);
@@ -218,10 +222,34 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        _SectionHeader(
-                          title: 'Ürünler',
-                          actionLabel: hasFilters ? 'Filtreleri temizle' : null,
-                          onActionTap: hasFilters ? _clearFilters : null,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _SectionHeader(
+                              title: 'Ürünler',
+                              actionLabel: hasFilters ? 'Filtreleri temizle' : null,
+                              onActionTap: hasFilters ? _clearFilters : null,
+                            ),
+                            // Sıralama seçici
+                            DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _sort,
+                                isDense: true,
+                                borderRadius: BorderRadius.circular(12),
+                                icon: const Icon(Icons.sort, size: 18),
+                                style: Theme.of(context).textTheme.bodySmall,
+                                items: const [
+                                  DropdownMenuItem(value: 'newest',     child: Text('En Yeni')),
+                                  DropdownMenuItem(value: 'price_asc',  child: Text('Fiyat ↑')),
+                                  DropdownMenuItem(value: 'price_desc', child: Text('Fiyat ↓')),
+                                  DropdownMenuItem(value: 'name_asc',   child: Text('A–Z')),
+                                ],
+                                onChanged: (v) {
+                                  if (v != null) setState(() => _sort = v);
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -231,18 +259,18 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                   data: (products) {
                     if (products.isEmpty) {
                       return SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 48),
-                          child: Column(
-                            children: [
-                              const Text('Ürün bulunamadı.'),
-                              if (hasFilters)
-                                TextButton(
+                        child: EmptyState(
+                          icon: Icons.shopping_bag_outlined,
+                          title: 'Ürün bulunamadı',
+                          subtitle: hasFilters
+                              ? 'Arama kriterlerinize uygun ürün yok.'
+                              : 'Henüz ürün eklenmemiş.',
+                          action: hasFilters
+                              ? TextButton(
                                   onPressed: _clearFilters,
                                   child: const Text('Filtreleri temizle'),
-                                ),
-                            ],
-                          ),
+                                )
+                              : null,
                         ),
                       );
                     }
@@ -362,7 +390,7 @@ class _Header extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               margin: const EdgeInsets.all(2),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.cardColor,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Row(
@@ -667,7 +695,7 @@ class _MyStoreMiniCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.cardColor,
           borderRadius: BorderRadius.circular(18),
         ),
         child: Row(
@@ -955,16 +983,8 @@ class _MiniCardSkeleton extends StatelessWidget {
     return Container(
       height: 120,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withOpacity(0.9),
-            Colors.white.withOpacity(0.6),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: context.cardColor,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.6)),
       ),
     );
   }
@@ -984,9 +1004,8 @@ class _CategorySkeletonRow extends StatelessWidget {
         itemBuilder: (context, index) => Container(
           width: index == 0 ? 70 : 90,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.8),
+            color: context.cardColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.7)),
           ),
         ),
       ),
@@ -1018,7 +1037,7 @@ class _StoreCarouselSkeleton extends StatelessWidget {
           child: Container(
             margin: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.14),
+              color: context.cardColor.withOpacity(0.14),
               borderRadius: BorderRadius.circular(18),
             ),
           ),
@@ -1068,7 +1087,7 @@ class _ProductSkeletonCard extends StatelessWidget {
       padding: const EdgeInsets.all(1.4),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
+          color: context.cardColor,
           borderRadius: BorderRadius.circular(18),
         ),
         padding: const EdgeInsets.all(10),

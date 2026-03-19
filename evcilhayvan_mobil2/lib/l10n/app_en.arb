@@ -1,0 +1,309 @@
+{
+  "@@locale": "en",
+
+  "appName": "Pet App",
+  "login": "Log In",
+  "logout": "Log Out",
+  "register": "Sign Up",
+  "email": "Email",
+  "password": "Password",
+  "forgotPassword": "Forgot Password",
+  "resetPassword": "Reset Password",
+  "name": "Full Name",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "confirm": "Confirm",
+  "back": "Back",
+  "close": "Close",
+  "retry": "Retry",
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+  "noData": "No data found",
+  "send": "Send",
+
+  "tabHome": "Adopt",
+  "tabMessages": "Messages",
+  "tabVet": "Veterinary",
+  "tabStore": "Store",
+  "tabProfile": "Profile",
+
+  "homeTitle": "Listings",
+  "homeSearchHint": "Search breed, species...",
+  "homeNearby": "Near Me",
+  "homeNoAds": "No listings yet",
+  "homeNoAdsDesc": "No listings found nearby.",
+  "homeAdoptionTab": "Adoption",
+  "homeMatingTab": "Mating",
+
+  "petDetailTitle": "Listing Detail",
+  "petDetailAge": "Age",
+  "petDetailBreed": "Breed",
+  "petDetailGender": "Gender",
+  "petDetailVaccinated": "Vaccinated",
+  "petDetailOwner": "Owner",
+  "petDetailContact": "Contact",
+  "petDetailAdopt": "I Want to Adopt",
+
+  "createPetTitle": "Create Listing",
+  "createPetName": "Pet Name",
+  "createPetSpecies": "Species",
+  "createPetBreed": "Breed",
+  "createPetAge": "Age (months)",
+  "createPetGender": "Gender",
+  "createPetBio": "About",
+  "createPetPhotos": "Photos",
+  "createPetAddPhoto": "Add Photo",
+  "createPetSubmit": "Publish Listing",
+
+  "matingTitle": "Find a Match",
+  "matingSubtitle": "Discover compatible matches for your pet.",
+  "matingSpecies": "Species",
+  "matingGender": "Gender",
+  "matingMaxDistance": "Max distance: {km} km",
+  "@matingMaxDistance": {
+    "placeholders": {
+      "km": {"type": "int"}
+    }
+  },
+  "matingRequests": "Match requests",
+  "matingEndTitle": "That's all!",
+  "matingEndDesc": "No more profiles found nearby.",
+  "matingRefresh": "Refresh",
+  "matingEmptyTitle": "Try relaxing the filters",
+  "matingEmptyDesc": "No suitable matches found nearby yet.",
+  "matingAll": "All",
+  "matingMale": "Male",
+  "matingFemale": "Female",
+  "matingLikeStamp": "LIKE",
+  "matingNopeStamp": "NOPE",
+  "matingVaccinated": "Vaccinated",
+
+  "messagesTitle": "Messages",
+  "messagesEmpty": "No conversations yet",
+  "messagesEmptyDesc": "Contact someone from a listing.",
+  "messagesTypeHint": "Write a message...",
+  "messagesSend": "Send",
+  "messagesImage": "Send image",
+  "messagesDeleted": "[deleted]",
+
+  "matchRequestsTitle": "Match Requests",
+  "matchRequestsInbox": "Received",
+  "matchRequestsOutbox": "Sent",
+  "matchRequestsEmpty": "No requests",
+  "matchRequestAccept": "Accept",
+  "matchRequestReject": "Reject",
+  "matchRequestCancel": "Cancel",
+
+  "profileTitle": "Profile",
+  "profileEdit": "Edit Profile",
+  "profileMyPets": "My Listings",
+  "profileSettings": "Settings",
+  "profileLogout": "Log Out",
+  "profileSeller": "Seller",
+  "profileMember": "Member",
+  "profileSince": "Joined: {date}",
+  "@profileSince": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+
+  "settingsTitle": "Settings",
+  "settingsDarkMode": "Dark Mode",
+  "settingsLanguage": "Language",
+  "settingsLanguageTr": "Türkçe",
+  "settingsLanguageEn": "English",
+  "settingsReview": "Rate the App",
+  "settingsPrivacy": "Privacy Policy",
+  "settingsNotifications": "Notifications",
+  "settingsLogout": "Log Out",
+
+  "vetTitle": "Veterinarians",
+  "vetSearch": "Search vet...",
+  "vetNoResults": "No veterinarian found",
+  "vetDistance": "{km} km away",
+  "@vetDistance": {
+    "placeholders": {
+      "km": {"type": "String"}
+    }
+  },
+  "vetAppointment": "Book Appointment",
+  "vetVaccination": "Vaccination Schedule",
+  "vetReminders": "Reminders",
+
+  "storeTitle": "Store",
+  "storeSearch": "Search products...",
+  "storeCart": "Cart",
+  "storeCheckout": "Checkout",
+  "storeMyOrders": "My Orders",
+  "storeAddToCart": "Add to Cart",
+  "storeOutOfStock": "Out of Stock",
+  "storeOrderPlaced": "Order Placed",
+
+  "lostFoundTitle": "Lost & Found",
+  "lostFoundReport": "Add Listing",
+  "lostFoundLost": "Lost",
+  "lostFoundFound": "Found",
+
+  "eventsTitle": "Events",
+  "eventsJoin": "Join",
+  "eventsLeave": "Leave",
+
+  "sitterTitle": "Pet Sitter",
+  "sitterBecomeSitter": "Become a Sitter",
+  "sitterBook": "Book",
+  "sitterMyBookings": "My Bookings",
+
+  "adoptionApply": "Apply",
+  "adoptionMyApps": "My Applications",
+
+  "notificationsTitle": "Notifications",
+  "notificationsEmpty": "No notifications",
+  "notificationsClearAll": "Clear All",
+
+  "favoritesTitle": "Favorites",
+  "favoritesEmpty": "No favorite listings",
+
+  "hello": "Hello, {name}!",
+  "@hello": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+
+  "genderMale": "Male",
+  "genderFemale": "Female",
+  "genderUnknown": "Unknown",
+
+  "speciesDog": "Dog",
+  "speciesCat": "Cat",
+  "speciesBird": "Bird",
+  "speciesFish": "Fish",
+  "speciesOther": "Other",
+
+  "advertTypeAdoption": "Adoption",
+  "advertTypeMating": "Mating",
+
+  "privacyPolicyTitle": "Privacy Policy",
+
+  "reviewDialogTitle": "Rate the App",
+  "reviewDialogDesc": "Enjoying the app? Your rating helps us a lot.",
+
+  "errorGeneric": "Something went wrong. Please try again.",
+  "errorNetwork": "No internet connection.",
+  "errorUnauthorized": "Session expired. Please log in again.",
+  "errorNotFound": "Not found.",
+
+  "yes": "Yes",
+  "no": "No",
+  "or": "or",
+  "km": "km",
+  "month": "month",
+  "year": "year",
+  "months": "{count} months",
+  "@months": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "years": "{count} years",
+  "@years": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "settingsSectionAccount": "My Account",
+  "settingsSectionAccountSub": "Update your profile and manage security settings.",
+  "settingsSectionStore": "Store Management",
+  "settingsSectionStoreSub": "Manage your store and orders.",
+  "settingsSectionNotif": "Notifications",
+  "settingsSectionNotifSub": "Stay connected with the community.",
+  "settingsSectionAppExp": "App Experience",
+  "settingsSectionAppExpSub": "Customize appearance and personal preferences.",
+  "settingsSectionSupport": "Support",
+  "settingsSectionSupportSub": "Need help? We're here for you.",
+
+  "settingsEditProfile": "Edit Profile",
+  "settingsEditProfileSub": "Update your personal info and bio",
+  "settingsChangePassword": "Change Password",
+  "settingsChangePasswordSub": "Create a new password via email",
+  "settingsMyOrders": "My Orders",
+  "settingsMyOrdersSub": "View and track your order history",
+  "settingsMyFavorites": "Favorites",
+  "settingsMyFavoritesSub": "View products you liked",
+
+  "settingsMyStore": "My Store",
+  "settingsMyStoreSub": "View and edit store information",
+  "settingsIncomingOrders": "Incoming Orders",
+  "settingsIncomingOrdersSub": "Manage orders received in your store",
+  "settingsManageProducts": "Manage Products",
+  "settingsManageProductsSub": "Add, edit or update stock",
+
+  "settingsNotifChat": "Chat notifications",
+  "settingsNotifChatSub": "Get notified about new messages and chat requests",
+  "settingsNotifMatch": "Match alerts",
+  "settingsNotifMatchSub": "Instant notifications for new matches",
+  "settingsAutoChat": "Auto-prepare chat on match",
+  "settingsAutoChatSub": "Quickly open the chat screen when a match is made",
+
+  "settingsCompactCards": "Show compact cards",
+  "settingsCompactCardsSub": "See more content in list view",
+  "settingsDarkModeSub": "A more comfortable dark theme for your eyes",
+  "settingsLanguageSub": "Change app language",
+  "settingsExportData": "Export my data",
+  "settingsExportDataSub": "Request listings and chat history via email",
+
+  "settingsHelp": "FAQ & Help Center",
+  "settingsContact": "Contact Support",
+  "settingsShare": "Share App",
+  "settingsShareSub": "Recommend to friends",
+
+  "profileTabMyAds": "My Adoption Listings",
+  "profileTabMatingAds": "My Mating Listings",
+  "profileAdoptionCount": "Adoption",
+  "profileMatingCount": "Mating",
+  "profileViewCount": "Views",
+  "profileNewAdoption": "Adoption",
+  "profileNewMating": "Mating",
+
+  "homeGreeting": "Hello",
+  "homeShortcutMating": "Match",
+  "homeShortcutLost": "Lost",
+  "homeShortcutEvents": "Events",
+  "homeShortcutSitter": "Sitter",
+  "homeShortcutAi": "Pati AI",
+  "homeShortcutFeed": "Feed",
+  "homeShortcutSearch": "Search",
+  "homeUpcomingAppointments": "Upcoming Appointments",
+  "homeNearbyAds": "Nearby Listings",
+
+  "navMessages": "Messages",
+  "navAdopt": "Adopt",
+  "navVet": "Veterinary",
+  "navStore": "Store",
+  "navProfile": "Profile",
+
+  "darkModeOn": "Dark mode on",
+  "darkModeOff": "Dark mode off",
+  "languageLabel": "Language",
+  "selectLanguage": "Select Language",
+
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "profileCompleteTitle": "Complete profile",
+  "profileCompletePhoto": "Photo",
+  "profileCompleteCity": "City",
+  "profileCompleteAbout": "About",
+
+  "searchMessages": "Search messages...",
+  "noSearchResults": "No results for \"{query}\"",
+  "@noSearchResults": {
+    "placeholders": {
+      "query": {"type": "String"}
+    }
+  }
+}

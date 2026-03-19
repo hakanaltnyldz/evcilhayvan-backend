@@ -9,6 +9,7 @@ import 'package:evcilhayvan_mobil2/core/providers/theme_provider.dart';
 import 'package:evcilhayvan_mobil2/core/providers/locale_provider.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -64,12 +65,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final user = ref.watch(authProvider);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Ayarlar'),
+        title: Text(l10n.settingsTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -83,31 +85,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               _SettingsHeader(userName: user?.name, email: user?.email),
               const SizedBox(height: 20),
               _SettingsCard(
-                title: 'Hesabım',
-                subtitle: 'Profilini güncelle, güvenlik ayarlarını yönet.',
+                title: l10n.settingsSectionAccount,
+                subtitle: l10n.settingsSectionAccountSub,
                 children: [
                   ListTile(
                     leading: const Icon(Icons.person_outline),
-                    title: const Text('Profili Düzenle'),
-                    subtitle: const Text('Kişisel bilgilerini ve biyografini güncelle'),
+                    title: Text(l10n.settingsEditProfile),
+                    subtitle: Text(l10n.settingsEditProfileSub),
                     onTap: () => context.pushNamed('edit-profile'),
                   ),
                   ListTile(
                     leading: const Icon(Icons.lock_reset),
-                    title: const Text('Şifreyi Değiştir'),
-                    subtitle: const Text('E-posta üzerinden yeni bir şifre oluştur'),
+                    title: Text(l10n.settingsChangePassword),
+                    subtitle: Text(l10n.settingsChangePasswordSub),
                     onTap: () => context.pushNamed('forgot-password'),
                   ),
                   ListTile(
                     leading: const Icon(Icons.shopping_bag_outlined),
-                    title: const Text('Siparişlerim'),
-                    subtitle: const Text('Sipariş geçmişini görüntüle ve takip et'),
+                    title: Text(l10n.settingsMyOrders),
+                    subtitle: Text(l10n.settingsMyOrdersSub),
                     onTap: () => context.push('/store/orders'),
                   ),
                   ListTile(
                     leading: const Icon(Icons.favorite_outline),
-                    title: const Text('Favorilerim'),
-                    subtitle: const Text('Beğendiğin ürünleri görüntüle'),
+                    title: Text(l10n.settingsMyFavorites),
+                    subtitle: Text(l10n.settingsMyFavoritesSub),
                     onTap: () => context.pushNamed('favorites'),
                   ),
                 ],
@@ -115,25 +117,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               if (user?.role == 'seller') ...[
                 const SizedBox(height: 20),
                 _SettingsCard(
-                  title: 'Mağaza Yönetimi',
-                  subtitle: 'Mağazanı ve siparişlerini yönet.',
+                  title: l10n.settingsSectionStore,
+                  subtitle: l10n.settingsSectionStoreSub,
                   children: [
                     ListTile(
                       leading: const Icon(Icons.storefront_outlined),
-                      title: const Text('Mağazam'),
-                      subtitle: const Text('Mağaza bilgilerini görüntüle ve düzenle'),
+                      title: Text(l10n.settingsMyStore),
+                      subtitle: Text(l10n.settingsMyStoreSub),
                       onTap: () => context.pushNamed('seller-dashboard'),
                     ),
                     ListTile(
                       leading: const Icon(Icons.receipt_long_outlined),
-                      title: const Text('Gelen Siparişler'),
-                      subtitle: const Text('Mağazana gelen siparişleri yönet'),
+                      title: Text(l10n.settingsIncomingOrders),
+                      subtitle: Text(l10n.settingsIncomingOrdersSub),
                       onTap: () => context.pushNamed('seller-orders'),
                     ),
                     ListTile(
                       leading: const Icon(Icons.inventory_2_outlined),
-                      title: const Text('Ürünlerimi Yönet'),
-                      subtitle: const Text('Ürün ekle, düzenle veya stok güncelle'),
+                      title: Text(l10n.settingsManageProducts),
+                      subtitle: Text(l10n.settingsManageProductsSub),
                       onTap: () => context.pushNamed('product-management'),
                     ),
                   ],
@@ -141,13 +143,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
               const SizedBox(height: 20),
               _SettingsCard(
-                title: 'Bildirimler',
-                subtitle: 'Topluluktan geri kalma, kontrol tamamen sende.',
+                title: l10n.settingsSectionNotif,
+                subtitle: l10n.settingsSectionNotifSub,
                 children: [
                   SwitchListTile.adaptive(
                     value: _notificationsEnabled,
-                    title: const Text('Sohbet bildirimleri'),
-                    subtitle: const Text('Yeni mesaj ve sohbet isteklerinden haberdar ol'),
+                    title: Text(l10n.settingsNotifChat),
+                    subtitle: Text(l10n.settingsNotifChatSub),
                     onChanged: (value) {
                       _updatePreference(
                         _notificationsKey,
@@ -158,8 +160,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   SwitchListTile.adaptive(
                     value: _matchAlertsEnabled,
-                    title: const Text('Eşleşme uyarıları'),
-                    subtitle: const Text('Yeni eşleşmelerde anında bildirim al'),
+                    title: Text(l10n.settingsNotifMatch),
+                    subtitle: Text(l10n.settingsNotifMatchSub),
                     onChanged: (value) {
                       _updatePreference(
                         _matchAlertsKey,
@@ -170,31 +172,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   SwitchListTile.adaptive(
                     value: _autoStartChat,
-                    title: const Text('Eşleşmelerde sohbeti otomatik hazırla'),
-                    subtitle:
-                        const Text('Eşleşme oluştuğunda sohbet ekranını hızlıca aç'),
+                    title: Text(l10n.settingsAutoChat),
+                    subtitle: Text(l10n.settingsAutoChatSub),
                     onChanged: (value) {
                       _updatePreference(
                         _autoStartChatKey,
                         value,
                         () => _autoStartChat = value,
                       );
-                      if (!value) {
-                        _showSnack('Sohbetler artık sadece manuel olarak açılacak.');
-                      }
                     },
                   ),
                 ],
               ),
               const SizedBox(height: 20),
               _SettingsCard(
-                title: 'Uygulama Deneyimi',
-                subtitle: 'Görünüm ve kişisel tercihlerini özelleştir.',
+                title: l10n.settingsSectionAppExp,
+                subtitle: l10n.settingsSectionAppExpSub,
                 children: [
                   SwitchListTile.adaptive(
                     value: _compactCards,
-                    title: const Text('Kartları kompakt göster'),
-                    subtitle: const Text('Liste görünümünde daha fazla içerik gör'),
+                    title: Text(l10n.settingsCompactCards),
+                    subtitle: Text(l10n.settingsCompactCardsSub),
                     onChanged: (value) {
                       _updatePreference(
                         _compactCardsKey,
@@ -206,10 +204,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   Consumer(
                     builder: (context, ref, _) {
                       final isDark = ref.watch(themeModeProvider) == ThemeMode.dark;
+                      final l10n = AppLocalizations.of(context)!;
                       return SwitchListTile.adaptive(
                         secondary: const Icon(Icons.dark_mode_outlined),
-                        title: const Text('Karanlık mod'),
-                        subtitle: const Text('Gözlerin için daha konforlu koyu tema'),
+                        title: Text(l10n.settingsDarkMode),
+                        subtitle: Text(l10n.settingsDarkModeSub),
                         value: isDark,
                         onChanged: (_) =>
                             ref.read(themeModeProvider.notifier).toggle(),
@@ -219,17 +218,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   Consumer(
                     builder: (context, ref, _) {
                       final locale = ref.watch(localeProvider);
-                      final isEn = locale.languageCode == 'en';
+                      final l10n = AppLocalizations.of(context)!;
                       return ListTile(
                         leading: const Icon(Icons.language_outlined),
-                        title: const Text('Dil / Language'),
-                        subtitle: Text(isEn ? 'English' : 'Türkçe'),
-                        trailing: Switch.adaptive(
-                          value: isEn,
-                          onChanged: (value) {
-                            ref.read(localeProvider.notifier).setLocale(
-                              value ? const Locale('en') : const Locale('tr'),
-                            );
+                        title: Text(l10n.languageLabel),
+                        subtitle: Text(l10n.selectLanguage),
+                        trailing: _LanguageSegmentedButton(
+                          currentLocale: locale,
+                          onChanged: (newLocale) {
+                            ref.read(localeProvider.notifier).setLocale(newLocale);
                           },
                         ),
                       );
@@ -237,36 +234,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   ListTile(
                     leading: const Icon(Icons.download_outlined),
-                    title: const Text('Verilerimi dışa aktar'),
-                    subtitle: const Text('İlan ve sohbet geçmişini e-posta olarak iste'),
-                    onTap: () => _showSnack('Veri dışa aktarma isteğiniz alındı.'),
+                    title: Text(l10n.settingsExportData),
+                    subtitle: Text(l10n.settingsExportDataSub),
+                    onTap: () => _showSnack(
+                      AppLocalizations.of(context)!.settingsExportData,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 20),
               _SettingsCard(
-                title: 'Destek',
-                subtitle: 'Yardıma mı ihtiyacın var? Sana yardımcı olalım.',
+                title: l10n.settingsSectionSupport,
+                subtitle: l10n.settingsSectionSupportSub,
                 children: [
                   ListTile(
                     leading: const Icon(Icons.help_outline),
-                    title: const Text('SSS ve Yardım Merkezi'),
-                    onTap: () => _showSnack('Yardım merkezi yakında yayında!'),
+                    title: Text(l10n.settingsHelp),
+                    onTap: () => _showSnack(l10n.settingsHelp),
                   ),
                   ListTile(
                     leading: const Icon(Icons.mail_outline),
-                    title: const Text('Destek ile iletişime geç'),
-                    onTap: () => _showSnack('support@evcildostum.app adresine yazabilirsiniz.'),
+                    title: Text(l10n.settingsContact),
+                    onTap: () => _showSnack('support@evcildostum.app'),
                   ),
                   ListTile(
                     leading: const Icon(Icons.share_outlined),
-                    title: const Text('Uygulamayı Paylaş'),
-                    onTap: () => _showSnack('Paylaşım bağlantısı panoya kopyalandı.'),
+                    title: Text(l10n.settingsShare),
+                    subtitle: Text(l10n.settingsShareSub),
+                    onTap: () => _showSnack(l10n.settingsShare),
                   ),
                   ListTile(
                     leading: const Icon(Icons.star_outline_rounded),
-                    title: const Text('Uygulamayı Değerlendir'),
-                    subtitle: const Text('Bize 5 yıldız ver, geliştirmemize yardım et'),
+                    title: Text(l10n.settingsReview),
+                    subtitle: Text(l10n.reviewDialogDesc),
                     onTap: () async {
                       final review = InAppReview.instance;
                       if (await review.isAvailable()) {
@@ -278,19 +278,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   ListTile(
                     leading: const Icon(Icons.privacy_tip_outlined),
-                    title: const Text('Gizlilik Politikası'),
+                    title: Text(l10n.settingsPrivacy),
                     onTap: () => context.pushNamed('privacy-policy'),
                   ),
                 ],
               ),
               const SizedBox(height: 20),
               _SettingsCard(
-                title: 'Hesaptan Çık',
-                subtitle: 'Hesabından güvenle çıkış yap.',
+                title: l10n.settingsLogout,
+                subtitle: l10n.profileLogout,
                 children: [
                   ListTile(
                     leading: const Icon(Icons.logout, color: Colors.redAccent),
-                    title: const Text('Çıkış Yap'),
+                    title: Text(l10n.logout),
                     iconColor: Colors.redAccent,
                     textColor: Colors.redAccent,
                     onTap: () async {
@@ -385,6 +385,85 @@ class _SettingsHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _LanguageSegmentedButton extends StatelessWidget {
+  final Locale currentLocale;
+  final ValueChanged<Locale> onChanged;
+
+  const _LanguageSegmentedButton({
+    required this.currentLocale,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isTr = currentLocale.languageCode == 'tr';
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _LangChip(
+          label: '🇹🇷 TR',
+          selected: isTr,
+          onTap: () => onChanged(const Locale('tr')),
+          theme: theme,
+        ),
+        const SizedBox(width: 6),
+        _LangChip(
+          label: '🇬🇧 EN',
+          selected: !isTr,
+          onTap: () => onChanged(const Locale('en')),
+          theme: theme,
+        ),
+      ],
+    );
+  }
+}
+
+class _LangChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final ThemeData theme;
+
+  const _LangChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.outline.withOpacity(0.3),
+          ),
+        ),
+        child: Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: selected
+                ? theme.colorScheme.onPrimary
+                : theme.colorScheme.onSurfaceVariant,
+            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
       ),
     );
   }

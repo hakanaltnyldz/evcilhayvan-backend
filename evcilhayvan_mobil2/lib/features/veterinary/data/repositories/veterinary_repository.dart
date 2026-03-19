@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import '../../domain/models/veterinary_model.dart';
+import '../../domain/models/vet_review_model.dart';
 
 final veterinaryRepositoryProvider = Provider<VeterinaryRepository>((ref) {
   return VeterinaryRepository(ApiClient());
@@ -142,6 +143,38 @@ class VeterinaryRepository {
       };
       final response = await _dio.post('/api/veterinaries', data: data);
       return VeterinaryModel.fromJson(response.data['vet']);
+    });
+  }
+
+  // ── Vet Reviews ────────────────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> getVetReviews(String vetId, {int page = 1}) {
+    return _guard(() async {
+      final res = await _dio.get('/api/veterinaries/$vetId/reviews',
+          queryParameters: {'page': page, 'limit': 20});
+      final reviews = (res.data['reviews'] as List)
+          .map((j) => VetReview.fromJson(Map<String, dynamic>.from(j)))
+          .toList();
+      return {
+        'reviews': reviews,
+        'total': res.data['total'] ?? 0,
+        'averageRating': (res.data['averageRating'] ?? 0).toDouble(),
+        'ratingCount': res.data['ratingCount'] ?? 0,
+      };
+    });
+  }
+
+  Future<VetReview> addVetReview(String vetId, int rating, {String? comment}) {
+    return _guard(() async {
+      final res = await _dio.post('/api/veterinaries/$vetId/reviews',
+          data: {'rating': rating, if (comment != null && comment.isNotEmpty) 'comment': comment});
+      return VetReview.fromJson(Map<String, dynamic>.from(res.data['review']));
+    });
+  }
+
+  Future<void> deleteVetReview(String reviewId) {
+    return _guard(() async {
+      await _dio.delete('/api/veterinaries/reviews/$reviewId');
     });
   }
 }

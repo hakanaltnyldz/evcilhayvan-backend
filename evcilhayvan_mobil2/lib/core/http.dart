@@ -68,13 +68,17 @@ class ApiClient {
   bool _isRefreshing = false;
   Completer<void>? _refreshCompleter;
 
+  /// Token yenilenemiyor → oturum sona erdi callback'i.
+  /// AuthNotifier bu callback'i kayıt eder ve logout + yönlendirme yapar.
+  VoidCallback? onSessionExpired;
+
   TokenStorage get tokenStorage => _tokenStorage;
 
   void _setup() {
     dio.options = BaseOptions(
       baseUrl: AppConfig.current.apiBaseUrl,
-      connectTimeout: const Duration(seconds: 12),
-      receiveTimeout: const Duration(seconds: 12),
+      connectTimeout: const Duration(seconds: 60),
+      receiveTimeout: const Duration(seconds: 60),
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -178,6 +182,8 @@ class ApiClient {
     } catch (e) {
       await _tokenStorage.clear();
       _refreshCompleter?.completeError(e);
+      // Oturumu tüm dinleyicilere bildir (AuthNotifier → logout + /login)
+      onSessionExpired?.call();
       return false;
     } finally {
       _isRefreshing = false;

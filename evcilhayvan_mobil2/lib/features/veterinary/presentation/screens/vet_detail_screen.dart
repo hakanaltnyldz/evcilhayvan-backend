@@ -7,6 +7,12 @@ import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import '../../data/repositories/veterinary_repository.dart';
+import '../../domain/models/vet_review_model.dart';
+
+final vetReviewsProvider =
+    FutureProvider.autoDispose.family<Map<String, dynamic>, String>((ref, vetId) {
+  return ref.read(veterinaryRepositoryProvider).getVetReviews(vetId);
+});
 
 class VetDetailScreen extends ConsumerWidget {
   final String vetId;
@@ -88,7 +94,11 @@ class VetDetailScreen extends ConsumerWidget {
                       ],
 
                       // Info
-                      if (vet.address != null) _infoRow(Icons.location_on, vet.address!, theme),
+                      if (vet.address != null) _infoRow(Icons.location_on, vet.address!, theme,
+                        onTap: (vet.latitude != null && vet.longitude != null)
+                          ? () => _launchUrl('https://www.google.com/maps/search/?api=1&query=${vet.latitude},${vet.longitude}')
+                          : () => _launchUrl('https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(vet.address!)}'),
+                      ),
                       if (vet.phone != null) _infoRow(Icons.phone, vet.phone!, theme, onTap: () => _launchUrl('tel:${vet.phone}')),
                       if (vet.email != null) _infoRow(Icons.email, vet.email!, theme, onTap: () => _launchUrl('mailto:${vet.email}')),
                       if (vet.website != null) _infoRow(Icons.language, vet.website!, theme, onTap: () => _launchUrl(vet.website!)),
@@ -151,6 +161,11 @@ class VetDetailScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+
+              // ── Değerlendirmeler ──
+              SliverToBoxAdapter(
+                child: _VetReviewsSection(vetId: vetId),
+              ),
             ],
           );
         },
@@ -167,6 +182,29 @@ class VetDetailScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Haritada Aç butonu
+                  if (vet.address != null || vet.latitude != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            final url = (vet.latitude != null && vet.longitude != null)
+                                ? 'https://www.google.com/maps/search/?api=1&query=${vet.latitude},${vet.longitude}'
+                                : 'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(vet.address!)}';
+                            _launchUrl(url);
+                          },
+                          icon: const Icon(Icons.map_outlined),
+                          label: const Text('Haritada Aç'),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                        ),
+                      ),
+                    ),
+
                   // Mesaj Gönder butonu (vet sisteme kayıtlıysa)
                   if (vet.userId != null && !isMyVet)
                     Padding(
@@ -262,6 +300,262 @@ class VetDetailScreen extends ConsumerWidget {
       case 'rodent': return 'Kemirgen';
       default: return 'Diger';
     }
+  }
+}
+
+// ── Değerlendirmeler Bölümü ──────────────────────────────────────────────────
+class _VetReviewsSection extends ConsumerStatefulWidget {
+  final String vetId;
+  const _VetReviewsSection({required this.vetId});
+
+  @override
+  ConsumerState<_VetReviewsSection> createState() => _VetReviewsSectionState();
+}
+
+class _VetReviewsSectionState extends ConsumerState<_VetReviewsSection> {
+  Future<void> _showAddReview() async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (_) => _AddReviewDialog(),
+    );
+    if (result == null) return;
+    try {
+      final repo = ref.read(veterinaryRepositoryProvider);
+      await repo.addVetReview(widget.vetId, result['rating'] as int,
+          comment: result['comment'] as String?);
+      ref.invalidate(vetReviewsProvider(widget.vetId));
+      ref.invalidate(vetDetailProvider(widget.vetId));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Değerlendirmeniz eklendi.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red));
+      }
+    }
+  }
+
+  Future<void> _deleteReview(String reviewId) async {
+    try {
+      await ref.read(veterinaryRepositoryProvider).deleteVetReview(reviewId);
+      ref.invalidate(vetReviewsProvider(widget.vetId));
+      ref.invalidate(vetDetailProvider(widget.vetId));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Silinemedi: $e'), backgroundColor: Colors.red));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final reviewsAsync = ref.watch(vetReviewsProvider(widget.vetId));
+    final theme = Theme.of(context);
+    final currentUser = ref.watch(authProvider);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text('Değerlendirmeler',
+                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              const Spacer(),
+              if (currentUser != null)
+                TextButton.icon(
+                  onPressed: _showAddReview,
+                  icon: const Icon(Icons.rate_review_outlined, size: 18),
+                  label: const Text('Değerlendir'),
+                ),
+            ],
+          ),
+          reviewsAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, __) => const Text('Yorumlar yüklenemedi.'),
+            data: (data) {
+              final reviews = data['reviews'] as List<VetReview>;
+              final avg = data['averageRating'] as double;
+              final count = data['ratingCount'] as int;
+
+              if (count == 0) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Text('Henüz değerlendirme yok. İlk yorumu siz yapın!',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant)),
+                );
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Ortalama puan özeti
+                  Row(
+                    children: [
+                      Text(avg.toStringAsFixed(1),
+                          style: theme.textTheme.displaySmall?.copyWith(
+                              fontWeight: FontWeight.bold, color: Colors.amber[700])),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: List.generate(
+                                5,
+                                (i) => Icon(
+                                      i < avg.round() ? Icons.star : Icons.star_border,
+                                      color: Colors.amber[700],
+                                      size: 20,
+                                    )),
+                          ),
+                          Text('$count değerlendirme',
+                              style: theme.textTheme.bodySmall),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Yorum kartları
+                  ...reviews.map((r) {
+                    final isOwn = currentUser != null && r.userId == currentUser.id;
+                    final avatarUrl = r.userAvatarUrl != null
+                        ? (r.userAvatarUrl!.startsWith('http')
+                            ? r.userAvatarUrl!
+                            : '$apiBaseUrl${r.userAvatarUrl}')
+                        : null;
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 16,
+                                  backgroundImage: avatarUrl != null
+                                      ? NetworkImage(avatarUrl)
+                                      : null,
+                                  child: avatarUrl == null
+                                      ? Text(r.userName.isNotEmpty ? r.userName[0].toUpperCase() : '?')
+                                      : null,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(r.userName,
+                                          style: theme.textTheme.labelLarge),
+                                      Row(
+                                        children: List.generate(
+                                            5,
+                                            (i) => Icon(
+                                                  i < r.rating ? Icons.star : Icons.star_border,
+                                                  color: Colors.amber[700],
+                                                  size: 14,
+                                                )),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (isOwn)
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline, size: 18),
+                                    color: Colors.red.shade300,
+                                    onPressed: () => _deleteReview(r.id),
+                                  ),
+                              ],
+                            ),
+                            if (r.comment != null && r.comment!.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Text(r.comment!, style: theme.textTheme.bodyMedium),
+                            ],
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AddReviewDialog extends StatefulWidget {
+  const _AddReviewDialog();
+
+  @override
+  State<_AddReviewDialog> createState() => _AddReviewDialogState();
+}
+
+class _AddReviewDialogState extends State<_AddReviewDialog> {
+  int _rating = 5;
+  final _commentCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _commentCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Veteriner Değerlendir'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(5, (i) {
+              return GestureDetector(
+                onTap: () => setState(() => _rating = i + 1),
+                child: Icon(
+                  i < _rating ? Icons.star : Icons.star_border,
+                  color: Colors.amber[700],
+                  size: 36,
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _commentCtrl,
+            maxLines: 3,
+            decoration: const InputDecoration(
+              labelText: 'Yorumunuz (isteğe bağlı)',
+              alignLabelWithHint: true,
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('İptal'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, {
+            'rating': _rating,
+            'comment': _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
+          }),
+          child: const Text('Gönder'),
+        ),
+      ],
+    );
   }
 }
 
