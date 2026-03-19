@@ -105,24 +105,26 @@ class _ConversationsTab extends ConsumerWidget {
                         key: ValueKey(conv.id),
                         direction: DismissDirection.endToStart,
                         confirmDismiss: (_) async {
+                          final dl10n = AppLocalizations.of(context)!;
                           return await showDialog<bool>(
                                 context: context,
-                                builder: (dialogContext) => AlertDialog(
-                                  title: const Text('Sohbeti sil'),
-                                  content: const Text(
-                                    'Bu sohbeti kalici olarak silmek istediginize emin misiniz?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.of(dialogContext).pop(false),
-                                      child: const Text('Vazgec'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () => Navigator.of(dialogContext).pop(true),
-                                      child: const Text('Sil'),
-                                    ),
-                                  ],
-                                ),
+                                builder: (dialogContext) {
+                                  final ddl10n = AppLocalizations.of(dialogContext)!;
+                                  return AlertDialog(
+                                    title: Text(ddl10n.chatDeleteTitle),
+                                    content: Text(ddl10n.chatDeleteContent),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.of(dialogContext).pop(false),
+                                        child: Text(ddl10n.cancel),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Navigator.of(dialogContext).pop(true),
+                                        child: Text(ddl10n.delete),
+                                      ),
+                                    ],
+                                  );
+                                },
                               ) ??
                               false;
                         },
@@ -132,15 +134,13 @@ class _ConversationsTab extends ConsumerWidget {
                             ref.invalidate(conversationsProvider);
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Sohbet silindi'),
-                                ),
+                                SnackBar(content: Text(AppLocalizations.of(context)!.msgConvDeleted)),
                               );
                             }
                           } catch (e) {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Sohbet silinemedi: $e')),
+                                SnackBar(content: Text(AppLocalizations.of(context)!.msgConvDeleteErr(e.toString()))),
                               );
                             }
                           }
@@ -164,7 +164,7 @@ class _ConversationsTab extends ConsumerWidget {
                         ),
                         child: _ConversationCard(
                           title: conv.otherParticipant.name,
-                          subtitle: conv.lastMessage.isNotEmpty ? conv.lastMessage : 'Sohbete basla',
+                          subtitle: conv.lastMessage.isNotEmpty ? conv.lastMessage : AppLocalizations.of(context)!.msgConvStart,
                           relatedPet: conv.relatedPet,
                           relatedPetId: conv.relatedPetId,
                           updatedAt: conv.updatedAt,
@@ -185,8 +185,8 @@ class _ConversationsTab extends ConsumerWidget {
 
                             if (result == true && context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Sohbet silindi'),
+                                SnackBar(
+                                  content: Text(AppLocalizations.of(context)!.msgConvDeleted),
                                 ),
                               );
                               ref.invalidate(conversationsProvider);
@@ -233,12 +233,12 @@ class _RequestsTab extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         children: [
-          _SectionHeader(title: 'Eşleştirme İstekleri', count: matchingCount),
+          _SectionHeader(title: AppLocalizations.of(context)!.msgMatingRequestsTitle, count: matchingCount),
           const SizedBox(height: 12),
           matchingAsync.when(
             data: (items) {
               if (items.isEmpty) {
-                return const _EmptySection(message: 'Henüz eşleştirme isteği yok.');
+                return _EmptySection(message: AppLocalizations.of(context)!.msgNoMatingRequests);
               }
               return Column(
                 children: items
@@ -253,12 +253,12 @@ class _RequestsTab extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 20),
-          _SectionHeader(title: 'Sahiplendirme Başvuruları', count: adoptionCount),
+          _SectionHeader(title: AppLocalizations.of(context)!.msgAdoptionRequestsTitle, count: adoptionCount),
           const SizedBox(height: 12),
           adoptionAsync.when(
             data: (items) {
               if (items.isEmpty) {
-                return const _EmptySection(message: 'Henüz başvuru yok.');
+                return _EmptySection(message: AppLocalizations.of(context)!.msgNoAdoptionRequests);
               }
               return Column(
                 children: items
@@ -349,7 +349,7 @@ class _SectionError extends StatelessWidget {
         const SizedBox(height: 8),
         OutlinedButton(
           onPressed: onRetry,
-          child: const Text('Tekrar dene'),
+          child: Text(AppLocalizations.of(context)!.retry),
         ),
       ],
     );
@@ -393,14 +393,14 @@ class _MatchingRequestCard extends ConsumerWidget {
         ref.invalidate(conversationsProvider);
         if (context.mounted) {
           ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('İşlem tamamlandı: $action')));
+              .showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.msgActionDone)));
         }
         if (action == 'accept' && result.conversationId != null && context.mounted) {
           await _openChatForRequest(
             context: context,
             ref: ref,
             participantId: request.fromUser?.id ?? '',
-            participantName: request.fromUser?.name ?? 'Sohbet',
+            participantName: request.fromUser?.name ?? AppLocalizations.of(context)!.chatTypeGeneral,
             participantAvatar: request.fromUser?.avatarUrl,
             conversationId: result.conversationId,
             listingId: request.listingId,
@@ -425,7 +425,7 @@ class _MatchingRequestCard extends ConsumerWidget {
               children: [
                 Expanded(
                   child: Text(
-                    request.listing?.name ?? 'Ilan',
+                    request.listing?.name ?? AppLocalizations.of(context)!.petDetailTitle,
                     style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -436,17 +436,17 @@ class _MatchingRequestCard extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text(
-                    _statusLabel(status),
+                    _statusLabel(status, AppLocalizations.of(context)!),
                     style: theme.textTheme.labelMedium?.copyWith(color: statusColor),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 6),
-            Text('Gönderen: ${request.fromUser?.name ?? '-'}'),
+            Text(AppLocalizations.of(context)!.msgSenderLabel(request.fromUser?.name ?? '-')),
             if ((request.fromPet?.name ?? '').isNotEmpty) ...[
               const SizedBox(height: 4),
-              Text('Seçilen pet: ${request.fromPet?.name}'),
+              Text(AppLocalizations.of(context)!.msgSelectedPet(request.fromPet!.name)),
             ],
             if (request.fromPetId.isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -456,7 +456,7 @@ class _MatchingRequestCard extends ConsumerWidget {
                   pathParameters: {'id': request.fromPetId},
                 ),
                 icon: const Icon(Icons.pets_outlined, size: 18),
-                label: const Text('Gönderen ilanını gör'),
+                label: Text(AppLocalizations.of(context)!.msgViewSenderListing),
               ),
             ],
             const SizedBox(height: 10),
@@ -466,14 +466,14 @@ class _MatchingRequestCard extends ConsumerWidget {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () => _respond('accept'),
-                      child: const Text('Kabul Et'),
+                      child: Text(AppLocalizations.of(context)!.matchRequestAccept),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => _respond('reject'),
-                      child: const Text('Reddet'),
+                      child: Text(AppLocalizations.of(context)!.matchRequestReject),
                     ),
                   ),
                 ],
@@ -486,13 +486,13 @@ class _MatchingRequestCard extends ConsumerWidget {
                     context: context,
                     ref: ref,
                     participantId: request.fromUser?.id ?? '',
-                    participantName: request.fromUser?.name ?? 'Sohbet',
+                    participantName: request.fromUser?.name ?? AppLocalizations.of(context)!.chatTypeGeneral,
                     participantAvatar: request.fromUser?.avatarUrl,
                     conversationId: request.conversationId,
                     listingId: request.listingId,
                   ),
                   icon: const Icon(Icons.chat_bubble),
-                  label: const Text('Sohbete git'),
+                  label: Text(AppLocalizations.of(context)!.msgGoToChat),
                 ),
               ),
           ],
@@ -520,14 +520,14 @@ class _AdoptionApplicationCard extends ConsumerWidget {
         ref.invalidate(conversationsProvider);
         if (context.mounted) {
           ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('İşlem tamamlandı: $action')));
+              .showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.msgActionDone)));
         }
         if (action == 'accept' && result.conversationId != null && context.mounted) {
           await _openChatForRequest(
             context: context,
             ref: ref,
             participantId: application.applicantUser?.id ?? '',
-            participantName: application.applicantUser?.name ?? 'Sohbet',
+            participantName: application.applicantUser?.name ?? AppLocalizations.of(context)!.chatTypeGeneral,
             participantAvatar: application.applicantUser?.avatarUrl,
             conversationId: result.conversationId,
             listingId: application.adoptionListingId,
@@ -552,7 +552,7 @@ class _AdoptionApplicationCard extends ConsumerWidget {
               children: [
                 Expanded(
                   child: Text(
-                    application.listing?.name ?? 'Ilan',
+                    application.listing?.name ?? AppLocalizations.of(context)!.petDetailTitle,
                     style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -563,14 +563,14 @@ class _AdoptionApplicationCard extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text(
-                    _statusLabel(status),
+                    _statusLabel(status, AppLocalizations.of(context)!),
                     style: theme.textTheme.labelMedium?.copyWith(color: statusColor),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 6),
-            Text('Başvuran: ${application.applicantUser?.name ?? '-'}'),
+            Text(AppLocalizations.of(context)!.msgApplicantLabel(application.applicantUser?.name ?? '-')),
             if ((application.note ?? '').isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(application.note!),
@@ -582,14 +582,14 @@ class _AdoptionApplicationCard extends ConsumerWidget {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () => _respond('accept'),
-                      child: const Text('Kabul Et'),
+                      child: Text(AppLocalizations.of(context)!.matchRequestAccept),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => _respond('reject'),
-                      child: const Text('Reddet'),
+                      child: Text(AppLocalizations.of(context)!.matchRequestReject),
                     ),
                   ),
                 ],
@@ -602,13 +602,13 @@ class _AdoptionApplicationCard extends ConsumerWidget {
                     context: context,
                     ref: ref,
                     participantId: application.applicantUser?.id ?? '',
-                    participantName: application.applicantUser?.name ?? 'Sohbet',
+                    participantName: application.applicantUser?.name ?? AppLocalizations.of(context)!.chatTypeGeneral,
                     participantAvatar: application.applicantUser?.avatarUrl,
                     conversationId: application.conversationId,
                     listingId: application.adoptionListingId,
                   ),
                   icon: const Icon(Icons.chat_bubble),
-                  label: const Text('Sohbete git'),
+                  label: Text(AppLocalizations.of(context)!.msgGoToChat),
                 ),
               ),
           ],
@@ -629,13 +629,13 @@ Future<void> _openChatForRequest({
 }) async {
   if (participantId.trim().isEmpty) {
     ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Karşı taraf bilgisi bulunamadı.')));
+        .showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.msgNoRecipient)));
     return;
   }
   final currentUser = ref.read(authProvider);
   if (currentUser == null) {
     ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Sohbet için giriş yapın.')));
+        .showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.msgLoginRequired)));
     return;
   }
 
@@ -694,7 +694,7 @@ Future<void> _openChatForRequest({
   }
 
   ScaffoldMessenger.of(context)
-      .showSnackBar(const SnackBar(content: Text('Sohbet açılamadı.')));
+      .showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.msgOpenFailed)));
 }
 
 Color _statusColor(ThemeData theme, String status) {
@@ -710,16 +710,16 @@ Color _statusColor(ThemeData theme, String status) {
   }
 }
 
-String _statusLabel(String status) {
+String _statusLabel(String status, AppLocalizations l10n) {
   switch (status.toUpperCase()) {
     case 'ACCEPTED':
-      return 'Kabul edildi';
+      return l10n.msgStatusAccepted;
     case 'REJECTED':
-      return 'Reddedildi';
+      return l10n.msgStatusRejected;
     case 'CANCELLED':
-      return 'İptal edildi';
+      return l10n.msgStatusCancelled;
     default:
-      return 'Beklemede';
+      return l10n.msgStatusPending;
   }
 }
 
@@ -757,14 +757,14 @@ class _Header extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Sohbet kutunu renklendir',
+                  AppLocalizations.of(context)!.msgHeaderTitle,
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Sahiplendirme görüşmelerini, ilan sorularını ve yeni dostlukları burada yönet.',
+                  AppLocalizations.of(context)!.msgHeaderSubtitle,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurface.withOpacity(0.75),
                   ),
@@ -828,10 +828,11 @@ class _ConversationCard extends ConsumerWidget {
       petAsync = const AsyncData<Pet?>(null);
     }
 
+    final l10n = AppLocalizations.of(context)!;
     final petChipLabel = petAsync.when(
-      data: (pet) => pet?.name ?? 'İlan bilgisi bulunamadı',
-      loading: () => 'İlan yükleniyor...',
-      error: (_, __) => 'İlan bilgisi alınamadı',
+      data: (pet) => pet?.name ?? l10n.msgListingNotFound,
+      loading: () => l10n.msgListingLoading,
+      error: (_, __) => l10n.msgListingLoadErr,
     );
 
     return InkWell(
@@ -1076,7 +1077,7 @@ class _ErrorState extends StatelessWidget {
           Icon(Icons.error_outline, color: theme.colorScheme.error),
           const SizedBox(height: 12),
           Text(
-            'Sohbetler yüklenemedi',
+            AppLocalizations.of(context)!.msgConvLoadErr,
             style: theme.textTheme.titleMedium,
           ),
           Padding(

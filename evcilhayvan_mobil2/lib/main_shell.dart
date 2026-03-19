@@ -69,10 +69,10 @@ class _MainShellState extends ConsumerState<MainShell> {
         setState(() => _isOffline = offline);
         if (!offline && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('İnternet bağlantısı yeniden kuruldu'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.shellReconnected),
               backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
+              duration: const Duration(seconds: 2),
             ),
           );
         }
@@ -329,7 +329,7 @@ class _MainShellState extends ConsumerState<MainShell> {
         ));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(d['message']?.toString() ?? 'Dostunuzun doğum günü bugün! 🎂'),
+            content: Text(d['message']?.toString() ?? AppLocalizations.of(context)!.shellBirthdayDefault),
             backgroundColor: Colors.pink.shade400,
             duration: const Duration(seconds: 5),
           ),
@@ -342,7 +342,7 @@ class _MainShellState extends ConsumerState<MainShell> {
       if (!mounted) return;
       try {
         final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
-        final petName = d['petName']?.toString() ?? 'Evcil hayvanınız';
+        final petName = d['petName']?.toString() ?? AppLocalizations.of(context)!.shellApptReminderDefault;
         final vetName = d['vetName']?.toString() ?? 'Veteriner';
         final dateStr = d['dateStr']?.toString() ?? '';
         notifier.addNotification(AppNotification(
@@ -353,18 +353,20 @@ class _MainShellState extends ConsumerState<MainShell> {
           data: {'appointmentId': d['appointmentId']?.toString()},
           createdAt: DateTime.now(),
         ));
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('🗓️ $petName için yarın $vetName randevunuz var!'),
-            backgroundColor: Colors.teal.shade600,
-            duration: const Duration(seconds: 5),
-            action: SnackBarAction(
-              label: 'Görüntüle',
-              textColor: Colors.white,
-              onPressed: () {},
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('🗓️ $petName için yarın $vetName randevunuz var!'),
+              backgroundColor: Colors.teal.shade600,
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: AppLocalizations.of(context)!.shellApptSnackView,
+                textColor: Colors.white,
+                onPressed: () {},
+              ),
             ),
-          ),
-        );
+          );
+        }
       } catch (_) {}
     });
 
@@ -404,7 +406,7 @@ class _MainShellState extends ConsumerState<MainShell> {
             SnackBar(
               content: Text(d['message'] as String? ?? '"${d['petName']}" ilanınızın süresi doluyor.'),
               action: SnackBarAction(
-                label: 'İlanlarım',
+                label: AppLocalizations.of(context)!.shellAdvertsNav,
                 onPressed: () => context.goNamed('profile'),
               ),
               duration: const Duration(seconds: 6),
@@ -451,6 +453,7 @@ class _MainShellState extends ConsumerState<MainShell> {
   Widget build(BuildContext context) {
     _updateCurrentIndex(context);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return SafeArea(
       child: Scaffold(
@@ -463,7 +466,7 @@ class _MainShellState extends ConsumerState<MainShell> {
             backgroundColor: AppPalette.primary,
             foregroundColor: Colors.white,
             elevation: 4,
-            tooltip: 'Rehber Pati',
+            tooltip: l10n.shellGuideFab,
             child: const Icon(Icons.assistant_rounded, size: 20),
           )
               .animate(
@@ -487,14 +490,14 @@ class _MainShellState extends ConsumerState<MainShell> {
                       width: double.infinity,
                       color: Colors.red.shade700,
                       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.wifi_off, color: Colors.white, size: 16),
-                          SizedBox(width: 8),
+                          const Icon(Icons.wifi_off, color: Colors.white, size: 16),
+                          const SizedBox(width: 8),
                           Text(
-                            'İnternet bağlantısı yok',
-                            style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                            l10n.shellOfflineBanner,
+                            style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -80,6 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -103,7 +105,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     const Icon(Icons.pets, size: 72, color: AppPalette.primary),
                     const SizedBox(height: 8),
                     Text(
-                      'Giriş Yap',
+                      l10n.loginTitle,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
@@ -114,26 +116,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     TextFormField(
                       controller: _emailCtrl,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: _deco('E-posta', Icons.email_outlined),
-                      validator: (v) => (v == null || !v.contains('@')) ? 'Geçerli e-posta girin' : null,
+                      decoration: _deco(l10n.email, Icons.email_outlined),
+                      validator: (v) => (v == null || !v.contains('@')) ? l10n.loginEmailError : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _passCtrl,
                       obscureText: _obscure,
-                      decoration: _deco('Şifre', Icons.lock_outline).copyWith(
+                      decoration: _deco(l10n.password, Icons.lock_outline).copyWith(
                         suffixIcon: IconButton(
                           icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                       ),
-                      validator: (v) => (v == null || v.length < 6) ? 'En az 6 karakter' : null,
+                      validator: (v) => (v == null || v.length < 6) ? l10n.loginPasswordError : null,
                     ),
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () => context.go('/forgot-password'),
-                        child: const Text('Şifremi Unuttum'),
+                        child: Text(l10n.forgotPassword),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -147,16 +149,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                       ),
                       child: _loading
                           ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Text('Giriş Yap', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          : Text(l10n.login, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('Hesabın yok mu?'),
+                        Text(l10n.loginNoAccount),
                         TextButton(
                           onPressed: () => context.go('/register'),
-                          child: const Text('Kayıt Ol', style: TextStyle(color: AppPalette.primary, fontWeight: FontWeight.bold)),
+                          child: Text(l10n.register, style: const TextStyle(color: AppPalette.primary, fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),

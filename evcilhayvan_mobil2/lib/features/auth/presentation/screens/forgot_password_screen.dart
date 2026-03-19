@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -46,7 +47,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Şifremi Unuttum'),
+        title: Text(AppLocalizations.of(context)!.forgotTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -71,14 +72,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   }
 
   Widget _successView(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         const Icon(Icons.mark_email_read_outlined, size: 80, color: AppPalette.tertiary),
         const SizedBox(height: 16),
-        const Text('E-posta Gönderildi!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        Text(l10n.forgotSuccessTitle, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Text(
-          '${_emailCtrl.text.trim()} adresine şifre sıfırlama kodu gönderdik.',
+          l10n.forgotSuccessDesc(_emailCtrl.text.trim()),
           textAlign: TextAlign.center,
           style: const TextStyle(color: AppPalette.onSurfaceVariant),
         ),
@@ -91,13 +93,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
-          child: const Text('Kodu Gir'),
+          child: Text(l10n.forgotEnterCode),
         ),
       ],
     );
   }
 
   Widget _formView() {
+    final l10n = AppLocalizations.of(context)!;
     return Form(
       key: _formKey,
       child: Column(
@@ -105,23 +108,23 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         children: [
           const Icon(Icons.lock_reset, size: 80, color: AppPalette.primary),
           const SizedBox(height: 16),
-          const Text(
-            'Şifrenizi sıfırlamak için e-posta adresinizi girin.',
+          Text(
+            l10n.forgotDesc,
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppPalette.onSurfaceVariant),
+            style: const TextStyle(color: AppPalette.onSurfaceVariant),
           ),
           const SizedBox(height: 32),
           TextFormField(
             controller: _emailCtrl,
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
-              labelText: 'E-posta',
+              labelText: l10n.email,
               prefixIcon: const Icon(Icons.email_outlined),
               filled: true,
               fillColor: Colors.white,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
             ),
-            validator: (v) => (v == null || !v.contains('@')) ? 'Geçerli e-posta girin' : null,
+            validator: (v) => (v == null || !v.contains('@')) ? l10n.loginEmailError : null,
           ),
           const SizedBox(height: 24),
           ElevatedButton(
@@ -134,7 +137,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             ),
             child: _loading
                 ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Text('Kod Gönder', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                : Text(l10n.forgotSubmit, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
         ],
       ),

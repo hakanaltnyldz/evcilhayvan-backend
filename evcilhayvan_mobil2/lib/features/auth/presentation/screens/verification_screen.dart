@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -32,7 +33,7 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
       await repo.verifyEmail(email: widget.email, code: code);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('E-posta doğrulandı! Giriş yapabilirsiniz.'), backgroundColor: Colors.green),
+          SnackBar(content: Text(AppLocalizations.of(context)!.verifySuccess), backgroundColor: Colors.green),
         );
         context.go('/login');
       }
@@ -49,9 +50,10 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('E-posta Doğrula'),
+        title: Text(l10n.verifyTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -74,7 +76,7 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
                   const Icon(Icons.mark_email_unread_outlined, size: 80, color: AppPalette.primary),
                   const SizedBox(height: 16),
                   Text(
-                    '${widget.email} adresine bir doğrulama kodu gönderdik.',
+                    l10n.verifyDesc(widget.email),
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: AppPalette.onSurfaceVariant),
                   ),
@@ -85,7 +87,7 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 24, letterSpacing: 8),
                     decoration: InputDecoration(
-                      labelText: 'Doğrulama Kodu',
+                      labelText: l10n.verifyCodeLabel,
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
@@ -102,12 +104,12 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
                     ),
                     child: _loading
                         ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Text('Doğrula', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        : Text(l10n.verifySubmit, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: () => context.go('/login'),
-                    child: const Text('Giriş sayfasına dön'),
+                    child: Text(l10n.verifyBackToLogin),
                   ),
                 ],
               ),

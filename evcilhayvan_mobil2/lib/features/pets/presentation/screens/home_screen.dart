@@ -28,14 +28,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   String? _selectedSpecies;
   String? _selectedBreed;
 
-  static const _speciesList = [
-    ('🐶 Köpek', 'dog'),
-    ('🐱 Kedi', 'cat'),
-    ('🐦 Kuş', 'bird'),
-    ('🐟 Balık', 'fish'),
-    ('🐹 Kemirgen', 'rodent'),
-    ('🐾 Diğer', 'other'),
-  ];
+  static const _speciesValues = ['dog', 'cat', 'bird', 'fish', 'rodent', 'other'];
+  static const _speciesEmojis = ['🐶', '🐱', '🐦', '🐟', '🐹', '🐾'];
 
   void _applyFilter({String? species, String? breed}) {
     setState(() {
@@ -83,7 +77,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (perm == LocationPermission.deniedForever || perm == LocationPermission.denied) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Konum izni gerekli')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.homeLocationPermErr)),
           );
         }
         return;
@@ -100,7 +94,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Konum alınamadı: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.homeLocationErr(e.toString()))),
         );
       }
     } finally {
@@ -110,24 +104,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final user = ref.watch(authProvider);
     final firstName = (user?.name ?? '').split(' ').first;
+    final speciesList = [
+      ('🐶 ${l10n.speciesDog}', 'dog'),
+      ('🐱 ${l10n.speciesCat}', 'cat'),
+      ('🐦 ${l10n.speciesBird}', 'bird'),
+      ('🐟 ${l10n.speciesFish}', 'fish'),
+      ('🐹 ${l10n.vetSpeciesRodent}', 'rodent'),
+      ('🐾 ${l10n.speciesOther}', 'other'),
+    ];
 
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          title: const Text('İlanları Keşfet'),
+          title: Text(l10n.homeDiscoverTitle),
           actions: [
             IconButton(
               icon: const Icon(Icons.search_rounded),
-              tooltip: 'Ara',
+              tooltip: l10n.homeSearchTooltip,
               onPressed: () => context.pushNamed('search'),
             ),
             IconButton(
               icon: const Icon(Icons.location_searching),
-              tooltip: 'Kayip & Bulunan',
+              tooltip: l10n.homeLostFoundTooltip,
               onPressed: () => context.pushNamed('lost-found'),
             ),
             _NotificationBell(),
@@ -178,7 +181,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       scrollDirection: Axis.horizontal,
                       children: [
                         ActionChip(
-                          label: const Text('Yakınımdaki İlanlar'),
+                          label: Text(l10n.homeNearbyAds),
                           avatar: const Icon(Icons.near_me_rounded, size: 16),
                           onPressed: () => context.pushNamed('nearby-ads'),
                           backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
@@ -188,7 +191,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        ..._speciesList.map((s) {
+                        ...speciesList.map((s) {
                           final selected = _selectedSpecies == s.$2;
                           return Padding(
                             padding: const EdgeInsets.only(right: 6),
@@ -226,7 +229,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           onPressed: _pickBreed,
                           icon: const Icon(Icons.pets, size: 14),
                           label: Text(
-                            _selectedBreed ?? 'Cins seç',
+                            _selectedBreed ?? l10n.homeBreedSelect,
                             style: const TextStyle(fontSize: 12),
                           ),
                           style: OutlinedButton.styleFrom(
@@ -248,7 +251,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             visualDensity: VisualDensity.compact,
                             foregroundColor: Colors.red,
                           ),
-                          child: const Text('Filtreyi temizle', style: TextStyle(fontSize: 12)),
+                          child: Text(l10n.homeClearFilter, style: const TextStyle(fontSize: 12)),
                         ),
                       ],
                     ),
@@ -278,7 +281,18 @@ class _AnimatedHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final greeting = _getGreeting();
+    final l10n = AppLocalizations.of(context)!;
+    final hour = DateTime.now().hour;
+    final String greeting;
+    if (hour >= 5 && hour < 12) {
+      greeting = l10n.homeGoodMorning;
+    } else if (hour >= 12 && hour < 18) {
+      greeting = l10n.homeGoodDay;
+    } else if (hour >= 18 && hour < 22) {
+      greeting = l10n.homeGoodEvening;
+    } else {
+      greeting = l10n.homeGoodNight;
+    }
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
       duration: const Duration(milliseconds: 800),
@@ -334,7 +348,7 @@ class _AnimatedHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    firstName != null ? '$greeting, $firstName!' : 'Hoş geldin!',
+                    firstName != null ? '$greeting, $firstName!' : l10n.homeWelcome,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -342,7 +356,7 @@ class _AnimatedHeader extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Sana en uygun pati dostunu keşfet.',
+                    l10n.homeHeaderDesc,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.white.withOpacity(0.85),
                         ),
@@ -356,38 +370,31 @@ class _AnimatedHeader extends StatelessWidget {
     );
   }
 
-  static String _getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour >= 5 && hour < 12) return 'Günaydın';
-    if (hour >= 12 && hour < 18) return 'İyi günler';
-    if (hour >= 18 && hour < 22) return 'İyi akşamlar';
-    return 'İyi geceler';
-  }
 }
 
 class _QuickShortcutsRow extends StatelessWidget {
   const _QuickShortcutsRow();
 
-  static const _shortcuts = [
-    (label: 'Eşleştir', icon: Icons.favorite_rounded, colors: [Color(0xFFFF6B6B), Color(0xFFFF8E8E)], route: 'mating'),
-    (label: 'Bakıcı\nBul', icon: Icons.pets_rounded, colors: [Color(0xFF56CCF2), Color(0xFF2F80ED)], route: 'sitters'),
-    (label: 'Etkinlik', icon: Icons.event_rounded, colors: [Color(0xFF6FCF97), Color(0xFF27AE60)], route: 'events'),
-    (label: 'Kayıp &\nBulunan', icon: Icons.location_searching_rounded, colors: [Color(0xFFF2994A), Color(0xFFEB5757)], route: 'lost-found'),
-    (label: 'Harita', icon: Icons.map_rounded, colors: [Color(0xFF11998E), Color(0xFF38EF7D)], route: 'map'),
-    (label: 'Feed', icon: Icons.dynamic_feed_rounded, colors: [Color(0xFF6C63FF), Color(0xFF9B8FFF)], route: 'feed'),
-    (label: 'Pati\nAsistan', icon: Icons.smart_toy_rounded, colors: [Color(0xFFFF7A59), Color(0xFFFF9F7F)], route: 'ai-assistant'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final shortcuts = [
+      (label: l10n.homeShortcutMating, icon: Icons.favorite_rounded, colors: const [Color(0xFFFF6B6B), Color(0xFFFF8E8E)], route: 'mating'),
+      (label: l10n.homeShortcutSitterFull, icon: Icons.pets_rounded, colors: const [Color(0xFF56CCF2), Color(0xFF2F80ED)], route: 'sitters'),
+      (label: l10n.homeShortcutEvents, icon: Icons.event_rounded, colors: const [Color(0xFF6FCF97), Color(0xFF27AE60)], route: 'events'),
+      (label: l10n.homeShortcutLostFull, icon: Icons.location_searching_rounded, colors: const [Color(0xFFF2994A), Color(0xFFEB5757)], route: 'lost-found'),
+      (label: l10n.homeShortcutMap, icon: Icons.map_rounded, colors: const [Color(0xFF11998E), Color(0xFF38EF7D)], route: 'map'),
+      (label: l10n.homeShortcutFeed, icon: Icons.dynamic_feed_rounded, colors: const [Color(0xFF6C63FF), Color(0xFF9B8FFF)], route: 'feed'),
+      (label: l10n.homeShortcutAiFull, icon: Icons.smart_toy_rounded, colors: const [Color(0xFFFF7A59), Color(0xFFFF9F7F)], route: 'ai-assistant'),
+    ];
     return SizedBox(
       height: 90,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
-        itemCount: _shortcuts.length,
+        itemCount: shortcuts.length,
         itemBuilder: (context, i) {
-          final s = _shortcuts[i];
+          final s = shortcuts[i];
           return _ShortcutCard(
             label: s.label,
             icon: s.icon,
@@ -503,10 +510,10 @@ class _AdvertsListState extends ConsumerState<_AdvertsList> {
     }
 
     if (state.items.isEmpty) {
-      return const EmptyState(
+      return EmptyState(
         icon: Icons.pets,
-        title: 'Henüz ilan yok',
-        subtitle: 'Bu kategoride henüz ilan yok. İlk sen ekle!',
+        title: AppLocalizations.of(context)!.homeEmptyListings,
+        subtitle: AppLocalizations.of(context)!.homeEmptyListingsDesc,
       );
     }
 
@@ -566,7 +573,7 @@ class _NotificationBell extends ConsumerWidget {
         ),
         child: bellIcon,
       ),
-      tooltip: 'Bildirimler',
+      tooltip: AppLocalizations.of(context)!.homeNotifTooltip,
       onPressed: () => context.pushNamed('notifications'),
     );
   }
@@ -716,7 +723,7 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
                 controller: _searchCtrl,
                 autofocus: true,
                 decoration: InputDecoration(
-                  hintText: 'Cins ara...',
+                  hintText: AppLocalizations.of(context)!.homeBreedSearch,
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
                   fillColor: theme.colorScheme.surfaceVariant.withOpacity(0.4),
@@ -787,7 +794,7 @@ class _UpcomingRemindersWidget extends ConsumerWidget {
                   const Icon(Icons.event_rounded, size: 14, color: Color(0xFF6C63FF)),
                   const SizedBox(width: 4),
                   Text(
-                    'Yaklaşan Randevular',
+                    AppLocalizations.of(context)!.homeUpcomingAppointments,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                           color: const Color(0xFF6C63FF),
                           fontWeight: FontWeight.w700,
@@ -806,7 +813,7 @@ class _UpcomingRemindersWidget extends ConsumerWidget {
                   final a = upcoming[i];
                   final date = a.date;
                   final isToday = date.day == now.day && date.month == now.month;
-                  final label = isToday ? 'Bugün' : 'Yarın';
+                  final label = isToday ? AppLocalizations.of(context)!.today : AppLocalizations.of(context)!.tomorrow;
                   final time =
                       '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
                   return GestureDetector(
@@ -838,7 +845,7 @@ class _UpcomingRemindersWidget extends ConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                a.vet?.name ?? 'Veteriner Randevusu',
+                                a.vet?.name ?? AppLocalizations.of(context)!.homeApptFallback,
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w700,

@@ -2,6 +2,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:evcilhayvan_mobil2/features/health/data/repositories/health_repository.dart';
 import 'package:evcilhayvan_mobil2/features/health/domain/models/health_record_model.dart';
@@ -23,13 +24,6 @@ final weightChartProvider =
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const _typeLabels = {
-  'weight': 'Kilo',
-  'medication': 'İlaç',
-  'vet_visit': 'Veteriner',
-  'note': 'Not',
-};
-
 const _typeIcons = {
   'weight': Icons.monitor_weight_outlined,
   'medication': Icons.medication_outlined,
@@ -43,6 +37,21 @@ const _typeColors = {
   'vet_visit': Color(0xFFFF7A59),
   'note': Color(0xFF7C7BFF),
 };
+
+String _typeLabel(String type, AppLocalizations l10n) {
+  switch (type) {
+    case 'weight':
+      return l10n.healthTypeWeight;
+    case 'medication':
+      return l10n.healthTypeMedication;
+    case 'vet_visit':
+      return l10n.healthTypeVetVisit;
+    case 'note':
+      return l10n.healthTypeNote;
+    default:
+      return type;
+  }
+}
 
 // ── Screen ─────────────────────────────────────────────────────────────────
 
@@ -74,32 +83,34 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen> {
         await ref.read(healthRepoProvider).addRecord(widget.petId, result);
         ref.invalidate(healthRecordsProvider(widget.petId));
         if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Kayıt eklendi.')));
+              SnackBar(content: Text(l10n.healthRecordAdded)));
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('Hata: $e')));
+              .showSnackBar(SnackBar(content: Text('$e')));
         }
       }
     }
   }
 
   Future<void> _delete(String recordId) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Kaydı Sil'),
-        content: const Text('Bu sağlık kaydını silmek istediğinize emin misiniz?'),
+        title: Text(l10n.healthRecordDeleteTitle),
+        content: Text(l10n.healthRecordDeleteContent),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Vazgeç')),
+              child: Text(l10n.cancel)),
           FilledButton(
               onPressed: () => Navigator.pop(context, true),
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Sil')),
+              child: Text(l10n.delete)),
         ],
       ),
     );
@@ -110,24 +121,25 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Silinemedi: $e')));
+            .showSnackBar(SnackBar(content: Text('$e')));
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final recordsAsync = ref.watch(healthRecordsProvider(widget.petId));
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.petName} Sağlık Günlüğü'),
+        title: Text(l10n.healthJournalTitle(widget.petName)),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addRecord,
         icon: const Icon(Icons.add),
-        label: const Text('Kayıt Ekle'),
+        label: Text(l10n.healthAddRecord),
       ),
       body: Column(
         children: [
@@ -138,7 +150,7 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen> {
             child: Row(
               children: [
                 FilterChip(
-                  label: const Text('Tümü'),
+                  label: Text(l10n.healthTypeAll),
                   selected: _filterType == null,
                   onSelected: (_) => setState(() => _filterType = null),
                 ),
@@ -147,7 +159,7 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen> {
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: FilterChip(
-                      label: Text(_typeLabels[t]!),
+                      label: Text(_typeLabel(t, l10n)),
                       selected: _filterType == t,
                       avatar: Icon(_typeIcons[t]!, size: 16),
                       onSelected: (_) => setState(
@@ -169,11 +181,11 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen> {
                   children: [
                     const Icon(Icons.error_outline, size: 48, color: Colors.red),
                     const SizedBox(height: 8),
-                    Text('Yüklenemedi: $e'),
+                    Text(l10n.healthLoadError(e.toString())),
                     TextButton(
                       onPressed: () =>
                           ref.invalidate(healthRecordsProvider(widget.petId)),
-                      child: const Text('Tekrar Dene'),
+                      child: Text(l10n.healthRefresh),
                     ),
                   ],
                 ),
@@ -194,13 +206,12 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen> {
                         const SizedBox(height: 16),
                         Text(
                           _filterType == null
-                              ? 'Henüz sağlık kaydı yok'
-                              : '${_typeLabels[_filterType]} kaydı yok',
+                              ? l10n.healthNoRecords
+                              : l10n.healthNoFilterRecords(_filterType!),
                           style: theme.textTheme.bodyLarge,
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                            'Sağ alttaki + butonuna basarak kayıt ekleyin'),
+                        Text(l10n.healthAddHint),
                       ],
                     ),
                   );
@@ -243,9 +254,10 @@ class _RecordCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final color = _typeColors[record.type] ?? AppPalette.primary;
     final icon = _typeIcons[record.type] ?? Icons.notes_rounded;
-    final label = _typeLabels[record.type] ?? record.type;
+    final label = _typeLabel(record.type, l10n);
 
     List<String> details = [];
     if (record.type == 'weight' && record.weightKg != null) {
@@ -253,12 +265,12 @@ class _RecordCard extends StatelessWidget {
     }
     if (record.type == 'medication') {
       if (record.medicationName != null) details.add(record.medicationName!);
-      if (record.dosage != null) details.add('Doz: ${record.dosage}');
-      if (record.frequency != null) details.add('Sıklık: ${record.frequency}');
+      if (record.dosage != null) details.add(l10n.healthDose(record.dosage!));
+      if (record.frequency != null) details.add(l10n.healthFrequency(record.frequency!));
     }
     if (record.type == 'vet_visit') {
-      if (record.vetName != null) details.add('Veteriner: ${record.vetName}');
-      if (record.diagnosis != null) details.add('Tanı: ${record.diagnosis}');
+      if (record.vetName != null) details.add(l10n.healthVetName(record.vetName!));
+      if (record.diagnosis != null) details.add(l10n.healthDiagnosis(record.diagnosis!));
     }
     if (record.notes != null) details.add(record.notes!);
 
@@ -333,6 +345,7 @@ class _WeightChartSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final chartAsync = ref.watch(weightChartProvider(petId));
     return chartAsync.when(
       loading: () => const SizedBox(
@@ -353,13 +366,13 @@ class _WeightChartSection extends ConsumerWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Kilo grafiği yüklenemedi',
+                l10n.healthWeightChartError,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.red),
               ),
             ),
             TextButton(
               onPressed: () => ref.invalidate(weightChartProvider(petId)),
-              child: const Text('Yenile'),
+              child: Text(l10n.healthRefresh),
             ),
           ],
         ),
@@ -381,7 +394,7 @@ class _WeightChartSection extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Kilo Takibi',
+                    l10n.healthWeightChart,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       color: const Color(0xFF2BB673),
                       fontWeight: FontWeight.w700,
@@ -389,7 +402,7 @@ class _WeightChartSection extends ConsumerWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Grafik için en az 2 kilo kaydı gerekli',
+                    l10n.healthWeightChartMin,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Colors.grey[600],
                     ),
@@ -423,7 +436,7 @@ class _WeightChartSection extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 8, bottom: 4),
                 child: Text(
-                  'Kilo Takibi',
+                  l10n.healthWeightChart,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         color: const Color(0xFF2BB673),
                         fontWeight: FontWeight.w700,
@@ -550,6 +563,7 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
   }
 
   void _submit() {
+    final l10n = AppLocalizations.of(context)!;
     final body = <String, dynamic>{
       'type': _type,
       'date': _date.toIso8601String(),
@@ -560,7 +574,7 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
         final w = double.tryParse(_weightCtrl.text.trim());
         if (w == null || w <= 0) {
           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Geçerli bir kilo girin.')));
+              SnackBar(content: Text(l10n.healthErrWeight)));
           return;
         }
         body['weightKg'] = w;
@@ -568,7 +582,7 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
       case 'medication':
         if (_medNameCtrl.text.trim().isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('İlaç adı zorunludur.')));
+              SnackBar(content: Text(l10n.healthErrMedName)));
           return;
         }
         body['medicationName'] = _medNameCtrl.text.trim();
@@ -587,10 +601,11 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final fmt = DateFormat('dd MMM yyyy', 'tr');
 
     return AlertDialog(
-      title: const Text('Sağlık Kaydı Ekle'),
+      title: Text(l10n.healthAddDialogTitle),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -599,14 +614,14 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
             // Type selector
             DropdownButtonFormField<String>(
               value: _type,
-              decoration: const InputDecoration(labelText: 'Kayıt Tipi'),
-              items: _typeLabels.entries.map((e) {
+              decoration: InputDecoration(labelText: l10n.healthRecordType),
+              items: ['weight', 'medication', 'vet_visit', 'note'].map((t) {
                 return DropdownMenuItem(
-                    value: e.key,
+                    value: t,
                     child: Row(children: [
-                      Icon(_typeIcons[e.key]!, size: 18),
+                      Icon(_typeIcons[t]!, size: 18),
                       const SizedBox(width: 8),
-                      Text(e.value),
+                      Text(_typeLabel(t, l10n)),
                     ]));
               }).toList(),
               onChanged: (v) => setState(() => _type = v!),
@@ -617,7 +632,7 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.calendar_today_outlined),
               title: Text(fmt.format(_date)),
-              subtitle: const Text('Kayıt tarihi'),
+              subtitle: Text(l10n.healthRecordDate),
               onTap: _pickDate,
             ),
             const Divider(),
@@ -627,46 +642,44 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
                 controller: _weightCtrl,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Kilo (kg)',
-                  prefixIcon: Icon(Icons.monitor_weight_outlined),
+                decoration: InputDecoration(
+                  labelText: l10n.healthWeightKg,
+                  prefixIcon: const Icon(Icons.monitor_weight_outlined),
                 ),
               ),
             if (_type == 'medication') ...[
               TextField(
                 controller: _medNameCtrl,
-                decoration: const InputDecoration(labelText: 'İlaç Adı *'),
+                decoration: InputDecoration(labelText: l10n.healthMedName),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: _dosageCtrl,
-                decoration:
-                    const InputDecoration(labelText: 'Dozaj (ör. 5mg)'),
+                decoration: InputDecoration(labelText: l10n.healthMedDosage),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: _freqCtrl,
-                decoration: const InputDecoration(
-                    labelText: 'Sıklık (ör. Günde 2 kez)'),
+                decoration: InputDecoration(labelText: l10n.healthMedFreq),
               ),
             ],
             if (_type == 'vet_visit') ...[
               TextField(
                 controller: _vetNameCtrl,
-                decoration: const InputDecoration(labelText: 'Veteriner Adı'),
+                decoration: InputDecoration(labelText: l10n.healthVetNameLabel),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: _diagCtrl,
-                decoration: const InputDecoration(labelText: 'Tanı / Tedavi'),
+                decoration: InputDecoration(labelText: l10n.healthDiagnosisTreatment),
               ),
             ],
             const SizedBox(height: 8),
             TextField(
               controller: _notesCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(
-                  labelText: 'Notlar (isteğe bağlı)',
+              decoration: InputDecoration(
+                  labelText: l10n.healthNotes,
                   alignLabelWithHint: true),
             ),
           ],
@@ -674,8 +687,8 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context), child: const Text('Vazgeç')),
-        FilledButton(onPressed: _submit, child: const Text('Kaydet')),
+            onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
+        FilledButton(onPressed: _submit, child: Text(l10n.save)),
       ],
     );
   }

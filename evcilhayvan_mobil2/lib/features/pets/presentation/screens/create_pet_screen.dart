@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -232,18 +233,19 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    const speciesOptions = <Map<String, String>>[
-      {'label': 'Kedi', 'value': 'cat'},
-      {'label': 'Köpek', 'value': 'dog'},
-      {'label': 'Kuş', 'value': 'bird'},
-      {'label': 'Balık', 'value': 'fish'},
-      {'label': 'Kemirgen', 'value': 'rodent'},
-      {'label': 'Diğer', 'value': 'other'},
+    final l10n = AppLocalizations.of(context)!;
+    final speciesOptions = <Map<String, String>>[
+      {'label': l10n.speciesCat, 'value': 'cat'},
+      {'label': l10n.speciesDog, 'value': 'dog'},
+      {'label': l10n.speciesBird, 'value': 'bird'},
+      {'label': l10n.speciesFish, 'value': 'fish'},
+      {'label': l10n.vetSpeciesRodent, 'value': 'rodent'},
+      {'label': l10n.speciesOther, 'value': 'other'},
     ];
-    const genderOptions = <Map<String, String>>[
-      {'label': 'Erkek', 'value': 'male'},
-      {'label': 'Dişi', 'value': 'female'},
-      {'label': 'Bilinmiyor', 'value': 'unknown'},
+    final genderOptions = <Map<String, String>>[
+      {'label': l10n.genderMale, 'value': 'male'},
+      {'label': l10n.genderFemale, 'value': 'female'},
+      {'label': l10n.genderUnknown, 'value': 'unknown'},
     ];
 
     InputDecoration inputDecoration({
@@ -272,7 +274,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(_isEditMode ? 'İlanı Düzenle' : 'Yeni İlan'),
+        title: Text(_isEditMode ? l10n.createPetEditTitle : l10n.createPetNewTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -304,7 +306,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _isEditMode ? 'İlan bilgilerini güncelle' : 'Yeni ilan oluştur',
+                          _isEditMode ? l10n.createPetUpdateDesc : l10n.createPetNewDesc,
                           style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                             color: theme.colorScheme.onPrimary,
@@ -312,7 +314,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'İlan tipini seç, fotoğraf/video ekle ve patili dostuna uygun evi bul.',
+                          l10n.createPetHeroDesc,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: theme.colorScheme.onPrimary.withOpacity(0.9),
                           ),
@@ -322,13 +324,13 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                           spacing: 8,
                           children: [
                             ChoiceChip(
-                              label: const Text('Sahiplendirme ilanı'),
+                              label: Text(l10n.createPetAdoptionChip),
                               selected: _advertType == 'adoption',
                               onSelected: (v) => setState(() => _advertType = 'adoption'),
                               selectedColor: Colors.green.shade200,
                             ),
                             ChoiceChip(
-                              label: const Text('Eşleştirme ilanı'),
+                              label: Text(l10n.createPetMatingChip),
                               selected: _advertType == 'mating',
                               onSelected: (v) => setState(() => _advertType = 'mating'),
                               selectedColor: Colors.purple.shade200,
@@ -356,7 +358,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Temel Bilgiler',
+                          l10n.createPetBasicInfo,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -365,14 +367,14 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                         TextFormField(
                           controller: _nameController,
                           decoration: inputDecoration(
-                            label: 'İsim',
+                            label: l10n.createPetNameLabel,
                             icon: Icons.pets_outlined,
                           ),
-                          validator: (value) => (value?.isEmpty ?? true) ? 'İsim zorunludur' : null,
+                          validator: (value) => (value?.isEmpty ?? true) ? l10n.createPetNameError : null,
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Tür',
+                          l10n.createPetSpeciesLabel,
                           style: theme.textTheme.labelLarge,
                         ),
                         const SizedBox(height: 8),
@@ -395,7 +397,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Cinsiyet',
+                          l10n.createPetGenderLabel,
                           style: theme.textTheme.labelLarge,
                         ),
                         const SizedBox(height: 8),
@@ -418,8 +420,8 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                           value: _isVaccinated,
                           contentPadding: EdgeInsets.zero,
                           secondary: const Icon(Icons.vaccines),
-                          title: const Text('Aşıları tam'),
-                          subtitle: const Text('Aşı bilgileri ilanda rozet olarak gösterilir.'),
+                          title: Text(l10n.createPetVaccinatedTitle),
+                          subtitle: Text(l10n.createPetVaccinatedSubtitle),
                           onChanged: (value) {
                             setState(() => _isVaccinated = value);
                           },
@@ -445,7 +447,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Detaylar',
+                          l10n.createPetDetailsSection,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -454,15 +456,15 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                         TextFormField(
                           controller: _ageController,
                           decoration: inputDecoration(
-                            label: 'Yaş (Ay)',
+                            label: l10n.createPetAgeLabel,
                             icon: Icons.cake_outlined,
                           ),
                           keyboardType: TextInputType.number,
                           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                           validator: (value) {
-                            if (value == null || value.isEmpty) return 'Yaş zorunlu';
+                            if (value == null || value.isEmpty) return l10n.createPetAgeError;
                             final parsed = int.tryParse(value);
-                            if (parsed == null || parsed < 0) return 'Geçerli bir sayı girin';
+                            if (parsed == null || parsed < 0) return l10n.createPetAgeInvalidError;
                             return null;
                           },
                         ),
@@ -486,14 +488,14 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                           },
                           child: InputDecorator(
                             decoration: inputDecoration(
-                              label: 'Cins',
+                              label: l10n.createPetBreedLabel,
                               icon: Icons.pets_rounded,
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  _selectedBreed ?? 'Seçiniz',
+                                  _selectedBreed ?? l10n.createPetBreedSelect,
                                   style: TextStyle(
                                     color: _selectedBreed != null
                                         ? theme.textTheme.bodyLarge?.color
@@ -510,8 +512,8 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                           controller: _bioController,
                           maxLines: 3,
                           decoration: inputDecoration(
-                            label: 'Açıklama',
-                            hint: 'Karakteri, sağlık durumu ve ihtiyaçları',
+                            label: l10n.createPetDescLabel,
+                            hint: l10n.createPetDescHint,
                             icon: Icons.notes_outlined,
                             lines: 3,
                           ),
@@ -549,7 +551,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        _selectedLocation != null ? 'Konum seçildi' : 'Konum ekle',
+                                        _selectedLocation != null ? l10n.createPetLocationSelected : l10n.createPetLocationAdd,
                                         style: TextStyle(
                                           fontWeight: FontWeight.w600,
                                           color: _selectedLocation != null
@@ -568,9 +570,9 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                                           ),
                                         )
                                       else
-                                        const Text(
-                                          'İl/ilçe seçimi için haritayı aç',
-                                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                                        Text(
+                                          l10n.createPetLocationHint,
+                                          style: const TextStyle(fontSize: 12, color: Colors.grey),
                                         ),
                                       if (_selectedLocation?.note != null)
                                         Padding(
@@ -611,7 +613,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Fotoğraf & Video',
+                          l10n.createPetMedia,
                           style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 12),
@@ -620,13 +622,13 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                             OutlinedButton.icon(
                               onPressed: _isLoading ? null : _pickImages,
                               icon: const Icon(Icons.photo_library_outlined),
-                              label: const Text('Fotoğraf ekle'),
+                              label: Text(l10n.createPetAddPhotoBtn),
                             ),
                             const SizedBox(width: 12),
                             OutlinedButton.icon(
                               onPressed: _isLoading ? null : _pickVideo,
                               icon: const Icon(Icons.videocam_outlined),
-                              label: const Text('Video ekle'),
+                              label: Text(l10n.createPetAddVideoBtn),
                             ),
                           ],
                         ),
@@ -674,7 +676,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                               child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.check),
-                      label: Text(_isEditMode ? 'Kaydet' : 'Yayınla'),
+                      label: Text(_isEditMode ? l10n.createPetSave : l10n.createPetPublish),
                       onPressed: _isLoading ? null : _savePet,
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -757,7 +759,7 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
                 controller: _searchCtrl,
                 autofocus: true,
                 decoration: InputDecoration(
-                  hintText: 'Cins ara...',
+                  hintText: AppLocalizations.of(context)!.createPetBreedSearch,
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
                   fillColor: theme.colorScheme.surfaceVariant.withOpacity(0.4),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
@@ -22,11 +23,12 @@ class VetDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final vetAsync = ref.watch(vetDetailProvider(vetId));
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: vetAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Hata: $e')),
+        error: (e, _) => Center(child: Text('${l10n.error}: $e')),
         data: (vet) {
           final photoUrl = vet.photos.isNotEmpty
               ? (vet.photos.first.startsWith('http') ? vet.photos.first : '$apiBaseUrl${vet.photos.first}')
@@ -57,19 +59,19 @@ class VetDetailScreen extends ConsumerWidget {
                           if (vet.isVerified)
                             Chip(
                               avatar: const Icon(Icons.verified, size: 16, color: Colors.blue),
-                              label: const Text('Dogrulanmis'),
+                              label: Text(l10n.vetVerified),
                               backgroundColor: Colors.blue.withOpacity(0.1),
                             ),
                           if (vet.source == 'google_places')
-                            Chip(
-                              avatar: const Icon(Icons.map, size: 16, color: Colors.orange),
-                              label: const Text('Google Places'),
-                              backgroundColor: Colors.orange.withOpacity(0.1),
+                            const Chip(
+                              avatar: Icon(Icons.map, size: 16, color: Colors.orange),
+                              label: Text('Google Places'),
+                              backgroundColor: Colors.orange,
                             ),
                           if (vet.acceptsOnlineAppointments)
                             Chip(
                               avatar: const Icon(Icons.calendar_today, size: 16, color: AppPalette.tertiary),
-                              label: const Text('Online Randevu'),
+                              label: Text(l10n.vetOnlineAppointment),
                               backgroundColor: AppPalette.tertiary.withOpacity(0.1),
                             ),
                         ],
@@ -86,7 +88,7 @@ class VetDetailScreen extends ConsumerWidget {
                               size: 22,
                             )),
                             const SizedBox(width: 8),
-                            Text('${vet.googleRating!.toStringAsFixed(1)} (${vet.googleReviewCount} degerlendirme)',
+                            Text('${vet.googleRating!.toStringAsFixed(1)} (${vet.googleReviewCount} ${l10n.vetReviews})',
                                 style: theme.textTheme.bodyMedium),
                           ],
                         ),
@@ -106,7 +108,7 @@ class VetDetailScreen extends ConsumerWidget {
 
                       // Description
                       if (vet.description != null) ...[
-                        Text('Hakkinda', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                        Text(l10n.vetAbout, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         Text(vet.description!, style: theme.textTheme.bodyMedium),
                         const SizedBox(height: 16),
@@ -114,7 +116,7 @@ class VetDetailScreen extends ConsumerWidget {
 
                       // Services
                       if (vet.services.isNotEmpty) ...[
-                        Text('Hizmetler', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                        Text(l10n.vetServices, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         Wrap(
                           spacing: 8,
@@ -126,14 +128,14 @@ class VetDetailScreen extends ConsumerWidget {
 
                       // Species
                       if (vet.speciesServed.isNotEmpty) ...[
-                        Text('Hizmet Verilen Turler', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                        Text(l10n.vetSpeciesServed, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
                           children: vet.speciesServed.map((s) => Chip(
                             avatar: Icon(_speciesIcon(s), size: 18),
-                            label: Text(_speciesLabel(s)),
+                            label: Text(_speciesLabel(s, l10n)),
                           )).toList(),
                         ),
                         const SizedBox(height: 16),
@@ -141,7 +143,7 @@ class VetDetailScreen extends ConsumerWidget {
 
                       // Working hours
                       if (vet.workingHours.isNotEmpty) ...[
-                        Text('Calisma Saatleri', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                        Text(l10n.vetWorkingHours, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         ...vet.workingHours.map((wh) => Padding(
                           padding: const EdgeInsets.only(bottom: 4),
@@ -149,7 +151,7 @@ class VetDetailScreen extends ConsumerWidget {
                             children: [
                               SizedBox(width: 100, child: Text(wh.dayName, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500))),
                               Text(
-                                wh.isClosed ? 'Kapali' : '${wh.open ?? '-'} - ${wh.close ?? '-'}',
+                                wh.isClosed ? l10n.vetClosed : '${wh.open ?? '-'} - ${wh.close ?? '-'}',
                                 style: theme.textTheme.bodyMedium?.copyWith(color: wh.isClosed ? Colors.red : null),
                               ),
                             ],
@@ -196,7 +198,7 @@ class VetDetailScreen extends ConsumerWidget {
                             _launchUrl(url);
                           },
                           icon: const Icon(Icons.map_outlined),
-                          label: const Text('Haritada Aç'),
+                          label: Text(l10n.vetOpenInMaps),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -222,7 +224,7 @@ class VetDetailScreen extends ConsumerWidget {
                       child: ElevatedButton.icon(
                         onPressed: () => context.pushNamed('appointment-create', extra: {'vetId': vet.id, 'vetName': vet.name}),
                         icon: const Icon(Icons.calendar_today),
-                        label: const Text('Randevu Al'),
+                        label: Text(l10n.vetAppointment),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppPalette.primary,
                           foregroundColor: Colors.white,
@@ -291,14 +293,14 @@ class VetDetailScreen extends ConsumerWidget {
     }
   }
 
-  String _speciesLabel(String species) {
+  String _speciesLabel(String species, AppLocalizations l10n) {
     switch (species) {
-      case 'dog': return 'Kopek';
-      case 'cat': return 'Kedi';
-      case 'bird': return 'Kus';
-      case 'fish': return 'Balik';
-      case 'rodent': return 'Kemirgen';
-      default: return 'Diger';
+      case 'dog': return l10n.vetSpeciesDog;
+      case 'cat': return l10n.vetSpeciesCat;
+      case 'bird': return l10n.vetSpeciesBird;
+      case 'fish': return l10n.vetSpeciesFish;
+      case 'rodent': return l10n.vetSpeciesRodent;
+      default: return l10n.vetSpeciesOther;
     }
   }
 }
@@ -326,14 +328,16 @@ class _VetReviewsSectionState extends ConsumerState<_VetReviewsSection> {
       ref.invalidate(vetReviewsProvider(widget.vetId));
       ref.invalidate(vetDetailProvider(widget.vetId));
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Değerlendirmeniz eklendi.')),
+          SnackBar(content: Text(l10n.vetReviewAdded)),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red));
+            .showSnackBar(SnackBar(content: Text('${l10n.error}: $e'), backgroundColor: Colors.red));
       }
     }
   }
@@ -345,8 +349,9 @@ class _VetReviewsSectionState extends ConsumerState<_VetReviewsSection> {
       ref.invalidate(vetDetailProvider(widget.vetId));
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Silinemedi: $e'), backgroundColor: Colors.red));
+            .showSnackBar(SnackBar(content: Text(l10n.vetReviewDeleteError(e.toString())), backgroundColor: Colors.red));
       }
     }
   }
@@ -356,6 +361,7 @@ class _VetReviewsSectionState extends ConsumerState<_VetReviewsSection> {
     final reviewsAsync = ref.watch(vetReviewsProvider(widget.vetId));
     final theme = Theme.of(context);
     final currentUser = ref.watch(authProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
@@ -364,20 +370,20 @@ class _VetReviewsSectionState extends ConsumerState<_VetReviewsSection> {
         children: [
           Row(
             children: [
-              Text('Değerlendirmeler',
+              Text(l10n.vetReviews,
                   style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
               const Spacer(),
               if (currentUser != null)
                 TextButton.icon(
                   onPressed: _showAddReview,
                   icon: const Icon(Icons.rate_review_outlined, size: 18),
-                  label: const Text('Değerlendir'),
+                  label: Text(l10n.vetReviewsRate),
                 ),
             ],
           ),
           reviewsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, __) => const Text('Yorumlar yüklenemedi.'),
+            error: (_, __) => Text(l10n.vetReviewsLoadError),
             data: (data) {
               final reviews = data['reviews'] as List<VetReview>;
               final avg = data['averageRating'] as double;
@@ -386,7 +392,7 @@ class _VetReviewsSectionState extends ConsumerState<_VetReviewsSection> {
               if (count == 0) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Text('Henüz değerlendirme yok. İlk yorumu siz yapın!',
+                  child: Text(l10n.vetReviewsEmpty,
                       style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant)),
                 );
@@ -414,7 +420,7 @@ class _VetReviewsSectionState extends ConsumerState<_VetReviewsSection> {
                                       size: 20,
                                     )),
                           ),
-                          Text('$count değerlendirme',
+                          Text(l10n.vetReviewCount(count),
                               style: theme.textTheme.bodySmall),
                         ],
                       ),
@@ -512,8 +518,9 @@ class _AddReviewDialogState extends State<_AddReviewDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Veteriner Değerlendir'),
+      title: Text(l10n.vetReviewDialogTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -534,10 +541,10 @@ class _AddReviewDialogState extends State<_AddReviewDialog> {
           TextField(
             controller: _commentCtrl,
             maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Yorumunuz (isteğe bağlı)',
+            decoration: InputDecoration(
+              labelText: l10n.vetReviewCommentHint,
               alignLabelWithHint: true,
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
             ),
           ),
         ],
@@ -545,14 +552,14 @@ class _AddReviewDialogState extends State<_AddReviewDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('İptal'),
+          child: Text(l10n.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, {
             'rating': _rating,
             'comment': _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
           }),
-          child: const Text('Gönder'),
+          child: Text(l10n.send),
         ),
       ],
     );
@@ -581,8 +588,9 @@ class _MessageVetButtonState extends ConsumerState<_MessageVetButton> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('${l10n.error}: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -592,12 +600,13 @@ class _MessageVetButtonState extends ConsumerState<_MessageVetButton> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return OutlinedButton.icon(
       onPressed: _loading ? null : _startConversation,
       icon: _loading
           ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
           : const Icon(Icons.message_outlined),
-      label: const Text('Mesaj Gönder'),
+      label: Text(l10n.vetSendMessage),
       style: OutlinedButton.styleFrom(
         foregroundColor: AppPalette.primary,
         side: const BorderSide(color: AppPalette.primary),
@@ -621,17 +630,15 @@ class _ClaimVetButtonState extends ConsumerState<_ClaimVetButton> {
   bool _loading = false;
 
   Future<void> _claim() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Profili Sahiplen'),
-        content: const Text(
-          'Bu klinik profilini hesabınıza bağlamak istediğinizden emin misiniz?\n\n'
-          'Sahiplendikten sonra müşteriler size doğrudan mesaj gönderebilir.',
-        ),
+        title: Text(l10n.vetClaimDialogTitle),
+        content: Text(l10n.vetClaimDialogContent),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('İptal')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sahiplen')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.vetClaimAction)),
         ],
       ),
     );
@@ -642,15 +649,17 @@ class _ClaimVetButtonState extends ConsumerState<_ClaimVetButton> {
       final repo = ref.read(veterinaryRepositoryProvider);
       await repo.claimVetProfile(widget.vet.id);
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profil başarıyla sahiplenildi! Artık mesaj alabilirsiniz.'), backgroundColor: Colors.green),
+          SnackBar(content: Text(l10n.vetClaimSuccess), backgroundColor: Colors.green),
         );
         ref.invalidate(vetDetailProvider(widget.vet.id));
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('${l10n.error}: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -660,12 +669,13 @@ class _ClaimVetButtonState extends ConsumerState<_ClaimVetButton> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return OutlinedButton.icon(
       onPressed: _loading ? null : _claim,
       icon: _loading
           ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
           : const Icon(Icons.verified_outlined),
-      label: const Text('Bu Kliniği Sahiplen'),
+      label: Text(l10n.vetClaimProfile),
       style: OutlinedButton.styleFrom(
         foregroundColor: Colors.teal,
         side: const BorderSide(color: Colors.teal),

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -20,11 +21,11 @@ class MatchRequestsScreen extends ConsumerWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Eşleştirme İstekleri'),
-          bottom: const TabBar(
+          title: Text(AppLocalizations.of(context)!.matchRequestsTitle),
+          bottom: TabBar(
             tabs: [
-              Tab(text: 'Gelen'),
-              Tab(text: 'Gönderilen'),
+              Tab(text: AppLocalizations.of(context)!.matchRequestsInbox),
+              Tab(text: AppLocalizations.of(context)!.matchRequestsOutbox),
             ],
           ),
         ),
@@ -57,7 +58,7 @@ class _RequestTab extends ConsumerWidget {
     return asyncValue.when(
       data: (items) {
         if (items.isEmpty) {
-          return const Center(child: Text('Henüz istek yok.'));
+          return Center(child: Text(AppLocalizations.of(context)!.matchReqNoRequests));
         }
         return ListView.builder(
           padding: const EdgeInsets.all(16),
@@ -83,7 +84,7 @@ class _RequestTab extends ConsumerWidget {
                   ref.invalidate(outboxMatchRequestsProvider);
                 }
               },
-              child: const Text('Tekrar dene'),
+              child: Text(AppLocalizations.of(context)!.retry),
             ),
           ],
         ),
@@ -157,14 +158,15 @@ class _RequestCardState extends ConsumerState<_RequestCard> {
 
     // Get partner info from conversation data or request
     final conversation = event.conversation;
-    String partnerName = 'Sohbet';
+    final l10n = AppLocalizations.of(context)!;
+    String partnerName = l10n.chatTypeGeneral;
     String? partnerAvatar;
 
     if (conversation != null && conversation['participants'] is List) {
       final participants = conversation['participants'] as List;
       for (final p in participants) {
         if (p is Map<String, dynamic> && p['_id'] != currentUser.id) {
-          partnerName = p['name']?.toString() ?? 'Sohbet';
+          partnerName = p['name']?.toString() ?? l10n.chatTypeGeneral;
           partnerAvatar = p['avatarUrl']?.toString();
           break;
         }
@@ -174,17 +176,17 @@ class _RequestCardState extends ConsumerState<_RequestCard> {
       final other = widget.tabType == _RequestTabType.inbox
           ? widget.request.fromUser
           : widget.request.toUser;
-      partnerName = other?.name ?? 'Sohbet';
+      partnerName = other?.name ?? l10n.chatTypeGeneral;
       partnerAvatar = other?.avatarUrl;
     }
 
     // Show snackbar notification
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Eşleşme başarılı! $partnerName ile sohbete yönlendiriliyorsunuz...'),
+        content: Text(l10n.matchReqMatchSuccess(partnerName)),
         duration: const Duration(seconds: 2),
         action: SnackBarAction(
-          label: 'Şimdi Git',
+          label: l10n.matchReqGoNow,
           onPressed: () {
             _navigateToChat(event.conversationId, partnerName, partnerAvatar);
           },
@@ -212,8 +214,9 @@ class _RequestCardState extends ConsumerState<_RequestCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final statusColor = _statusColor(theme, widget.request.status);
-    final statusLabel = _statusLabel(widget.request.status);
+    final statusLabel = _statusLabel(widget.request.status, l10n);
     final currentUser = ref.watch(authProvider);
 
     Future<void> _act(String action) async {
@@ -224,14 +227,14 @@ class _RequestCardState extends ConsumerState<_RequestCard> {
         ref.invalidate(outboxMatchRequestsProvider);
         if (!context.mounted) return;
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('İşlem tamamlandı: $action')));
+            .showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.matchReqActDone(action))));
 
         // For accept action, navigation will be handled by socket event listener
         // But as a fallback, if conversationId is immediately available, navigate
         if (action == 'accept' && result.conversationId != null && context.mounted) {
           final other = (widget.tabType == _RequestTabType.inbox ? result.request.fromUser : result.request.toUser) ??
               (widget.tabType == _RequestTabType.inbox ? widget.request.fromUser : widget.request.toUser);
-          final targetName = other?.name ?? 'Sohbet';
+          final targetName = other?.name ?? AppLocalizations.of(context)!.chatTypeGeneral;
 
           // Navigate immediately for the user who accepted
           _navigateToChat(result.conversationId!, targetName, other?.avatarUrl);
@@ -255,7 +258,7 @@ class _RequestCardState extends ConsumerState<_RequestCard> {
       if (widget.request.conversationId != null && context.mounted) {
         _navigateToChat(
           widget.request.conversationId!,
-          otherUser?.name ?? 'Sohbet',
+          otherUser?.name ?? AppLocalizations.of(context)!.chatTypeGeneral,
           otherUser?.avatarUrl,
         );
         return;
@@ -278,12 +281,12 @@ class _RequestCardState extends ConsumerState<_RequestCard> {
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('Sohbet açılamadı: $e')));
+              .showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.matchReqChatError(e.toString()))));
         }
       }
     }
 
-    final listingName = widget.request.listing?.name ?? 'İlan';
+    final listingName = widget.request.listing?.name ?? l10n.petDetailTitle;
     final fromPetName = widget.request.fromPet?.name ?? '';
 
     return Card(
@@ -318,16 +321,16 @@ class _RequestCardState extends ConsumerState<_RequestCard> {
             const SizedBox(height: 6),
             Text(
               widget.tabType == _RequestTabType.inbox
-                  ? 'Gönderen: ${widget.request.fromUser?.name ?? '-'}'
-                  : 'Alıcı: ${widget.request.toUser?.name ?? '-'}',
+                  ? l10n.matchReqSenderLabel(widget.request.fromUser?.name ?? '-')
+                  : l10n.matchReqReceiverLabel(widget.request.toUser?.name ?? '-'),
               style: theme.textTheme.bodyMedium,
             ),
             if (fromPetName.isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(
                 widget.tabType == _RequestTabType.inbox
-                    ? 'Gönderen peti: $fromPetName'
-                    : 'Seçilen petin: $fromPetName',
+                    ? l10n.matchReqSenderPet(fromPetName)
+                    : l10n.matchReqSelectedPet(fromPetName),
                 style: theme.textTheme.bodySmall,
               ),
             ],
@@ -339,7 +342,7 @@ class _RequestCardState extends ConsumerState<_RequestCard> {
                   pathParameters: {'id': widget.request.fromPetId},
                 ),
                 icon: const Icon(Icons.pets_outlined, size: 18),
-                label: const Text('Gönderen ilanını gör'),
+                label: Text(l10n.matchReqViewListing),
               ),
             ],
             const SizedBox(height: 10),
@@ -349,14 +352,14 @@ class _RequestCardState extends ConsumerState<_RequestCard> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () => _act('accept'),
-                      child: const Text('Kabul Et'),
+                      child: Text(l10n.matchReqAccept),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => _act('reject'),
-                      child: const Text('Reddet'),
+                      child: Text(l10n.matchReqReject),
                     ),
                   ),
                 ] else if (widget.request.status == 'ACCEPTED') ...[
@@ -364,7 +367,7 @@ class _RequestCardState extends ConsumerState<_RequestCard> {
                     child: FilledButton.icon(
                       onPressed: _goToChat,
                       icon: const Icon(Icons.chat_bubble),
-                      label: const Text('Sohbete git'),
+                      label: Text(l10n.matchReqGoToChat),
                     ),
                   ),
                 ],
@@ -389,16 +392,16 @@ class _RequestCardState extends ConsumerState<_RequestCard> {
     }
   }
 
-  String _statusLabel(String status) {
+  String _statusLabel(String status, AppLocalizations l10n) {
     switch (status.toUpperCase()) {
       case 'ACCEPTED':
-        return 'Kabul edildi';
+        return l10n.msgStatusAccepted;
       case 'REJECTED':
-        return 'Reddedildi';
+        return l10n.msgStatusRejected;
       case 'CANCELLED':
-        return 'İptal edildi';
+        return l10n.msgStatusCancelled;
       default:
-        return 'Beklemede';
+        return l10n.msgStatusPending;
     }
   }
 }

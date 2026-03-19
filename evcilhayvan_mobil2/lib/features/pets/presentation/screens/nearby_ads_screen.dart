@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -43,13 +44,13 @@ class _NearbyAdsScreenState extends ConsumerState<NearbyAdsScreen> {
   }
 
   Future<void> _fetchLocation() async {
+    final l10n = AppLocalizations.of(context)!;
     final notifier = ref.read(nearbyAdsProvider.notifier);
     notifier.setLocationLoading(true);
     try {
-      // Konum servisi açık mı?
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        notifier.setError('Konum servisi kapalı. Lütfen ayarlardan açın.');
+        notifier.setError(l10n.nearbyErrLocationService);
         return;
       }
 
@@ -58,18 +59,16 @@ class _NearbyAdsScreenState extends ConsumerState<NearbyAdsScreen> {
         perm = await Geolocator.requestPermission();
       }
       if (perm == LocationPermission.deniedForever) {
-        notifier.setError('Konum izni kalıcı olarak reddedildi. Uygulama ayarlarından izin verin.');
+        notifier.setError(l10n.nearbyErrPermDeniedForever);
         return;
       }
       if (perm == LocationPermission.denied) {
-        notifier.setError('Konum izni gerekli. Lütfen tekrar deneyin.');
+        notifier.setError(l10n.nearbyErrPermDenied);
         return;
       }
 
-      // Önce son bilinen konum — hızlı
       Position? pos = await Geolocator.getLastKnownPosition();
       if (pos == null) {
-        // Son bilinmiyorsa gerçek konum al (timeout 20s)
         pos = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.medium,
         ).timeout(const Duration(seconds: 20));
@@ -77,13 +76,13 @@ class _NearbyAdsScreenState extends ConsumerState<NearbyAdsScreen> {
 
       notifier.setLocation(pos.latitude, pos.longitude);
     } on TimeoutException {
-      notifier.setError('Konum alınamadı: zaman aşımı. Lütfen tekrar deneyin.');
+      notifier.setError(l10n.nearbyErrTimeout);
     } catch (e) {
       final msg = e.toString();
       if (msg.contains('denied') || msg.contains('permission')) {
-        notifier.setError('Konum izni gerekli. Lütfen ayarlardan izin verin.');
+        notifier.setError(l10n.nearbyErrPermRequired);
       } else {
-        notifier.setError('Konum alınamadı. Lütfen tekrar deneyin.');
+        notifier.setError(l10n.nearbyErrGeneric);
       }
     }
   }
@@ -105,13 +104,14 @@ class _NearbyAdsScreenState extends ConsumerState<NearbyAdsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(nearbyAdsProvider);
     final filter = state.filter;
     final activeFilters = filter.activeCount;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Yakınımdaki İlanlar'),
+        title: Text(l10n.nearbyTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -127,7 +127,7 @@ class _NearbyAdsScreenState extends ConsumerState<NearbyAdsScreen> {
       ),
       body: Column(
         children: [
-          // Yarıçap seçici
+          // Radius selector
           SizedBox(
             height: 44,
             child: ListView(
@@ -156,19 +156,19 @@ class _NearbyAdsScreenState extends ConsumerState<NearbyAdsScreen> {
             ),
           ),
 
-          // Aktif filtre özeti
+          // Active filter summary
           if (activeFilters > 0)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
               child: Row(
                 children: [
-                  Text('$activeFilters filtre aktif',
+                  Text(l10n.nearbyActiveFilters(activeFilters),
                       style: TextStyle(color: AppPalette.primary, fontSize: 12, fontWeight: FontWeight.w500)),
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () => ref.read(nearbyAdsProvider.notifier)
-                        .applyFilter(NearbyAdsFilter(radiusKm: filter.radiusKm)), // clears all optional filters
-                    child: const Text('Temizle', style: TextStyle(color: Colors.red, fontSize: 12, decoration: TextDecoration.underline)),
+                        .applyFilter(NearbyAdsFilter(radiusKm: filter.radiusKm)),
+                    child: Text(l10n.nearbyClearFilters, style: const TextStyle(color: Colors.red, fontSize: 12, decoration: TextDecoration.underline)),
                   ),
                 ],
               ),
@@ -176,21 +176,21 @@ class _NearbyAdsScreenState extends ConsumerState<NearbyAdsScreen> {
 
           const SizedBox(height: 8),
 
-          Expanded(child: _buildBody(state)),
+          Expanded(child: _buildBody(state, l10n)),
         ],
       ),
     );
   }
 
-  Widget _buildBody(NearbyAdsState state) {
+  Widget _buildBody(NearbyAdsState state, AppLocalizations l10n) {
     if (state.locationLoading) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 12),
-            Text('Konum alınıyor...'),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 12),
+            Text(l10n.nearbyLocating),
           ],
         ),
       );
@@ -210,19 +210,21 @@ class _NearbyAdsScreenState extends ConsumerState<NearbyAdsScreen> {
               ElevatedButton.icon(
                 onPressed: _fetchLocation,
                 icon: const Icon(Icons.my_location),
-                label: const Text('Tekrar Dene'),
+                label: Text(l10n.retry),
               ),
-              if (state.error!.contains('servis') || state.error!.contains('ayar'))
+              if (state.error!.contains('servis') || state.error!.contains('ayar') ||
+                  state.error!.contains('service') || state.error!.contains('setting'))
                 TextButton.icon(
                   onPressed: () => Geolocator.openLocationSettings(),
                   icon: const Icon(Icons.settings_outlined),
-                  label: const Text('Konum Ayarlarını Aç'),
+                  label: Text(l10n.nearbyOpenLocationSettings),
                 ),
-              if (state.error!.contains('kalıcı') || state.error!.contains('uygulama'))
+              if (state.error!.contains('kalıcı') || state.error!.contains('uygulama') ||
+                  state.error!.contains('forever') || state.error!.contains('app'))
                 TextButton.icon(
                   onPressed: () => Geolocator.openAppSettings(),
                   icon: const Icon(Icons.settings_outlined),
-                  label: const Text('Uygulama Ayarlarını Aç'),
+                  label: Text(l10n.nearbyOpenAppSettings),
                 ),
             ],
           ),
@@ -241,12 +243,12 @@ class _NearbyAdsScreenState extends ConsumerState<NearbyAdsScreen> {
           children: [
             const Icon(Icons.pets, size: 48, color: Colors.grey),
             const SizedBox(height: 12),
-            const Text('Bu bölgede ilan bulunamadı', style: TextStyle(color: Colors.grey)),
+            Text(l10n.nearbyNoResults, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => ref.read(nearbyAdsProvider.notifier)
                   .applyFilter(NearbyAdsFilter(radiusKm: 50)),
-              child: const Text('Alanı genişlet (50 km)'),
+              child: Text(l10n.nearbyExpandArea),
             ),
           ],
         ),
@@ -270,7 +272,7 @@ class _NearbyAdsScreenState extends ConsumerState<NearbyAdsScreen> {
             if (!state.hasMore) {
               return Padding(
                 padding: const EdgeInsets.all(16),
-                child: Center(child: Text('${state.items.length} ilan gösterildi', style: const TextStyle(color: Colors.grey))),
+                child: Center(child: Text(l10n.nearbyShown(state.items.length), style: const TextStyle(color: Colors.grey))),
               );
             }
             return const SizedBox.shrink();
@@ -289,7 +291,7 @@ class _NearbyAdsScreenState extends ConsumerState<NearbyAdsScreen> {
   }
 }
 
-// ─── Filtre Bottom Sheet ──────────────────────────────────────────────────────
+// ─── Filter Bottom Sheet ──────────────────────────────────────────────────────
 
 class _FilterSheet extends StatefulWidget {
   final NearbyAdsFilter initial;
@@ -307,15 +309,6 @@ class _FilterSheetState extends State<_FilterSheet> {
   late bool? _vaccinated;
   late String? _breed;
 
-  static const _speciesList = [
-    ('Köpek',   'dog'),
-    ('Kedi',    'cat'),
-    ('Kuş',     'bird'),
-    ('Hamster', 'rodent'),
-    ('Balık',   'fish'),
-    ('Diğer',   'other'),
-  ];
-
   List<String> get _currentBreeds {
     if (_species == null) return [];
     return breedsFor(_species!);
@@ -332,6 +325,17 @@ class _FilterSheetState extends State<_FilterSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    final speciesList = [
+      (l10n.speciesDog, 'dog'),
+      (l10n.speciesCat, 'cat'),
+      (l10n.speciesBird, 'bird'),
+      (l10n.speciesHamster, 'rodent'),
+      (l10n.speciesFish, 'fish'),
+      (l10n.speciesOther, 'other'),
+    ];
+
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).viewInsets.bottom + 24),
       child: Column(
@@ -345,65 +349,65 @@ class _FilterSheetState extends State<_FilterSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Filtrele', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(l10n.filterTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               TextButton(
                 onPressed: () => setState(() { _advertType = null; _species = null; _vaccinated = null; _breed = null; }),
-                child: const Text('Sıfırla', style: TextStyle(color: Colors.red)),
+                child: Text(l10n.filterReset, style: const TextStyle(color: Colors.red)),
               ),
             ],
           ),
           const Divider(),
 
-          // İlan Türü
-          const Text('İlan Türü', style: TextStyle(fontWeight: FontWeight.w600)),
+          // Advert type
+          Text(l10n.filterAdvertType, style: const TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             children: [
-              _chip('Tümü', null, _advertType, (v) => setState(() => _advertType = v)),
-              _chip('Sahiplendirme', 'adoption', _advertType, (v) => setState(() => _advertType = v)),
-              _chip('Eşleştirme', 'mating', _advertType, (v) => setState(() => _advertType = v)),
+              _chip(l10n.filterAll, null, _advertType, (v) => setState(() => _advertType = v)),
+              _chip(l10n.advertTypeAdoption, 'adoption', _advertType, (v) => setState(() => _advertType = v)),
+              _chip(l10n.advertTypeMating, 'mating', _advertType, (v) => setState(() => _advertType = v)),
             ],
           ),
           const SizedBox(height: 16),
 
-          // Tür
-          const Text('Hayvan Türü', style: TextStyle(fontWeight: FontWeight.w600)),
+          // Species
+          Text(l10n.filterAnimalType, style: const TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 4,
             children: [
-              _chip('Tümü', null, _species, (v) => setState(() { _species = v; _breed = null; })),
-              ..._speciesList.map((s) => _chip(s.$1, s.$2, _species, (v) => setState(() { _species = v; _breed = null; }))),
+              _chip(l10n.filterAll, null, _species, (v) => setState(() { _species = v; _breed = null; })),
+              ...speciesList.map((s) => _chip(s.$1, s.$2, _species, (v) => setState(() { _species = v; _breed = null; }))),
             ],
           ),
           const SizedBox(height: 16),
 
-          // Cins (sadece tür seçiliyse)
+          // Breed (only if species selected)
           if (_species != null && _currentBreeds.isNotEmpty) ...[
-            const Text('Cins', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text(l10n.filterBreed, style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 4,
               children: [
-                _chip('Tümü', null, _breed, (v) => setState(() => _breed = v)),
+                _chip(l10n.filterAll, null, _breed, (v) => setState(() => _breed = v)),
                 ..._currentBreeds.map((b) => _chip(b, b, _breed, (v) => setState(() => _breed = v))),
               ],
             ),
             const SizedBox(height: 16),
           ],
 
-          // Aşılı
-          const Text('Aşı Durumu', style: TextStyle(fontWeight: FontWeight.w600)),
+          // Vaccination
+          Text(l10n.filterVaccine, style: const TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             children: [
-              _boolChip('Fark Etmez', null),
-              _boolChip('Aşılı', true),
-              _boolChip('Aşısız', false),
+              _boolChip(l10n.filterVaccineAny, null),
+              _boolChip(l10n.filterVaccinated, true),
+              _boolChip(l10n.filterUnvaccinated, false),
             ],
           ),
           const SizedBox(height: 24),
@@ -420,7 +424,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                 ));
                 Navigator.of(context).pop();
               },
-              child: const Text('Uygula'),
+              child: Text(l10n.filterApply),
             ),
           ),
         ],

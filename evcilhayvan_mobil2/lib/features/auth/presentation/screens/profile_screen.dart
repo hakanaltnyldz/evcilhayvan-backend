@@ -2,6 +2,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -20,21 +21,27 @@ import '../../../pets/presentation/screens/widgets/pet_card.dart';
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
-  void _showDeleteDialog(BuildContext context, WidgetRef ref, String petId, String advertType) {
+  void _showDeleteDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String petId,
+    String advertType,
+    AppLocalizations l10n,
+  ) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text('İlanı Sil'),
-          content: const Text('Bu ilanı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.'),
+          title: Text(l10n.profileDeleteTitle),
+          content: Text(l10n.profileDeleteContent),
           actions: [
             TextButton(
-              child: const Text('İptal'),
+              child: Text(l10n.cancel),
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             TextButton(
               style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Sil'),
+              child: Text(l10n.delete),
               onPressed: () async {
                 try {
                   await ref.read(petsRepositoryProvider).deletePet(petId);
@@ -45,12 +52,12 @@ class ProfileScreen extends ConsumerWidget {
                   ref.invalidate(matingPaginatedProvider);
                   Navigator.of(dialogContext).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('İlan başarıyla silindi.'), backgroundColor: Colors.green),
+                    SnackBar(content: Text(l10n.profileDeleteSuccess), backgroundColor: Colors.green),
                   );
                 } catch (e) {
                   Navigator.of(dialogContext).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+                    SnackBar(content: Text('$e'), backgroundColor: Colors.red),
                   );
                 }
               },
@@ -61,18 +68,18 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _logout(BuildContext context, WidgetRef ref) async {
+  Future<void> _logout(BuildContext context, WidgetRef ref, AppLocalizations l10n) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Çıkış Yap'),
-        content: const Text('Hesabınızdan çıkmak istediğinizden emin misiniz?'),
+        title: Text(l10n.profileLogoutTitle),
+        content: Text(l10n.profileLogoutContent),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('İptal')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
           TextButton(
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Çıkış Yap'),
+            child: Text(l10n.profileLogout),
           ),
         ],
       ),
@@ -85,6 +92,7 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final currentUser = ref.watch(authProvider);
 
     if (currentUser == null) {
@@ -101,14 +109,14 @@ class ProfileScreen extends ConsumerWidget {
                   const Icon(Icons.lock_outline, size: 64, color: Colors.white70),
                   const SizedBox(height: 16),
                   Text(
-                    'Profili görmek için giriş yapmalısınız.',
+                    l10n.profileLoginRequired,
                     style: Theme.of(context).textTheme.titleMedium,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
                   FilledButton(
                     onPressed: () => context.goNamed('login'),
-                    child: const Text('Giriş Yap'),
+                    child: Text(l10n.profileLoginBtn),
                   ),
                 ],
               ),
@@ -118,7 +126,6 @@ class ProfileScreen extends ConsumerWidget {
       );
     }
 
-    // İstatistikler için ilanları izle
     final adoptionAsync = ref.watch(myAdvertsProvider('adoption'));
     final matingAsync   = ref.watch(myAdvertsProvider('mating'));
     final adoptionCount = adoptionAsync.valueOrNull?.length ?? 0;
@@ -138,7 +145,7 @@ class ProfileScreen extends ConsumerWidget {
             _NotificationBellButton(),
             IconButton(
               icon: const Icon(Icons.volunteer_activism),
-              tooltip: 'Sahiplendirme Başvuruları',
+              tooltip: l10n.profileAdoptionApplications,
               onPressed: () => context.pushNamed('adoption-applications'),
             ),
             IconButton(
@@ -146,10 +153,10 @@ class ProfileScreen extends ConsumerWidget {
               onPressed: () => context.pushNamed('settings'),
             ),
           ],
-          bottom: const TabBar(
+          bottom: TabBar(
             tabs: [
-              Tab(text: 'Sahiplendirme İlanlarım'),
-              Tab(text: 'Eşleştirme İlanlarım'),
+              Tab(text: l10n.profileTabMyAds),
+              Tab(text: l10n.profileTabMatingAds),
             ],
           ),
         ),
@@ -157,20 +164,17 @@ class ProfileScreen extends ConsumerWidget {
           child: SafeArea(
             child: Column(
               children: [
-                // Profil başlığı
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                   child: _ProfileHeader(
                     user: currentUser,
-                    onLogout: () => _logout(context, ref),
+                    onLogout: () => _logout(context, ref, l10n),
                     onEdit: () => context.pushNamed('edit-profile'),
                   ),
                 ),
 
-                // Profil tamamlama
                 _ProfileCompletionCard(user: currentUser, onEdit: () => context.pushNamed('edit-profile')),
 
-                // İstatistikler
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                   child: _StatsRow(
@@ -180,13 +184,11 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
 
-                // Hızlı erişim
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                   child: _QuickLinksCard(user: currentUser),
                 ),
 
-                // Yeni ilan butonları
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                   child: Row(
@@ -195,7 +197,7 @@ class ProfileScreen extends ConsumerWidget {
                         child: FilledButton.icon(
                           onPressed: () => context.pushNamed('create-pet', extra: {'advertType': 'adoption'}),
                           icon: const Icon(Icons.add, size: 18),
-                          label: const Text('Sahiplendirme'),
+                          label: Text(l10n.profileNewAdoptionBtn),
                           style: FilledButton.styleFrom(
                             backgroundColor: Colors.green.shade600,
                             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -207,7 +209,7 @@ class ProfileScreen extends ConsumerWidget {
                         child: FilledButton.icon(
                           onPressed: () => context.pushNamed('create-pet', extra: {'advertType': 'mating'}),
                           icon: const Icon(Icons.favorite, size: 18),
-                          label: const Text('Eşleştirme'),
+                          label: Text(l10n.profileNewMatingBtn),
                           style: FilledButton.styleFrom(
                             backgroundColor: Colors.purple.shade600,
                             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -226,12 +228,12 @@ class ProfileScreen extends ConsumerWidget {
                       _AdvertsTab(
                         advertType: 'adoption',
                         onEdit: (pet) => context.pushNamed('create-pet', extra: {'pet': pet}),
-                        onDelete: (pet) => _showDeleteDialog(context, ref, pet.id, 'adoption'),
+                        onDelete: (pet) => _showDeleteDialog(context, ref, pet.id, 'adoption', l10n),
                       ),
                       _AdvertsTab(
                         advertType: 'mating',
                         onEdit: (pet) => context.pushNamed('create-pet', extra: {'pet': pet}),
-                        onDelete: (pet) => _showDeleteDialog(context, ref, pet.id, 'mating'),
+                        onDelete: (pet) => _showDeleteDialog(context, ref, pet.id, 'mating', l10n),
                       ),
                     ],
                   ),
@@ -245,7 +247,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-// ─── Profil Header ────────────────────────────────────────────────────────────
+// ─── Profile Header ────────────────────────────────────────────────────────────
 class _ProfileHeader extends StatelessWidget {
   final User user;
   final VoidCallback onLogout;
@@ -255,6 +257,7 @@ class _ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final avatarUrl = _resolveAvatarUrl(user.avatarUrl);
     final initial = user.name.isNotEmpty ? user.name[0].toUpperCase() : '?';
@@ -278,7 +281,6 @@ class _ProfileHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Avatar (tıklanınca profil düzenle)
           GestureDetector(
             onTap: onEdit,
             child: Stack(
@@ -313,7 +315,6 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 14),
-          // İsim ve e-posta
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,7 +337,7 @@ class _ProfileHeader extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          _roleLabel(user.role),
+                          _roleLabel(user.role, l10n),
                           style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _roleColor(user.role)),
                         ),
                       ),
@@ -351,10 +352,9 @@ class _ProfileHeader extends StatelessWidget {
               ],
             ),
           ),
-          // Çıkış butonu (token'ları temizler)
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.red),
-            tooltip: 'Çıkış Yap',
+            tooltip: l10n.profileLogoutTitle,
             onPressed: onLogout,
           ),
         ],
@@ -371,17 +371,17 @@ class _ProfileHeader extends StatelessWidget {
     }
   }
 
-  String _roleLabel(String? role) {
+  String _roleLabel(String? role, AppLocalizations l10n) {
     switch (role) {
-      case 'seller': return 'Satıcı';
-      case 'sitter': return 'Sitter';
-      case 'admin':  return 'Admin';
+      case 'seller': return l10n.profileRoleSeller;
+      case 'sitter': return l10n.profileRoleSitter;
+      case 'admin':  return l10n.profileRoleAdmin;
       default:       return role ?? '';
     }
   }
 }
 
-// ─── İstatistik Satırı ────────────────────────────────────────────────────────
+// ─── Stats Row ────────────────────────────────────────────────────────────────
 class _StatsRow extends StatelessWidget {
   final int adoptionCount;
   final int matingCount;
@@ -391,6 +391,7 @@ class _StatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
@@ -403,15 +404,15 @@ class _StatsRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _StatItem(icon: Icons.pets, color: Colors.green, intValue: adoptionCount, label: 'Sahiplendirme'),
+          _StatItem(icon: Icons.pets, color: Colors.green, intValue: adoptionCount, label: l10n.profileAdoptionCount),
           Container(width: 1, height: 40, color: Colors.grey.shade200),
-          _StatItem(icon: Icons.favorite, color: Colors.purple, intValue: matingCount, label: 'Eşleştirme'),
+          _StatItem(icon: Icons.favorite, color: Colors.purple, intValue: matingCount, label: l10n.profileMatingCount),
           Container(width: 1, height: 40, color: Colors.grey.shade200),
           _StatItem(
             icon: Icons.remove_red_eye_outlined,
             color: Colors.blue,
             intValue: totalViews,
-            label: 'Görüntülenme',
+            label: l10n.profileViewCount,
           ),
         ],
       ),
@@ -458,13 +459,14 @@ class _StatItem extends StatelessWidget {
   }
 }
 
-// ─── Hızlı Erişim Kartı ──────────────────────────────────────────────────────
+// ─── Quick Links Card ──────────────────────────────────────────────────────────
 class _QuickLinksCard extends StatelessWidget {
   final User user;
   const _QuickLinksCard({required this.user});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isSeller = user.role == 'seller';
 
@@ -480,12 +482,12 @@ class _QuickLinksCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _QuickLinkBtn(icon: Icons.favorite_outline,      label: 'Favoriler',  color: Colors.red,    onTap: () => context.pushNamed('favorites')),
-          _QuickLinkBtn(icon: Icons.shopping_bag_outlined, label: 'Siparişler', color: Colors.orange,  onTap: () => context.push('/store/orders')),
-          _QuickLinkBtn(icon: Icons.pets_outlined,         label: 'Sitter',     color: Colors.teal,   onTap: () => context.pushNamed('sitter-bookings')),
-          _QuickLinkBtn(icon: Icons.notifications_outlined,label: 'Bildirimler',color: Colors.indigo, onTap: () => context.pushNamed('notifications')),
+          _QuickLinkBtn(icon: Icons.favorite_outline,      label: l10n.profileFavorites,     color: Colors.red,    onTap: () => context.pushNamed('favorites')),
+          _QuickLinkBtn(icon: Icons.shopping_bag_outlined, label: l10n.profileOrders,         color: Colors.orange, onTap: () => context.push('/store/orders')),
+          _QuickLinkBtn(icon: Icons.pets_outlined,         label: l10n.profileSitterBtn,      color: Colors.teal,   onTap: () => context.pushNamed('sitter-bookings')),
+          _QuickLinkBtn(icon: Icons.notifications_outlined,label: l10n.profileNotifications,  color: Colors.indigo, onTap: () => context.pushNamed('notifications')),
           if (isSeller)
-            _QuickLinkBtn(icon: Icons.store_outlined, label: 'Mağazam', color: Colors.blue, onTap: () => context.pushNamed('seller-dashboard')),
+            _QuickLinkBtn(icon: Icons.store_outlined, label: l10n.profileMyStore, color: Colors.blue, onTap: () => context.pushNamed('seller-dashboard')),
         ],
       ),
     );
@@ -524,7 +526,7 @@ class _QuickLinkBtn extends StatelessWidget {
   }
 }
 
-// ─── İlanlar Tab'ı ────────────────────────────────────────────────────────────
+// ─── Adverts Tab ────────────────────────────────────────────────────────────────
 class _AdvertsTab extends ConsumerWidget {
   final String advertType;
   final void Function(Pet) onEdit;
@@ -534,6 +536,7 @@ class _AdvertsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final advertsAsync = ref.watch(myAdvertsProvider(advertType));
 
     Future<void> refresh() async {
@@ -544,8 +547,8 @@ class _AdvertsTab extends ConsumerWidget {
     String mapError(Object error) {
       if (error is ApiError && error.message.isNotEmpty) return error.message;
       final lower = error.toString().toLowerCase();
-      if (lower.contains('auth') || lower.contains('token')) return 'Oturum doğrulanamadı. Tekrar deneyin.';
-      return 'İlanlar yüklenemedi: $error';
+      if (lower.contains('auth') || lower.contains('token')) return l10n.profileAuthErr;
+      return l10n.profileAdsLoadErr(error.toString());
     }
 
     return advertsAsync.when(
@@ -613,12 +616,13 @@ class _AdvertsTab extends ConsumerWidget {
   }
 }
 
-// ─── Boş ilan kartı ──────────────────────────────────────────────────────────
+// ─── No Pets Card ──────────────────────────────────────────────────────────────
 class _NoPetsCard extends StatelessWidget {
   const _NoPetsCard();
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return Center(
       child: Padding(
@@ -628,10 +632,10 @@ class _NoPetsCard extends StatelessWidget {
           children: [
             const Icon(Icons.search_off, size: 64, color: Colors.grey),
             const SizedBox(height: 12),
-            Text('Henüz ilan yok', style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
+            Text(l10n.profileNoPetsTitle, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
             const SizedBox(height: 8),
             Text(
-              'İlk ilanınızı oluşturarak topluluğa yeni bir dost kazandırabilirsiniz.',
+              l10n.profileNoPetsDesc,
               style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
@@ -642,10 +646,11 @@ class _NoPetsCard extends StatelessWidget {
   }
 }
 
-// ─── Bildirim zili ───────────────────────────────────────────────────────────
+// ─── Notification Bell ───────────────────────────────────────────────────────
 class _NotificationBellButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final unreadCount = ref.watch(unreadCountProvider);
     return IconButton(
       icon: Badge(
@@ -653,7 +658,7 @@ class _NotificationBellButton extends ConsumerWidget {
         label: Text(unreadCount > 99 ? '99+' : unreadCount.toString(), style: const TextStyle(fontSize: 10)),
         child: const Icon(Icons.notifications_outlined),
       ),
-      tooltip: 'Bildirimler',
+      tooltip: l10n.profileNotifications,
       onPressed: () => context.pushNamed('notifications'),
     );
   }
@@ -665,19 +670,13 @@ String? _resolveAvatarUrl(String? url) {
   return '$apiBaseUrl$url';
 }
 
-// ─── Profil Tamamlama Kartı ──────────────────────────────────────────────────
+// ─── Profile Completion Card ──────────────────────────────────────────────────
 
 class _ProfileCompletionCard extends StatelessWidget {
   final User user;
   final VoidCallback onEdit;
 
   const _ProfileCompletionCard({required this.user, required this.onEdit});
-
-  static const _steps = [
-    (label: 'Fotoğraf ekle', field: 'avatar'),
-    (label: 'Şehir bilgisi', field: 'city'),
-    (label: 'Hakkımda yazısı', field: 'about'),
-  ];
 
   int get _completedCount {
     int count = 0;
@@ -687,13 +686,15 @@ class _ProfileCompletionCard extends StatelessWidget {
     return count;
   }
 
+  static const int _totalSteps = 3;
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final completed = _completedCount;
-    final total = _steps.length;
-    if (completed == total) return const SizedBox.shrink(); // Profile fully complete
+    if (completed == _totalSteps) return const SizedBox.shrink();
 
-    final percent = completed / total;
+    final percent = completed / _totalSteps;
     final theme = Theme.of(context);
 
     return Padding(
@@ -716,12 +717,12 @@ class _ProfileCompletionCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      'Profili tamamla — ${(percent * 100).round()}%',
+                      l10n.profileCompletePercent((percent * 100).round()),
                       style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
                     ),
                   ),
                   Text(
-                    '$completed/$total',
+                    '$completed/$_totalSteps',
                     style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
                 ],
@@ -742,11 +743,11 @@ class _ProfileCompletionCard extends StatelessWidget {
                 runSpacing: 4,
                 children: [
                   if (user.avatarUrl == null || user.avatarUrl!.isEmpty)
-                    _MissingChip(label: 'Fotoğraf'),
+                    _MissingChip(label: l10n.profileCompletePhoto),
                   if (user.city == null || user.city!.isEmpty)
-                    _MissingChip(label: 'Şehir'),
+                    _MissingChip(label: l10n.profileCompleteCity),
                   if (user.about == null || user.about!.isEmpty)
-                    _MissingChip(label: 'Hakkımda'),
+                    _MissingChip(label: l10n.profileCompleteAbout),
                 ],
               ),
             ],
@@ -781,4 +782,3 @@ class _MissingChip extends StatelessWidget {
     );
   }
 }
-

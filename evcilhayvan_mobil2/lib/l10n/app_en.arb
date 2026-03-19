@@ -97,6 +97,53 @@
   "matchRequestReject": "Reject",
   "matchRequestCancel": "Cancel",
 
+  "msgConvDeleted": "Conversation deleted",
+  "msgConvDeleteErr": "Could not delete conversation: {error}",
+  "@msgConvDeleteErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "msgConvStart": "Start chatting",
+  "msgListingNotFound": "Listing info not found",
+  "msgListingLoading": "Loading listing...",
+  "msgListingLoadErr": "Could not load listing info",
+  "msgMatingRequestsTitle": "Mating Requests",
+  "msgNoMatingRequests": "No mating requests yet.",
+  "msgAdoptionRequestsTitle": "Adoption Applications",
+  "msgNoAdoptionRequests": "No applications yet.",
+  "msgHeaderTitle": "Brighten your inbox",
+  "msgHeaderSubtitle": "Manage adoption conversations, listing questions and new friendships here.",
+  "msgConvLoadErr": "Could not load conversations",
+  "msgSenderLabel": "From: {name}",
+  "@msgSenderLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "msgSelectedPet": "Selected pet: {name}",
+  "@msgSelectedPet": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "msgViewSenderListing": "View sender's listing",
+  "msgApplicantLabel": "Applicant: {name}",
+  "@msgApplicantLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "msgGoToChat": "Go to chat",
+  "msgStatusAccepted": "Accepted",
+  "msgStatusRejected": "Rejected",
+  "msgStatusCancelled": "Cancelled",
+  "msgStatusPending": "Pending",
+  "msgActionDone": "Action completed",
+  "msgNoRecipient": "Recipient info not found.",
+  "msgLoginRequired": "Please log in to chat.",
+  "msgOpenFailed": "Could not open conversation.",
+
   "profileTitle": "Profile",
   "profileEdit": "Edit Profile",
   "profileMyPets": "My Listings",
@@ -181,6 +228,7 @@
   "speciesDog": "Dog",
   "speciesCat": "Cat",
   "speciesBird": "Bird",
+  "speciesHamster": "Hamster",
   "speciesFish": "Fish",
   "speciesOther": "Other",
 
@@ -280,6 +328,40 @@
   "homeShortcutSearch": "Search",
   "homeUpcomingAppointments": "Upcoming Appointments",
   "homeNearbyAds": "Nearby Listings",
+  "homeDiscoverTitle": "Discover Listings",
+  "homeSearchTooltip": "Search",
+  "homeLostFoundTooltip": "Lost & Found",
+  "homeBreedSelect": "Select breed",
+  "homeClearFilter": "Clear filter",
+  "homeWelcome": "Welcome!",
+  "homeGreetingWith": "{greeting}, {name}!",
+  "@homeGreetingWith": {
+    "placeholders": {
+      "greeting": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "homeHeaderDesc": "Discover the perfect pet companion for you.",
+  "homeGoodMorning": "Good morning",
+  "homeGoodDay": "Good afternoon",
+  "homeGoodEvening": "Good evening",
+  "homeGoodNight": "Good night",
+  "homeShortcutSitterFull": "Find\nSitter",
+  "homeShortcutLostFull": "Lost &\nFound",
+  "homeShortcutAiFull": "Pati\nAssistant",
+  "homeShortcutMap": "Map",
+  "homeEmptyListings": "No listings yet",
+  "homeEmptyListingsDesc": "No listings in this category yet. Be the first to add!",
+  "homeApptFallback": "Vet Appointment",
+  "homeNotifTooltip": "Notifications",
+  "homeBreedSearch": "Search breed...",
+  "homeLocationPermErr": "Location permission required",
+  "homeLocationErr": "Could not get location: {error}",
+  "@homeLocationErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
 
   "navMessages": "Messages",
   "navAdopt": "Adopt",
@@ -305,5 +387,962 @@
     "placeholders": {
       "query": {"type": "String"}
     }
-  }
+  },
+
+  "vetVerified": "Verified",
+  "vetOnlineAppointment": "Online Appointment",
+  "vetAbout": "About",
+  "vetServices": "Services",
+  "vetSpeciesServed": "Species Served",
+  "vetWorkingHours": "Working Hours",
+  "vetClosed": "Closed",
+  "vetOpenInMaps": "Open in Maps",
+  "vetSendMessage": "Send Message",
+  "vetClaimProfile": "Claim This Clinic",
+  "vetClaimDialogTitle": "Claim Profile",
+  "vetClaimDialogContent": "Are you sure you want to link this clinic profile to your account?\n\nAfter claiming, customers can message you directly.",
+  "vetClaimAction": "Claim",
+  "vetClaimSuccess": "Profile claimed successfully! You can now receive messages.",
+  "vetReviews": "Reviews",
+  "vetReviewsRate": "Rate",
+  "vetReviewsLoadError": "Could not load reviews.",
+  "vetReviewsEmpty": "No reviews yet. Be the first to review!",
+  "vetReviewCount": "{count} reviews",
+  "@vetReviewCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "vetReviewAdded": "Your review has been added.",
+  "vetReviewDeleteError": "Could not delete: {error}",
+  "@vetReviewDeleteError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "vetReviewDialogTitle": "Rate Veterinarian",
+  "vetReviewCommentHint": "Your comment (optional)",
+  "vetSpeciesDog": "Dog",
+  "vetSpeciesCat": "Cat",
+  "vetSpeciesBird": "Bird",
+  "vetSpeciesFish": "Fish",
+  "vetSpeciesRodent": "Rodent",
+  "vetSpeciesOther": "Other",
+  "vetRating": "{rating} ({count} reviews)",
+  "@vetRating": {
+    "placeholders": {
+      "rating": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+
+  "checkoutTitle": "Checkout",
+  "checkoutDeliveryAddress": "Delivery Address",
+  "checkoutPaymentMethod": "Payment Method",
+  "checkoutCardInfo": "Card Details",
+  "checkoutCreditCard": "Credit Card",
+  "checkoutCashOnDelivery": "Cash on Delivery",
+  "checkoutCardNumber": "Card Number",
+  "checkoutCardHolder": "Cardholder Name",
+  "checkoutCardHolderHint": "FULL NAME",
+  "checkoutExpiry": "Expiry Date",
+  "checkoutExpiryHint": "MM/YY",
+  "checkoutCoupon": "Discount Coupon",
+  "checkoutCouponHint": "Your coupon code",
+  "checkoutApply": "Apply",
+  "checkoutOrderNote": "Order Note (Optional)",
+  "checkoutOrderNoteHint": "Notes about your order...",
+  "checkoutOrderSummary": "Order Summary",
+  "checkoutSubtotal": "Subtotal",
+  "checkoutShipping": "Shipping",
+  "checkoutFreeShipping": "Free",
+  "checkoutDiscount": "Discount",
+  "checkoutTotal": "Total",
+  "checkoutCompleteOrder": "Place Order",
+  "checkoutDefaultAddress": "Default",
+  "checkoutAddNewAddress": "Add New Address",
+  "checkoutAddressLoadError": "Could not load addresses: {error}",
+  "@checkoutAddressLoadError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "checkoutCartLoadError": "Could not load cart: {error}",
+  "@checkoutCartLoadError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "checkoutErrNoAddress": "Please select a delivery address",
+  "checkoutErrCardNumber": "Enter a valid card number",
+  "checkoutErrCardHolder": "Enter cardholder name",
+  "checkoutErrExpiry": "Enter a valid expiry date",
+  "checkoutErrCvv": "Enter a valid CVV",
+  "checkoutErrEmptyCart": "Your cart is empty",
+  "checkoutErrCouponEmpty": "Please enter a coupon code",
+  "checkoutErrCouponInvalid": "Invalid coupon code",
+  "checkoutErrCouponNotApplicable": "Coupon not applicable to this order",
+  "checkoutErrCouponFailed": "Could not apply coupon",
+  "checkoutCouponApplied": "Coupon applied! ₺{amount} discount",
+  "@checkoutCouponApplied": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "checkoutCouponDiscount": "₺{amount} discount applied",
+  "@checkoutCouponDiscount": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "checkoutOrderSuccess": "Order Received!",
+  "checkoutOrderSuccessDesc": "Your order was placed successfully. Track it in My Orders.",
+  "checkoutGoToOrders": "Go to My Orders",
+  "checkoutOrderError": "Could not place order: {error}",
+  "@checkoutOrderError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "healthJournalTitle": "{petName} Health Journal",
+  "@healthJournalTitle": {
+    "placeholders": {
+      "petName": {"type": "String"}
+    }
+  },
+  "healthAddRecord": "Add Record",
+  "healthTypeAll": "All",
+  "healthTypeWeight": "Weight",
+  "healthTypeMedication": "Medication",
+  "healthTypeVetVisit": "Vet Visit",
+  "healthTypeNote": "Note",
+  "healthRecordAdded": "Record added.",
+  "healthRecordDeleteTitle": "Delete Record",
+  "healthRecordDeleteContent": "Are you sure you want to delete this health record?",
+  "healthNoRecords": "No health records yet",
+  "healthNoFilterRecords": "No {type} records",
+  "@healthNoFilterRecords": {
+    "placeholders": {
+      "type": {"type": "String"}
+    }
+  },
+  "healthAddHint": "Tap the + button at the bottom right to add a record",
+  "healthWeightChart": "Weight Tracker",
+  "healthWeightChartMin": "At least 2 weight records required for chart",
+  "healthWeightChartError": "Could not load weight chart",
+  "healthRefresh": "Refresh",
+  "healthLoadError": "Could not load: {error}",
+  "@healthLoadError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "healthDose": "Dose: {dose}",
+  "@healthDose": {
+    "placeholders": {
+      "dose": {"type": "String"}
+    }
+  },
+  "healthFrequency": "Frequency: {freq}",
+  "@healthFrequency": {
+    "placeholders": {
+      "freq": {"type": "String"}
+    }
+  },
+  "healthVetName": "Vet: {name}",
+  "@healthVetName": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "healthDiagnosis": "Diagnosis: {diagnosis}",
+  "@healthDiagnosis": {
+    "placeholders": {
+      "diagnosis": {"type": "String"}
+    }
+  },
+  "healthAddDialogTitle": "Add Health Record",
+  "healthRecordType": "Record Type",
+  "healthRecordDate": "Record date",
+  "healthWeightKg": "Weight (kg)",
+  "healthMedName": "Medication Name *",
+  "healthMedDosage": "Dosage (e.g. 5mg)",
+  "healthMedFreq": "Frequency (e.g. Twice daily)",
+  "healthVetNameLabel": "Vet Name",
+  "healthDiagnosisTreatment": "Diagnosis / Treatment",
+  "healthNotes": "Notes (optional)",
+  "healthErrWeight": "Enter a valid weight.",
+  "healthErrMedName": "Medication name is required.",
+
+  "blockUserTitle": "Block User",
+  "blockUserContent": "Are you sure you want to block {name}? You will no longer see their listings.",
+  "@blockUserContent": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "blockUserAction": "Block",
+  "blockUserSuccess": "{name} has been blocked.",
+  "@blockUserSuccess": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "blockUserError": "Block failed: {error}",
+  "@blockUserError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "blockUserSubtitle": "I don't want to see this user's listings",
+  "reportUserTitle": "Report",
+  "reportUserSubtitle": "Report inappropriate behavior or content",
+  "reportDialogTitle": "Report {name}",
+  "@reportDialogTitle": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "reportReasonLabel": "Reason for report:",
+  "reportReasonSpam": "Spam",
+  "reportReasonHarassment": "Harassment or bullying",
+  "reportReasonInappropriate": "Inappropriate content",
+  "reportReasonFakeProfile": "Fake profile",
+  "reportReasonOther": "Other",
+  "reportDescHint": "Additional details (optional)",
+  "reportAction": "Report",
+  "reportErrNoReason": "Please select a reason.",
+  "reportSuccess": "Your report has been received, thank you.",
+
+  "goBack": "Go Back",
+  "petDetailLoadError": "Could not load listing",
+  "petDetailGoBack": "Go Back",
+  "petDetailShare": "Share",
+  "petDetailQrTooltip": "QR ID Card",
+  "petDetailQrCard": "QR ID Card",
+  "petDetailVaccine": "Vaccine",
+  "petDetailVaccineFull": "Vaccinated",
+  "petDetailVaccineMissing": "Not Vaccinated",
+  "petDetailAgeYearsMonths": "{years} yr {months} mo",
+  "@petDetailAgeYearsMonths": {
+    "placeholders": {
+      "years": {"type": "int"},
+      "months": {"type": "int"}
+    }
+  },
+  "petDetailShareText": "{name} - Discover on Pati Arkadaşı!",
+  "@petDetailShareText": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "petDetailShareSubject": "{name} listing",
+  "@petDetailShareSubject": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "petDetailStatusActive": "Active",
+  "petDetailStatusInactive": "Inactive",
+  "petDetailBreedUnspecified": "Breed not specified",
+  "petDetailAbout": "About",
+  "petDetailDetails": "Detailed Info",
+  "petDetailSpecies": "Species",
+  "petDetailBreedLabel": "Breed",
+  "petDetailBreedUnset": "Not specified",
+  "petDetailGenderLabel": "Gender",
+  "petDetailAgeLabel": "Age",
+  "petDetailAgeMonths": "{months} months",
+  "@petDetailAgeMonths": {
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "petDetailAdvertType": "Listing Type",
+  "petDetailHealth": "Health Info",
+  "petDetailVaccineStatus": "Vaccination Status",
+  "petDetailVaccineComplete": "Fully Vaccinated",
+  "petDetailVaccineNeeded": "Needs Vaccination",
+  "petDetailListingStatus": "Listing Status",
+  "petDetailActive": "Active",
+  "petDetailInactive": "Inactive",
+  "petDetailLocation": "Location",
+  "petDetailLocationShared": "Location shared",
+  "petDetailLocationNone": "No location info",
+  "petDetailOpenInMap": "Open in Map",
+  "petDetailMapTapHint": "Tap to view on map",
+  "petDetailMapOpenError": "Could not open map app",
+  "petDetailOwnerLabel": "Owner",
+  "petDetailOwnerUnknown": "Owner Unknown",
+  "petDetailOwnerBannerTitle": "This listing is yours!",
+  "petDetailOwnerBannerDesc": "Keeping your listing updated attracts more interest.",
+  "petDetailHealthJournal": "Health Journal",
+  "petDetailMessage": "Message",
+  "petDetailAdoptBtn": "Adopt",
+  "petDetailMatingRequest": "Send Mating Request",
+  "petDetailQrAge": "Age",
+  "petDetailQrGender": "Gender",
+  "petDetailQrVaccine": "Vaccine",
+  "petDetailQrVaccineFull": "Complete",
+  "petDetailQrVaccinePartial": "Incomplete",
+  "petDetailQrIdCopied": "ID copied to clipboard",
+  "petDetailErrMsgLogin": "You must be logged in to send a message.",
+  "petDetailErrOwnerNotFound": "Owner information not found.",
+  "petDetailErrSelfMessage": "You cannot message your own listing.",
+  "petDetailErrMatingLogin": "You must be logged in to send a mating request.",
+  "petDetailNoPetDialog": "Listing Required",
+  "petDetailNoPetContent": "You need to create a mating listing first before sending a mating request.",
+  "petDetailCreateListing": "Create Listing",
+  "petDetailSameSpeciesTitle": "Same Species Required",
+  "petDetailSameSpeciesContent": "This listing is \"{species}\" species. You need a listing of the same species to send a mating request.",
+  "@petDetailSameSpeciesContent": {
+    "placeholders": {
+      "species": {"type": "String"}
+    }
+  },
+  "petDetailMatingGenericError": "Could not send mating request: {error}",
+  "@petDetailMatingGenericError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "petDetailSuccessDialogTitle": "Request Sent!",
+  "petDetailSuccessDialogMatch": "Congratulations! A mutual match was created. You can now chat.",
+  "petDetailSuccessDialogPending": "Your mating request has been sent. Waiting for the other party's approval.",
+  "petDetailSuccessDialogStartChat": "Start Chatting",
+  "petDetailSelectPetTitle": "Select Your Pet",
+  "petDetailSelectPetSubtitle": "Select a {species} for mating",
+  "@petDetailSelectPetSubtitle": {
+    "placeholders": {
+      "species": {"type": "String"}
+    }
+  },
+
+  "chatDeleteTitle": "Delete conversation",
+  "chatDeleteContent": "Are you sure you want to permanently delete this conversation? This cannot be undone.",
+  "chatDeleteError": "Could not delete conversation: {error}",
+  "@chatDeleteError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatRefresh": "Refresh conversation",
+  "chatNotifPrefs": "Notification preferences",
+  "chatNotifPrefsSub": "Manage in Settings > Notifications",
+  "chatNotifPrefsInfo": "You can edit notification preferences from the settings screen.",
+  "chatDeleteFromList": "Remove from list",
+  "chatDeleteFromListSub": "You can also delete from the Messages screen.",
+  "chatBlockReport": "Block / Report",
+  "chatSelectFromGallery": "Choose from Gallery",
+  "chatSelectFromGallerySub": "Select from your photo gallery",
+  "chatCamera": "Camera",
+  "chatCameraSub": "Take a new photo",
+  "chatMsgHint": "Write a message...",
+  "chatSearchHint": "Search messages...",
+  "chatErrMicPermission": "Microphone permission required.",
+  "chatErrRecordStart": "Could not start recording: {error}",
+  "@chatErrRecordStart": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatErrAudioSend": "Could not send audio: {error}",
+  "@chatErrAudioSend": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatErrImagePick": "Could not pick image: {error}",
+  "@chatErrImagePick": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatErrImageSend": "Could not send image: {error}",
+  "@chatErrImageSend": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatErrLoginRequired": "You must be logged in to send a message.",
+  "chatErrLoginRequiredImage": "You must be logged in to send an image.",
+  "chatErrMsgSend": "Could not send message: {error}",
+  "@chatErrMsgSend": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatErrMsgDelete": "Could not delete message: {error}",
+  "@chatErrMsgDelete": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatErrReaction": "Could not send reaction: {error}",
+  "@chatErrReaction": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatMsgDeletedSelf": "You deleted this message",
+  "chatDeleteMsgForMe": "Delete this message for me",
+  "chatCopyMsg": "Copy",
+  "chatAudioMsg": "[Audio Message]",
+  "chatSearchNoResults": "No results for \"{query}\"",
+  "@chatSearchNoResults": {
+    "placeholders": {
+      "query": {"type": "String"}
+    }
+  },
+  "chatTooltipBack": "Back",
+  "chatTooltipSearch": "Search Messages",
+  "chatTooltipCloseSearch": "Close Search",
+  "chatTypeMatching": "Mating conversation",
+  "chatTypeAdoption": "Adoption conversation",
+  "chatTypeGeneral": "Conversation",
+
+  "ordersTitle": "My Orders",
+  "ordersEmpty": "No orders yet",
+  "ordersEmptyDesc": "Start shopping at the store",
+  "orderStatusPending": "Pending",
+  "orderStatusProcessing": "Processing",
+  "orderStatusShipped": "Shipped",
+  "orderStatusDelivered": "Delivered",
+  "orderStatusCancelled": "Cancelled",
+  "orderCancelTitle": "Cancel Order",
+  "orderCancelContent": "Are you sure you want to cancel this order?",
+  "orderCancelAction": "Cancel Order",
+  "orderCancelSuccess": "Order cancelled",
+  "orderCancelError": "Could not cancel: {error}",
+  "@orderCancelError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "orderNumber": "Order #{id}",
+  "@orderNumber": {
+    "placeholders": {
+      "id": {"type": "String"}
+    }
+  },
+  "orderItemCount": "{count} items",
+  "@orderItemCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "orderItemQty": "{qty} pcs x ₺{price}",
+  "@orderItemQty": {
+    "placeholders": {
+      "qty": {"type": "int"},
+      "price": {"type": "String"}
+    }
+  },
+  "orderProducts": "Products",
+  "orderTrackingInfo": "Tracking Information",
+  "orderTrackingCopied": "Tracking no copied: {no}",
+  "@orderTrackingCopied": {
+    "placeholders": {
+      "no": {"type": "String"}
+    }
+  },
+  "orderMyOrdersTitle": "My Orders",
+  "orderNoOrders": "No orders yet",
+  "orderNoOrdersDesc": "Start shopping in the store",
+  "orderLoadErr": "Error: {error}",
+  "@orderLoadErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "orderDeliveryAddress": "Delivery Address",
+  "orderReview": "Review",
+  "copyTooltip": "Copy",
+  "orderMyRating": "Your rating: {rating}",
+  "@orderMyRating": {
+    "placeholders": {
+      "rating": {"type": "int"}
+    }
+  },
+
+  "nearbyTitle": "Nearby Listings",
+  "nearbyLocating": "Getting location...",
+  "nearbyNoResults": "No listings found in this area",
+  "nearbyExpandArea": "Expand area (50 km)",
+  "nearbyShown": "{count} listings shown",
+  "@nearbyShown": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "nearbyActiveFilters": "{count} filters active",
+  "@nearbyActiveFilters": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "nearbyClearFilters": "Clear",
+  "nearbyErrLocationService": "Location service is off. Please enable it in settings.",
+  "nearbyErrPermDeniedForever": "Location permission permanently denied. Enable it in app settings.",
+  "nearbyErrPermDenied": "Location permission required. Please try again.",
+  "nearbyErrTimeout": "Could not get location: timeout. Please try again.",
+  "nearbyErrPermRequired": "Location permission required. Please enable in settings.",
+  "nearbyErrGeneric": "Could not get location. Please try again.",
+  "nearbyOpenLocationSettings": "Open Location Settings",
+  "nearbyOpenAppSettings": "Open App Settings",
+  "filterTitle": "Filter",
+  "filterReset": "Reset",
+  "filterAdvertType": "Listing Type",
+  "filterAnimalType": "Animal Type",
+  "filterBreed": "Breed",
+  "filterVaccine": "Vaccination",
+  "filterVaccineAny": "Any",
+  "filterVaccinated": "Vaccinated",
+  "filterUnvaccinated": "Unvaccinated",
+  "filterApply": "Apply",
+  "filterAll": "All",
+
+  "profileLoginRequired": "You must be logged in to view the profile.",
+  "profileDeleteTitle": "Delete Listing",
+  "profileDeleteContent": "Are you sure you want to delete this listing? This cannot be undone.",
+  "profileDeleteSuccess": "Listing deleted successfully.",
+  "profileLogoutTitle": "Log Out",
+  "profileLogoutContent": "Are you sure you want to log out of your account?",
+  "profileAdoptionApplications": "Adoption Applications",
+  "profileNewAdoptionBtn": "Adoption",
+  "profileNewMatingBtn": "Mating",
+  "profileLoginBtn": "Log In",
+  "profileFavorites": "Favorites",
+  "profileOrders": "Orders",
+  "profileSitterBtn": "Sitter",
+  "profileNotifications": "Notifications",
+  "profileMyStore": "My Store",
+  "profileNoPetsTitle": "No listings yet",
+  "profileNoPetsDesc": "Create your first listing to find a new friend for the community.",
+  "profileRoleSeller": "Seller",
+  "profileRoleSitter": "Sitter",
+  "profileRoleAdmin": "Admin",
+  "profileCompletePercent": "Complete profile — {percent}%",
+  "@profileCompletePercent": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
+  "profileAuthErr": "Session could not be verified. Please try again.",
+  "profileAdsLoadErr": "Could not load listings: {error}",
+  "@profileAdsLoadErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "cartTitle": "My Cart",
+  "cartClearAction": "Clear",
+  "cartClearTitle": "Clear Cart",
+  "cartClearContent": "All items in the cart will be removed. Are you sure?",
+  "cartItemRemoved": "Item removed from cart",
+  "cartItemRemoveError": "Could not remove item: {error}",
+  "@cartItemRemoveError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "cartUpdateError": "Could not update quantity: {error}",
+  "@cartUpdateError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "cartCleared": "Cart cleared",
+  "cartClearError": "Could not clear cart: {error}",
+  "@cartClearError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "cartEmptyTitle": "Your Cart is Empty",
+  "cartEmptyDesc": "You haven't added any items yet.\nExplore the store to start shopping!",
+  "cartShopNow": "Start Shopping",
+  "cartContinueShopping": "Continue Shopping",
+  "cartCheckout": "Proceed to Checkout",
+  "cartItemCount": "Item Count",
+  "cartTotalAmount": "Total Amount",
+  "cartItemTotal": "Total: {total} ₺",
+  "@cartItemTotal": {
+    "placeholders": {
+      "total": {"type": "String"}
+    }
+  },
+  "cartLoadError": "Could not load cart",
+  "cartRetry": "Try Again",
+
+  "sellerPanelTitle": "Seller Dashboard",
+  "sellerBecomeSeller": "Become a Seller",
+  "sellerBecomeSellerDesc": "You need to be a seller to view this page",
+  "sellerStoreLoadErr": "Could not load store info",
+  "sellerOrderStatsLoadErr": "Could not load order statistics",
+  "sellerProductStatsLoadErr": "Could not load product statistics",
+  "sellerRevenueChartLoadErr": "Could not load revenue chart",
+  "sellerAttentionProducts": "Products Needing Attention",
+  "sellerOutOfStock": "Out of Stock",
+  "sellerLowStock": "Low Stock",
+  "sellerNoStore": "You Have No Store",
+  "sellerNoStoreDesc": "Create your store first to start selling products",
+  "sellerCreateStore": "Create Store",
+  "sellerActiveStore": "Active Store",
+  "sellerTotalRevenue": "Total Revenue",
+  "sellerPendingOrders": "Pending",
+  "sellerTotalOrdersCount": "{count} total",
+  "@sellerTotalOrdersCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "sellerTotalProducts": "Total Products",
+  "sellerQuickActions": "Quick Actions",
+  "sellerAddProduct": "Add Product",
+  "sellerManageProducts": "Manage My Products",
+  "sellerViewStore": "View My Store",
+  "sellerMyOrders": "My Orders",
+  "sellerDemoProducts": "Add Demo Products",
+  "sellerDemoProductsLoading": "Adding Demo Products...",
+  "sellerDemoProductsTitle": "Add Demo Products",
+  "sellerDemoProductsContent": "This will delete all products in your store and replace them with demo products. Do you want to continue?",
+  "sellerDemoProductsContinue": "Continue",
+  "sellerDemoProductsAdded": "{count} demo products added successfully!",
+  "@sellerDemoProductsAdded": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "sellerErrGeneric": "Error: {error}",
+  "@sellerErrGeneric": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "sellerLast6Months": "Last 6 Months",
+  "sellerChartRevenue": "Revenue",
+  "sellerChartOrders": "Orders",
+  "sellerStockLabel": "Stock: {count}",
+  "@sellerStockLabel": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "sellerOrderCountTooltip": "{count} orders",
+  "@sellerOrderCountTooltip": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "sellerRetry": "Refresh",
+
+  "productMgmtTitle": "Product Management",
+  "productMgmtAll": "All",
+  "productMgmtActive": "Active",
+  "productMgmtInactive": "Inactive",
+  "productMgmtLowStock": "Low Stock",
+  "productMgmtOutOfStock": "Out of Stock",
+  "productMgmtNoProducts": "No products added yet",
+  "productMgmtNoCategoryProducts": "No products in this category",
+  "productMgmtAddFirst": "Add First Product",
+  "productMgmtAddProduct": "Add Product",
+  "productMgmtLoadErr": "Could not load products",
+  "productMgmtStatusActive": "Active",
+  "productMgmtStatusInactive": "Inactive",
+  "productMgmtStock": "Stock: {count}",
+  "@productMgmtStock": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "productMgmtStockOutBadge": "Out of Stock",
+  "productMgmtStockLowBadge": "Low",
+  "productMgmtDeactivate": "Deactivate",
+  "productMgmtActivate": "Activate",
+  "productMgmtStockAction": "Stock",
+  "productMgmtEditAction": "Edit",
+  "productMgmtDeleteAction": "Delete",
+  "productMgmtToggleDeactivated": "Product deactivated",
+  "productMgmtToggleActivated": "Product activated",
+  "productMgmtStockUpdated": "Stock updated",
+  "productMgmtEditSoon": "Product editing coming soon",
+  "productMgmtDeleteTitle": "Delete Product",
+  "productMgmtDeleteContent": "Are you sure you want to delete \"{name}\"?",
+  "@productMgmtDeleteContent": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "productMgmtDeleteWarning": "This action cannot be undone!",
+  "productMgmtDeleted": "Product deleted",
+  "productMgmtUpdateStockTitle": "Update Stock",
+  "productMgmtCurrentStock": "Current Stock",
+  "productMgmtStockUnit": "units",
+  "productMgmtStockChange": "Set",
+  "productMgmtStockIncrease": "Increase",
+  "productMgmtStockDecrease": "Decrease",
+  "productMgmtNewStockAmt": "New Stock Amount",
+  "productMgmtAddAmt": "Amount to Add",
+  "productMgmtSubtractAmt": "Amount to Subtract",
+  "productMgmtEnterAmt": "Enter amount",
+  "productMgmtUpdate": "Update",
+
+  "matchReqNoRequests": "No requests yet.",
+  "matchReqSenderLabel": "Sender: {name}",
+  "@matchReqSenderLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "matchReqReceiverLabel": "Receiver: {name}",
+  "@matchReqReceiverLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "matchReqSenderPet": "Sender's pet: {name}",
+  "@matchReqSenderPet": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "matchReqSelectedPet": "Selected pet: {name}",
+  "@matchReqSelectedPet": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "matchReqViewListing": "View sender's listing",
+  "matchReqActDone": "Action completed: {action}",
+  "@matchReqActDone": {
+    "placeholders": {
+      "action": {"type": "String"}
+    }
+  },
+  "matchReqMatchSuccess": "Match successful! Redirecting you to chat with {name}...",
+  "@matchReqMatchSuccess": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "matchReqGoNow": "Go Now",
+  "matchReqChatError": "Could not open chat: {error}",
+  "@matchReqChatError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "matchReqAccept": "Accept",
+  "matchReqReject": "Reject",
+  "matchReqGoToChat": "Go to chat",
+
+  "loginTitle": "Sign In",
+  "loginEmailError": "Enter a valid email",
+  "loginPasswordError": "At least 6 characters",
+  "loginNoAccount": "Don't have an account?",
+
+  "registerTitle": "Create Account",
+  "registerNameError": "Name is required",
+  "registerPasswordConfirmHint": "Confirm Password",
+  "registerPasswordMismatch": "Passwords do not match",
+  "registerHasAccount": "Already have an account?",
+
+  "forgotTitle": "Forgot Password",
+  "forgotDesc": "Enter your email address to reset your password.",
+  "forgotSubmit": "Send Code",
+  "forgotSuccessTitle": "Email Sent!",
+  "forgotSuccessDesc": "We sent a password reset code to {email}.",
+  "@forgotSuccessDesc": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "forgotEnterCode": "Enter Code",
+
+  "resetTitle": "Reset Password",
+  "resetDesc": "Enter the code sent to {email}.",
+  "@resetDesc": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "resetCodeHint": "Verification Code",
+  "resetCodeError": "Code is required",
+  "resetNewPasswordHint": "New Password",
+  "resetPasswordError": "At least 6 characters",
+  "resetSubmit": "Reset Password",
+  "resetSuccess": "Your password has been reset successfully!",
+
+  "createPetEditTitle": "Edit Listing",
+  "createPetNewTitle": "New Listing",
+  "createPetUpdateDesc": "Update listing information",
+  "createPetNewDesc": "Create new listing",
+  "createPetHeroDesc": "Choose listing type, add photos/videos and find the right home for your pet.",
+  "createPetAdoptionChip": "Adoption listing",
+  "createPetMatingChip": "Mating listing",
+  "createPetBasicInfo": "Basic Information",
+  "createPetNameLabel": "Name",
+  "createPetNameError": "Name is required",
+  "createPetSpeciesLabel": "Species",
+  "createPetGenderLabel": "Gender",
+  "createPetVaccinatedTitle": "Vaccinations complete",
+  "createPetVaccinatedSubtitle": "Vaccination info will be shown as a badge on the listing.",
+  "createPetDetailsSection": "Details",
+  "createPetAgeLabel": "Age (Months)",
+  "createPetAgeError": "Age is required",
+  "createPetAgeInvalidError": "Enter a valid number",
+  "createPetBreedLabel": "Breed",
+  "createPetBreedSelect": "Select",
+  "createPetBreedSearch": "Search breed...",
+  "createPetDescLabel": "Description",
+  "createPetDescHint": "Personality, health status and needs",
+  "createPetLocationSelected": "Location selected",
+  "createPetLocationAdd": "Add location",
+  "createPetLocationHint": "Open map to select city/district",
+  "createPetMedia": "Photos & Video",
+  "createPetAddPhotoBtn": "Add photo",
+  "createPetAddVideoBtn": "Add video",
+  "createPetSave": "Save",
+  "createPetPublish": "Publish",
+
+  "shellOfflineBanner": "No internet connection",
+  "shellReconnected": "Internet connection restored",
+  "shellApptSnackView": "View",
+  "shellAdvertsNav": "My Listings",
+  "shellGuideFab": "Guide Pati",
+  "addressEditTitle": "Edit Address",
+  "addressNewTitle": "New Address",
+  "addressUpdated": "Address updated",
+  "addressAdded": "Address added",
+  "addressSaveErr": "Error: {error}",
+  "@addressSaveErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "addressInfoCard": "Address Info",
+  "addressTitleLabel": "Address Title",
+  "addressTitleHint": "Home, Work, etc.",
+  "addressRecipientCard": "Recipient Info",
+  "addressFullName": "Full Name",
+  "addressFullNameHint": "Person receiving the delivery",
+  "addressPhone": "Phone",
+  "addressDetailsCard": "Address Details",
+  "addressCity": "City",
+  "addressCityHint": "Istanbul",
+  "addressDistrict": "District",
+  "addressDistrictHint": "Kadıköy",
+  "addressNeighborhood": "Neighborhood",
+  "addressNeighborhoodHint": "Neighborhood name",
+  "addressStreet": "Street/Avenue",
+  "addressStreetHint": "Street or avenue name",
+  "addressBuildingNo": "Building No",
+  "addressFloor": "Floor",
+  "addressApartmentNo": "Apt No",
+  "addressPostalCode": "Postal Code",
+  "addressPreferencesCard": "Preferences",
+  "addressSetDefault": "Set as default address",
+  "addressSetDefaultSub": "This address will be auto-selected in orders",
+  "addressUpdate": "Update",
+  "addressRequired": "{field} is required",
+  "@addressRequired": {
+    "placeholders": {
+      "field": {"type": "String"}
+    }
+  },
+
+  "verifyTitle": "Verify Email",
+  "verifyDesc": "We sent a verification code to {email}.",
+  "@verifyDesc": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "verifyCodeLabel": "Verification Code",
+  "verifySubmit": "Verify",
+  "verifySuccess": "Email verified! You can now sign in.",
+  "verifyBackToLogin": "Back to login",
+
+  "userProfileLoadErr": "Could not load profile",
+  "userProfileAbout": "About",
+  "userProfileListings": "Listings ({count})",
+  "@userProfileListings": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "userProfileNoListings": "No listings yet",
+  "userProfileMessageTooltip": "Send message",
+  "userProfileChatErr": "Could not start chat: {error}",
+  "@userProfileChatErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "userProfileMemberSince": "Member since {year}",
+  "@userProfileMemberSince": {
+    "placeholders": {
+      "year": {"type": "int"}
+    }
+  },
+  "userProfileDefaultName": "User",
+  "userProfileTypeAdopt": "Adopt",
+  "userProfileTypeMating": "Mating",
+  "userProfileTypeLost": "Lost",
+
+  "shellBirthdayDefault": "Your pet's birthday is today!",
+  "shellApptReminderDefault": "Your pet",
+  "shellAdvertExpiryDefault": "Your listing is about to expire.",
+
+  "vacCalendarTitle": "Vaccination Calendar",
+  "vacCalendarLoadErr": "Error: {error}",
+  "@vacCalendarLoadErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "vacCalendarEmpty": "No vaccination schedule found",
+  "vacCalendarAddRecord": "Add Vaccination Record",
+  "vacCalendarNoRecord": "No records for this day",
+  "vacCalendarClickDay": "Click a day",
+  "vacCalendarAdd": "Add",
+  "vacCalendarFirstDose": "First Dose: {months} mo",
+  "@vacCalendarFirstDose": {
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "vacCalendarRepeat": "Repeat: {months} mo",
+  "@vacCalendarRepeat": {
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "vacCalendarRequired": "Required",
+  "vacCalendarNext": "Next: {date}",
+  "@vacCalendarNext": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+
+  "vetSearchTitle": "Search Veterinary",
+  "vetSearchGoogleTitle": "Search with Google",
+  "vetSearchSortTooltip": "Sort",
+  "vetSearchSortByDistance": "By Distance",
+  "vetSearchSortByRating": "By Rating",
+  "vetSearchHint": "Clinic name or address...",
+  "vetSearchUseLocation": "Use my location",
+  "vetSearchErrPermission": "Location permission required",
+  "vetSearchErrLocation": "Could not get location: {error}",
+  "@vetSearchErrLocation": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "vetSearchPrompt": "Type above to search or share your location",
+  "vetSearchNoResults": "No results found"
 }

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 import 'package:go_router/go_router.dart';
@@ -21,12 +22,13 @@ class MyOrdersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final ordersAsync = ref.watch(myOrdersProvider);
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('Siparişlerim'),
+        title: Text(l10n.orderMyOrdersTitle),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -41,12 +43,12 @@ class MyOrdersScreen extends ConsumerWidget {
                   Icon(Icons.shopping_bag_outlined, size: 80, color: Colors.grey[400]),
                   const SizedBox(height: 16),
                   Text(
-                    'Henüz siparişiniz yok',
+                    l10n.orderNoOrders,
                     style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Mağazadan alışveriş yaparak başlayın',
+                    l10n.orderNoOrdersDesc,
                     style: TextStyle(color: Colors.grey[500]),
                   ),
                 ],
@@ -72,11 +74,11 @@ class MyOrdersScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.error_outline, size: 64, color: Colors.red),
               const SizedBox(height: 16),
-              Text('Hata: $e'),
+              Text(l10n.orderLoadErr(e.toString())),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.invalidate(myOrdersProvider),
-                child: const Text('Tekrar Dene'),
+                child: Text(l10n.retry),
               ),
             ],
           ),
@@ -114,18 +116,18 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
     }
   }
 
-  String _getStatusText(OrderStatus status) {
+  String _getStatusText(OrderStatus status, AppLocalizations l10n) {
     switch (status) {
       case OrderStatus.pending:
-        return 'Onay Bekliyor';
+        return l10n.orderStatusPending;
       case OrderStatus.processing:
-        return 'Hazırlanıyor';
+        return l10n.orderStatusProcessing;
       case OrderStatus.shipped:
-        return 'Kargoya Verildi';
+        return l10n.orderStatusShipped;
       case OrderStatus.delivered:
-        return 'Teslim Edildi';
+        return l10n.orderStatusDelivered;
       case OrderStatus.cancelled:
-        return 'İptal Edildi';
+        return l10n.orderStatusCancelled;
     }
   }
 
@@ -145,20 +147,21 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
   }
 
   Future<void> _cancelOrder() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Siparişi İptal Et'),
-        content: const Text('Bu siparişi iptal etmek istediğinize emin misiniz?'),
+        title: Text(l10n.orderCancelTitle),
+        content: Text(l10n.orderCancelContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Vazgeç'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('İptal Et'),
+            child: Text(l10n.orderCancelAction),
           ),
         ],
       ),
@@ -173,13 +176,19 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
       ref.invalidate(myOrdersProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sipariş iptal edildi'), backgroundColor: Colors.green),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.orderCancelSuccess),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('İptal edilemedi: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.orderCancelError(e.toString())),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -188,11 +197,9 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
   }
 
   String _formatDate(DateTime date) {
-  
     try {
       return DateFormat('dd MMM yyyy, HH:mm', 'tr').format(date);
     } catch (_) {
-      // Fallback if Turkish locale is not initialized
       return DateFormat('dd MMM yyyy, HH:mm').format(date);
     }
   }
@@ -206,6 +213,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final order = widget.order;
 
     return Container(
@@ -235,7 +243,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Sipariş #${_getShortOrderId(order.id)}',
+                        l10n.orderNumber(_getShortOrderId(order.id)),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Container(
@@ -254,7 +262,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              _getStatusText(order.status),
+                              _getStatusText(order.status, l10n),
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -289,7 +297,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '${order.items.length} ürün',
+                        l10n.orderItemCount(order.items.length),
                         style: TextStyle(color: Colors.grey[500], fontSize: 13),
                       ),
                       Icon(
@@ -311,10 +319,10 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Ürünler
-                  const Text(
-                    'Ürünler',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  // Products
+                  Text(
+                    l10n.orderProducts,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
                   ...order.items.map((item) => Container(
@@ -361,7 +369,10 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   Text(
-                                    '${item.quantity} adet x ₺${item.price.toStringAsFixed(2)}',
+                                    l10n.orderItemQty(
+                                      item.quantity,
+                                      item.price.toStringAsFixed(2),
+                                    ),
                                     style: TextStyle(color: Colors.grey[600], fontSize: 12),
                                   ),
                                 ],
@@ -373,11 +384,10 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                             ),
                           ],
                         ),
-                        // Değerlendirme butonu - sadece teslim edilmiş siparişlerde
+                        // Review button - only for delivered orders
                         if (order.status == OrderStatus.delivered) ...[
                           const SizedBox(height: 10),
                           if (item.myReview != null) ...[
-                            // Yorum var - yıldızları göster ve Düzenle butonu
                             Row(
                               children: [
                                 ...List.generate(5, (index) => Icon(
@@ -387,7 +397,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                                 )),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Puanınız: ${item.myReview!.rating}',
+                                  l10n.orderMyRating(item.myReview!.rating),
                                   style: TextStyle(
                                     color: Colors.grey[600],
                                     fontSize: 12,
@@ -424,7 +434,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                                   }
                                 },
                                 icon: const Icon(Icons.edit, size: 18),
-                                label: const Text('Düzenle'),
+                                label: Text(l10n.edit),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: AppPalette.storePrimary,
                                   side: BorderSide(color: AppPalette.storePrimary),
@@ -433,7 +443,6 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                               ),
                             ),
                           ] else ...[
-                            // Yorum yok - Değerlendir butonu
                             SizedBox(
                               width: double.infinity,
                               child: OutlinedButton.icon(
@@ -452,7 +461,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                                   }
                                 },
                                 icon: const Icon(Icons.star_outline, size: 18),
-                                label: const Text('Değerlendir'),
+                                label: Text(l10n.orderReview),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.amber[700],
                                   side: BorderSide(color: Colors.amber[700]!),
@@ -466,7 +475,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                     ),
                   )),
 
-                  // Kargo Takip Bilgisi
+                  // Shipping tracking info
                   if ((order.status == OrderStatus.shipped || order.status == OrderStatus.delivered) &&
                       order.trackingNumber != null &&
                       order.trackingNumber!.isNotEmpty) ...[
@@ -485,9 +494,9 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                             children: [
                               Icon(Icons.local_shipping, color: Colors.purple[700], size: 20),
                               const SizedBox(width: 8),
-                              const Text(
-                                'Kargo Takip Bilgisi',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              Text(
+                                l10n.orderTrackingInfo,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
@@ -525,14 +534,14 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                                   Clipboard.setData(ClipboardData(text: order.trackingNumber!));
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text('Takip no kopyalandı: ${order.trackingNumber}'),
+                                      content: Text(l10n.orderTrackingCopied(order.trackingNumber!)),
                                       backgroundColor: Colors.purple,
                                       duration: const Duration(seconds: 2),
                                     ),
                                   );
                                 },
                                 icon: Icon(Icons.copy, color: Colors.purple[700], size: 20),
-                                tooltip: 'Kopyala',
+                                tooltip: l10n.copyTooltip,
                               ),
                             ],
                           ),
@@ -541,14 +550,14 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                     ),
                   ],
 
-                  // Teslimat Adresi
+                  // Shipping address
                   if (order.shippingAddress != null) ...[
                     const SizedBox(height: 16),
                     const Divider(),
                     const SizedBox(height: 12),
-                    const Text(
-                      'Teslimat Adresi',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Text(
+                      l10n.orderDeliveryAddress,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -557,7 +566,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                     ),
                   ],
 
-                  // İptal butonu
+                  // Cancel button
                   if (order.status == OrderStatus.pending || order.status == OrderStatus.processing) ...[
                     const SizedBox(height: 16),
                     SizedBox(
@@ -571,7 +580,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                                 child: CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Icon(Icons.cancel, size: 18),
-                        label: const Text('Siparişi İptal Et'),
+                        label: Text(l10n.orderCancelTitle),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.red,
                           side: const BorderSide(color: Colors.red),

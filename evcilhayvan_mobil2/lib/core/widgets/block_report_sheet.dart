@@ -1,5 +1,6 @@
 // lib/core/widgets/block_report_sheet.dart
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/features/social/data/block_report_repository.dart';
 
 /// Call this to show block/report options for a given user.
@@ -40,20 +41,20 @@ class _BlockReportSheetState extends State<_BlockReportSheet> {
   }
 
   Future<void> _block() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Kullanıcıyı Engelle'),
-        content: Text(
-            '${widget.userName} adlı kullanıcıyı engellemek istediğinize emin misiniz? Bu kullanıcının ilanlarını artık görmeyeceksiniz.'),
+        title: Text(l10n.blockUserTitle),
+        content: Text(l10n.blockUserContent(widget.userName)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Vazgeç')),
+              child: Text(l10n.cancel)),
           FilledButton(
               onPressed: () => Navigator.pop(context, true),
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Engelle')),
+              child: Text(l10n.blockUserAction)),
         ],
       ),
     );
@@ -63,9 +64,9 @@ class _BlockReportSheetState extends State<_BlockReportSheet> {
     try {
       await _repo.blockUser(widget.userId);
       if (mounted) Navigator.pop(context);
-      _snack('${widget.userName} engellendi.');
+      _snack(AppLocalizations.of(context)!.blockUserSuccess(widget.userName));
     } catch (e) {
-      _snack('Engelleme başarısız: $e');
+      _snack(AppLocalizations.of(context)!.blockUserError(e.toString()));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -82,6 +83,7 @@ class _BlockReportSheetState extends State<_BlockReportSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -113,19 +115,19 @@ class _BlockReportSheetState extends State<_BlockReportSheet> {
             else ...[
               ListTile(
                 leading: const Icon(Icons.block, color: Colors.orange),
-                title: const Text('Kullanıcıyı Engelle'),
-                subtitle: const Text('Bu kullanıcının ilanlarını görmek istemiyorum'),
+                title: Text(l10n.blockUserTitle),
+                subtitle: Text(l10n.blockUserSubtitle),
                 onTap: _block,
               ),
               ListTile(
                 leading: const Icon(Icons.flag_outlined, color: Colors.red),
-                title: const Text('Şikayet Et'),
-                subtitle: const Text('Uygunsuz davranış veya içerik bildir'),
+                title: Text(l10n.reportUserTitle),
+                subtitle: Text(l10n.reportUserSubtitle),
                 onTap: _report,
               ),
               ListTile(
                 leading: const Icon(Icons.close),
-                title: const Text('Vazgeç'),
+                title: Text(l10n.cancel),
                 onTap: () => Navigator.pop(context),
               ),
             ],
@@ -152,12 +154,12 @@ class _ReportDialogState extends State<_ReportDialog> {
   String? _selectedReason;
   bool _loading = false;
 
-  static const _reasons = [
-    ('spam', 'Spam'),
-    ('harassment', 'Taciz veya zorbalık'),
-    ('inappropriate_content', 'Uygunsuz içerik'),
-    ('fake_profile', 'Sahte profil'),
-    ('other', 'Diğer'),
+  static const _reasonKeys = [
+    'spam',
+    'harassment',
+    'inappropriate_content',
+    'fake_profile',
+    'other',
   ];
 
   @override
@@ -166,10 +168,28 @@ class _ReportDialogState extends State<_ReportDialog> {
     super.dispose();
   }
 
+  String _reasonLabel(String key, AppLocalizations l10n) {
+    switch (key) {
+      case 'spam':
+        return l10n.reportReasonSpam;
+      case 'harassment':
+        return l10n.reportReasonHarassment;
+      case 'inappropriate_content':
+        return l10n.reportReasonInappropriate;
+      case 'fake_profile':
+        return l10n.reportReasonFakeProfile;
+      case 'other':
+        return l10n.reportReasonOther;
+      default:
+        return key;
+    }
+  }
+
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_selectedReason == null) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Lütfen bir neden seçin.')));
+          .showSnackBar(SnackBar(content: Text(l10n.reportErrNoReason)));
       return;
     }
     setState(() => _loading = true);
@@ -179,12 +199,12 @@ class _ReportDialogState extends State<_ReportDialog> {
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Şikayetiniz alındı, teşekkürler.')));
+            SnackBar(content: Text(AppLocalizations.of(context)!.reportSuccess)));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Hata: $e')));
+            .showSnackBar(SnackBar(content: Text('$e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -193,21 +213,22 @@ class _ReportDialogState extends State<_ReportDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: Text('${widget.userName} Şikayet Et'),
+      title: Text(l10n.reportDialogTitle(widget.userName)),
       content: SizedBox(
         width: double.maxFinite,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Şikayet nedeni:',
-                style: TextStyle(fontWeight: FontWeight.w600)),
+            Text(l10n.reportReasonLabel,
+                style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
-            ..._reasons.map(
-              (r) => RadioListTile<String>(
-                title: Text(r.$2),
-                value: r.$1,
+            ..._reasonKeys.map(
+              (key) => RadioListTile<String>(
+                title: Text(_reasonLabel(key, l10n)),
+                value: key,
                 groupValue: _selectedReason,
                 dense: true,
                 contentPadding: EdgeInsets.zero,
@@ -219,10 +240,10 @@ class _ReportDialogState extends State<_ReportDialog> {
               controller: _descCtrl,
               maxLines: 3,
               maxLength: 500,
-              decoration: const InputDecoration(
-                hintText: 'Ek açıklama (isteğe bağlı)',
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.all(12),
+              decoration: InputDecoration(
+                hintText: l10n.reportDescHint,
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.all(12),
               ),
             ),
           ],
@@ -231,7 +252,7 @@ class _ReportDialogState extends State<_ReportDialog> {
       actions: [
         TextButton(
             onPressed: _loading ? null : () => Navigator.pop(context),
-            child: const Text('Vazgeç')),
+            child: Text(l10n.cancel)),
         FilledButton(
           onPressed: _loading ? null : _submit,
           style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -241,7 +262,7 @@ class _ReportDialogState extends State<_ReportDialog> {
                   height: 16,
                   child: CircularProgressIndicator(
                       color: Colors.white, strokeWidth: 2))
-              : const Text('Şikayet Et'),
+              : Text(l10n.reportAction),
         ),
       ],
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
@@ -42,7 +43,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Miktar güncellenemedi: ${e.toString()}'),
+            content: Text(AppLocalizations.of(context)!.cartUpdateError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -64,9 +65,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Ürün sepetten çıkarıldı'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.cartItemRemoved),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -74,7 +75,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ürün çıkarılamadı: ${e.toString()}'),
+            content: Text(AppLocalizations.of(context)!.cartItemRemoveError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -87,20 +88,21 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   Future<void> _clearCart() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sepeti Boşalt'),
-        content: const Text('Sepetteki tüm ürünler silinecek. Emin misiniz?'),
+        title: Text(l10n.cartClearTitle),
+        content: Text(l10n.cartClearContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('İptal'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Boşalt'),
+            child: Text(l10n.cartClearAction),
           ),
         ],
       ),
@@ -117,9 +119,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Sepet boşaltıldı'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.cartCleared),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -127,7 +129,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Sepet boşaltılamadı: ${e.toString()}'),
+            content: Text(AppLocalizations.of(context)!.cartClearError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -141,15 +143,16 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final cartAsync = ref.watch(cartItemsProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
       backgroundColor: AppPalette.storeSoftBlue.withOpacity(0.3),
       appBar: AppBar(
-        title: const Text(
-          'Sepetim',
-          style: TextStyle(fontWeight: FontWeight.w800),
+        title: Text(
+          l10n.cartTitle,
+          style: const TextStyle(fontWeight: FontWeight.w800),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -164,7 +167,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.delete_outline, size: 20),
-              label: const Text('Boşalt'),
+              label: Text(l10n.cartClearAction),
               style: TextButton.styleFrom(foregroundColor: Colors.red),
             ),
         ],
@@ -232,7 +235,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Sepet yüklenemedi',
+                    l10n.cartLoadError,
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -249,7 +252,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   ElevatedButton.icon(
                     onPressed: () => ref.invalidate(cartItemsProvider),
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Yeniden Dene'),
+                    label: Text(l10n.cartRetry),
                   ),
                 ],
               ),
@@ -278,6 +281,7 @@ class _CartItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final product = item.product;
     final imageUrl = _resolveMediaUrl(product.photos.isNotEmpty ? product.photos.first : null);
@@ -407,7 +411,7 @@ class _CartItemCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          'Toplam: ${subtotal.toStringAsFixed(2)} ₺',
+                          l10n.cartItemTotal(subtotal.toStringAsFixed(2)),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -451,6 +455,7 @@ class _CartSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return Container(
@@ -474,7 +479,7 @@ class _CartSummary extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Ürün Sayısı',
+                  l10n.cartItemCount,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: AppPalette.onSurfaceVariant,
                   ),
@@ -492,7 +497,7 @@ class _CartSummary extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Toplam Tutar',
+                  l10n.cartTotalAmount,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -525,9 +530,9 @@ class _CartSummary extends StatelessWidget {
                         ),
                       ),
                       icon: const Icon(Icons.storefront, size: 20),
-                      label: const Text(
-                        'Alışverişe Devam',
-                        style: TextStyle(
+                      label: Text(
+                        l10n.cartContinueShopping,
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
@@ -566,9 +571,9 @@ class _CartSummary extends StatelessWidget {
                           ),
                         ),
                         icon: const Icon(Icons.shopping_cart_checkout, size: 20),
-                        label: const Text(
-                          'Ödemeye Geç',
-                          style: TextStyle(
+                        label: Text(
+                          l10n.cartCheckout,
+                          style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
                           ),
@@ -593,6 +598,7 @@ class _EmptyCart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return Center(
@@ -627,14 +633,14 @@ class _EmptyCart extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Sepetiniz Boş',
+              l10n.cartEmptyTitle,
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w900,
               ),
             ),
             const SizedBox(height: 12),
             Text(
-              'Henüz sepetinize ürün eklemediniz.\nAlışverişe başlamak için mağazayı keşfedin!',
+              l10n.cartEmptyDesc,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: AppPalette.onSurfaceVariant,
@@ -671,9 +677,9 @@ class _EmptyCart extends StatelessWidget {
                     ),
                   ),
                   icon: const Icon(Icons.storefront, size: 24),
-                  label: const Text(
-                    'Alışverişe Başla',
-                    style: TextStyle(
+                  label: Text(
+                    l10n.cartShopNow,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                     ),

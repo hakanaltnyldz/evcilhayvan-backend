@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
@@ -60,10 +61,12 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
         perm = await Geolocator.requestPermission();
       }
       if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
-        setState(() {
-          _error = 'Konum izni gerekli';
-          _locationLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _error = AppLocalizations.of(context)!.vetSearchErrPermission;
+            _locationLoading = false;
+          });
+        }
         return;
       }
       final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
@@ -72,10 +75,12 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
       setState(() => _locationLoading = false);
       _doSearch();
     } catch (e) {
-      setState(() {
-        _error = 'Konum alinamadi: $e';
-        _locationLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _error = AppLocalizations.of(context)!.vetSearchErrLocation(e.toString());
+          _locationLoading = false;
+        });
+      }
     }
   }
 
@@ -156,16 +161,17 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.googleSearch ? 'Google ile Ara' : 'Veteriner Ara'),
+        title: Text(widget.googleSearch ? l10n.vetSearchGoogleTitle : l10n.vetSearchTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           PopupMenuButton<_SortMode>(
             icon: const Icon(Icons.sort),
-            tooltip: 'Sırala',
+            tooltip: l10n.vetSearchSortTooltip,
             initialValue: _sortMode,
             onSelected: _changeSort,
             itemBuilder: (_) => [
@@ -174,7 +180,7 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
                 child: Row(children: [
                   Icon(Icons.directions_walk, size: 18, color: _sortMode == _SortMode.distance ? Colors.blue : null),
                   const SizedBox(width: 8),
-                  Text('Mesafeye Göre', style: TextStyle(fontWeight: _sortMode == _SortMode.distance ? FontWeight.bold : null)),
+                  Text(l10n.vetSearchSortByDistance, style: TextStyle(fontWeight: _sortMode == _SortMode.distance ? FontWeight.bold : null)),
                 ]),
               ),
               PopupMenuItem(
@@ -182,7 +188,7 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
                 child: Row(children: [
                   Icon(Icons.star, size: 18, color: _sortMode == _SortMode.rating ? Colors.amber : null),
                   const SizedBox(width: 8),
-                  Text('Puana Göre', style: TextStyle(fontWeight: _sortMode == _SortMode.rating ? FontWeight.bold : null)),
+                  Text(l10n.vetSearchSortByRating, style: TextStyle(fontWeight: _sortMode == _SortMode.rating ? FontWeight.bold : null)),
                 ]),
               ),
             ],
@@ -199,7 +205,7 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
                 controller: _searchController,
                 onChanged: _onSearchChanged,
                 decoration: InputDecoration(
-                  hintText: 'Klinik adi veya adres...',
+                  hintText: l10n.vetSearchHint,
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: _query.isNotEmpty
                       ? IconButton(
@@ -225,7 +231,7 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
               child: OutlinedButton.icon(
                 onPressed: _fetchLocation,
                 icon: const Icon(Icons.my_location),
-                label: const Text('Konumumu kullan'),
+                label: Text(l10n.vetSearchUseLocation),
               ),
             ),
 
@@ -245,20 +251,21 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
   }
 
   Widget _buildResults(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     if (_loading) {
       return PawLoading.fullScreen();
     }
     if (_error != null) {
-      return Center(child: Text(_error!, style: TextStyle(color: Colors.red)));
+      return Center(child: Text(_error!, style: const TextStyle(color: Colors.red)));
     }
     if (_results == null) {
       return Center(
-        child: Text('Aramak icin yukariya yazin veya konumunuzu paylasın',
+        child: Text(l10n.vetSearchPrompt,
             textAlign: TextAlign.center, style: theme.textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant)),
       );
     }
     if (_results!.isEmpty) {
-      return Center(child: Text('Sonuc bulunamadi', style: theme.textTheme.bodyLarge));
+      return Center(child: Text(l10n.vetSearchNoResults, style: theme.textTheme.bodyLarge));
     }
 
     return ListView.builder(

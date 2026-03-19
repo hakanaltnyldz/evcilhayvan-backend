@@ -10,6 +10,7 @@ import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/core/socket_service.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
@@ -115,35 +116,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  static const List<String> _monthNames = [
-    'Ocak',
-    'Şubat',
-    'Mart',
-    'Nisan',
-    'Mayıs',
-    'Haziran',
-    'Temmuz',
-    'Ağustos',
-    'Eylül',
-    'Ekim',
-    'Kasım',
-    'Aralık',
-  ];
-
-  String _formatDateLabel(DateTime date) {
+  String _formatDateLabel(DateTime date, AppLocalizations l10n) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final target = DateTime(date.year, date.month, date.day);
 
     if (_isSameDay(today, target)) {
-      return 'Bugün';
+      return l10n.today;
     }
     if (_isSameDay(today.subtract(const Duration(days: 1)), target)) {
-      return 'Dün';
+      return l10n.tomorrow;
     }
 
-    final month = _monthNames[target.month - 1];
-    return '${target.day} $month ${target.year}';
+    // Format as day month year using locale-aware intl or simple format
+    return '${target.day}.${target.month.toString().padLeft(2, '0')}.${target.year}';
   }
 
   bool _isFirstMessage(List<_ChatEntry> entries, int index) {
@@ -168,24 +154,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _deleteConversation() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Sohbeti sil'),
-        content: const Text(
-          'Bu sohbeti kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Vazgeç'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Sil'),
-          ),
-        ],
-      ),
+      builder: (dialogContext) {
+        final dl10n = AppLocalizations.of(dialogContext)!;
+        return AlertDialog(
+          title: Text(dl10n.chatDeleteTitle),
+          content: Text(dl10n.chatDeleteContent),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(dl10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(dl10n.delete),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirm != true) return;
@@ -198,7 +186,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (e) {
-      _showInfoSnack('Sohbet silinemedi: $e');
+      _showInfoSnack(l10n.chatDeleteError(e.toString()));
     }
   }
 
@@ -208,7 +196,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (context) {
+      builder: (ctx) {
+        final sl10n = AppLocalizations.of(ctx)!;
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -220,43 +209,43 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.outline.withOpacity(0.4),
+                    color: Theme.of(ctx).colorScheme.outline.withOpacity(0.4),
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 ListTile(
                   leading: const Icon(Icons.refresh_rounded),
-                  title: const Text('Sohbeti yenile'),
+                  title: Text(sl10n.chatRefresh),
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.pop(ctx);
                     _fetchMessages();
                   },
                 ),
                 ListTile(
                   leading: const Icon(Icons.notifications_active_outlined),
-                  title: const Text('Bildirim tercihleri'),
-                  subtitle: const Text('Ayarlar > Bildirimler bölümünden yönetebilirsin'),
+                  title: Text(sl10n.chatNotifPrefs),
+                  subtitle: Text(sl10n.chatNotifPrefsSub),
                   onTap: () {
-                    Navigator.pop(context);
-                    _showInfoSnack('Bildirim tercihlerini ayarlar ekranından düzenleyebilirsin.');
+                    Navigator.pop(ctx);
+                    _showInfoSnack(sl10n.chatNotifPrefsInfo);
                   },
                 ),
                 ListTile(
                   leading: const Icon(Icons.delete_outline),
-                  title: const Text('Sohbeti listeden sil'),
-                  subtitle: const Text('Sohbetler ekranından da silebilirsin.'),
+                  title: Text(sl10n.chatDeleteFromList),
+                  subtitle: Text(sl10n.chatDeleteFromListSub),
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.pop(ctx);
                     _deleteConversation();
                   },
                 ),
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.flag_outlined, color: Colors.red),
-                  title: const Text('Engelle / Şikayet Et',
-                      style: TextStyle(color: Colors.red)),
+                  title: Text(sl10n.chatBlockReport,
+                      style: const TextStyle(color: Colors.red)),
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.pop(ctx);
                     final otherId = _conversation?.otherParticipant.id;
                     final otherName = _actualReceiverName ?? widget.receiverName;
                     if (otherId != null && otherId.isNotEmpty) {
@@ -294,8 +283,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                   child: const Icon(Icons.photo_library, color: Colors.blue),
                 ),
-                title: const Text('Galeriden Seç'),
-                subtitle: const Text('Fotoğraf galerinizden seçin'),
+                title: Text(AppLocalizations.of(ctx)!.chatSelectFromGallery),
+                subtitle: Text(AppLocalizations.of(ctx)!.chatSelectFromGallerySub),
                 onTap: () {
                   Navigator.pop(ctx);
                   _pickImage(ImageSource.gallery);
@@ -310,8 +299,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                   child: const Icon(Icons.camera_alt, color: Colors.green),
                 ),
-                title: const Text('Kamera'),
-                subtitle: const Text('Yeni fotoğraf çekin'),
+                title: Text(AppLocalizations.of(ctx)!.chatCamera),
+                subtitle: Text(AppLocalizations.of(ctx)!.chatCameraSub),
                 onTap: () {
                   Navigator.pop(ctx);
                   _pickImage(ImageSource.camera);
@@ -339,7 +328,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       final File imageFile = File(image.path);
       await _sendImageMessage(imageFile);
     } catch (e) {
-      _showInfoSnack('Resim seçilemedi: $e');
+      _showInfoSnack(AppLocalizations.of(context)!.chatErrImagePick(e.toString()));
     }
   }
 
@@ -347,7 +336,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     try {
       final hasPermission = await _audioRecorder.hasPermission();
       if (!hasPermission) {
-        _showInfoSnack('Mikrofon izni gerekli.');
+        _showInfoSnack(AppLocalizations.of(context)!.chatErrMicPermission);
         return;
       }
       final dir = await getTemporaryDirectory();
@@ -358,7 +347,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       );
       setState(() => _isRecording = true);
     } catch (e) {
-      _showInfoSnack('Kayıt başlatılamadı: $e');
+      _showInfoSnack(AppLocalizations.of(context)!.chatErrRecordStart(e.toString()));
     }
   }
 
@@ -373,7 +362,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       await _sendAudioMessage(audioFile);
     } catch (e) {
       setState(() => _isRecording = false);
-      _showInfoSnack('Ses gönderilemedi: $e');
+      _showInfoSnack(AppLocalizations.of(context)!.chatErrAudioSend(e.toString()));
     }
   }
 
@@ -387,7 +376,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       id: 'local-audio-${DateTime.now().millisecondsSinceEpoch}',
       conversationId: widget.conversationId,
       sender: currentUser,
-      text: '[Ses Mesajı]',
+      text: AppLocalizations.of(context)!.chatAudioMsg,
       type: 'AUDIO',
       createdAt: DateTime.now(),
       audioUrl: audioFile.path,
@@ -425,7 +414,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       );
     } catch (e) {
       setState(() => _messages.removeWhere((m) => m.id == pendingMessage.id));
-      _showInfoSnack('Ses gönderilemedi: $e');
+      _showInfoSnack(AppLocalizations.of(context)!.chatErrAudioSend(e.toString()));
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
@@ -436,7 +425,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     final currentUser = ref.read(authProvider);
     if (currentUser == null) {
-      _showInfoSnack('Resim göndermek için giriş yapmalısınız.');
+      _showInfoSnack(AppLocalizations.of(context)!.chatErrLoginRequiredImage);
       return;
     }
 
@@ -493,14 +482,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       setState(() {
         _messages.removeWhere((m) => m.id == pendingMessage.id);
       });
-      _showInfoSnack('Resim gönderilemedi: $e');
+      _showInfoSnack(AppLocalizations.of(context)!.chatErrImageSend(e.toString()));
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
   }
 
   void _onEmojiTap() {
-    _showInfoSnack('Emoji klavyesi üzerinde çalışıyoruz.');
+    // Emoji keyboard not yet implemented
   }
 
   Widget _buildComposer(ThemeData theme) {
@@ -535,8 +524,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 textCapitalization: TextCapitalization.sentences,
                 minLines: 1,
                 maxLines: 5,
-                decoration: const InputDecoration(
-                  hintText: 'Mesajını yaz...',
+                decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context)!.chatMsgHint,
                   border: InputBorder.none,
                 ),
                 onSubmitted: (_) => _sendMessage(),
@@ -610,7 +599,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         }
       });
     } catch (e) {
-      _showInfoSnack('Mesaj silinemedi: $e');
+      _showInfoSnack(AppLocalizations.of(context)!.chatErrMsgDelete(e.toString()));
     }
   }
 
@@ -635,7 +624,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         }
       });
     } catch (e) {
-      _showInfoSnack('Reaksiyon gonderilemedi: $e');
+      _showInfoSnack(AppLocalizations.of(context)!.chatErrReaction(e.toString()));
     }
   }
 
@@ -658,7 +647,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           if (mounted) {
             setState(() {
               _isLoading = false;
-              _errorMessage = 'Sohbet yüklenemedi: ${e.toString()}';
+              _errorMessage = e.toString();
             });
           }
         });
@@ -733,7 +722,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Mesajlar yüklenemedi';
+          _errorMessage = e.toString();
         });
       }
     });
@@ -909,7 +898,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final currentUser = ref.read(authProvider);
     if (currentUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mesaj göndermek için giriş yapmalısınız.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.chatErrLoginRequired)),
       );
       return;
     }
@@ -974,7 +963,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         _messages.removeWhere((element) => element.id == pendingMessage.id);
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Mesaj gönderilemedi: $e')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.chatErrMsgSend(e.toString()))),
       );
     } finally {
       if (mounted) {
@@ -1004,7 +993,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       return const SizedBox.shrink();
     }
 
-    final petName = pet?.name ?? 'İlan';
+    final petName = pet?.name ?? AppLocalizations.of(context)!.petDetailTitle;
     final petImage = pet?.images.isNotEmpty == true ? pet!.images.first : null;
     final advertType = _conversation?.advertType ?? pet?.advertType;
     final isAdoption = advertType == 'adoption';
@@ -1078,7 +1067,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          isAdoption ? 'Sahiplendirme' : 'Eşleştirme',
+                          isAdoption ? AppLocalizations.of(context)!.advertTypeAdoption : AppLocalizations.of(context)!.advertTypeMating,
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
@@ -1110,21 +1099,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   String _getSpeciesLabel(String species) {
+    final l10n = AppLocalizations.of(context)!;
     switch (species.toLowerCase()) {
       case 'dog':
-        return 'Köpek';
+        return l10n.speciesDog;
       case 'cat':
-        return 'Kedi';
+        return l10n.speciesCat;
       case 'bird':
-        return 'Kuş';
+        return l10n.speciesBird;
       default:
-        return 'Diğer';
+        return l10n.speciesOther;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final currentUser = ref.watch(authProvider);
     final allEntries = _buildEntries();
     final entries = _isSearching && _searchQuery.isNotEmpty
@@ -1141,10 +1132,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     // Sohbet tipi etiketi
     final contextLabel = _conversation?.contextType == 'MATCHING'
-        ? 'Eşleştirme sohbeti'
+        ? l10n.chatTypeMatching
         : _conversation?.contextType == 'ADOPTION'
-            ? 'Sahiplendirme sohbeti'
-            : 'Sohbet';
+            ? l10n.chatTypeAdoption
+            : l10n.chatTypeGeneral;
 
     return PopScope(
       canPop: true,
@@ -1172,7 +1163,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               print('🔵 Back button pressed - navigating back');
               Navigator.of(context).pop();
             },
-            tooltip: 'Geri',
+            tooltip: l10n.chatTooltipBack,
           ),
           flexibleSpace: Container(
             decoration: BoxDecoration(
@@ -1248,7 +1239,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           actions: [
             IconButton(
               icon: Icon(_isSearching ? Icons.search_off_rounded : Icons.search_rounded),
-              tooltip: _isSearching ? 'Aramayı Kapat' : 'Mesajlarda Ara',
+              tooltip: _isSearching ? l10n.chatTooltipCloseSearch : l10n.chatTooltipSearch,
               onPressed: () {
                 setState(() {
                   _isSearching = !_isSearching;
@@ -1280,7 +1271,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             controller: _searchController,
                             autofocus: true,
                             decoration: InputDecoration(
-                              hintText: 'Mesajlarda ara...',
+                              hintText: l10n.chatSearchHint,
                               prefixIcon: const Icon(Icons.search, size: 20),
                               suffixIcon: _searchQuery.isNotEmpty
                                   ? IconButton(
@@ -1324,7 +1315,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                           children: [
                                             const Icon(Icons.search_off_rounded, size: 48, color: Colors.grey),
                                             const SizedBox(height: 8),
-                                            Text('"$_searchQuery" için sonuç bulunamadı', style: theme.textTheme.bodyMedium),
+                                            Text(l10n.chatSearchNoResults(_searchQuery), style: theme.textTheme.bodyMedium),
                                           ],
                                         ),
                                       )
@@ -1339,7 +1330,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                       final entry = entries[index];
                                       if (entry.type == _ChatEntryType.date) {
                                         return _DateSeparator(
-                                          label: _formatDateLabel(entry.date!),
+                                          label: _formatDateLabel(entry.date!, l10n),
                                         );
                                       }
                                       final message = entry.message!;
@@ -1542,7 +1533,7 @@ class _MessageBubble extends StatelessWidget {
                         if (onDeleteForMe != null)
                           ListTile(
                             leading: const Icon(Icons.delete_outline),
-                            title: const Text('Bu mesajı kendimden sil'),
+                            title: Text(AppLocalizations.of(ctx)!.chatDeleteMsgForMe),
                             onTap: () {
                               Navigator.pop(ctx);
                               onDeleteForMe?.call();
@@ -1550,7 +1541,7 @@ class _MessageBubble extends StatelessWidget {
                           ),
                         ListTile(
                           leading: const Icon(Icons.copy_outlined),
-                          title: const Text('Kopyala'),
+                          title: Text(AppLocalizations.of(ctx)!.chatCopyMsg),
                           onTap: () {
                             Navigator.pop(ctx);
                             _copyToClipboard(context);
@@ -1590,7 +1581,7 @@ class _MessageBubble extends StatelessWidget {
             children: [
               if (isDeleted)
                 Text(
-                  'Bu mesajı sildiniz',
+                  AppLocalizations.of(context)!.chatMsgDeletedSelf,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: textColor.withOpacity(0.7),
                     fontStyle: FontStyle.italic,
@@ -1749,7 +1740,7 @@ class _MessageBubble extends StatelessWidget {
           Icon(Icons.broken_image, color: theme.colorScheme.onSurfaceVariant),
           const SizedBox(height: 4),
           Text(
-            'Resim yüklenemedi',
+            'Image unavailable',
             style: TextStyle(
               fontSize: 12,
               color: theme.colorScheme.onSurfaceVariant,
@@ -1800,7 +1791,7 @@ class _MessageBubble extends StatelessWidget {
   void _copyToClipboard(BuildContext context) {
     Clipboard.setData(ClipboardData(text: message.text));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Mesaj panoya kopyalandı')),
+      SnackBar(content: Text(AppLocalizations.of(context)!.copyTooltip)),
     );
   }
 }
@@ -1832,14 +1823,14 @@ class _EmptyChatState extends StatelessWidget {
             Icon(Icons.pets, size: 52, color: theme.colorScheme.primary),
             const SizedBox(height: 16),
             Text(
-              'Henüz mesaj yok',
+              AppLocalizations.of(context)!.messagesEmpty,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Eşleşme sonrası ilk mesajını gönder ve sohbeti başlat.',
+              AppLocalizations.of(context)!.messagesEmptyDesc,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
@@ -1870,7 +1861,7 @@ class _ErrorView extends StatelessWidget {
             Icon(Icons.wifi_off, size: 56, color: theme.colorScheme.error),
             const SizedBox(height: 16),
             Text(
-              'Sohbet yüklenemedi',
+              AppLocalizations.of(context)!.error,
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -1882,7 +1873,7 @@ class _ErrorView extends StatelessWidget {
             const SizedBox(height: 16),
             FilledButton(
               onPressed: onRetry,
-              child: const Text('Tekrar Dene'),
+              child: Text(AppLocalizations.of(context)!.retry),
             ),
           ],
         ),
@@ -1919,7 +1910,7 @@ class _FullScreenImageView extends StatelessWidget {
             icon: const Icon(Icons.download),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Resim galeriye kaydedildi')),
+                SnackBar(content: Text(AppLocalizations.of(context)!.success)),
               );
             },
           ),

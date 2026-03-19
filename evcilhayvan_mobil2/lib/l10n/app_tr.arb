@@ -99,6 +99,53 @@
   "matchRequestReject": "Reddet",
   "matchRequestCancel": "İptal Et",
 
+  "msgConvDeleted": "Sohbet silindi",
+  "msgConvDeleteErr": "Sohbet silinemedi: {error}",
+  "@msgConvDeleteErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "msgConvStart": "Sohbete başla",
+  "msgListingNotFound": "İlan bilgisi bulunamadı",
+  "msgListingLoading": "İlan yükleniyor...",
+  "msgListingLoadErr": "İlan bilgisi alınamadı",
+  "msgMatingRequestsTitle": "Eşleştirme İstekleri",
+  "msgNoMatingRequests": "Henüz eşleştirme isteği yok.",
+  "msgAdoptionRequestsTitle": "Sahiplendirme Başvuruları",
+  "msgNoAdoptionRequests": "Henüz başvuru yok.",
+  "msgHeaderTitle": "Sohbet kutunu renklendir",
+  "msgHeaderSubtitle": "Sahiplendirme görüşmelerini, ilan sorularını ve yeni dostlukları burada yönet.",
+  "msgConvLoadErr": "Sohbetler yüklenemedi",
+  "msgSenderLabel": "Gönderen: {name}",
+  "@msgSenderLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "msgSelectedPet": "Seçilen pet: {name}",
+  "@msgSelectedPet": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "msgViewSenderListing": "Gönderen ilanını gör",
+  "msgApplicantLabel": "Başvuran: {name}",
+  "@msgApplicantLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "msgGoToChat": "Sohbete git",
+  "msgStatusAccepted": "Kabul edildi",
+  "msgStatusRejected": "Reddedildi",
+  "msgStatusCancelled": "İptal edildi",
+  "msgStatusPending": "Beklemede",
+  "msgActionDone": "İşlem tamamlandı",
+  "msgNoRecipient": "Karşı taraf bilgisi bulunamadı.",
+  "msgLoginRequired": "Sohbet için giriş yapın.",
+  "msgOpenFailed": "Sohbet açılamadı.",
+
   "profileTitle": "Profil",
   "profileEdit": "Profili Düzenle",
   "profileMyPets": "İlanlarım",
@@ -183,6 +230,7 @@
   "speciesDog": "Köpek",
   "speciesCat": "Kedi",
   "speciesBird": "Kuş",
+  "speciesHamster": "Hamster",
   "speciesFish": "Balık",
   "speciesOther": "Diğer",
 
@@ -282,6 +330,40 @@
   "homeShortcutSearch": "Ara",
   "homeUpcomingAppointments": "Yaklaşan Randevular",
   "homeNearbyAds": "Yakınımdaki İlanlar",
+  "homeDiscoverTitle": "İlanları Keşfet",
+  "homeSearchTooltip": "Ara",
+  "homeLostFoundTooltip": "Kayıp & Bulunan",
+  "homeBreedSelect": "Cins seç",
+  "homeClearFilter": "Filtreyi temizle",
+  "homeWelcome": "Hoş geldin!",
+  "homeGreetingWith": "{greeting}, {name}!",
+  "@homeGreetingWith": {
+    "placeholders": {
+      "greeting": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "homeHeaderDesc": "Sana en uygun pati dostunu keşfet.",
+  "homeGoodMorning": "Günaydın",
+  "homeGoodDay": "İyi günler",
+  "homeGoodEvening": "İyi akşamlar",
+  "homeGoodNight": "İyi geceler",
+  "homeShortcutSitterFull": "Bakıcı\nBul",
+  "homeShortcutLostFull": "Kayıp &\nBulunan",
+  "homeShortcutAiFull": "Pati\nAsistan",
+  "homeShortcutMap": "Harita",
+  "homeEmptyListings": "Henüz ilan yok",
+  "homeEmptyListingsDesc": "Bu kategoride henüz ilan yok. İlk sen ekle!",
+  "homeApptFallback": "Veteriner Randevusu",
+  "homeNotifTooltip": "Bildirimler",
+  "homeBreedSearch": "Cins ara...",
+  "homeLocationPermErr": "Konum izni gerekli",
+  "homeLocationErr": "Konum alınamadı: {error}",
+  "@homeLocationErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
 
   "navMessages": "Sohbetler",
   "navAdopt": "Sahiplen",
@@ -307,5 +389,962 @@
     "placeholders": {
       "query": {"type": "String"}
     }
-  }
+  },
+
+  "vetVerified": "Doğrulanmış",
+  "vetOnlineAppointment": "Online Randevu",
+  "vetAbout": "Hakkında",
+  "vetServices": "Hizmetler",
+  "vetSpeciesServed": "Hizmet Verilen Türler",
+  "vetWorkingHours": "Çalışma Saatleri",
+  "vetClosed": "Kapalı",
+  "vetOpenInMaps": "Haritada Aç",
+  "vetSendMessage": "Mesaj Gönder",
+  "vetClaimProfile": "Bu Kliniği Sahiplen",
+  "vetClaimDialogTitle": "Profili Sahiplen",
+  "vetClaimDialogContent": "Bu klinik profilini hesabınıza bağlamak istediğinizden emin misiniz?\n\nSahiplendikten sonra müşteriler size doğrudan mesaj gönderebilir.",
+  "vetClaimAction": "Sahiplen",
+  "vetClaimSuccess": "Profil başarıyla sahiplenildi! Artık mesaj alabilirsiniz.",
+  "vetReviews": "Değerlendirmeler",
+  "vetReviewsRate": "Değerlendir",
+  "vetReviewsLoadError": "Yorumlar yüklenemedi.",
+  "vetReviewsEmpty": "Henüz değerlendirme yok. İlk yorumu siz yapın!",
+  "vetReviewCount": "{count} değerlendirme",
+  "@vetReviewCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "vetReviewAdded": "Değerlendirmeniz eklendi.",
+  "vetReviewDeleteError": "Silinemedi: {error}",
+  "@vetReviewDeleteError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "vetReviewDialogTitle": "Veteriner Değerlendir",
+  "vetReviewCommentHint": "Yorumunuz (isteğe bağlı)",
+  "vetSpeciesDog": "Köpek",
+  "vetSpeciesCat": "Kedi",
+  "vetSpeciesBird": "Kuş",
+  "vetSpeciesFish": "Balık",
+  "vetSpeciesRodent": "Kemirgen",
+  "vetSpeciesOther": "Diğer",
+  "vetRating": "{rating} ({count} değerlendirme)",
+  "@vetRating": {
+    "placeholders": {
+      "rating": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+
+  "checkoutTitle": "Ödeme",
+  "checkoutDeliveryAddress": "Teslimat Adresi",
+  "checkoutPaymentMethod": "Ödeme Yöntemi",
+  "checkoutCardInfo": "Kart Bilgileri",
+  "checkoutCreditCard": "Kredi Kartı",
+  "checkoutCashOnDelivery": "Kapıda Ödeme",
+  "checkoutCardNumber": "Kart Numarası",
+  "checkoutCardHolder": "Kart Sahibi",
+  "checkoutCardHolderHint": "AD SOYAD",
+  "checkoutExpiry": "Son Kullanma",
+  "checkoutExpiryHint": "AA/YY",
+  "checkoutCoupon": "İndirim Kuponu",
+  "checkoutCouponHint": "Kupon kodunuz",
+  "checkoutApply": "Uygula",
+  "checkoutOrderNote": "Sipariş Notu (Opsiyonel)",
+  "checkoutOrderNoteHint": "Siparişinizle ilgili notunuz...",
+  "checkoutOrderSummary": "Sipariş Özeti",
+  "checkoutSubtotal": "Ara Toplam",
+  "checkoutShipping": "Kargo",
+  "checkoutFreeShipping": "Ücretsiz",
+  "checkoutDiscount": "İndirim",
+  "checkoutTotal": "Toplam",
+  "checkoutCompleteOrder": "Siparişi Tamamla",
+  "checkoutDefaultAddress": "Varsayılan",
+  "checkoutAddNewAddress": "Yeni Adres Ekle",
+  "checkoutAddressLoadError": "Adresler yüklenemedi: {error}",
+  "@checkoutAddressLoadError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "checkoutCartLoadError": "Sepet yüklenemedi: {error}",
+  "@checkoutCartLoadError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "checkoutErrNoAddress": "Lütfen bir teslimat adresi seçin",
+  "checkoutErrCardNumber": "Geçerli bir kart numarası girin",
+  "checkoutErrCardHolder": "Kart sahibi adını girin",
+  "checkoutErrExpiry": "Geçerli bir son kullanma tarihi girin",
+  "checkoutErrCvv": "Geçerli bir CVV girin",
+  "checkoutErrEmptyCart": "Sepetiniz boş",
+  "checkoutErrCouponEmpty": "Lütfen bir kupon kodu girin",
+  "checkoutErrCouponInvalid": "Geçersiz kupon kodu",
+  "checkoutErrCouponNotApplicable": "Kupon bu sipariş için geçerli değil",
+  "checkoutErrCouponFailed": "Kupon uygulanamadı",
+  "checkoutCouponApplied": "Kupon uygulandı! ₺{amount} indirim",
+  "@checkoutCouponApplied": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "checkoutCouponDiscount": "₺{amount} indirim uygulandı",
+  "@checkoutCouponDiscount": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "checkoutOrderSuccess": "Siparişiniz Alındı!",
+  "checkoutOrderSuccessDesc": "Siparişiniz başarıyla oluşturuldu. Siparişlerim sayfasından takip edebilirsiniz.",
+  "checkoutGoToOrders": "Siparişlerime Git",
+  "checkoutOrderError": "Sipariş oluşturulamadı: {error}",
+  "@checkoutOrderError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "healthJournalTitle": "{petName} Sağlık Günlüğü",
+  "@healthJournalTitle": {
+    "placeholders": {
+      "petName": {"type": "String"}
+    }
+  },
+  "healthAddRecord": "Kayıt Ekle",
+  "healthTypeAll": "Tümü",
+  "healthTypeWeight": "Kilo",
+  "healthTypeMedication": "İlaç",
+  "healthTypeVetVisit": "Veteriner",
+  "healthTypeNote": "Not",
+  "healthRecordAdded": "Kayıt eklendi.",
+  "healthRecordDeleteTitle": "Kaydı Sil",
+  "healthRecordDeleteContent": "Bu sağlık kaydını silmek istediğinize emin misiniz?",
+  "healthNoRecords": "Henüz sağlık kaydı yok",
+  "healthNoFilterRecords": "{type} kaydı yok",
+  "@healthNoFilterRecords": {
+    "placeholders": {
+      "type": {"type": "String"}
+    }
+  },
+  "healthAddHint": "Sağ alttaki + butonuna basarak kayıt ekleyin",
+  "healthWeightChart": "Kilo Takibi",
+  "healthWeightChartMin": "Grafik için en az 2 kilo kaydı gerekli",
+  "healthWeightChartError": "Kilo grafiği yüklenemedi",
+  "healthRefresh": "Yenile",
+  "healthLoadError": "Yüklenemedi: {error}",
+  "@healthLoadError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "healthDose": "Doz: {dose}",
+  "@healthDose": {
+    "placeholders": {
+      "dose": {"type": "String"}
+    }
+  },
+  "healthFrequency": "Sıklık: {freq}",
+  "@healthFrequency": {
+    "placeholders": {
+      "freq": {"type": "String"}
+    }
+  },
+  "healthVetName": "Veteriner: {name}",
+  "@healthVetName": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "healthDiagnosis": "Tanı: {diagnosis}",
+  "@healthDiagnosis": {
+    "placeholders": {
+      "diagnosis": {"type": "String"}
+    }
+  },
+  "healthAddDialogTitle": "Sağlık Kaydı Ekle",
+  "healthRecordType": "Kayıt Tipi",
+  "healthRecordDate": "Kayıt tarihi",
+  "healthWeightKg": "Kilo (kg)",
+  "healthMedName": "İlaç Adı *",
+  "healthMedDosage": "Dozaj (ör. 5mg)",
+  "healthMedFreq": "Sıklık (ör. Günde 2 kez)",
+  "healthVetNameLabel": "Veteriner Adı",
+  "healthDiagnosisTreatment": "Tanı / Tedavi",
+  "healthNotes": "Notlar (isteğe bağlı)",
+  "healthErrWeight": "Geçerli bir kilo girin.",
+  "healthErrMedName": "İlaç adı zorunludur.",
+
+  "blockUserTitle": "Kullanıcıyı Engelle",
+  "blockUserContent": "{name} adlı kullanıcıyı engellemek istediğinize emin misiniz? Bu kullanıcının ilanlarını artık görmeyeceksiniz.",
+  "@blockUserContent": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "blockUserAction": "Engelle",
+  "blockUserSuccess": "{name} engellendi.",
+  "@blockUserSuccess": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "blockUserError": "Engelleme başarısız: {error}",
+  "@blockUserError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "blockUserSubtitle": "Bu kullanıcının ilanlarını görmek istemiyorum",
+  "reportUserTitle": "Şikayet Et",
+  "reportUserSubtitle": "Uygunsuz davranış veya içerik bildir",
+  "reportDialogTitle": "{name} Şikayet Et",
+  "@reportDialogTitle": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "reportReasonLabel": "Şikayet nedeni:",
+  "reportReasonSpam": "Spam",
+  "reportReasonHarassment": "Taciz veya zorbalık",
+  "reportReasonInappropriate": "Uygunsuz içerik",
+  "reportReasonFakeProfile": "Sahte profil",
+  "reportReasonOther": "Diğer",
+  "reportDescHint": "Ek açıklama (isteğe bağlı)",
+  "reportAction": "Şikayet Et",
+  "reportErrNoReason": "Lütfen bir neden seçin.",
+  "reportSuccess": "Şikayetiniz alındı, teşekkürler.",
+
+  "goBack": "Geri Dön",
+  "petDetailLoadError": "İlan yüklenemedi",
+  "petDetailGoBack": "Geri Dön",
+  "petDetailShare": "Paylaş",
+  "petDetailQrTooltip": "QR Kimlik Kartı",
+  "petDetailQrCard": "QR Kimlik Kartı",
+  "petDetailVaccine": "Aşı",
+  "petDetailVaccineFull": "Aşılı",
+  "petDetailVaccineMissing": "Aşısız",
+  "petDetailAgeYearsMonths": "{years} yaş {months} ay",
+  "@petDetailAgeYearsMonths": {
+    "placeholders": {
+      "years": {"type": "int"},
+      "months": {"type": "int"}
+    }
+  },
+  "petDetailShareText": "{name} - Pati Arkadaşı uygulamasında keşfet!",
+  "@petDetailShareText": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "petDetailShareSubject": "{name} ilanı",
+  "@petDetailShareSubject": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "petDetailStatusActive": "Yayında",
+  "petDetailStatusInactive": "Pasif",
+  "petDetailBreedUnspecified": "Cins belirtilmemiş",
+  "petDetailAbout": "Hakkında",
+  "petDetailDetails": "Detaylı Bilgiler",
+  "petDetailSpecies": "Tür",
+  "petDetailBreedLabel": "Cins",
+  "petDetailBreedUnset": "Belirtilmemiş",
+  "petDetailGenderLabel": "Cinsiyet",
+  "petDetailAgeLabel": "Yaş",
+  "petDetailAgeMonths": "{months} ay",
+  "@petDetailAgeMonths": {
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "petDetailAdvertType": "İlan Türü",
+  "petDetailHealth": "Sağlık Bilgileri",
+  "petDetailVaccineStatus": "Aşı Durumu",
+  "petDetailVaccineComplete": "Aşıları Tam",
+  "petDetailVaccineNeeded": "Aşı Gerekli",
+  "petDetailListingStatus": "İlan Durumu",
+  "petDetailActive": "Aktif",
+  "petDetailInactive": "Pasif",
+  "petDetailLocation": "Konum",
+  "petDetailLocationShared": "Konum paylaşıldı",
+  "petDetailLocationNone": "Konum bilgisi yok",
+  "petDetailOpenInMap": "Haritada Aç",
+  "petDetailMapTapHint": "Haritada görüntülemek için dokunun",
+  "petDetailMapOpenError": "Harita uygulaması açılamadı",
+  "petDetailOwnerLabel": "İlan Sahibi",
+  "petDetailOwnerUnknown": "Sahip Bilgisi Yok",
+  "petDetailOwnerBannerTitle": "Bu ilan size ait!",
+  "petDetailOwnerBannerDesc": "İlanınızı güncel tutarak daha fazla ilgi çekebilirsiniz.",
+  "petDetailHealthJournal": "Sağlık Günlüğü",
+  "petDetailMessage": "Mesaj",
+  "petDetailAdoptBtn": "Sahiplen",
+  "petDetailMatingRequest": "Eşleştirme İsteği Gönder",
+  "petDetailQrAge": "Yas",
+  "petDetailQrGender": "Cinsiyet",
+  "petDetailQrVaccine": "Asi",
+  "petDetailQrVaccineFull": "Tam",
+  "petDetailQrVaccinePartial": "Eksik",
+  "petDetailQrIdCopied": "ID panoya kopyalandı",
+  "petDetailErrMsgLogin": "Mesaj göndermek için giriş yapmalısınız.",
+  "petDetailErrOwnerNotFound": "İlan sahibi bilgisi bulunamadı.",
+  "petDetailErrSelfMessage": "Kendi ilanınıza mesaj gönderemezsiniz.",
+  "petDetailErrMatingLogin": "Eşleştirme isteği göndermek için giriş yapmalısınız.",
+  "petDetailNoPetDialog": "İlan Gerekli",
+  "petDetailNoPetContent": "Eşleştirme isteği göndermek için önce bir eşleştirme ilanı oluşturmalısınız.",
+  "petDetailCreateListing": "İlan Oluştur",
+  "petDetailSameSpeciesTitle": "Aynı Tür Gerekli",
+  "petDetailSameSpeciesContent": "Bu ilan \"{species}\" türünde. Eşleştirme isteği gönderebilmek için aynı türden bir ilanınız olmalı.",
+  "@petDetailSameSpeciesContent": {
+    "placeholders": {
+      "species": {"type": "String"}
+    }
+  },
+  "petDetailMatingGenericError": "Eşleştirme isteği gönderilemedi: {error}",
+  "@petDetailMatingGenericError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "petDetailSuccessDialogTitle": "İstek Gönderildi!",
+  "petDetailSuccessDialogMatch": "Tebrikler! Karşılıklı eşleşme oluştu. Artık mesajlaşabilirsiniz.",
+  "petDetailSuccessDialogPending": "Eşleştirme isteğiniz gönderildi. Karşı tarafın onayını bekliyorsunuz.",
+  "petDetailSuccessDialogStartChat": "Mesajlaşmaya Başla",
+  "petDetailSelectPetTitle": "Hayvanınızı Seçin",
+  "petDetailSelectPetSubtitle": "Eşleştirme için {species} türünden seçim yapın",
+  "@petDetailSelectPetSubtitle": {
+    "placeholders": {
+      "species": {"type": "String"}
+    }
+  },
+
+  "chatDeleteTitle": "Sohbeti sil",
+  "chatDeleteContent": "Bu sohbeti kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+  "chatDeleteError": "Sohbet silinemedi: {error}",
+  "@chatDeleteError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatRefresh": "Sohbeti yenile",
+  "chatNotifPrefs": "Bildirim tercihleri",
+  "chatNotifPrefsSub": "Ayarlar > Bildirimler bölümünden yönetebilirsin",
+  "chatNotifPrefsInfo": "Bildirim tercihlerini ayarlar ekranından düzenleyebilirsin.",
+  "chatDeleteFromList": "Sohbeti listeden sil",
+  "chatDeleteFromListSub": "Sohbetler ekranından da silebilirsin.",
+  "chatBlockReport": "Engelle / Şikayet Et",
+  "chatSelectFromGallery": "Galeriden Seç",
+  "chatSelectFromGallerySub": "Fotoğraf galerinizden seçin",
+  "chatCamera": "Kamera",
+  "chatCameraSub": "Yeni fotoğraf çekin",
+  "chatMsgHint": "Mesajını yaz...",
+  "chatSearchHint": "Mesajlarda ara...",
+  "chatErrMicPermission": "Mikrofon izni gerekli.",
+  "chatErrRecordStart": "Kayıt başlatılamadı: {error}",
+  "@chatErrRecordStart": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatErrAudioSend": "Ses gönderilemedi: {error}",
+  "@chatErrAudioSend": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatErrImagePick": "Resim seçilemedi: {error}",
+  "@chatErrImagePick": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatErrImageSend": "Resim gönderilemedi: {error}",
+  "@chatErrImageSend": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatErrLoginRequired": "Mesaj göndermek için giriş yapmalısınız.",
+  "chatErrLoginRequiredImage": "Resim göndermek için giriş yapmalısınız.",
+  "chatErrMsgSend": "Mesaj gönderilemedi: {error}",
+  "@chatErrMsgSend": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatErrMsgDelete": "Mesaj silinemedi: {error}",
+  "@chatErrMsgDelete": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatErrReaction": "Reaksiyon gonderilemedi: {error}",
+  "@chatErrReaction": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "chatMsgDeletedSelf": "Bu mesajı sildiniz",
+  "chatDeleteMsgForMe": "Bu mesajı kendimden sil",
+  "chatCopyMsg": "Kopyala",
+  "chatAudioMsg": "[Ses Mesajı]",
+  "chatSearchNoResults": "\"{query}\" için sonuç bulunamadı",
+  "@chatSearchNoResults": {
+    "placeholders": {
+      "query": {"type": "String"}
+    }
+  },
+  "chatTooltipBack": "Geri",
+  "chatTooltipSearch": "Mesajlarda Ara",
+  "chatTooltipCloseSearch": "Aramayı Kapat",
+  "chatTypeMatching": "Eşleştirme sohbeti",
+  "chatTypeAdoption": "Sahiplendirme sohbeti",
+  "chatTypeGeneral": "Sohbet",
+
+  "ordersTitle": "Siparişlerim",
+  "ordersEmpty": "Henüz siparişiniz yok",
+  "ordersEmptyDesc": "Mağazadan alışveriş yaparak başlayın",
+  "orderStatusPending": "Onay Bekliyor",
+  "orderStatusProcessing": "Hazırlanıyor",
+  "orderStatusShipped": "Kargoya Verildi",
+  "orderStatusDelivered": "Teslim Edildi",
+  "orderStatusCancelled": "İptal Edildi",
+  "orderCancelTitle": "Siparişi İptal Et",
+  "orderCancelContent": "Bu siparişi iptal etmek istediğinize emin misiniz?",
+  "orderCancelAction": "İptal Et",
+  "orderCancelSuccess": "Sipariş iptal edildi",
+  "orderCancelError": "İptal edilemedi: {error}",
+  "@orderCancelError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "orderNumber": "Sipariş #{id}",
+  "@orderNumber": {
+    "placeholders": {
+      "id": {"type": "String"}
+    }
+  },
+  "orderItemCount": "{count} ürün",
+  "@orderItemCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "orderItemQty": "{qty} adet x ₺{price}",
+  "@orderItemQty": {
+    "placeholders": {
+      "qty": {"type": "int"},
+      "price": {"type": "String"}
+    }
+  },
+  "orderProducts": "Ürünler",
+  "orderTrackingInfo": "Kargo Takip Bilgisi",
+  "orderTrackingCopied": "Takip no kopyalandı: {no}",
+  "@orderTrackingCopied": {
+    "placeholders": {
+      "no": {"type": "String"}
+    }
+  },
+  "orderMyOrdersTitle": "Siparişlerim",
+  "orderNoOrders": "Henüz siparişiniz yok",
+  "orderNoOrdersDesc": "Mağazadan alışveriş yaparak başlayın",
+  "orderLoadErr": "Hata: {error}",
+  "@orderLoadErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "orderDeliveryAddress": "Teslimat Adresi",
+  "orderReview": "Değerlendir",
+  "copyTooltip": "Kopyala",
+  "orderMyRating": "Puanınız: {rating}",
+  "@orderMyRating": {
+    "placeholders": {
+      "rating": {"type": "int"}
+    }
+  },
+
+  "nearbyTitle": "Yakınımdaki İlanlar",
+  "nearbyLocating": "Konum alınıyor...",
+  "nearbyNoResults": "Bu bölgede ilan bulunamadı",
+  "nearbyExpandArea": "Alanı genişlet (50 km)",
+  "nearbyShown": "{count} ilan gösterildi",
+  "@nearbyShown": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "nearbyActiveFilters": "{count} filtre aktif",
+  "@nearbyActiveFilters": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "nearbyClearFilters": "Temizle",
+  "nearbyErrLocationService": "Konum servisi kapalı. Lütfen ayarlardan açın.",
+  "nearbyErrPermDeniedForever": "Konum izni kalıcı olarak reddedildi. Uygulama ayarlarından izin verin.",
+  "nearbyErrPermDenied": "Konum izni gerekli. Lütfen tekrar deneyin.",
+  "nearbyErrTimeout": "Konum alınamadı: zaman aşımı. Lütfen tekrar deneyin.",
+  "nearbyErrPermRequired": "Konum izni gerekli. Lütfen ayarlardan izin verin.",
+  "nearbyErrGeneric": "Konum alınamadı. Lütfen tekrar deneyin.",
+  "nearbyOpenLocationSettings": "Konum Ayarlarını Aç",
+  "nearbyOpenAppSettings": "Uygulama Ayarlarını Aç",
+  "filterTitle": "Filtrele",
+  "filterReset": "Sıfırla",
+  "filterAdvertType": "İlan Türü",
+  "filterAnimalType": "Hayvan Türü",
+  "filterBreed": "Cins",
+  "filterVaccine": "Aşı Durumu",
+  "filterVaccineAny": "Fark Etmez",
+  "filterVaccinated": "Aşılı",
+  "filterUnvaccinated": "Aşısız",
+  "filterApply": "Uygula",
+  "filterAll": "Tümü",
+
+  "profileLoginRequired": "Profili görmek için giriş yapmalısınız.",
+  "profileDeleteTitle": "İlanı Sil",
+  "profileDeleteContent": "Bu ilanı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+  "profileDeleteSuccess": "İlan başarıyla silindi.",
+  "profileLogoutTitle": "Çıkış Yap",
+  "profileLogoutContent": "Hesabınızdan çıkmak istediğinizden emin misiniz?",
+  "profileAdoptionApplications": "Sahiplendirme Başvuruları",
+  "profileNewAdoptionBtn": "Sahiplendirme",
+  "profileNewMatingBtn": "Eşleştirme",
+  "profileLoginBtn": "Giriş Yap",
+  "profileFavorites": "Favoriler",
+  "profileOrders": "Siparişler",
+  "profileSitterBtn": "Sitter",
+  "profileNotifications": "Bildirimler",
+  "profileMyStore": "Mağazam",
+  "profileNoPetsTitle": "Henüz ilan yok",
+  "profileNoPetsDesc": "İlk ilanınızı oluşturarak topluluğa yeni bir dost kazandırabilirsiniz.",
+  "profileRoleSeller": "Satıcı",
+  "profileRoleSitter": "Sitter",
+  "profileRoleAdmin": "Admin",
+  "profileCompletePercent": "Profili tamamla — {percent}%",
+  "@profileCompletePercent": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
+  "profileAuthErr": "Oturum doğrulanamadı. Tekrar deneyin.",
+  "profileAdsLoadErr": "İlanlar yüklenemedi: {error}",
+  "@profileAdsLoadErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "cartTitle": "Sepetim",
+  "cartClearAction": "Boşalt",
+  "cartClearTitle": "Sepeti Boşalt",
+  "cartClearContent": "Sepetteki tüm ürünler silinecek. Emin misiniz?",
+  "cartItemRemoved": "Ürün sepetten çıkarıldı",
+  "cartItemRemoveError": "Ürün çıkarılamadı: {error}",
+  "@cartItemRemoveError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "cartUpdateError": "Miktar güncellenemedi: {error}",
+  "@cartUpdateError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "cartCleared": "Sepet boşaltıldı",
+  "cartClearError": "Sepet boşaltılamadı: {error}",
+  "@cartClearError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "cartEmptyTitle": "Sepetiniz Boş",
+  "cartEmptyDesc": "Henüz sepetinize ürün eklemediniz.\nAlışverişe başlamak için mağazayı keşfedin!",
+  "cartShopNow": "Alışverişe Başla",
+  "cartContinueShopping": "Alışverişe Devam",
+  "cartCheckout": "Ödemeye Geç",
+  "cartItemCount": "Ürün Sayısı",
+  "cartTotalAmount": "Toplam Tutar",
+  "cartItemTotal": "Toplam: {total} ₺",
+  "@cartItemTotal": {
+    "placeholders": {
+      "total": {"type": "String"}
+    }
+  },
+  "cartLoadError": "Sepet yüklenemedi",
+  "cartRetry": "Yeniden Dene",
+
+  "sellerPanelTitle": "Satıcı Paneli",
+  "sellerBecomeSeller": "Satıcı Ol",
+  "sellerBecomeSellerDesc": "Bu sayfayı görmek için satıcı olmanız gerekiyor",
+  "sellerStoreLoadErr": "Mağaza bilgileri yüklenemedi",
+  "sellerOrderStatsLoadErr": "Sipariş istatistikleri yüklenemedi",
+  "sellerProductStatsLoadErr": "Ürün istatistikleri yüklenemedi",
+  "sellerRevenueChartLoadErr": "Gelir grafiği yüklenemedi",
+  "sellerAttentionProducts": "Dikkat Gerektiren Ürünler",
+  "sellerOutOfStock": "Stokta Yok",
+  "sellerLowStock": "Düşük Stok",
+  "sellerNoStore": "Mağazanız Yok",
+  "sellerNoStoreDesc": "Ürün satmaya başlamak için önce mağazanızı oluşturun",
+  "sellerCreateStore": "Mağaza Oluştur",
+  "sellerActiveStore": "Aktif Mağaza",
+  "sellerTotalRevenue": "Toplam Gelir",
+  "sellerPendingOrders": "Bekleyen",
+  "sellerTotalOrdersCount": "{count} toplam",
+  "@sellerTotalOrdersCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "sellerTotalProducts": "Toplam Ürün",
+  "sellerQuickActions": "Hızlı İşlemler",
+  "sellerAddProduct": "Ürün Ekle",
+  "sellerManageProducts": "Ürünlerimi Yönet",
+  "sellerViewStore": "Mağazamı Gör",
+  "sellerMyOrders": "Siparişlerim",
+  "sellerDemoProducts": "Demo Ürünler Ekle",
+  "sellerDemoProductsLoading": "Demo Ürünler Ekleniyor...",
+  "sellerDemoProductsTitle": "Demo Ürünler Ekle",
+  "sellerDemoProductsContent": "Bu işlem mağazanızdaki tüm ürünleri silip yerine demo ürünler ekleyecektir. Devam etmek istiyor musunuz?",
+  "sellerDemoProductsContinue": "Devam Et",
+  "sellerDemoProductsAdded": "{count} demo ürün başarıyla eklendi!",
+  "@sellerDemoProductsAdded": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "sellerErrGeneric": "Hata: {error}",
+  "@sellerErrGeneric": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "sellerLast6Months": "Son 6 Ay",
+  "sellerChartRevenue": "Gelir",
+  "sellerChartOrders": "Sipariş",
+  "sellerStockLabel": "Stok: {count}",
+  "@sellerStockLabel": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "sellerOrderCountTooltip": "{count} sipariş",
+  "@sellerOrderCountTooltip": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "sellerRetry": "Yenile",
+
+  "productMgmtTitle": "Ürün Yönetimi",
+  "productMgmtAll": "Tümü",
+  "productMgmtActive": "Aktif",
+  "productMgmtInactive": "Pasif",
+  "productMgmtLowStock": "Düşük Stok",
+  "productMgmtOutOfStock": "Stokta Yok",
+  "productMgmtNoProducts": "Henüz ürün eklenmemiş",
+  "productMgmtNoCategoryProducts": "Bu kategoride ürün yok",
+  "productMgmtAddFirst": "İlk Ürünü Ekle",
+  "productMgmtAddProduct": "Ürün Ekle",
+  "productMgmtLoadErr": "Ürünler yüklenemedi",
+  "productMgmtStatusActive": "Aktif",
+  "productMgmtStatusInactive": "Pasif",
+  "productMgmtStock": "Stok: {count}",
+  "@productMgmtStock": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "productMgmtStockOutBadge": "Stokta Yok",
+  "productMgmtStockLowBadge": "Düşük",
+  "productMgmtDeactivate": "Pasif Yap",
+  "productMgmtActivate": "Aktif Yap",
+  "productMgmtStockAction": "Stok",
+  "productMgmtEditAction": "Düzenle",
+  "productMgmtDeleteAction": "Sil",
+  "productMgmtToggleDeactivated": "Ürün pasif yapıldı",
+  "productMgmtToggleActivated": "Ürün aktif yapıldı",
+  "productMgmtStockUpdated": "Stok güncellendi",
+  "productMgmtEditSoon": "Ürün düzenleme yakında eklenecek",
+  "productMgmtDeleteTitle": "Ürünü Sil",
+  "productMgmtDeleteContent": "\"{name}\" ürününü silmek istediğinizden emin misiniz?",
+  "@productMgmtDeleteContent": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "productMgmtDeleteWarning": "Bu işlem geri alınamaz!",
+  "productMgmtDeleted": "Ürün silindi",
+  "productMgmtUpdateStockTitle": "Stok Güncelle",
+  "productMgmtCurrentStock": "Mevcut Stok",
+  "productMgmtStockUnit": "adet",
+  "productMgmtStockChange": "Değiştir",
+  "productMgmtStockIncrease": "Arttır",
+  "productMgmtStockDecrease": "Azalt",
+  "productMgmtNewStockAmt": "Yeni Stok Miktarı",
+  "productMgmtAddAmt": "Eklenecek Miktar",
+  "productMgmtSubtractAmt": "Düşülecek Miktar",
+  "productMgmtEnterAmt": "Miktar girin",
+  "productMgmtUpdate": "Güncelle",
+
+  "matchReqNoRequests": "Henüz istek yok.",
+  "matchReqSenderLabel": "Gönderen: {name}",
+  "@matchReqSenderLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "matchReqReceiverLabel": "Alıcı: {name}",
+  "@matchReqReceiverLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "matchReqSenderPet": "Gönderen peti: {name}",
+  "@matchReqSenderPet": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "matchReqSelectedPet": "Seçilen petin: {name}",
+  "@matchReqSelectedPet": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "matchReqViewListing": "Gönderen ilanını gör",
+  "matchReqActDone": "İşlem tamamlandı: {action}",
+  "@matchReqActDone": {
+    "placeholders": {
+      "action": {"type": "String"}
+    }
+  },
+  "matchReqMatchSuccess": "Eşleşme başarılı! {name} ile sohbete yönlendiriliyorsunuz...",
+  "@matchReqMatchSuccess": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "matchReqGoNow": "Şimdi Git",
+  "matchReqChatError": "Sohbet açılamadı: {error}",
+  "@matchReqChatError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "matchReqAccept": "Kabul Et",
+  "matchReqReject": "Reddet",
+  "matchReqGoToChat": "Sohbete git",
+
+  "loginTitle": "Giriş Yap",
+  "loginEmailError": "Geçerli e-posta girin",
+  "loginPasswordError": "En az 6 karakter",
+  "loginNoAccount": "Hesabın yok mu?",
+
+  "registerTitle": "Hesap Oluştur",
+  "registerNameError": "Ad gerekli",
+  "registerPasswordConfirmHint": "Şifre Tekrar",
+  "registerPasswordMismatch": "Şifreler eşleşmiyor",
+  "registerHasAccount": "Zaten hesabın var mı?",
+
+  "forgotTitle": "Şifremi Unuttum",
+  "forgotDesc": "Şifrenizi sıfırlamak için e-posta adresinizi girin.",
+  "forgotSubmit": "Kod Gönder",
+  "forgotSuccessTitle": "E-posta Gönderildi!",
+  "forgotSuccessDesc": "{email} adresine şifre sıfırlama kodu gönderdik.",
+  "@forgotSuccessDesc": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "forgotEnterCode": "Kodu Gir",
+
+  "resetTitle": "Şifre Sıfırla",
+  "resetDesc": "{email} adresine gönderilen kodu girin.",
+  "@resetDesc": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "resetCodeHint": "Doğrulama Kodu",
+  "resetCodeError": "Kod gerekli",
+  "resetNewPasswordHint": "Yeni Şifre",
+  "resetPasswordError": "En az 6 karakter",
+  "resetSubmit": "Şifreyi Sıfırla",
+  "resetSuccess": "Şifreniz başarıyla sıfırlandı!",
+
+  "createPetEditTitle": "İlanı Düzenle",
+  "createPetNewTitle": "Yeni İlan",
+  "createPetUpdateDesc": "İlan bilgilerini güncelle",
+  "createPetNewDesc": "Yeni ilan oluştur",
+  "createPetHeroDesc": "İlan tipini seç, fotoğraf/video ekle ve patili dostuna uygun evi bul.",
+  "createPetAdoptionChip": "Sahiplendirme ilanı",
+  "createPetMatingChip": "Eşleştirme ilanı",
+  "createPetBasicInfo": "Temel Bilgiler",
+  "createPetNameLabel": "İsim",
+  "createPetNameError": "İsim zorunludur",
+  "createPetSpeciesLabel": "Tür",
+  "createPetGenderLabel": "Cinsiyet",
+  "createPetVaccinatedTitle": "Aşıları tam",
+  "createPetVaccinatedSubtitle": "Aşı bilgileri ilanda rozet olarak gösterilir.",
+  "createPetDetailsSection": "Detaylar",
+  "createPetAgeLabel": "Yaş (Ay)",
+  "createPetAgeError": "Yaş zorunlu",
+  "createPetAgeInvalidError": "Geçerli bir sayı girin",
+  "createPetBreedLabel": "Cins",
+  "createPetBreedSelect": "Seçiniz",
+  "createPetBreedSearch": "Cins ara...",
+  "createPetDescLabel": "Açıklama",
+  "createPetDescHint": "Karakteri, sağlık durumu ve ihtiyaçları",
+  "createPetLocationSelected": "Konum seçildi",
+  "createPetLocationAdd": "Konum ekle",
+  "createPetLocationHint": "İl/ilçe seçimi için haritayı aç",
+  "createPetMedia": "Fotoğraf & Video",
+  "createPetAddPhotoBtn": "Fotoğraf ekle",
+  "createPetAddVideoBtn": "Video ekle",
+  "createPetSave": "Kaydet",
+  "createPetPublish": "Yayınla",
+
+  "shellOfflineBanner": "İnternet bağlantısı yok",
+  "shellReconnected": "İnternet bağlantısı yeniden kuruldu",
+  "shellApptSnackView": "Görüntüle",
+  "shellAdvertsNav": "İlanlarım",
+  "shellGuideFab": "Rehber Pati",
+  "addressEditTitle": "Adresi Düzenle",
+  "addressNewTitle": "Yeni Adres",
+  "addressUpdated": "Adres güncellendi",
+  "addressAdded": "Adres eklendi",
+  "addressSaveErr": "Hata: {error}",
+  "@addressSaveErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "addressInfoCard": "Adres Bilgileri",
+  "addressTitleLabel": "Adres Başlığı",
+  "addressTitleHint": "Ev, İş, vb.",
+  "addressRecipientCard": "Alıcı Bilgileri",
+  "addressFullName": "Ad Soyad",
+  "addressFullNameHint": "Teslimat alacak kişi",
+  "addressPhone": "Telefon",
+  "addressDetailsCard": "Adres Detayları",
+  "addressCity": "İl",
+  "addressCityHint": "İstanbul",
+  "addressDistrict": "İlçe",
+  "addressDistrictHint": "Kadıköy",
+  "addressNeighborhood": "Mahalle",
+  "addressNeighborhoodHint": "Mahalle adı",
+  "addressStreet": "Sokak/Cadde",
+  "addressStreetHint": "Sokak veya cadde adı",
+  "addressBuildingNo": "Bina No",
+  "addressFloor": "Kat",
+  "addressApartmentNo": "Daire",
+  "addressPostalCode": "Posta Kodu",
+  "addressPreferencesCard": "Tercihler",
+  "addressSetDefault": "Varsayılan adres olarak ayarla",
+  "addressSetDefaultSub": "Siparişlerde bu adres otomatik seçilir",
+  "addressUpdate": "Güncelle",
+  "addressRequired": "{field} zorunludur",
+  "@addressRequired": {
+    "placeholders": {
+      "field": {"type": "String"}
+    }
+  },
+
+  "verifyTitle": "E-posta Doğrula",
+  "verifyDesc": "{email} adresine bir doğrulama kodu gönderdik.",
+  "@verifyDesc": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "verifyCodeLabel": "Doğrulama Kodu",
+  "verifySubmit": "Doğrula",
+  "verifySuccess": "E-posta doğrulandı! Giriş yapabilirsiniz.",
+  "verifyBackToLogin": "Giriş sayfasına dön",
+
+  "userProfileLoadErr": "Profil yüklenemedi",
+  "userProfileAbout": "Hakkında",
+  "userProfileListings": "İlanlar ({count})",
+  "@userProfileListings": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "userProfileNoListings": "Henüz ilan yok",
+  "userProfileMessageTooltip": "Mesaj gönder",
+  "userProfileChatErr": "Sohbet başlatılamadı: {error}",
+  "@userProfileChatErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "userProfileMemberSince": "{year}'den beri üye",
+  "@userProfileMemberSince": {
+    "placeholders": {
+      "year": {"type": "int"}
+    }
+  },
+  "userProfileDefaultName": "Kullanıcı",
+  "userProfileTypeAdopt": "Sahiplendir",
+  "userProfileTypeMating": "Çiftleştir",
+  "userProfileTypeLost": "Kayıp",
+
+  "shellBirthdayDefault": "Dostunuzun doğum günü bugün!",
+  "shellApptReminderDefault": "Evcil hayvanınız",
+  "shellAdvertExpiryDefault": "İlanınızın süresi doluyor.",
+
+  "vacCalendarTitle": "Aşı Takvimi",
+  "vacCalendarLoadErr": "Hata: {error}",
+  "@vacCalendarLoadErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "vacCalendarEmpty": "Aşı takvimi bulunamadı",
+  "vacCalendarAddRecord": "Aşı Kaydı Ekle",
+  "vacCalendarNoRecord": "Bu gün için kayıt yok",
+  "vacCalendarClickDay": "Bir güne tıklayın",
+  "vacCalendarAdd": "Ekle",
+  "vacCalendarFirstDose": "İlk Doz: {months} ay",
+  "@vacCalendarFirstDose": {
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "vacCalendarRepeat": "Tekrar: {months} ay",
+  "@vacCalendarRepeat": {
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "vacCalendarRequired": "Zorunlu",
+  "vacCalendarNext": "Sonraki: {date}",
+  "@vacCalendarNext": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+
+  "vetSearchTitle": "Veteriner Ara",
+  "vetSearchGoogleTitle": "Google ile Ara",
+  "vetSearchSortTooltip": "Sırala",
+  "vetSearchSortByDistance": "Mesafeye Göre",
+  "vetSearchSortByRating": "Puana Göre",
+  "vetSearchHint": "Klinik adı veya adres...",
+  "vetSearchUseLocation": "Konumumu kullan",
+  "vetSearchErrPermission": "Konum izni gerekli",
+  "vetSearchErrLocation": "Konum alınamadı: {error}",
+  "@vetSearchErrLocation": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "vetSearchPrompt": "Aramak için yukarıya yazın veya konumunuzu paylaşın",
+  "vetSearchNoResults": "Sonuç bulunamadı"
 }

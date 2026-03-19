@@ -1,6 +1,7 @@
 // lib/features/auth/presentation/screens/user_profile_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -32,19 +33,20 @@ class UserProfileScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 12),
-              Text('Profil yüklenemedi', style: Theme.of(context).textTheme.titleMedium),
+              Text(AppLocalizations.of(context)!.userProfileLoadErr, style: Theme.of(context).textTheme.titleMedium),
               TextButton(
                 onPressed: () => ref.invalidate(userPublicProfileProvider(userId)),
-                child: const Text('Tekrar dene'),
+                child: Text(AppLocalizations.of(context)!.retry),
               ),
             ],
           ),
         ),
         data: (data) {
+          final l10n = AppLocalizations.of(context)!;
           final userJson = data['user'] as Map<String, dynamic>? ?? {};
           final petsJson = (data['pets'] as List<dynamic>?) ?? [];
 
-          final name = userJson['name'] as String? ?? 'Kullanıcı';
+          final name = userJson['name'] as String? ?? l10n.userProfileDefaultName;
           final city = userJson['city'] as String?;
           final avatarUrl = userJson['avatarUrl'] as String?;
           final about = userJson['about'] as String?;
@@ -62,7 +64,7 @@ class UserProfileScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Hakkında',
+                        Text(l10n.userProfileAbout,
                             style: Theme.of(context)
                                 .textTheme
                                 .titleSmall
@@ -78,7 +80,7 @@ class UserProfileScreen extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
                   child: Text(
-                    'İlanlar (${petsJson.length})',
+                    l10n.userProfileListings(petsJson.length),
                     style: Theme.of(context)
                         .textTheme
                         .titleSmall
@@ -87,11 +89,11 @@ class UserProfileScreen extends ConsumerWidget {
                 ),
               ),
               if (petsJson.isEmpty)
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.all(32),
+                    padding: const EdgeInsets.all(32),
                     child: Center(
-                      child: Text('Henüz ilan yok', style: TextStyle(color: Colors.grey)),
+                      child: Text(l10n.userProfileNoListings, style: const TextStyle(color: Colors.grey)),
                     ),
                   ),
                 )
@@ -198,8 +200,8 @@ class UserProfileScreen extends ConsumerWidget {
                                   color: Colors.amber.shade600,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Text(
-                                  'Satıcı',
+                                child: Text(
+                                  AppLocalizations.of(context)!.profileRoleSeller,
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
@@ -223,7 +225,7 @@ class UserProfileScreen extends ConsumerWidget {
                         ],
                         if (year != null) ...[
                           const SizedBox(height: 2),
-                          Text('$year\'den beri üye',
+                          Text(AppLocalizations.of(context)!.userProfileMemberSince(year!),
                               style: const TextStyle(color: Colors.white60, fontSize: 12)),
                         ],
                       ],
@@ -239,7 +241,7 @@ class UserProfileScreen extends ConsumerWidget {
         if (!isMe)
           IconButton(
             icon: const Icon(Icons.message_rounded, color: Colors.white),
-            tooltip: 'Mesaj gönder',
+            tooltip: AppLocalizations.of(context)!.userProfileMessageTooltip,
             onPressed: () => _openChat(context, ref),
           ),
       ],
@@ -263,7 +265,7 @@ class UserProfileScreen extends ConsumerWidget {
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sohbet başlatılamadı: $e')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.userProfileChatErr(e.toString()))),
       );
     }
   }
@@ -276,6 +278,7 @@ class _PetMiniCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final name = pet['name'] as String? ?? '?';
     final species = pet['species'] as String? ?? '';
     final breed = pet['breed'] as String? ?? '';
@@ -290,15 +293,15 @@ class _PetMiniCard extends StatelessWidget {
     switch (advertType) {
       case 'adoption':
         typeColor = Colors.green;
-        typeLabel = 'Sahiplendir';
+        typeLabel = l10n.userProfileTypeAdopt;
         break;
       case 'mating':
         typeColor = Colors.pink;
-        typeLabel = 'Çiftleştir';
+        typeLabel = l10n.userProfileTypeMating;
         break;
       case 'lost':
         typeColor = Colors.orange;
-        typeLabel = 'Kayıp';
+        typeLabel = l10n.userProfileTypeLost;
         break;
       default:
         typeLabel = advertType;

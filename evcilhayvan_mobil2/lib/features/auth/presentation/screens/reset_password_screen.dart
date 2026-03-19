@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -39,7 +40,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Şifreniz başarıyla sıfırlandı!'), backgroundColor: Colors.green),
+          SnackBar(content: Text(AppLocalizations.of(context)!.resetSuccess), backgroundColor: Colors.green),
         );
         context.go('/login');
       }
@@ -56,9 +57,10 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Şifre Sıfırla'),
+        title: Text(l10n.resetTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -82,7 +84,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                     const Icon(Icons.lock_open_outlined, size: 80, color: AppPalette.primary),
                     const SizedBox(height: 16),
                     Text(
-                      '${widget.email} adresine gönderilen kodu girin.',
+                      l10n.resetDesc(widget.email),
                       textAlign: TextAlign.center,
                       style: const TextStyle(color: AppPalette.onSurfaceVariant),
                     ),
@@ -90,20 +92,20 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                     TextFormField(
                       controller: _codeCtrl,
                       keyboardType: TextInputType.number,
-                      decoration: _deco('Doğrulama Kodu', Icons.pin_outlined),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Kod gerekli' : null,
+                      decoration: _deco(l10n.resetCodeHint, Icons.pin_outlined),
+                      validator: (v) => (v == null || v.trim().isEmpty) ? l10n.resetCodeError : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _passCtrl,
                       obscureText: _obscure,
-                      decoration: _deco('Yeni Şifre', Icons.lock_outline).copyWith(
+                      decoration: _deco(l10n.resetNewPasswordHint, Icons.lock_outline).copyWith(
                         suffixIcon: IconButton(
                           icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                       ),
-                      validator: (v) => (v == null || v.length < 6) ? 'En az 6 karakter' : null,
+                      validator: (v) => (v == null || v.length < 6) ? l10n.resetPasswordError : null,
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
@@ -116,7 +118,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                       ),
                       child: _loading
                           ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Text('Şifreyi Sıfırla', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          : Text(l10n.resetSubmit, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),

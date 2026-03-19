@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -35,6 +36,8 @@ class SellerDashboardScreen extends ConsumerWidget {
     final myProductsAsync = ref.watch(myProductsProvider);
     final theme = Theme.of(context);
 
+    final l10n = AppLocalizations.of(context)!;
+
     if (user == null || user.role != 'seller') {
       return Scaffold(
         body: Center(
@@ -47,23 +50,23 @@ class SellerDashboardScreen extends ConsumerWidget {
                 color: AppPalette.onSurfaceVariant,
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Satıcı Paneli',
-                style: TextStyle(
+              Text(
+                l10n.sellerPanelTitle,
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Bu sayfayı görmek için satıcı olmanız gerekiyor',
+              Text(
+                l10n.sellerBecomeSellerDesc,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: () => context.pushNamed('store-apply'),
                 icon: const Icon(Icons.store_mall_directory_outlined),
-                label: const Text('Satıcı Ol'),
+                label: Text(l10n.sellerBecomeSeller),
               ),
             ],
           ),
@@ -74,9 +77,9 @@ class SellerDashboardScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppPalette.storeSoftBlue.withOpacity(0.3),
       appBar: AppBar(
-        title: const Text(
-          'Satıcı Paneli',
-          style: TextStyle(fontWeight: FontWeight.w800),
+        title: Text(
+          l10n.sellerPanelTitle,
+          style: const TextStyle(fontWeight: FontWeight.w800),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -119,7 +122,7 @@ class SellerDashboardScreen extends ConsumerWidget {
                   },
                   loading: () => const _StoreInfoSkeleton(),
                   error: (e, _) => _ErrorCard(
-                    message: 'Mağaza bilgileri yüklenemedi',
+                    message: l10n.sellerStoreLoadErr,
                     onRetry: () => ref.invalidate(myStoreProvider),
                   ),
                 ),
@@ -163,10 +166,10 @@ class SellerDashboardScreen extends ConsumerWidget {
                           children: [
                             const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
                             const SizedBox(width: 8),
-                            const Expanded(child: Text('Sipariş istatistikleri yüklenemedi')),
+                            Expanded(child: Text(AppLocalizations.of(context)!.sellerOrderStatsLoadErr)),
                             TextButton(
                               onPressed: () => ref.invalidate(sellerOrderStatsProvider),
-                              child: const Text('Yenile'),
+                              child: Text(AppLocalizations.of(context)!.sellerRetry),
                             ),
                           ],
                         ),
@@ -192,7 +195,7 @@ class SellerDashboardScreen extends ConsumerWidget {
                       children: [
                         const Icon(Icons.info_outline, size: 16, color: Colors.grey),
                         const SizedBox(width: 6),
-                        Text('Ürün istatistikleri yüklenemedi', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                        Text(AppLocalizations.of(context)!.sellerProductStatsLoadErr, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
                       ],
                     ),
                   ),
@@ -219,7 +222,7 @@ class SellerDashboardScreen extends ConsumerWidget {
                             children: [
                               const Icon(Icons.bar_chart, color: Colors.grey),
                               const SizedBox(width: 8),
-                              Text('Gelir grafiği yüklenemedi', style: TextStyle(color: Colors.grey[600])),
+                              Text(AppLocalizations.of(context)!.sellerRevenueChartLoadErr, style: TextStyle(color: Colors.grey[600])),
                             ],
                           ),
                         ),
@@ -269,7 +272,7 @@ class SellerDashboardScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Dikkat Gerektiren Ürünler',
+                          l10n.sellerAttentionProducts,
                           style: theme.textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.w900,
                           ),
@@ -277,7 +280,7 @@ class SellerDashboardScreen extends ConsumerWidget {
                         const SizedBox(height: 12),
                         if (outOfStockProducts.isNotEmpty)
                           _AlertCard(
-                            title: 'Stokta Yok',
+                            title: l10n.sellerOutOfStock,
                             count: outOfStockProducts.length,
                             icon: Icons.inventory_2_outlined,
                             color: Colors.red,
@@ -286,7 +289,7 @@ class SellerDashboardScreen extends ConsumerWidget {
                         if (lowStockProducts.isNotEmpty) ...[
                           const SizedBox(height: 12),
                           _AlertCard(
-                            title: 'Düşük Stok',
+                            title: l10n.sellerLowStock,
                             count: lowStockProducts.length,
                             icon: Icons.warning_amber_outlined,
                             color: Colors.orange,
@@ -343,19 +346,19 @@ class _NoStoreCard extends StatelessWidget {
             color: Colors.white,
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Mağazanız Yok',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)!.sellerNoStore,
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w900,
               color: Colors.white,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Ürün satmaya başlamak için önce mağazanızı oluşturun',
+          Text(
+            AppLocalizations.of(context)!.sellerNoStoreDesc,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
@@ -372,9 +375,9 @@ class _NoStoreCard extends StatelessWidget {
               ),
             ),
             icon: const Icon(Icons.add_business),
-            label: const Text(
-              'Mağaza Oluştur',
-              style: TextStyle(fontWeight: FontWeight.w800),
+            label: Text(
+              AppLocalizations.of(context)!.sellerCreateStore,
+              style: const TextStyle(fontWeight: FontWeight.w800),
             ),
           ),
         ],
@@ -439,9 +442,9 @@ class _StoreInfoCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'Aktif Mağaza',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)!.sellerActiveStore,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
@@ -516,9 +519,9 @@ class _OrderStatsCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
-                        'Toplam Gelir',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.sellerTotalRevenue,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
@@ -565,9 +568,9 @@ class _OrderStatsCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const Text(
-                    'Bekleyen',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)!.sellerPendingOrders,
+                    style: const TextStyle(
                       color: Colors.white70,
                       fontWeight: FontWeight.w600,
                       fontSize: 12,
@@ -584,7 +587,7 @@ class _OrderStatsCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '$totalOrders toplam',
+                        AppLocalizations.of(context)!.sellerTotalOrdersCount(totalOrders),
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 12,
@@ -624,7 +627,7 @@ class _StatsGrid extends StatelessWidget {
       children: [
         Expanded(
           child: _StatCard(
-            title: 'Toplam Ürün',
+            title: AppLocalizations.of(context)!.sellerTotalProducts,
             value: totalProducts.toString(),
             icon: Icons.inventory_2_outlined,
             gradient: _dashboardGradientA,
@@ -633,7 +636,7 @@ class _StatsGrid extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _StatCard(
-            title: 'Aktif',
+            title: AppLocalizations.of(context)!.productMgmtActive,
             value: activeProducts.toString(),
             icon: Icons.check_circle_outline,
             gradient: _dashboardGradientC,
@@ -642,7 +645,7 @@ class _StatsGrid extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _StatCard(
-            title: 'Düşük Stok',
+            title: AppLocalizations.of(context)!.sellerLowStock,
             value: lowStockProducts.toString(),
             icon: Icons.warning_amber_outlined,
             gradient: _dashboardGradientB,
@@ -737,25 +740,26 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
     if (_isSeeding) return;
 
     // Confirm dialog
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Demo Ürünler Ekle'),
-        content: const Text(
-          'Bu işlem mağazanızdaki tüm ürünleri silip yerine demo ürünler ekleyecektir. '
-          'Devam etmek istiyor musunuz?',
-        ),
+      builder: (ctx) {
+        final dl10n = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+        title: Text(dl10n.sellerDemoProductsTitle),
+        content: Text(dl10n.sellerDemoProductsContent),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('İptal'),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(dl10n.cancel),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Devam Et'),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(dl10n.sellerDemoProductsContinue),
           ),
         ],
-      ),
+      );
+      },
     );
 
     if (confirmed != true || !mounted) return;
@@ -776,7 +780,7 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${result.productsCreated} demo ürün başarıyla eklendi!',
+            l10n.sellerDemoProductsAdded(result.productsCreated),
           ),
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 3),
@@ -787,7 +791,7 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Hata: ${e.toString()}'),
+          content: Text(l10n.sellerErrGeneric(e.toString())),
           backgroundColor: Colors.red,
           duration: const Duration(seconds: 3),
         ),
@@ -802,6 +806,8 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -820,7 +826,7 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Hızlı İşlemler',
+            l10n.sellerQuickActions,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w900,
             ),
@@ -828,35 +834,35 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
           const SizedBox(height: 16),
           _QuickActionButton(
             icon: Icons.add_box_outlined,
-            label: 'Ürün Ekle',
+            label: l10n.sellerAddProduct,
             color: AppPalette.storePrimary,
             onTap: widget.onAddProduct,
           ),
           const SizedBox(height: 12),
           _QuickActionButton(
             icon: Icons.settings_outlined,
-            label: 'Ürünlerimi Yönet',
+            label: l10n.sellerManageProducts,
             color: AppPalette.storeAccent,
             onTap: widget.onManageProducts,
           ),
           const SizedBox(height: 12),
           _QuickActionButton(
             icon: Icons.store_outlined,
-            label: 'Mağazamı Gör',
+            label: l10n.sellerViewStore,
             color: Colors.teal,
             onTap: widget.onViewStore,
           ),
           const SizedBox(height: 12),
           _QuickActionButton(
             icon: Icons.receipt_long_outlined,
-            label: 'Siparişlerim',
+            label: l10n.sellerMyOrders,
             color: AppPalette.storeSecondary,
             onTap: widget.onViewOrders,
           ),
           const SizedBox(height: 12),
           _QuickActionButton(
             icon: _isSeeding ? Icons.hourglass_empty : Icons.rocket_launch_outlined,
-            label: _isSeeding ? 'Demo Ürünler Ekleniyor...' : 'Demo Ürünler Ekle',
+            label: _isSeeding ? l10n.sellerDemoProductsLoading : l10n.sellerDemoProducts,
             color: Colors.purple,
             onTap: _isSeeding ? () {} : _handleSeedDemoProducts,
           ),
@@ -999,7 +1005,7 @@ class _AlertCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Stok: ${product.stock}',
+                      AppLocalizations.of(context)!.sellerStockLabel(product.stock as int),
                       style: TextStyle(
                         fontSize: 12,
                         color: color,
@@ -1056,7 +1062,7 @@ class _ErrorCard extends StatelessWidget {
               foregroundColor: Colors.white,
             ),
             icon: const Icon(Icons.refresh),
-            label: const Text('Yeniden Dene'),
+            label: Text(AppLocalizations.of(context)!.retry),
           ),
         ],
       ),
@@ -1147,14 +1153,14 @@ class _RevenueChartCardState extends State<_RevenueChartCard> {
             children: [
               Expanded(
                 child: Text(
-                  'Son 6 Ay',
+                  AppLocalizations.of(context)!.sellerLast6Months,
                   style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
                 ),
               ),
               SegmentedButton<bool>(
-                segments: const [
-                  ButtonSegment(value: true,  label: Text('Gelir')),
-                  ButtonSegment(value: false, label: Text('Sipariş')),
+                segments: [
+                  ButtonSegment(value: true,  label: Text(AppLocalizations.of(context)!.sellerChartRevenue)),
+                  ButtonSegment(value: false, label: Text(AppLocalizations.of(context)!.sellerChartOrders)),
                 ],
                 selected: {_showRevenue},
                 onSelectionChanged: (s) => setState(() => _showRevenue = s.first),
@@ -1229,7 +1235,7 @@ class _RevenueChartCardState extends State<_RevenueChartCard> {
                       final p = pts[group.x];
                       final label = _showRevenue
                           ? '₺${p.revenue.toStringAsFixed(0)}'
-                          : '${p.orders} sipariş';
+                          : AppLocalizations.of(context)!.sellerOrderCountTooltip(p.orders);
                       return BarTooltipItem(
                         label,
                         const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

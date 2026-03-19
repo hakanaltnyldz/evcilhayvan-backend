@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -23,13 +24,14 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
   Widget build(BuildContext context) {
     final productsAsync = ref.watch(myProductsProvider);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FD),
       appBar: AppBar(
-        title: const Text(
-          'Ürün Yönetimi',
-          style: TextStyle(fontWeight: FontWeight.w800),
+        title: Text(
+          l10n.productMgmtTitle,
+          style: const TextStyle(fontWeight: FontWeight.w800),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -44,9 +46,9 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
         onPressed: () => context.pushNamed('store-add-product'),
         backgroundColor: AppPalette.storePrimary,
         icon: const Icon(Icons.add),
-        label: const Text(
-          'Ürün Ekle',
-          style: TextStyle(fontWeight: FontWeight.w700),
+        label: Text(
+          l10n.productMgmtAddProduct,
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       body: Column(
@@ -60,34 +62,34 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
               child: Row(
                 children: [
                   _FilterChip(
-                    label: 'Tümü',
+                    label: l10n.productMgmtAll,
                     isSelected: _filter == 'all',
                     onTap: () => setState(() => _filter = 'all'),
                   ),
                   const SizedBox(width: 8),
                   _FilterChip(
-                    label: 'Aktif',
+                    label: l10n.productMgmtActive,
                     isSelected: _filter == 'active',
                     color: Colors.green,
                     onTap: () => setState(() => _filter = 'active'),
                   ),
                   const SizedBox(width: 8),
                   _FilterChip(
-                    label: 'Pasif',
+                    label: l10n.productMgmtInactive,
                     isSelected: _filter == 'inactive',
                     color: Colors.grey,
                     onTap: () => setState(() => _filter = 'inactive'),
                   ),
                   const SizedBox(width: 8),
                   _FilterChip(
-                    label: 'Düşük Stok',
+                    label: l10n.productMgmtLowStock,
                     isSelected: _filter == 'lowstock',
                     color: Colors.orange,
                     onTap: () => setState(() => _filter = 'lowstock'),
                   ),
                   const SizedBox(width: 8),
                   _FilterChip(
-                    label: 'Stokta Yok',
+                    label: l10n.productMgmtOutOfStock,
                     isSelected: _filter == 'outofstock',
                     color: Colors.red,
                     onTap: () => setState(() => _filter = 'outofstock'),
@@ -115,7 +117,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          _filter == 'all' ? 'Henüz ürün eklenmemiş' : 'Bu kategoride ürün yok',
+                          _filter == 'all' ? l10n.productMgmtNoProducts : l10n.productMgmtNoCategoryProducts,
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey.shade600,
@@ -134,9 +136,9 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                               ),
                             ),
                             icon: const Icon(Icons.add),
-                            label: const Text(
-                              'İlk Ürünü Ekle',
-                              style: TextStyle(fontWeight: FontWeight.w700),
+                            label: Text(
+                              l10n.productMgmtAddFirst,
+                              style: const TextStyle(fontWeight: FontWeight.w700),
                             ),
                           ),
                         ],
@@ -171,7 +173,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                     const Icon(Icons.error_outline, size: 64, color: Colors.red),
                     const SizedBox(height: 16),
                     Text(
-                      'Ürünler yüklenemedi',
+                      l10n.productMgmtLoadErr,
                       style: theme.textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
@@ -180,7 +182,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                     ElevatedButton.icon(
                       onPressed: () => ref.invalidate(myProductsProvider),
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Yeniden Dene'),
+                      label: Text(l10n.retry),
                     ),
                   ],
                 ),
@@ -208,6 +210,8 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
   }
 
   Future<void> _toggleActive(ProductModel product) async {
+    final l10n = AppLocalizations.of(context)!;
+    final wasActive = product.isActive;
     try {
       final repo = ref.read(storeRepositoryProvider);
       await repo.toggleProductActive(product.id);
@@ -216,7 +220,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              product.isActive ? 'Ürün pasif yapıldı' : 'Ürün aktif yapıldı',
+              wasActive ? l10n.productMgmtToggleDeactivated : l10n.productMgmtToggleActivated,
             ),
             backgroundColor: Colors.green,
           ),
@@ -226,7 +230,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Hata: $e'),
+            content: Text(l10n.sellerErrGeneric(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -235,6 +239,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
   }
 
   Future<void> _showStockDialog(ProductModel product) async {
+    final l10n = AppLocalizations.of(context)!;
     final stockController = TextEditingController(text: product.stock.toString());
     String action = 'set';
 
@@ -243,7 +248,9 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Container(
+        builder: (context, setModalState) {
+          final ml10n = AppLocalizations.of(context)!;
+          return Container(
           decoration: BoxDecoration(
             color: context.cardColor,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -277,9 +284,9 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Stok Güncelle',
-                          style: TextStyle(
+                        Text(
+                          ml10n.productMgmtUpdateStockTitle,
+                          style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
                           ),
@@ -309,12 +316,12 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Mevcut Stok',
-                      style: TextStyle(fontWeight: FontWeight.w600),
+                    Text(
+                      ml10n.productMgmtCurrentStock,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      '${product.stock} adet',
+                      '${product.stock} ${ml10n.productMgmtStockUnit}',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
@@ -334,7 +341,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                 children: [
                   Expanded(
                     child: _ActionButton(
-                      label: 'Değiştir',
+                      label: ml10n.productMgmtStockChange,
                       icon: Icons.edit,
                       isSelected: action == 'set',
                       onTap: () => setModalState(() => action = 'set'),
@@ -343,7 +350,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                   const SizedBox(width: 8),
                   Expanded(
                     child: _ActionButton(
-                      label: 'Arttır',
+                      label: ml10n.productMgmtStockIncrease,
                       icon: Icons.add_circle_outline,
                       isSelected: action == 'increase',
                       color: Colors.green,
@@ -353,7 +360,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                   const SizedBox(width: 8),
                   Expanded(
                     child: _ActionButton(
-                      label: 'Azalt',
+                      label: ml10n.productMgmtStockDecrease,
                       icon: Icons.remove_circle_outline,
                       isSelected: action == 'decrease',
                       color: Colors.orange,
@@ -370,11 +377,11 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: InputDecoration(
                   labelText: action == 'set'
-                      ? 'Yeni Stok Miktarı'
+                      ? ml10n.productMgmtNewStockAmt
                       : action == 'increase'
-                          ? 'Eklenecek Miktar'
-                          : 'Düşülecek Miktar',
-                  hintText: 'Miktar girin',
+                          ? ml10n.productMgmtAddAmt
+                          : ml10n.productMgmtSubtractAmt,
+                  hintText: ml10n.productMgmtEnterAmt,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -385,7 +392,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                       width: 2,
                     ),
                   ),
-                  suffixText: 'adet',
+                  suffixText: ml10n.productMgmtStockUnit,
                 ),
               ),
               const SizedBox(height: 24),
@@ -401,7 +408,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('İptal'),
+                      child: Text(ml10n.cancel),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -424,9 +431,9 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
-                        'Güncelle',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                      child: Text(
+                        ml10n.productMgmtUpdate,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -434,20 +441,22 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
               ),
             ],
           ),
-        ),
+        );
+        },
       ),
     );
   }
 
   Future<void> _updateStock(ProductModel product, int stock, String? action) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final repo = ref.read(storeRepositoryProvider);
       await repo.updateStock(product.id, stock: stock, action: action);
       ref.invalidate(myProductsProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Stok güncellendi'),
+          SnackBar(
+            content: Text(l10n.productMgmtStockUpdated),
             backgroundColor: Colors.green,
           ),
         );
@@ -456,7 +465,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Hata: $e'),
+            content: Text(l10n.sellerErrGeneric(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -467,22 +476,25 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
   void _editProduct(ProductModel product) {
     // TODO: Navigate to edit product screen
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Ürün düzenleme yakında eklenecek'),
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.productMgmtEditSoon),
       ),
     );
   }
 
   Future<void> _deleteProduct(ProductModel product) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) {
+        final dl10n = AppLocalizations.of(ctx)!;
+        return AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
-            SizedBox(width: 12),
-            Text('Ürünü Sil'),
+            const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+            const SizedBox(width: 12),
+            Text(dl10n.productMgmtDeleteTitle),
           ],
         ),
         content: Column(
@@ -490,7 +502,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '"${product.displayName}" ürününü silmek istediğinizden emin misiniz?',
+              dl10n.productMgmtDeleteContent(product.displayName),
             ),
             const SizedBox(height: 12),
             Container(
@@ -499,14 +511,14 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                 color: Colors.red.shade50,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: Colors.red, size: 20),
-                  SizedBox(width: 8),
+                  const Icon(Icons.info_outline, color: Colors.red, size: 20),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Bu işlem geri alınamaz!',
-                      style: TextStyle(
+                      dl10n.productMgmtDeleteWarning,
+                      style: const TextStyle(
                         color: Colors.red,
                         fontWeight: FontWeight.w600,
                       ),
@@ -519,18 +531,19 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('İptal'),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(dl10n.cancel),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
             ),
-            child: const Text('Sil'),
+            child: Text(dl10n.delete),
           ),
         ],
-      ),
+      );
+      },
     );
 
     if (confirmed == true) {
@@ -540,8 +553,8 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
         ref.invalidate(myProductsProvider);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Ürün silindi'),
+            SnackBar(
+              content: Text(l10n.productMgmtDeleted),
               backgroundColor: Colors.green,
             ),
           );
@@ -550,7 +563,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Hata: $e'),
+              content: Text(l10n.sellerErrGeneric(e.toString())),
               backgroundColor: Colors.red,
             ),
           );
@@ -754,7 +767,7 @@ class _ProductCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              product.isActive ? 'Aktif' : 'Pasif',
+                              product.isActive ? AppLocalizations.of(context)!.productMgmtStatusActive : AppLocalizations.of(context)!.productMgmtStatusInactive,
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
@@ -787,7 +800,7 @@ class _ProductCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Stok: ${product.stock}',
+                            AppLocalizations.of(context)!.productMgmtStock(product.stock),
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -806,7 +819,7 @@ class _ProductCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                'Stokta Yok',
+                                AppLocalizations.of(context)!.productMgmtStockOutBadge,
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
@@ -826,7 +839,7 @@ class _ProductCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                'Düşük',
+                                AppLocalizations.of(context)!.productMgmtStockLowBadge,
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
@@ -857,25 +870,25 @@ class _ProductCard extends StatelessWidget {
                   icon: product.isActive
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  label: product.isActive ? 'Pasif Yap' : 'Aktif Yap',
+                  label: product.isActive ? AppLocalizations.of(context)!.productMgmtDeactivate : AppLocalizations.of(context)!.productMgmtActivate,
                   color: product.isActive ? Colors.grey : Colors.green,
                   onTap: onToggleActive,
                 ),
                 _CardActionButton(
                   icon: Icons.inventory_2_outlined,
-                  label: 'Stok',
+                  label: AppLocalizations.of(context)!.productMgmtStockAction,
                   color: AppPalette.storePrimary,
                   onTap: onUpdateStock,
                 ),
                 _CardActionButton(
                   icon: Icons.edit_outlined,
-                  label: 'Düzenle',
+                  label: AppLocalizations.of(context)!.productMgmtEditAction,
                   color: Colors.blue,
                   onTap: onEdit,
                 ),
                 _CardActionButton(
                   icon: Icons.delete_outline,
-                  label: 'Sil',
+                  label: AppLocalizations.of(context)!.productMgmtDeleteAction,
                   color: Colors.red,
                   onTap: onDelete,
                 ),

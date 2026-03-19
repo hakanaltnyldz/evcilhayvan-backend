@@ -1,6 +1,7 @@
 // lib/features/store/presentation/screens/add_address_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
@@ -109,9 +110,10 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
       }
 
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isEditing ? 'Adres güncellendi' : 'Adres eklendi'),
+            content: Text(isEditing ? l10n.addressUpdated : l10n.addressAdded),
             backgroundColor: Colors.green,
           ),
         );
@@ -120,7 +122,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context)!.addressSaveErr(e.toString())), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -130,10 +132,11 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text(isEditing ? 'Adresi Düzenle' : 'Yeni Adres'),
+        title: Text(isEditing ? l10n.addressEditTitle : l10n.addressNewTitle),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -146,62 +149,67 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildCard(
-                title: 'Adres Bilgileri',
+                title: l10n.addressInfoCard,
                 children: [
                   _buildTextField(
                     controller: _titleController,
-                    label: 'Adres Başlığı',
-                    hint: 'Ev, İş, vb.',
+                    label: l10n.addressTitleLabel,
+                    hint: l10n.addressTitleHint,
                     icon: Icons.bookmark,
                     required: true,
+                    l10n: l10n,
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               _buildCard(
-                title: 'Alıcı Bilgileri',
+                title: l10n.addressRecipientCard,
                 children: [
                   _buildTextField(
                     controller: _fullNameController,
-                    label: 'Ad Soyad',
-                    hint: 'Teslimat alacak kişi',
+                    label: l10n.addressFullName,
+                    hint: l10n.addressFullNameHint,
                     icon: Icons.person,
                     required: true,
+                    l10n: l10n,
                   ),
                   const SizedBox(height: 12),
                   _buildTextField(
                     controller: _phoneController,
-                    label: 'Telefon',
+                    label: l10n.addressPhone,
                     hint: '05XX XXX XX XX',
                     icon: Icons.phone,
                     required: true,
                     keyboardType: TextInputType.phone,
+                    l10n: l10n,
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               _buildCard(
-                title: 'Adres Detayları',
+                title: l10n.addressDetailsCard,
                 children: [
                   Row(
                     children: [
                       Expanded(
                         child: _buildTextField(
                           controller: _cityController,
-                          label: 'İl',
-                          hint: 'İstanbul',
+                          label: l10n.addressCity,
+                          hint: l10n.addressCityHint,
                           icon: Icons.location_city,
                           required: true,
+                          l10n: l10n,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildTextField(
                           controller: _districtController,
-                          label: 'İlçe',
-                          hint: 'Kadıköy',
+                          label: l10n.addressDistrict,
+                          hint: l10n.addressDistrictHint,
                           icon: Icons.map,
                           required: true,
+                          l10n: l10n,
                         ),
                       ),
                     ],
@@ -209,17 +217,19 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                   const SizedBox(height: 12),
                   _buildTextField(
                     controller: _neighborhoodController,
-                    label: 'Mahalle',
-                    hint: 'Mahalle adı',
+                    label: l10n.addressNeighborhood,
+                    hint: l10n.addressNeighborhoodHint,
                     icon: Icons.house,
+                    l10n: l10n,
                   ),
                   const SizedBox(height: 12),
                   _buildTextField(
                     controller: _streetController,
-                    label: 'Sokak/Cadde',
-                    hint: 'Sokak veya cadde adı',
+                    label: l10n.addressStreet,
+                    hint: l10n.addressStreetHint,
                     icon: Icons.streetview,
                     required: true,
+                    l10n: l10n,
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -227,27 +237,30 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                       Expanded(
                         child: _buildTextField(
                           controller: _buildingNoController,
-                          label: 'Bina No',
+                          label: l10n.addressBuildingNo,
                           hint: '12',
                           icon: Icons.home,
+                          l10n: l10n,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildTextField(
                           controller: _floorController,
-                          label: 'Kat',
+                          label: l10n.addressFloor,
                           hint: '3',
                           icon: Icons.stairs,
+                          l10n: l10n,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildTextField(
                           controller: _apartmentNoController,
-                          label: 'Daire',
+                          label: l10n.addressApartmentNo,
                           hint: '5',
                           icon: Icons.door_front_door,
+                          l10n: l10n,
                         ),
                       ),
                     ],
@@ -255,22 +268,23 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                   const SizedBox(height: 12),
                   _buildTextField(
                     controller: _postalCodeController,
-                    label: 'Posta Kodu',
+                    label: l10n.addressPostalCode,
                     hint: '34000',
                     icon: Icons.local_post_office,
                     keyboardType: TextInputType.number,
+                    l10n: l10n,
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               _buildCard(
-                title: 'Tercihler',
+                title: l10n.addressPreferencesCard,
                 children: [
                   SwitchListTile(
                     value: _isDefault,
                     onChanged: (v) => setState(() => _isDefault = v),
-                    title: const Text('Varsayılan adres olarak ayarla'),
-                    subtitle: const Text('Siparişlerde bu adres otomatik seçilir'),
+                    title: Text(l10n.addressSetDefault),
+                    subtitle: Text(l10n.addressSetDefaultSub),
                     activeColor: AppPalette.storePrimary,
                     contentPadding: EdgeInsets.zero,
                   ),
@@ -298,7 +312,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                           ),
                         )
                       : Text(
-                          isEditing ? 'Güncelle' : 'Kaydet',
+                          isEditing ? l10n.addressUpdate : l10n.save,
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                 ),
@@ -349,6 +363,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
     IconData? icon,
     bool required = false,
     TextInputType? keyboardType,
+    AppLocalizations? l10n,
   }) {
     return TextFormField(
       controller: controller,
@@ -363,7 +378,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
       ),
       keyboardType: keyboardType,
       validator: required
-          ? (v) => (v == null || v.trim().isEmpty) ? '$label zorunludur' : null
+          ? (v) => (v == null || v.trim().isEmpty) ? (l10n?.addressRequired(label) ?? '$label zorunludur') : null
           : null,
     );
   }

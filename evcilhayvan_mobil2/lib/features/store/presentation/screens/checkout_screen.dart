@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
@@ -47,9 +48,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Future<void> _applyCoupon() async {
+    final l10n = AppLocalizations.of(context)!;
     final code = _couponController.text.trim();
     if (code.isEmpty) {
-      setState(() => _couponError = 'Lütfen bir kupon kodu girin');
+      setState(() => _couponError = l10n.checkoutErrCouponEmpty);
       return;
     }
 
@@ -75,20 +77,22 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           _couponController.clear();
         });
         if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Kupon uygulandı! ₺${_discountAmount.toStringAsFixed(2)} indirim'),
+              content: Text(l10n.checkoutCouponApplied(_discountAmount.toStringAsFixed(2))),
               backgroundColor: Colors.green,
             ),
           );
         }
       }
     } catch (e) {
-      String errorMessage = 'Kupon uygulanamadı';
+      final l10n = AppLocalizations.of(context)!;
+      String errorMessage = l10n.checkoutErrCouponFailed;
       if (e.toString().contains('404')) {
-        errorMessage = 'Geçersiz kupon kodu';
+        errorMessage = l10n.checkoutErrCouponInvalid;
       } else if (e.toString().contains('400')) {
-        errorMessage = 'Kupon bu sipariş için geçerli değil';
+        errorMessage = l10n.checkoutErrCouponNotApplicable;
       }
       setState(() => _couponError = errorMessage);
     } finally {
@@ -105,9 +109,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Future<void> _placeOrder() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_selectedAddress == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lütfen bir teslimat adresi seçin'), backgroundColor: Colors.red),
+        SnackBar(content: Text(l10n.checkoutErrNoAddress), backgroundColor: Colors.red),
       );
       return;
     }
@@ -115,25 +120,25 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     if (_paymentMethod == 'credit_card') {
       if (_cardNumberController.text.replaceAll(' ', '').length < 16) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Geçerli bir kart numarası girin'), backgroundColor: Colors.red),
+          SnackBar(content: Text(l10n.checkoutErrCardNumber), backgroundColor: Colors.red),
         );
         return;
       }
       if (_cardHolderController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Kart sahibi adını girin'), backgroundColor: Colors.red),
+          SnackBar(content: Text(l10n.checkoutErrCardHolder), backgroundColor: Colors.red),
         );
         return;
       }
       if (_expiryController.text.length < 5) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Geçerli bir son kullanma tarihi girin'), backgroundColor: Colors.red),
+          SnackBar(content: Text(l10n.checkoutErrExpiry), backgroundColor: Colors.red),
         );
         return;
       }
       if (_cvvController.text.length < 3) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Geçerli bir CVV girin'), backgroundColor: Colors.red),
+          SnackBar(content: Text(l10n.checkoutErrCvv), backgroundColor: Colors.red),
         );
         return;
       }
@@ -147,7 +152,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
       if (items.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sepetiniz boş'), backgroundColor: Colors.red),
+          SnackBar(content: Text(l10n.checkoutErrEmptyCart), backgroundColor: Colors.red),
         );
         return;
       }
@@ -193,15 +198,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     child: const Icon(Icons.check_circle, color: Colors.green, size: 64),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Siparişiniz Alındı!',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  Text(
+                    l10n.checkoutOrderSuccess,
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Siparişiniz başarıyla oluşturuldu. Siparişlerim sayfasından takip edebilirsiniz.',
+                  Text(
+                    l10n.checkoutOrderSuccessDesc,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ],
               ),
@@ -217,7 +222,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       backgroundColor: AppPalette.storePrimary,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: const Text('Siparişlerime Git'),
+                    child: Text(l10n.checkoutGoToOrders),
                   ),
                 ),
               ],
@@ -228,7 +233,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Sipariş oluşturulamadı: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(l10n.checkoutOrderError(e.toString())), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -238,13 +243,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final cartState = ref.watch(cartProvider);
     final addressesAsync = ref.watch(addressNotifierProvider);
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('Ödeme'),
+        title: Text(l10n.checkoutTitle),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -256,7 +262,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           children: [
             // Teslimat Adresi
             _buildSectionCard(
-              title: 'Teslimat Adresi',
+              title: l10n.checkoutDeliveryAddress,
               icon: Icons.location_on,
               child: addressesAsync.when(
                 data: (addresses) {
@@ -281,19 +287,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text('Adresler yüklenemedi: $e'),
+                error: (e, _) => Text(l10n.checkoutAddressLoadError(e.toString())),
               ),
             ),
             const SizedBox(height: 16),
 
             // Ödeme Yöntemi
             _buildSectionCard(
-              title: 'Ödeme Yöntemi',
+              title: l10n.checkoutPaymentMethod,
               icon: Icons.payment,
               child: Column(
                 children: [
-                  _buildPaymentOption('credit_card', 'Kredi Kartı', Icons.credit_card),
-                  _buildPaymentOption('cash', 'Kapıda Ödeme', Icons.money),
+                  _buildPaymentOption('credit_card', l10n.checkoutCreditCard, Icons.credit_card),
+                  _buildPaymentOption('cash', l10n.checkoutCashOnDelivery, Icons.money),
                 ],
               ),
             ),
@@ -302,14 +308,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             // Kart Bilgileri
             if (_paymentMethod == 'credit_card') ...[
               _buildSectionCard(
-                title: 'Kart Bilgileri',
+                title: l10n.checkoutCardInfo,
                 icon: Icons.credit_card,
                 child: Column(
                   children: [
                     TextField(
                       controller: _cardNumberController,
-                      decoration: const InputDecoration(
-                        labelText: 'Kart Numarası',
+                      decoration: InputDecoration(
+                        labelText: l10n.checkoutCardNumber,
                         hintText: '1234 5678 9012 3456',
                         prefixIcon: Icon(Icons.credit_card),
                       ),
@@ -323,10 +329,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     const SizedBox(height: 12),
                     TextField(
                       controller: _cardHolderController,
-                      decoration: const InputDecoration(
-                        labelText: 'Kart Sahibi',
-                        hintText: 'AD SOYAD',
-                        prefixIcon: Icon(Icons.person),
+                      decoration: InputDecoration(
+                        labelText: l10n.checkoutCardHolder,
+                        hintText: l10n.checkoutCardHolderHint,
+                        prefixIcon: const Icon(Icons.person),
                       ),
                       textCapitalization: TextCapitalization.characters,
                     ),
@@ -336,10 +342,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         Expanded(
                           child: TextField(
                             controller: _expiryController,
-                            decoration: const InputDecoration(
-                              labelText: 'Son Kullanma',
-                              hintText: 'AA/YY',
-                              prefixIcon: Icon(Icons.calendar_today),
+                            decoration: InputDecoration(
+                              labelText: l10n.checkoutExpiry,
+                              hintText: l10n.checkoutExpiryHint,
+                              prefixIcon: const Icon(Icons.calendar_today),
                             ),
                             keyboardType: TextInputType.number,
                             inputFormatters: [
@@ -376,7 +382,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
             // Kupon Kodu
             _buildSectionCard(
-              title: 'İndirim Kuponu',
+              title: l10n.checkoutCoupon,
               icon: Icons.local_offer,
               child: _appliedCouponCode != null
                   ? Container(
@@ -399,7 +405,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                   style: const TextStyle(fontWeight: FontWeight.bold),
                                 ),
                                 Text(
-                                  '₺${_discountAmount.toStringAsFixed(2)} indirim uygulandı',
+                                  l10n.checkoutCouponDiscount(_discountAmount.toStringAsFixed(2)),
                                   style: TextStyle(fontSize: 12, color: Colors.green[700]),
                                 ),
                               ],
@@ -421,7 +427,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               child: TextField(
                                 controller: _couponController,
                                 decoration: InputDecoration(
-                                  hintText: 'Kupon kodunuz',
+                                  hintText: l10n.checkoutCouponHint,
                                   border: const OutlineInputBorder(),
                                   errorText: _couponError,
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -449,7 +455,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                           valueColor: AlwaysStoppedAnimation(Colors.white),
                                         ),
                                       )
-                                    : const Text('Uygula'),
+                                    : Text(l10n.checkoutApply),
                               ),
                             ),
                           ],
@@ -461,13 +467,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
             // Sipariş Notu
             _buildSectionCard(
-              title: 'Sipariş Notu (Opsiyonel)',
+              title: l10n.checkoutOrderNote,
               icon: Icons.note,
               child: TextField(
                 controller: _notesController,
-                decoration: const InputDecoration(
-                  hintText: 'Siparişinizle ilgili notunuz...',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  hintText: l10n.checkoutOrderNoteHint,
+                  border: const OutlineInputBorder(),
                 ),
                 maxLines: 2,
               ),
@@ -476,7 +482,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
             // Sipariş Özeti
             _buildSectionCard(
-              title: 'Sipariş Özeti',
+              title: l10n.checkoutOrderSummary,
               icon: Icons.receipt_long,
               child: cartState.when(
                 data: (cart) {
@@ -506,7 +512,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Ara Toplam', style: TextStyle(color: Colors.grey)),
+                          Text(l10n.checkoutSubtotal, style: const TextStyle(color: Colors.grey)),
                           Text('₺${cart.total.toStringAsFixed(2)}'),
                         ],
                       ),
@@ -514,9 +520,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Kargo', style: TextStyle(color: Colors.grey)),
+                          Text(l10n.checkoutShipping, style: const TextStyle(color: Colors.grey)),
                           Text(
-                            cart.total >= 200 ? 'Ücretsiz' : '₺29.99',
+                            cart.total >= 200 ? l10n.checkoutFreeShipping : '₺29.99',
                             style: TextStyle(
                               color: cart.total >= 200 ? Colors.green : null,
                             ),
@@ -530,7 +536,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           children: [
                             Row(
                               children: [
-                                const Text('İndirim', style: TextStyle(color: Colors.green)),
+                                Text(l10n.checkoutDiscount, style: const TextStyle(color: Colors.green)),
                                 const SizedBox(width: 4),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -556,9 +562,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Toplam',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          Text(
+                            l10n.checkoutTotal,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           Text(
                             '₺${(cart.total + (cart.total >= 200 ? 0 : 29.99) - _discountAmount).toStringAsFixed(2)}',
@@ -574,7 +580,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Text('Sepet yüklenemedi: $e'),
+                error: (e, _) => Text(l10n.checkoutCartLoadError(e.toString())),
               ),
             ),
             const SizedBox(height: 100),
@@ -614,9 +620,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         valueColor: AlwaysStoppedAnimation(Colors.white),
                       ),
                     )
-                  : const Text(
-                      'Siparişi Tamamla',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  : Text(
+                      l10n.checkoutCompleteOrder,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
             ),
           ),
@@ -706,9 +712,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             color: AppPalette.storePrimary,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text(
-                            'Varsayılan',
-                            style: TextStyle(color: Colors.white, fontSize: 10),
+                          child: Text(
+                            AppLocalizations.of(context)!.checkoutDefaultAddress,
+                            style: const TextStyle(color: Colors.white, fontSize: 10),
                           ),
                         ),
                       ],
@@ -747,7 +753,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         }
       },
       icon: const Icon(Icons.add),
-      label: const Text('Yeni Adres Ekle'),
+      label: Text(AppLocalizations.of(context)!.checkoutAddNewAddress),
       style: OutlinedButton.styleFrom(
         foregroundColor: AppPalette.storePrimary,
         side: BorderSide(color: AppPalette.storePrimary.withOpacity(0.5)),

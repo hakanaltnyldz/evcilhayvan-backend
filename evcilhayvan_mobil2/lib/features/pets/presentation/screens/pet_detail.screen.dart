@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
@@ -120,7 +121,7 @@ class PetDetailScreen extends ConsumerWidget {
                                 extra: {'petName': pet.name},
                               ),
                               icon: const Icon(Icons.health_and_safety_outlined),
-                              label: const Text('Sağlık Günlüğü'),
+                              label: Text(AppLocalizations.of(context)!.petDetailHealthJournal),
                               style: OutlinedButton.styleFrom(
                                 minimumSize: const Size.fromHeight(48),
                                 shape: RoundedRectangleBorder(
@@ -166,7 +167,7 @@ class PetDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'İlan yüklenemedi',
+                  AppLocalizations.of(context)!.petDetailLoadError,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
@@ -181,7 +182,7 @@ class PetDetailScreen extends ConsumerWidget {
                 ElevatedButton.icon(
                   onPressed: () => context.pop(),
                   icon: const Icon(Icons.arrow_back),
-                  label: const Text('Geri Dön'),
+                  label: Text(AppLocalizations.of(context)!.goBack),
                 ),
               ],
             ),
@@ -192,9 +193,12 @@ class PetDetailScreen extends ConsumerWidget {
   }
 
   void _showQrCard(BuildContext context, Pet pet) {
-    final ageLabel = pet.ageMonths >= 12
-        ? '${pet.ageMonths ~/ 12} yas${pet.ageMonths % 12 > 0 ? ' ${pet.ageMonths % 12} ay' : ''}'
-        : '${pet.ageMonths} aylik';
+    final l10n = AppLocalizations.of(context)!;
+    final ageInYears = pet.ageMonths ~/ 12;
+    final remainingMonths = pet.ageMonths % 12;
+    final ageLabel = ageInYears > 0
+        ? l10n.petDetailAgeYearsMonths(ageInYears, remainingMonths)
+        : l10n.petDetailAgeMonths(pet.ageMonths);
 
     showDialog(
       context: context,
@@ -265,13 +269,13 @@ class PetDetailScreen extends ConsumerWidget {
                 ),
                 child: Column(
                   children: [
-                    _QrInfoRow(label: 'Yas', value: ageLabel, icon: Icons.cake_outlined),
+                    _QrInfoRow(label: l10n.petDetailQrAge, value: ageLabel, icon: Icons.cake_outlined),
                     const SizedBox(height: 6),
-                    _QrInfoRow(label: 'Cinsiyet', value: pet.gender, icon: Icons.wc_outlined),
+                    _QrInfoRow(label: l10n.petDetailQrGender, value: pet.gender, icon: Icons.wc_outlined),
                     const SizedBox(height: 6),
                     _QrInfoRow(
-                      label: 'Asi',
-                      value: pet.vaccinated ? 'Tam' : 'Eksik',
+                      label: l10n.petDetailQrVaccine,
+                      value: pet.vaccinated ? l10n.petDetailQrVaccineFull : l10n.petDetailQrVaccinePartial,
                       icon: Icons.vaccines_outlined,
                       valueColor: pet.vaccinated ? Colors.green : Colors.orange,
                     ),
@@ -284,7 +288,7 @@ class PetDetailScreen extends ConsumerWidget {
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: pet.id));
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('ID panoya kopyalandi'), duration: Duration(seconds: 2)),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.petDetailQrIdCopied), duration: const Duration(seconds: 2)),
                   );
                 },
                 icon: const Icon(Icons.copy, size: 16),
@@ -373,12 +377,13 @@ class PetDetailScreen extends ConsumerWidget {
           ),
           child: IconButton(
             icon: const Icon(Icons.share_rounded, color: Colors.white),
-            tooltip: 'Paylaş',
+            tooltip: AppLocalizations.of(context)!.petDetailShare,
             onPressed: () {
               HapticFeedback.lightImpact();
+              final l10n = AppLocalizations.of(context)!;
               Share.share(
-                '${pet.name} - Pati Arkadaşı uygulamasında keşfet!',
-                subject: '${pet.name} ilanı',
+                l10n.petDetailShareText(pet.name),
+                subject: l10n.petDetailShareSubject(pet.name),
               );
             },
           ),
@@ -391,7 +396,7 @@ class PetDetailScreen extends ConsumerWidget {
           ),
           child: IconButton(
             icon: const Icon(Icons.qr_code_rounded, color: Colors.white),
-            tooltip: 'QR Kimlik Karti',
+            tooltip: AppLocalizations.of(context)!.petDetailQrCard,
             onPressed: () => _showQrCard(context, pet),
           ),
         ),
@@ -499,7 +504,9 @@ class PetDetailScreen extends ConsumerWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            pet.isActive ? 'Yayında' : 'Pasif',
+            pet.isActive
+                ? AppLocalizations.of(context)!.petDetailStatusActive
+                : AppLocalizations.of(context)!.petDetailStatusInactive,
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
@@ -536,7 +543,9 @@ class PetDetailScreen extends ConsumerWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            isMating ? 'Eşleştirme' : 'Sahiplendirme',
+            isMating
+                ? AppLocalizations.of(context)!.advertTypeMating
+                : AppLocalizations.of(context)!.advertTypeAdoption,
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
@@ -577,8 +586,8 @@ class PetDetailScreen extends ConsumerWidget {
             Expanded(
               child: Text(
                 hasCoordinates
-                    ? 'Konum paylaşıldı'
-                    : 'Konum bilgisi yok',
+                    ? AppLocalizations.of(context)!.petDetailLocationShared
+                    : AppLocalizations.of(context)!.petDetailLocationNone,
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.9),
                   fontSize: 14,
@@ -616,7 +625,7 @@ class PetDetailScreen extends ConsumerWidget {
                 ),
               ),
               Text(
-                pet.breed.isNotEmpty ? pet.breed : 'Cins belirtilmemiş',
+                pet.breed.isNotEmpty ? pet.breed : AppLocalizations.of(context)!.petDetailBreedUnspecified,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[600],
                 ),
@@ -629,18 +638,19 @@ class PetDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildQuickInfoCards(BuildContext context, Pet pet) {
+    final l10n = AppLocalizations.of(context)!;
     final ageInYears = pet.ageMonths ~/ 12;
     final remainingMonths = pet.ageMonths % 12;
     final ageLabel = ageInYears > 0
-        ? '$ageInYears yaş${remainingMonths > 0 ? ' $remainingMonths ay' : ''}'
-        : '${pet.ageMonths} aylık';
+        ? l10n.petDetailAgeYearsMonths(ageInYears, remainingMonths)
+        : l10n.petDetailAgeMonths(pet.ageMonths);
 
     return Row(
       children: [
         Expanded(
           child: _QuickInfoCard(
             icon: Icons.cake,
-            label: 'Yaş',
+            label: l10n.petDetailAge,
             value: ageLabel,
             color: Colors.orange,
           ),
@@ -651,7 +661,7 @@ class PetDetailScreen extends ConsumerWidget {
             icon: pet.gender.toLowerCase().contains('erkek')
                 ? Icons.male
                 : Icons.female,
-            label: 'Cinsiyet',
+            label: l10n.petDetailGender,
             value: pet.gender,
             color: pet.gender.toLowerCase().contains('erkek')
                 ? Colors.blue
@@ -662,8 +672,8 @@ class PetDetailScreen extends ConsumerWidget {
         Expanded(
           child: _QuickInfoCard(
             icon: Icons.vaccines,
-            label: 'Aşı',
-            value: pet.vaccinated ? 'Tam' : 'Eksik',
+            label: l10n.petDetailVaccine,
+            value: pet.vaccinated ? l10n.petDetailVaccineFull : l10n.petDetailVaccineMissing,
             color: pet.vaccinated ? Colors.green : Colors.red,
           ),
         ),
@@ -706,7 +716,7 @@ class PetDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                'Hakkında',
+                AppLocalizations.of(context)!.petDetailAbout,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -761,7 +771,7 @@ class PetDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                'Detaylı Bilgiler',
+                AppLocalizations.of(context)!.petDetailDetails,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -771,32 +781,34 @@ class PetDetailScreen extends ConsumerWidget {
           const SizedBox(height: 20),
           _DetailRow(
             icon: Icons.category,
-            label: 'Tür',
+            label: AppLocalizations.of(context)!.petDetailSpecies,
             value: pet.species,
           ),
           const Divider(height: 24),
           _DetailRow(
             icon: Icons.badge,
-            label: 'Cins',
-            value: pet.breed.isNotEmpty ? pet.breed : 'Belirtilmemiş',
+            label: AppLocalizations.of(context)!.petDetailBreed,
+            value: pet.breed.isNotEmpty ? pet.breed : AppLocalizations.of(context)!.petDetailBreedUnspecified,
           ),
           const Divider(height: 24),
           _DetailRow(
             icon: Icons.transgender,
-            label: 'Cinsiyet',
+            label: AppLocalizations.of(context)!.petDetailGender,
             value: pet.gender,
           ),
           const Divider(height: 24),
           _DetailRow(
             icon: Icons.calendar_month,
-            label: 'Yaş',
-            value: '${pet.ageMonths} ay',
+            label: AppLocalizations.of(context)!.petDetailAge,
+            value: AppLocalizations.of(context)!.petDetailAgeMonths(pet.ageMonths),
           ),
           const Divider(height: 24),
           _DetailRow(
             icon: Icons.campaign,
-            label: 'İlan Türü',
-            value: pet.advertType == 'mating' ? 'Eşleştirme' : 'Sahiplendirme',
+            label: AppLocalizations.of(context)!.petDetailAdvertType,
+            value: pet.advertType == 'mating'
+                ? AppLocalizations.of(context)!.advertTypeMating
+                : AppLocalizations.of(context)!.advertTypeAdoption,
           ),
         ],
       ),
@@ -805,6 +817,7 @@ class PetDetailScreen extends ConsumerWidget {
 
   Widget _buildHealthSection(BuildContext context, Pet pet) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -838,7 +851,7 @@ class PetDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                'Sağlık Bilgileri',
+                l10n.petDetailHealth,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -851,8 +864,8 @@ class PetDetailScreen extends ConsumerWidget {
               Expanded(
                 child: _HealthCard(
                   icon: Icons.vaccines,
-                  title: 'Aşı Durumu',
-                  value: pet.vaccinated ? 'Aşıları Tam' : 'Aşı Gerekli',
+                  title: l10n.petDetailVaccineStatus,
+                  value: pet.vaccinated ? l10n.petDetailVaccineComplete : l10n.petDetailVaccineNeeded,
                   isPositive: pet.vaccinated,
                 ),
               ),
@@ -860,8 +873,8 @@ class PetDetailScreen extends ConsumerWidget {
               Expanded(
                 child: _HealthCard(
                   icon: Icons.verified,
-                  title: 'İlan Durumu',
-                  value: pet.isActive ? 'Aktif' : 'Pasif',
+                  title: l10n.petDetailListingStatus,
+                  value: pet.isActive ? l10n.petDetailActive : l10n.petDetailInactive,
                   isPositive: pet.isActive,
                 ),
               ),
@@ -874,7 +887,8 @@ class PetDetailScreen extends ConsumerWidget {
 
   Widget _buildOwnerSection(BuildContext context, Pet pet) {
     final theme = Theme.of(context);
-    final ownerName = pet.owner?.name ?? 'Sahip Bilgisi Yok';
+    final l10n = AppLocalizations.of(context)!;
+    final ownerName = pet.owner?.name ?? l10n.petDetailOwnerUnknown;
     final avatarLetter = ownerName.isNotEmpty ? ownerName[0].toUpperCase() : '?';
 
     return GestureDetector(
@@ -934,7 +948,7 @@ class PetDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'İlan Sahibi',
+                  l10n.petDetailOwnerLabel,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: Colors.grey[600],
                   ),
@@ -962,6 +976,7 @@ class PetDetailScreen extends ConsumerWidget {
 
   Widget _buildOwnerBanner(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -995,7 +1010,7 @@ class PetDetailScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Bu ilan size ait!',
+                  l10n.petDetailOwnerBannerTitle,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.amber.shade800,
@@ -1003,7 +1018,7 @@ class PetDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'İlanınızı güncel tutarak daha fazla ilgi çekebilirsiniz.',
+                  l10n.petDetailOwnerBannerDesc,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: Colors.amber.shade700,
                   ),
@@ -1189,14 +1204,14 @@ class _LocationSection extends StatelessWidget {
       } else {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Harita uygulaması açılamadı')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.petDetailMapOpenError)),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.error}: $e')),
         );
       }
     }
@@ -1250,7 +1265,7 @@ class _LocationSection extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Konum',
+                  AppLocalizations.of(context)!.petDetailLocation,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -1259,7 +1274,7 @@ class _LocationSection extends StatelessWidget {
               TextButton.icon(
                 onPressed: () => _openInMaps(context),
                 icon: const Icon(Icons.open_in_new, size: 16),
-                label: const Text('Haritada Aç'),
+                label: Text(AppLocalizations.of(context)!.petDetailOpenInMap),
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.indigo,
                 ),
@@ -1367,7 +1382,7 @@ class _LocationSection extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Haritada görüntülemek için dokunun',
+                              AppLocalizations.of(context)!.petDetailMapTapHint,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: Colors.indigo.shade600,
                                 fontWeight: FontWeight.w500,
@@ -1435,6 +1450,7 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
   @override
   Widget build(BuildContext context) {
     final isMating = widget.pet.advertType == 'mating';
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).padding.bottom + 16),
@@ -1467,9 +1483,9 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
                         ),
                       ),
                       icon: const Icon(Icons.message),
-                      label: const Text(
-                        'Mesaj',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      label: Text(
+                        l10n.petDetailMessage,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                       ),
                     ),
             ),
@@ -1490,9 +1506,9 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
                         elevation: 0,
                       ),
                       icon: const Icon(Icons.pets),
-                      label: const Text(
-                        'Sahiplen',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      label: Text(
+                        l10n.petDetailAdoptBtn,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                       ),
                     ),
             ),
@@ -1512,9 +1528,9 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
                         elevation: 0,
                       ),
                       icon: const Icon(Icons.favorite),
-                      label: const Text(
-                        'Eşleştirme İsteği Gönder',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      label: Text(
+                        l10n.petDetailMatingRequest,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                     ),
             ),
@@ -1525,21 +1541,22 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
 
   // Sahiplendirme ilanı için direkt mesaj gönderme
   Future<void> _handleSendMessage() async {
+    final l10n = AppLocalizations.of(context)!;
     final currentUser = ref.read(authProvider);
     final owner = widget.pet.owner;
 
     if (currentUser == null) {
-      _showError('Mesaj göndermek için giriş yapmalısınız.');
+      _showError(l10n.petDetailErrMsgLogin);
       return;
     }
 
     if (owner == null) {
-      _showError('İlan sahibi bilgisi bulunamadı.');
+      _showError(l10n.petDetailErrOwnerNotFound);
       return;
     }
 
     if (owner.id == currentUser.id) {
-      _showError('Kendi ilanınıza mesaj gönderemezsiniz.');
+      _showError(l10n.petDetailErrSelfMessage);
       return;
     }
 
@@ -1591,10 +1608,11 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
       }
 
       // Özel hata mesajları
+      final l10n2 = AppLocalizations.of(context)!;
       if (errorMessage.contains('not found') || errorMessage.contains('bulunamadi')) {
-        errorMessage = 'İlan veya kullanıcı bulunamadı';
+        errorMessage = l10n2.errorNotFound;
       } else if (errorMessage.contains('network') || errorMessage.contains('SocketException')) {
-        errorMessage = 'İnternet bağlantınızı kontrol edin';
+        errorMessage = l10n2.errorNetwork;
       }
 
       _showError(errorMessage);
@@ -1615,7 +1633,7 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
     final currentUser = ref.read(authProvider);
 
     if (currentUser == null) {
-      _showError('Eşleştirme isteği göndermek için giriş yapmalısınız.');
+      _showError(AppLocalizations.of(context)!.petDetailErrMatingLogin);
       return;
     }
 
@@ -1658,7 +1676,7 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      _showError('Bir hata oluştu: $e');
+      _showError('${AppLocalizations.of(context)!.errorGeneric} $e');
     }
   }
 
@@ -1690,16 +1708,16 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
               child: const Icon(Icons.pets, color: Colors.orange),
             ),
             const SizedBox(width: 12),
-            const Text('İlan Gerekli'),
+            Text(AppLocalizations.of(ctx)!.petDetailNoPetDialog),
           ],
         ),
-        content: const Text(
-          'Eşleştirme isteği göndermek için önce bir eşleştirme ilanı oluşturmalısınız.',
+        content: Text(
+          AppLocalizations.of(ctx)!.petDetailNoPetContent,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('İptal'),
+            child: Text(AppLocalizations.of(ctx)!.cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -1710,7 +1728,7 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
               backgroundColor: Colors.pink,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('İlan Oluştur'),
+            child: Text(AppLocalizations.of(ctx)!.petDetailCreateListing),
           ),
         ],
       ),
@@ -1733,16 +1751,16 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
               child: const Icon(Icons.warning_amber, color: Colors.orange),
             ),
             const SizedBox(width: 12),
-            const Text('Aynı Tür Gerekli'),
+            Text(AppLocalizations.of(ctx)!.petDetailSameSpeciesTitle),
           ],
         ),
         content: Text(
-          'Bu ilan "${widget.pet.species}" türünde. Eşleştirme isteği gönderebilmek için aynı türden bir ilanınız olmalı.',
+          AppLocalizations.of(ctx)!.petDetailSameSpeciesContent(widget.pet.species),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('İptal'),
+            child: Text(AppLocalizations.of(ctx)!.cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -1756,7 +1774,7 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
               backgroundColor: Colors.pink,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('İlan Oluştur'),
+            child: Text(AppLocalizations.of(ctx)!.petDetailCreateListing),
           ),
         ],
       ),
@@ -1785,7 +1803,7 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
       _showError(e.message);
     } catch (e) {
       if (!mounted) return;
-      _showError('Eşleştirme isteği gönderilemedi: $e');
+      _showError(AppLocalizations.of(context)!.petDetailMatingGenericError(e.toString()));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -1809,13 +1827,13 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
               child: const Icon(Icons.check_circle, color: Colors.green),
             ),
             const SizedBox(width: 12),
-            const Expanded(child: Text('İstek Gönderildi!')),
+            Expanded(child: Text(AppLocalizations.of(ctx)!.petDetailSuccessDialogTitle)),
           ],
         ),
         content: Text(
           result.didMatch
-              ? 'Tebrikler! Karşılıklı eşleşme oluştu. Artık mesajlaşabilirsiniz.'
-              : 'Eşleştirme isteğiniz gönderildi. Karşı tarafın onayını bekliyorsunuz.',
+              ? AppLocalizations.of(ctx)!.petDetailSuccessDialogMatch
+              : AppLocalizations.of(ctx)!.petDetailSuccessDialogPending,
         ),
         actions: [
           if (result.didMatch && result.request?.conversationId != null)
@@ -1831,12 +1849,12 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
                 backgroundColor: Colors.green,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Mesajlaşmaya Başla'),
+              child: Text(AppLocalizations.of(ctx)!.petDetailSuccessDialogStartChat),
             )
           else
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Tamam'),
+              child: Text(AppLocalizations.of(ctx)!.confirm),
             ),
         ],
       ),
@@ -1914,15 +1932,15 @@ class _PetSelectionModal extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Hayvanınızı Seçin',
-                            style: TextStyle(
+                          Text(
+                            AppLocalizations.of(context)!.petDetailSelectPetTitle,
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
-                            'Eşleştirme için $targetSpecies türünden seçim yapın',
+                            AppLocalizations.of(context)!.petDetailSelectPetSubtitle(targetSpecies),
                             style: TextStyle(
                               fontSize: 13,
                               color: Colors.grey[600],
@@ -2062,7 +2080,7 @@ class _PetSelectionCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${pet.ageMonths} ay',
+                        AppLocalizations.of(context)!.petDetailAgeMonths(pet.ageMonths),
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[500],

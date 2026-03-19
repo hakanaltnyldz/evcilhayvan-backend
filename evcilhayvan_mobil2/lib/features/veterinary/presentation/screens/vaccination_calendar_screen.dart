@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -25,9 +26,10 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
   Widget build(BuildContext context) {
     final calendarAsync = ref.watch(petVaccinationCalendarProvider(widget.petId));
 
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Aşı Takvimi'),
+        title: Text(l10n.vacCalendarTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -55,7 +57,7 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
       ),
       body: calendarAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Hata: $e')),
+        error: (e, _) => Center(child: Text(l10n.vacCalendarLoadErr(e.toString()))),
         data: (items) {
           if (items.isEmpty) {
             return Center(
@@ -64,12 +66,12 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
                 children: [
                   Icon(Icons.vaccines, size: 64, color: AppPalette.onSurfaceVariant.withOpacity(0.3)),
                   const SizedBox(height: 16),
-                  const Text('Aşı takvimi bulunamadı'),
+                  Text(l10n.vacCalendarEmpty),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () => context.pushNamed('vaccination-add', pathParameters: {'petId': widget.petId}),
                     icon: const Icon(Icons.add),
-                    label: const Text('Aşı Kaydı Ekle'),
+                    label: Text(l10n.vacCalendarAddRecord),
                   ),
                 ],
               ),
@@ -180,7 +182,7 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
           child: selectedItems.isEmpty
               ? Center(
                   child: Text(
-                    _selectedDay != null ? 'Bu gün için kayıt yok' : 'Bir güne tıklayın',
+                    _selectedDay != null ? AppLocalizations.of(context)!.vacCalendarNoRecord : AppLocalizations.of(context)!.vacCalendarClickDay,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -272,7 +274,7 @@ class _VaccinationEventTile extends StatelessWidget {
                   'vaccination-add',
                   pathParameters: {'petId': petId},
                 ),
-                child: const Text('Ekle'),
+                child: Text(AppLocalizations.of(context)!.vacCalendarAdd),
               )
             : const Icon(Icons.check_circle, color: AppPalette.tertiary),
       ),
@@ -311,6 +313,7 @@ class _VaccinationCalendarCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final schedule = item.schedule;
 
     return Container(
@@ -360,11 +363,11 @@ class _VaccinationCalendarCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    _infoChip('İlk Doz: ${schedule.firstDoseMonths} ay', Icons.calendar_month, theme),
+                    _infoChip(l10n.vacCalendarFirstDose(schedule.firstDoseMonths), Icons.calendar_month, theme),
                     if (schedule.repeatIntervalMonths != null)
-                      _infoChip('Tekrar: ${schedule.repeatIntervalMonths} ay', Icons.repeat, theme),
+                      _infoChip(l10n.vacCalendarRepeat(schedule.repeatIntervalMonths!), Icons.repeat, theme),
                     if (schedule.isRequired)
-                      _infoChip('Zorunlu', Icons.priority_high, theme, color: Colors.red),
+                      _infoChip(l10n.vacCalendarRequired, Icons.priority_high, theme, color: Colors.red),
                   ],
                 ),
                 if (item.nextDueDate != null) ...[
@@ -374,7 +377,7 @@ class _VaccinationCalendarCard extends StatelessWidget {
                       const Icon(Icons.event_note, size: 16, color: AppPalette.onSurfaceVariant),
                       const SizedBox(width: 6),
                       Text(
-                        'Sonraki: ${item.nextDueDate!.day}.${item.nextDueDate!.month}.${item.nextDueDate!.year}',
+                        l10n.vacCalendarNext('${item.nextDueDate!.day}.${item.nextDueDate!.month}.${item.nextDueDate!.year}'),
                         style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
                       ),
                     ],

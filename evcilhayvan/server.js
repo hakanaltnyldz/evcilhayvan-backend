@@ -51,6 +51,7 @@ import { startVaccinationReminderJob } from "./src/services/vaccinationReminderS
 import { seedVaccinationSchedules } from "./src/services/vaccinationSeedService.js";
 import { startBirthdayReminderJob } from "./src/services/birthdayReminderService.js";
 import { startAppointmentReminderJob } from "./src/services/appointmentReminderService.js";
+import { startAdvertExpiryReminderJob } from "./src/services/advertExpiryReminderService.js";
 import { initFcm } from "./src/utils/fcm.js";
 
 // --- Firebase Admin init (optional) ---
@@ -226,6 +227,8 @@ export async function startServer() {
       startBirthdayReminderJob(io);
       // Randevu hatirlatma job'ini baslat (24h once FCM + socket)
       startAppointmentReminderJob(io);
+      // İlan süresi dolmak üzere olanlar için uyarı gönder (30 günlük süre)
+      startAdvertExpiryReminderJob(io);
     });
   } catch (err) {
     console.error("Mongo connection error:", err.message);
