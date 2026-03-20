@@ -2721,4 +2721,1936 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get vetSearchNoResults => 'Sonuç bulunamadı';
+
+  @override
+  String get vetHomeTabSearch => 'Ara';
+
+  @override
+  String get vetHomeTabAppointments => 'Randevular';
+
+  @override
+  String get vetHomeTabVaccine => 'Aşı Takvimi';
+
+  @override
+  String get vetHomeSearchHint => 'Veteriner kliniği ara...';
+
+  @override
+  String get vetHomeNearMe => 'Yakınımda';
+
+  @override
+  String get vetHomeSaveClinic => 'Klinik Kaydet';
+
+  @override
+  String get vetHomeGoogleSearch => 'Google ile Ara';
+
+  @override
+  String get vetHomeReminders => 'Hatırlatmalar';
+
+  @override
+  String get vetHomeNearbyTitle => 'Yakınındaki Veterinerler';
+
+  @override
+  String get vetHomeNearbyPermRequired =>
+      'Yakın veterinerleri görmek için konum izni verin';
+
+  @override
+  String get vetHomeNearbyEmpty => 'Yakında veteriner bulunamadı';
+
+  @override
+  String get vetHomeApptsEmpty => 'Henüz randevunuz yok';
+
+  @override
+  String get vetHomeApptsEmptyDesc => 'Veteriner arayın ve randevu alın';
+
+  @override
+  String get vetHomeVaccineTitle => 'Aşı Hatırlatmaları';
+
+  @override
+  String get vetHomeVaccineEmpty => 'Yaklaşan aşı hatırlatması yok';
+
+  @override
+  String get vetHomeVaccineEmptyDesc =>
+      'Evcil hayvanınızın profil sayfasından aşı takvimini görüntüleyin';
+
+  @override
+  String get vetHomeVaccineOverdue => 'Gecikti';
+
+  @override
+  String get vetHomeVaccineUpcoming => 'Yaklaşıyor';
+
+  @override
+  String vetHomeLoadError(String error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get storeHomeLive => 'Canlı Mağaza';
+
+  @override
+  String get storeHomeLiveDesc => 'Gerçek mağazalar ve gerçek ürünler burada.';
+
+  @override
+  String get storeHomeQuickExplore => 'Hızlı keşfet';
+
+  @override
+  String get storeHomeAll => 'Tümü';
+
+  @override
+  String get storeHomeFeatured => 'Öne çıkan mağazalar';
+
+  @override
+  String get storeHomeNoDesc => 'Açıklama yok.';
+
+  @override
+  String get storeHomeGoToStore => 'Mağazaya git';
+
+  @override
+  String get storeHomeProducts => 'Ürünler';
+
+  @override
+  String get storeHomeLatest => 'En Yeni';
+
+  @override
+  String get storeNoDescAdded => 'Açıklama eklenmemiş.';
+
+  @override
+  String get storeHomeCategoryLoadErr => 'Kategoriler yüklenemedi.';
+
+  @override
+  String get storeHomeFeaturedEmpty => 'Şimdilik öne çıkan mağaza yok.';
+
+  @override
+  String get storeHomeStoresLoadErr => 'Mağazalar yüklenemedi.';
+
+  @override
+  String get storeHomeProductsEmpty => 'Ürün bulunamadı';
+
+  @override
+  String get storeHomeProductsNotFound =>
+      'Arama kriterlerinize uygun ürün yok.';
+
+  @override
+  String get storeHomeProductsNone => 'Henüz ürün eklenmemiş.';
+
+  @override
+  String get storeHomeProductsLoadErr => 'Ürünler yüklenemedi.';
+
+  @override
+  String get storeHomeFiltersClear => 'Filtreleri temizle';
+
+  @override
+  String storeHomeMyStoreLoadErr(String error) {
+    return 'Mağazanız alınamadı: $error';
+  }
+
+  @override
+  String get storeHomeCategoryNotFound => 'Kategori bulunamadı.';
+
+  @override
+  String get storeHomeSearchHint => 'Ürün veya mağaza ara';
+
+  @override
+  String get storeHomeSearchBtn => 'Ara';
+
+  @override
+  String get storeHomeOpenStore => 'Mağaza aç, ürünlerini vitrine çıkar!';
+
+  @override
+  String get storeHomeOpenStoreDesc =>
+      'Dakikalar içinde başvur, petseverlere ulaş.';
+
+  @override
+  String get storeHomeOpenStoreBtn => 'Mağaza Aç';
+
+  @override
+  String get storeHomeRetry => 'Yeniden dene';
+
+  @override
+  String get storeHomeSoldOut => 'Tükendi';
+
+  @override
+  String storeHomeLastStock(int count) {
+    return 'Son $count';
+  }
+
+  @override
+  String get storePriceAsc => 'Fiyat ↑';
+
+  @override
+  String get storePriceDesc => 'Fiyat ↓';
+
+  @override
+  String get storeNameAz => 'A–Z';
+
+  @override
+  String get storesListTitle => 'Mağazalar';
+
+  @override
+  String get storesListSearchHint => 'Mağaza ara...';
+
+  @override
+  String get storesListEmpty => 'Henüz mağaza yok';
+
+  @override
+  String get storesListSearchEmpty => 'Arama sonucu bulunamadı';
+
+  @override
+  String get storesListLoadErr => 'Mağazalar yüklenemedi';
+
+  @override
+  String get storesListRetry => 'Yeniden Dene';
+
+  @override
+  String get storeDetailTitle => 'Mağaza';
+
+  @override
+  String get storeDetailLoadErr => 'Mağaza yüklenemedi';
+
+  @override
+  String get storeDetailProductsLoadErr => 'Ürünler yüklenemedi';
+
+  @override
+  String get storeDetailNoProducts => 'Bu mağazada henüz ürün yok.';
+
+  @override
+  String get storeDetailTotalProducts => 'Toplam ürün';
+
+  @override
+  String get storeDetailAddProduct => 'Urun ekle';
+
+  @override
+  String get storeDetailFavorited => 'Favorilerde';
+
+  @override
+  String get storeDetailAddToFavorites => 'Favorilere ekle';
+
+  @override
+  String get storeDetailRemovedFav => 'Favorilerden kaldırıldı';
+
+  @override
+  String get storeDetailAddedFav => 'Favorilere eklendi';
+
+  @override
+  String storeDetailFavError(String error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get storeDetailShare => 'Paylaş';
+
+  @override
+  String get storeDetailProductActive => 'Aktif';
+
+  @override
+  String get storeDetailProductInactive => 'Pasif';
+
+  @override
+  String get storeDetailProductSoldOut => 'Tukendi';
+
+  @override
+  String storeDetailProductStock(int count) {
+    return 'Stok: $count';
+  }
+
+  @override
+  String get storeDetailMenuEdit => 'Duzenle';
+
+  @override
+  String get storeDetailMenuToggle => 'Aktif/Pasif';
+
+  @override
+  String get storeDetailMenuDelete => 'Sil';
+
+  @override
+  String get storeDetailDeleteTitle => 'Urunu sil';
+
+  @override
+  String get storeDetailDeleteContent =>
+      'Bu urunu silmek istediginize emin misiniz?';
+
+  @override
+  String get storeDetailDeleteCancel => 'Vazgec';
+
+  @override
+  String get storeDetailProductActivated => 'Urun aktif edildi.';
+
+  @override
+  String get storeDetailProductDeactivated => 'Urun pasif edildi.';
+
+  @override
+  String storeDetailProductUpdateErr(String error) {
+    return 'Urun guncellenemedi: $error';
+  }
+
+  @override
+  String get storeDetailProductDeleted => 'Urun silindi.';
+
+  @override
+  String storeDetailProductDeleteErr(String error) {
+    return 'Urun silinemedi: $error';
+  }
+
+  @override
+  String get storeDetailRetry => 'Yeniden Dene';
+
+  @override
+  String get applySellerTitle => 'Mağaza Aç';
+
+  @override
+  String get applySellerLogoTitle => 'Mağaza Logosu Seç';
+
+  @override
+  String get applySellerPickGallery => 'Galeriden Seç';
+
+  @override
+  String get applySellerPickCamera => 'Kamerayı Aç';
+
+  @override
+  String get applySellerLogoSection => 'Mağaza Logosu';
+
+  @override
+  String get applySellerLogoAdd => 'Logo Ekle';
+
+  @override
+  String get applySellerLogoHint =>
+      'Kare formatta, minimum 200x200 piksel önerilir';
+
+  @override
+  String get applySellerInfoSection => 'Mağaza Bilgileri';
+
+  @override
+  String get applySellerNameLabel => 'Mağaza Adı *';
+
+  @override
+  String get applySellerNameHint => 'Örn: Happy Pets Store';
+
+  @override
+  String get applySellerNameRequired => 'Mağaza adı gerekli';
+
+  @override
+  String get applySellerNameTooShort => 'En az 3 karakter olmalı';
+
+  @override
+  String get applySellerDescLabel => 'Mağaza Açıklaması';
+
+  @override
+  String get applySellerDescHint => 'Mağazanızı tanıtın...';
+
+  @override
+  String get applySellerTermsTitle => 'Satıcı Sözleşmesi';
+
+  @override
+  String get applySellerTermsAccepted => 'Kabul Edildi';
+
+  @override
+  String get applySellerTermsRead =>
+      'Satıcı sözleşmesini okudum ve kabul ediyorum';
+
+  @override
+  String get applySellerTermsDialogTitle => 'Satıcı Sözleşmesi';
+
+  @override
+  String get applySellerTermsAcceptBtn => 'Okudum ve Kabul Ediyorum';
+
+  @override
+  String get applySellerStepLogo => 'Logo';
+
+  @override
+  String get applySellerStepInfo => 'Bilgiler';
+
+  @override
+  String get applySellerStepContract => 'Sözleşme';
+
+  @override
+  String get applySellerOpenBtn => 'Mağazamı Aç';
+
+  @override
+  String get applySellerApprovalNote =>
+      'Mağazanız onaylandıktan sonra ürün eklemeye başlayabilirsiniz.';
+
+  @override
+  String get applySellerSuccessTitle => 'Tebrikler!';
+
+  @override
+  String applySellerSuccessDesc(String storeName) {
+    return '\"$storeName\" mağazanız başarıyla oluşturuldu!';
+  }
+
+  @override
+  String get applySellerGoToStore => 'Mağazama Git';
+
+  @override
+  String get applySellerGenericError =>
+      'Bir hata oluştu, lütfen tekrar deneyin.';
+
+  @override
+  String get addProductTitle => 'Ürün Ekle';
+
+  @override
+  String get addProductEditTitle => 'Ürün Düzenle';
+
+  @override
+  String get addProductPhotosSection => 'Ürün Fotoğrafları';
+
+  @override
+  String get addProductPickGallery => 'Galeriden Seç';
+
+  @override
+  String get addProductPickGallerySub => 'Mevcut fotoğraflarınızdan seçin';
+
+  @override
+  String get addProductPickCamera => 'Kamerayı Aç';
+
+  @override
+  String get addProductPickCameraSub => 'Yeni fotoğraf çekin';
+
+  @override
+  String get addProductPickDialogTitle => 'Fotoğraf Ekle';
+
+  @override
+  String get addProductAddBtn => 'Ekle';
+
+  @override
+  String addProductMaxWarning(int max) {
+    return 'En fazla $max fotoğraf ekleyebilirsiniz';
+  }
+
+  @override
+  String addProductPhotosHint(int max) {
+    return 'Ürününüzün fotoğraflarını ekleyin (max $max)';
+  }
+
+  @override
+  String get addProductTitleField => 'Ürün Başlığı';
+
+  @override
+  String get addProductTitleHint => 'Örn: Renkli kedi oyuncağı';
+
+  @override
+  String get addProductTitleRequired => 'Başlık gerekli';
+
+  @override
+  String get addProductCategoryLabel => 'Kategori';
+
+  @override
+  String get addProductCategoryRequired => 'Kategori seçin';
+
+  @override
+  String get addProductDescLabel => 'Açıklama';
+
+  @override
+  String get addProductDescHint => 'Ürün özellikleri, boyut, malzeme...';
+
+  @override
+  String get addProductPriceLabel => 'Fiyat (₺)';
+
+  @override
+  String get addProductPriceRequired => 'Gerekli';
+
+  @override
+  String get addProductPriceInvalid => 'Geçersiz';
+
+  @override
+  String get addProductStockLabel => 'Stok';
+
+  @override
+  String get addProductActiveLabel => 'Ürün Aktif';
+
+  @override
+  String get addProductInactiveLabel => 'Ürün Pasif';
+
+  @override
+  String get addProductSaving => 'Kaydediliyor...';
+
+  @override
+  String get addProductSaveBtn => 'Kaydet';
+
+  @override
+  String get addProductUpdated => 'Ürün güncellendi!';
+
+  @override
+  String get addProductAdded => 'Ürün eklendi!';
+
+  @override
+  String get addProductCategoryLoadErr => 'Kategoriler yüklenemedi.';
+
+  @override
+  String get addProductCategoryNotFound => 'Kategori bulunamadı.';
+
+  @override
+  String get addProductRetry => 'Yeniden dene';
+
+  @override
+  String addProductCategoryLoading(String label) {
+    return '$label yükleniyor...';
+  }
+
+  @override
+  String get sellerOrdersTitle => 'Siparişlerim';
+
+  @override
+  String get sellerOrdersTabAll => 'Tümü';
+
+  @override
+  String get sellerOrdersTabPending => 'Bekleyen';
+
+  @override
+  String get sellerOrdersTabProcessing => 'Hazırlanan';
+
+  @override
+  String get sellerOrdersTabShipped => 'Kargoda';
+
+  @override
+  String get sellerOrdersTabCompleted => 'Tamamlanan';
+
+  @override
+  String get sellerOrdersEmpty => 'Henüz sipariş yok';
+
+  @override
+  String get sellerOrdersEmptyDesc =>
+      'Ürünlerinize sipariş geldiğinde burada görünecek';
+
+  @override
+  String sellerOrdersLoadErr(String error) {
+    return 'Siparişler yüklenemedi: $error';
+  }
+
+  @override
+  String get sellerOrdersCategoryEmpty => 'Bu kategoride sipariş yok';
+
+  @override
+  String get sellerOrdersStatusUpdated => 'Sipariş durumu güncellendi';
+
+  @override
+  String sellerOrdersStatusError(String error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get sellerOrdersStatTotal => 'Toplam';
+
+  @override
+  String get sellerOrdersStatPending => 'Bekleyen';
+
+  @override
+  String get sellerOrdersStatSales => 'Satış';
+
+  @override
+  String get sellerOrdersStatRevenue => 'Gelir';
+
+  @override
+  String get sellerOrdersPrepare => 'Hazırla';
+
+  @override
+  String get sellerOrdersShip => 'Kargola';
+
+  @override
+  String get sellerOrdersDelivered => 'Teslim Edildi';
+
+  @override
+  String sellerOrdersItemCount(int count) {
+    return '$count ürün';
+  }
+
+  @override
+  String sellerOrdersItemQty(int qty, String price) {
+    return '$qty adet x ₺$price';
+  }
+
+  @override
+  String get petCardMating => 'Eşleştirme';
+
+  @override
+  String get petCardAdoption => 'Sahiplendirme';
+
+  @override
+  String get petCardVaccinated => 'Aşılı';
+
+  @override
+  String get petCardOwnerUnknown => 'Bilinmiyor';
+
+  @override
+  String get apptCreateTitle => 'Randevu Oluştur';
+
+  @override
+  String get apptCreateSelectPet => 'Evcil Hayvan Seçin';
+
+  @override
+  String get apptCreateDate => 'Tarih';
+
+  @override
+  String get apptCreateTime => 'Saat';
+
+  @override
+  String get apptCreateReason => 'Randevu Nedeni';
+
+  @override
+  String get apptCreateNotes => 'Notlar (opsiyonel)';
+
+  @override
+  String get apptCreateBtn => 'Randevu Oluştur';
+
+  @override
+  String get apptCreateSuccess => 'Randevu oluşturuldu!';
+
+  @override
+  String get apptCreateSelectDateBtn => 'Tarih seçin';
+
+  @override
+  String get apptCreateNoPets => 'Henüz evcil hayvan eklememişsiniz';
+
+  @override
+  String get apptCreateNoSlots => 'Bu tarihte uygun slot bulunamadı';
+
+  @override
+  String get apptCreateValidation => 'Lütfen pet, tarih ve saat seçin';
+
+  @override
+  String apptCreateSlotsError(String error) {
+    return 'Slotlar alınamadı: $error';
+  }
+
+  @override
+  String apptCreatePetsError(String error) {
+    return 'Petler yüklenemedi: $error';
+  }
+
+  @override
+  String apptCreateError(String error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get apptDetailTitle => 'Randevu Detay';
+
+  @override
+  String get apptDetailDate => 'Tarih ve Saat';
+
+  @override
+  String get apptDetailVet => 'Veteriner';
+
+  @override
+  String get apptDetailPet => 'Evcil Hayvan';
+
+  @override
+  String get apptDetailReason => 'Randevu Nedeni';
+
+  @override
+  String get apptDetailNotes => 'Notlar';
+
+  @override
+  String get apptDetailVetNotes => 'Veteriner Notları';
+
+  @override
+  String get apptDetailCancelBtn => 'Randevuyu İptal Et';
+
+  @override
+  String get apptDetailCancelTitle => 'Randevuyu İptal Et';
+
+  @override
+  String get apptDetailCancelContent =>
+      'Randevuyu iptal etmek istediğinize emin misiniz?';
+
+  @override
+  String get apptDetailCancelConfirm => 'İptal Et';
+
+  @override
+  String get apptDetailCancelBack => 'Vazgeç';
+
+  @override
+  String get apptDetailCancelSuccess => 'Randevu iptal edildi';
+
+  @override
+  String apptDetailError(String error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get vetRegisterTitle => 'Klinik Kaydet';
+
+  @override
+  String get vetRegisterClinicName => 'Klinik Adı *';
+
+  @override
+  String get vetRegisterAddress => 'Adres *';
+
+  @override
+  String get vetRegisterPhone => 'Telefon';
+
+  @override
+  String get vetRegisterEmail => 'E-posta';
+
+  @override
+  String get vetRegisterDesc => 'Açıklama';
+
+  @override
+  String vetRegisterLocationLabel(String lat, String lng) {
+    return 'Konum: $lat, $lng';
+  }
+
+  @override
+  String get vetRegisterLocationNone => 'Konum eklenmedi';
+
+  @override
+  String get vetRegisterGetLocation => 'Konum Al';
+
+  @override
+  String get vetRegisterGettingLocation => 'Alınıyor...';
+
+  @override
+  String get vetRegisterSpecies => 'Hizmet Verilen Türler';
+
+  @override
+  String get vetRegisterSaveBtn => 'Kaydet';
+
+  @override
+  String get vetRegisterSuccess => 'Klinik kaydedildi ve hesabınıza bağlandı!';
+
+  @override
+  String get vetRegisterClinicNameRequired => 'Klinik adı gerekli';
+
+  @override
+  String get vetRegisterAddressRequired => 'Adres gerekli';
+
+  @override
+  String vetRegisterLocationError(String error) {
+    return 'Konum alınamadı: $error';
+  }
+
+  @override
+  String get vetRegisterLocationDenied =>
+      'Konum izni reddedildi. Ayarlardan izin verin.';
+
+  @override
+  String vetRegisterError(String error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get searchHint => 'İlan, mağaza veya veteriner ara...';
+
+  @override
+  String get searchTypeHint => 'Aramak istediğinizi yazın';
+
+  @override
+  String get searchTypeHintSub => 'İlan, mağaza veya veteriner arayabilirsiniz';
+
+  @override
+  String get searchHistory => 'Son Aramalar';
+
+  @override
+  String get searchClearHistory => 'Tümünü Temizle';
+
+  @override
+  String searchError(String error) {
+    return 'Arama hatası: $error';
+  }
+
+  @override
+  String searchNoResults(String query) {
+    return '\"$query\" için sonuç bulunamadı';
+  }
+
+  @override
+  String get searchSectionListings => 'İlanlar';
+
+  @override
+  String get searchSectionStores => 'Mağazalar';
+
+  @override
+  String get searchSectionVets => 'Veterinerler';
+
+  @override
+  String get searchStoreSubtitle => 'Mağaza';
+
+  @override
+  String get searchVetSubtitle => 'Veteriner';
+
+  @override
+  String get aiAssistantTitle => 'Pati Asistan';
+
+  @override
+  String get aiModeReset => 'Sıfırla';
+
+  @override
+  String get aiModeDiagnosis => 'Teşhis';
+
+  @override
+  String get aiModeGeneral => 'Genel';
+
+  @override
+  String get aiSymptomLabel => 'Semptom seç (çoklu):';
+
+  @override
+  String get aiDiagnoseBtn => 'Teşhis Et →';
+
+  @override
+  String aiSymptomSelected(String symptoms) {
+    return 'Seçili: $symptoms';
+  }
+
+  @override
+  String get aiWelcomeDiagnosis => 'Semptom seç veya yaz → Teşhis al';
+
+  @override
+  String get aiWelcomeGeneral =>
+      'Evcil hayvanın hakkında ne sormak istiyorsun?';
+
+  @override
+  String get aiWelcomeDiagnosisSub =>
+      'Yukarıdan türü ve belirtileri seç,\nyoksa metin kutusuna yaz.';
+
+  @override
+  String get aiWelcomeGeneralSub =>
+      'Bakım, beslenme, eğitim hakkında\nkısa ve pratik yanıtlar alırsın.';
+
+  @override
+  String get aiExampleLabel => 'Örnek sorular:';
+
+  @override
+  String get aiInputDiagnosisHint => 'Ek bilgi ekle veya direkt yaz...';
+
+  @override
+  String get aiInputGeneralHint => 'Sorunuzu yazın...';
+
+  @override
+  String get aiErrorResponse =>
+      'Üzgünüm, şu an yanıt veremiyorum. Lütfen tekrar deneyin.';
+
+  @override
+  String get aiNoReply => 'Yanıt alınamadı.';
+
+  @override
+  String get guideTitle => 'Rehber Pati';
+
+  @override
+  String get guideNewChat => 'Yeni sohbet';
+
+  @override
+  String get guideWelcome => 'Merhaba! 👋';
+
+  @override
+  String get guideWelcomeSub =>
+      'Ne yapmak istiyorsun?\nSana en kısa yoldan yardım edeyim.';
+
+  @override
+  String get guideQuickOptions => 'Hızlı seçenekler:';
+
+  @override
+  String get guideNavigateBtn => 'Götür beni →';
+
+  @override
+  String get guideInputHint => 'Ne yapmak istiyorsun?';
+
+  @override
+  String get guideConnError => 'Bağlantı hatası, lütfen tekrar dene.';
+
+  @override
+  String get guideUnknown => 'Anlayamadım.';
+
+  @override
+  String get monthJan => 'Oca';
+
+  @override
+  String get monthFeb => 'Şub';
+
+  @override
+  String get monthMar => 'Mar';
+
+  @override
+  String get monthApr => 'Nis';
+
+  @override
+  String get monthMay => 'May';
+
+  @override
+  String get monthJun => 'Haz';
+
+  @override
+  String get monthJul => 'Tem';
+
+  @override
+  String get monthAug => 'Ağu';
+
+  @override
+  String get monthSep => 'Eyl';
+
+  @override
+  String get monthOct => 'Eki';
+
+  @override
+  String get monthNov => 'Kas';
+
+  @override
+  String get monthDec => 'Ara';
+
+  @override
+  String get sitterFindTitle => 'Bakıcı Bul';
+
+  @override
+  String get sitterMyBookingsTooltip => 'Rezervasyonlarım';
+
+  @override
+  String get sitterServiceAll => 'Tümü';
+
+  @override
+  String get sitterServiceWalking => 'Gezdirme';
+
+  @override
+  String get sitterServiceHomeSitting => 'Ev Bakımı';
+
+  @override
+  String get sitterServiceBoarding => 'Pansiyon';
+
+  @override
+  String get sitterServiceDaycare => 'Gündüz Bakımı';
+
+  @override
+  String get sitterServiceGrooming => 'Tımar';
+
+  @override
+  String get sitterEmptyTitle => 'Yakında bakıcı bulunamadı';
+
+  @override
+  String get sitterEmptySubtitle =>
+      'İlk bakıcı profilini oluştur ve diğer kullanıcılara hizmet ver!';
+
+  @override
+  String get sitterBecomeSitterBtn => 'Bakıcı Ol';
+
+  @override
+  String get sitterEditProfile => 'Profili Düzenle';
+
+  @override
+  String get sitterBasicInfo => 'Temel Bilgiler';
+
+  @override
+  String get sitterDisplayName => 'Görüntülenen İsim *';
+
+  @override
+  String get sitterDisplayNameRequired => 'İsim gerekli';
+
+  @override
+  String get sitterBio => 'Hakkında / Tanıtım';
+
+  @override
+  String get sitterExperience => 'Deneyim';
+
+  @override
+  String get sitterLocation => 'Konum';
+
+  @override
+  String get sitterUseLocation => 'Konumumu Kullan';
+
+  @override
+  String get sitterLocationObtained => 'Konum Alındı ✓';
+
+  @override
+  String get sitterAddress => 'Adres / Semt';
+
+  @override
+  String get sitterSpeciesTitle => 'Hangi Hayvanlarla Çalışıyorsunuz?';
+
+  @override
+  String get sitterSpeciesDog => 'Köpek';
+
+  @override
+  String get sitterSpeciesCat => 'Kedi';
+
+  @override
+  String get sitterSpeciesBird => 'Kuş';
+
+  @override
+  String get sitterSpeciesRabbit => 'Tavşan';
+
+  @override
+  String get sitterSpeciesOther => 'Diğer';
+
+  @override
+  String get sitterServicesTitle => 'Sunduğunuz Hizmetler';
+
+  @override
+  String get sitterServicesAdd => 'Ekle';
+
+  @override
+  String get sitterServicesAllAdded => 'Tüm hizmetler eklendi';
+
+  @override
+  String get sitterServiceType => 'Hizmet Türü';
+
+  @override
+  String get sitterServiceWalkingLabel => 'Gezdirme';
+
+  @override
+  String get sitterServiceHomeSittingLabel => 'Ev Bakımı';
+
+  @override
+  String get sitterServiceBoardingLabel => 'Pansiyonda Bakım';
+
+  @override
+  String get sitterServiceDaycareLabel => 'Gündüz Bakımı';
+
+  @override
+  String get sitterServiceGroomingLabel => 'Tımar/Bakım';
+
+  @override
+  String get sitterHourlyPrice => 'Saat Fiyatı (TL)';
+
+  @override
+  String get sitterDailyPrice => 'Gün Fiyatı (TL)';
+
+  @override
+  String get sitterSpeciesRequired => 'En az bir hayvan türü seçin';
+
+  @override
+  String get sitterLocationPermRequired => 'Konum izni gerekli';
+
+  @override
+  String sitterLocationErr(String error) {
+    return 'Konum alınamadı: $error';
+  }
+
+  @override
+  String get sitterProfileUpdated => 'Profil güncellendi!';
+
+  @override
+  String get sitterProfileCreated => 'Bakıcı profili oluşturuldu!';
+
+  @override
+  String sitterSubmitErr(String error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get sitterCreateBtn => 'Bakıcı Profili Oluştur';
+
+  @override
+  String get sitterUpdateBtn => 'Profili Güncelle';
+
+  @override
+  String get bookingsTitle => 'Rezervasyonlar';
+
+  @override
+  String get bookingsTabMine => 'Rezervasyonlarım';
+
+  @override
+  String get bookingsTabIncoming => 'Gelen Talepler';
+
+  @override
+  String get bookingsEmptyTitle => 'Henüz rezervasyon yok';
+
+  @override
+  String get bookingsEmptySubtitle =>
+      'Onaylanan rezervasyonlarınız burada görünecek.';
+
+  @override
+  String get bookingsOwnerLabel => 'Sahip';
+
+  @override
+  String get bookingsSitterLabel => 'Bakıcı';
+
+  @override
+  String get bookingsAccept => 'Kabul Et';
+
+  @override
+  String get bookingsReject => 'Reddet';
+
+  @override
+  String get bookingsMarkCompleted => 'Tamamlandı Olarak İşaretle';
+
+  @override
+  String get bookingsReview => 'Değerlendir';
+
+  @override
+  String get bookingsReviewDialogTitle => 'Bakıcıyı Değerlendir';
+
+  @override
+  String get bookingsReviewHint => 'Yorum (opsiyonel)';
+
+  @override
+  String get bookingsReviewCancel => 'İptal';
+
+  @override
+  String get bookingsReviewSend => 'Gönder';
+
+  @override
+  String bookingsActionErr(String error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get adoptionAppsTitle => 'Sahiplendirme Başvuruları';
+
+  @override
+  String get adoptionAppsTabInbox => 'Gelen Başvurular';
+
+  @override
+  String get adoptionAppsTabSent => 'Gönderdiklerim';
+
+  @override
+  String get adoptionAppsInboxEmpty => 'Gelen başvuru yok';
+
+  @override
+  String get adoptionAppsInboxEmptyDesc =>
+      'Sahiplendirme ilanlarınıza gelen başvurular burada görünecek.';
+
+  @override
+  String get adoptionAppsSentEmpty => 'Gönderilen başvuru yok';
+
+  @override
+  String get adoptionAppsSentEmptyDesc =>
+      'Sahiplendirme ilanlarına yaptığınız başvurular burada görünecek.';
+
+  @override
+  String adoptionAppsErrGeneric(String error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get adoptionAppsAcceptTitle => 'Başvuruyu Kabul Et';
+
+  @override
+  String get adoptionAppsRejectTitle => 'Başvuruyu Reddet';
+
+  @override
+  String get adoptionAppsAcceptContent =>
+      'Bu başvuruyu kabul etmek istediğinize emin misiniz? Mesajlaşma başlatılacaktır.';
+
+  @override
+  String get adoptionAppsRejectContent =>
+      'Bu başvuruyu reddetmek istediğinize emin misiniz?';
+
+  @override
+  String get adoptionAppsCancel => 'Vazgeç';
+
+  @override
+  String get adoptionAppsAcceptBtn => 'Kabul Et';
+
+  @override
+  String get adoptionAppsRejectBtn => 'Reddet';
+
+  @override
+  String get adoptionAppsAcceptedStarted =>
+      'Başvuru kabul edildi! Mesajlaşma başlatıldı.';
+
+  @override
+  String get adoptionAppsAccepted => 'Başvuru kabul edildi';
+
+  @override
+  String get adoptionAppsRejected => 'Başvuru reddedildi';
+
+  @override
+  String get adoptionAppsGoToChat => 'Mesajlaşma';
+
+  @override
+  String adoptionAppsApplicant(String name) {
+    return 'Başvuran: $name';
+  }
+
+  @override
+  String get adoptionAppsListing => 'İlan';
+
+  @override
+  String get adoptionAppsStatusAccepted => 'Kabul Edildi';
+
+  @override
+  String get adoptionAppsStatusRejected => 'Reddedildi';
+
+  @override
+  String get adoptionAppsStatusCancelled => 'İptal Edildi';
+
+  @override
+  String get adoptionAppsStatusPending => 'Beklemede';
+
+  @override
+  String get adoptionAppsTimelineApplication => 'Başvuru';
+
+  @override
+  String get adoptionAppsTimelineReview => 'İnceleme';
+
+  @override
+  String get adoptionAppsTimelineApproval => 'Onay';
+
+  @override
+  String get adoptionAppsTimelineCompleted => 'Tamamlandı';
+
+  @override
+  String get adoptionAppsTimelineRejected => 'Reddedildi';
+
+  @override
+  String get adoptionAppsTimelineCancelled => 'İptal';
+
+  @override
+  String get adoptionAppsTimelineDecision => 'Karar';
+
+  @override
+  String get adoptionApplyTitle => 'Sahiplendirme Başvurusu';
+
+  @override
+  String get adoptionApplyInfoText =>
+      'Başvurunuz ilan sahibine iletilecektir. İlan sahibi başvurunuzu kabul ederse mesajlaşma başlatılacaktır.';
+
+  @override
+  String get adoptionApplyNoteLabel => 'Başvuru Notu (opsiyonel)';
+
+  @override
+  String get adoptionApplyNoteHint =>
+      'Kendinizi tanıtın, neden bu hayvanı sahiplenmek istediğinizi açıklayın...';
+
+  @override
+  String adoptionApplyErrGeneric(String error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get adoptionApplySuccessTitle => 'Başvuru Gönderildi!';
+
+  @override
+  String get adoptionApplySuccessContent =>
+      'Sahiplendirme başvurunuz ilan sahibine iletildi. Sonucu başvurularım sayfasından takip edebilirsiniz.';
+
+  @override
+  String get adoptionApplySuccessOk => 'Tamam';
+
+  @override
+  String get adoptionApplySending => 'Gönderiliyor...';
+
+  @override
+  String get adoptionApplySendBtn => 'Başvuru Gönder';
+
+  @override
+  String get lostFoundTitle2 => 'Kayıp & Bulunan';
+
+  @override
+  String get lostFoundListView => 'Liste Görünümü';
+
+  @override
+  String get lostFoundMapView => 'Harita Görünümü';
+
+  @override
+  String get lostFoundLostTab => 'Kayıp';
+
+  @override
+  String get lostFoundFoundTab => 'Bulunan';
+
+  @override
+  String get lostFoundEmptyTitle => 'Yakında ilan yok';
+
+  @override
+  String get lostFoundEmptySubtitle =>
+      'Yakınınızdaki kayıp veya bulunan hayvan ilanları burada görünecek.';
+
+  @override
+  String get lostFoundCreateBtn => 'İlan Oluştur';
+
+  @override
+  String get eventsTitle2 => 'Etkinlikler';
+
+  @override
+  String get eventsMyEventsTooltip => 'Katıldıklarım';
+
+  @override
+  String get eventsCreateBtn => 'Etkinlik Oluştur';
+
+  @override
+  String get eventsCatAll => 'Tümü';
+
+  @override
+  String get eventsCatPark => 'Park';
+
+  @override
+  String get eventsCatAdoption => 'Sahiplen';
+
+  @override
+  String get eventsCatTraining => 'Eğitim';
+
+  @override
+  String get eventsCatCompetition => 'Yarış';
+
+  @override
+  String get eventsCatGrooming => 'Bakım';
+
+  @override
+  String get eventsCatHealth => 'Sağlık';
+
+  @override
+  String get eventsEmptyTitle => 'Etkinlik Bulunamadı';
+
+  @override
+  String get eventsEmptySubtitle =>
+      'Bu bölge veya kategoride henüz etkinlik yok.';
+
+  @override
+  String get eventsLocationBannerText => 'Yakın etkinlikler için konum gerekli';
+
+  @override
+  String get eventsLocationBannerBtn => 'İzin Ver';
+
+  @override
+  String get myEventsTitle => 'Etkinliklerim';
+
+  @override
+  String get myEventsTabAttending => 'Katılacaklarım';
+
+  @override
+  String get myEventsTabOrganized => 'Organize Ettiklerim';
+
+  @override
+  String get myEventsEmptyTitle => 'Etkinlik Yok';
+
+  @override
+  String get myEventsEmptySubtitle => 'Henüz bu kategoride etkinliğiniz yok.';
+
+  @override
+  String get createPostTitle => 'Gönderi Oluştur';
+
+  @override
+  String get createPostShareBtn => 'Paylaş';
+
+  @override
+  String get createPostPhotosLabel => 'Fotoğraflar';
+
+  @override
+  String get createPostAddBtn => 'Ekle';
+
+  @override
+  String get createPostEmptyHint => 'Fotoğraf eklemek için dokunun';
+
+  @override
+  String get createPostHint =>
+      'Ne paylaşıyorsun? Sevimli hayvanınızı anlatın...';
+
+  @override
+  String get createPostMaxImages => 'En fazla 4 fotoğraf ekleyebilirsiniz';
+
+  @override
+  String get createPostValidation =>
+      'Lütfen bir şey yazın veya fotoğraf ekleyin';
+
+  @override
+  String createPostErr(String error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get connectTitle => 'Keşfet';
+
+  @override
+  String get connectSocialFeed => 'Sosyal Akış';
+
+  @override
+  String get connectSocialFeedSub => 'Evcil hayvan sahiplerini takip et';
+
+  @override
+  String get connectSearch => 'Ara';
+
+  @override
+  String get connectSearchSub => 'Evcil hayvan, mağaza ve veteriner bul';
+
+  @override
+  String get connectMapDiscover => 'Haritada Keşfet';
+
+  @override
+  String get connectMapDiscoverSub => 'Yakınındaki ilanları haritada gör';
+
+  @override
+  String get connectFavorites => 'Favoriler';
+
+  @override
+  String get connectFavoritesSub => 'Kaydettiğin ilanlar';
+
+  @override
+  String get reviewAddTitle => 'Yorum Yap';
+
+  @override
+  String get reviewEditTitle => 'Yorumu Düzenle';
+
+  @override
+  String get reviewProductLabel => 'Ürün';
+
+  @override
+  String get reviewRatingLabel => 'Puanınız *';
+
+  @override
+  String get reviewCommentLabel => 'Yorumunuz (Opsiyonel)';
+
+  @override
+  String get reviewCommentHint => 'Ürün hakkındaki düşüncelerinizi paylaşın...';
+
+  @override
+  String get reviewSubmitBtn => 'Gönder';
+
+  @override
+  String get reviewUpdateBtn => 'Güncelle';
+
+  @override
+  String get reviewRating1 => 'Çok Kötü';
+
+  @override
+  String get reviewRating2 => 'Kötü';
+
+  @override
+  String get reviewRating3 => 'Orta';
+
+  @override
+  String get reviewRating4 => 'İyi';
+
+  @override
+  String get reviewRating5 => 'Mükemmel';
+
+  @override
+  String get reviewNoRatingErr => 'Lütfen bir puan seçin';
+
+  @override
+  String get reviewUpdated => 'Yorum güncellendi';
+
+  @override
+  String get reviewAdded => 'Yorum eklendi';
+
+  @override
+  String reviewErr(String error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get reviewsSectionTitle => 'Değerlendirmeler';
+
+  @override
+  String get reviewsSectionEdit => 'Düzenle';
+
+  @override
+  String get reviewsSectionAdd => 'Yorum Yap';
+
+  @override
+  String reviewsCount(int count) {
+    return '$count değerlendirme';
+  }
+
+  @override
+  String get reviewsVerifiedBuyer => 'Alıcı';
+
+  @override
+  String reviewsLoadErr(String error) {
+    return 'Yorumlar yüklenemedi: $error';
+  }
+
+  @override
+  String get reviewsEmptyTitle => 'Henüz değerlendirme yok';
+
+  @override
+  String get reviewsEmptySubtitle => 'İlk yorumu siz yapın!';
+
+  @override
+  String get editProfileTitle => 'Profili Düzenle';
+
+  @override
+  String get editProfilePhotoUpdated => 'Profil fotoğrafı güncellendi!';
+
+  @override
+  String get editProfileNameLabel => 'İsim Soyisim';
+
+  @override
+  String get editProfileCityLabel => 'Şehir';
+
+  @override
+  String get editProfileAboutLabel => 'Hakkımda';
+
+  @override
+  String get editProfileNameRequired => 'İsim boş olamaz';
+
+  @override
+  String get editProfileSaveBtn => 'Değişiklikleri Kaydet';
+
+  @override
+  String get onboardingSkip => 'Atla';
+
+  @override
+  String get onboardingNext => 'Devam Et';
+
+  @override
+  String get onboardingStart => 'Hadi Başlayalım!';
+
+  @override
+  String get onboardingPage1Title => 'Evcil Dostunuzu Keşfedin';
+
+  @override
+  String get onboardingPage1Subtitle =>
+      'Binlerce evcil hayvan ilanına göz atın. Sahiplendirme veya eşleştirme için doğru dostu bulun.';
+
+  @override
+  String get onboardingPage2Title => 'Eşleştirme & Sahiplendirme';
+
+  @override
+  String get onboardingPage2Subtitle =>
+      'Doğum tarihleri, ırk ve konum filtrelerine göre evcil hayvanları eşleştirin veya sahiplendirin.';
+
+  @override
+  String get onboardingPage3Title => 'Sağlık Takibi';
+
+  @override
+  String get onboardingPage3Subtitle =>
+      'Aşı takvimi, veteriner randevuları ve sağlık günlüğü ile dostunuzun sağlığını kontrol altında tutun.';
+
+  @override
+  String get onboardingPage4Title => 'Mağaza & Topluluk';
+
+  @override
+  String get onboardingPage4Subtitle =>
+      'Evcil hayvan ürünleri alın, bakıcı tutun, etkinliklere katılın ve sosyal topluluğun parçası olun.';
+
+  @override
+  String get adminAppsTitle => 'Satıcı Başvuruları';
+
+  @override
+  String adminAppsStatus(String status) {
+    return 'Durum: $status';
+  }
+
+  @override
+  String get adminAppsLoadErr => 'Başvurular yüklenemedi.';
+
+  @override
+  String get productDetailOwnProduct => 'Bu sizin ürününüz';
+
+  @override
+  String get productDetailOwnProductErr =>
+      'Kendi ürünlerinizi sepete ekleyemezsiniz';
+
+  @override
+  String get productDetailOutOfStock => 'Bu ürün stokta yok';
+
+  @override
+  String productDetailMaxStock(int stock) {
+    return 'Maksimum $stock adet ekleyebilirsiniz';
+  }
+
+  @override
+  String productDetailAddedToCart(int count) {
+    return '$count adet sepete eklendi';
+  }
+
+  @override
+  String get productDetailGoToCart => 'Sepete Git';
+
+  @override
+  String productDetailAddErr(String error) {
+    return 'Sepete eklenemedi: $error';
+  }
+
+  @override
+  String get productDetailShareSoon => 'Paylaşma özelliği yakında eklenecek';
+
+  @override
+  String get productDetailAddingToCart => 'Ekleniyor...';
+
+  @override
+  String get productDetailAddToCartBtn => 'Sepete Ekle';
+
+  @override
+  String get productDetailNoTitle => 'Ürün adı yok';
+
+  @override
+  String get productDetailNoDesc => 'Açıklama yok';
+
+  @override
+  String productDetailStock(int count) {
+    return 'Stok: $count';
+  }
+
+  @override
+  String get productDetailNotFound => 'Ürün bulunamadı.';
+
+  @override
+  String get sellerApplyTitle => 'Satıcı Ol';
+
+  @override
+  String get sellerApplyCompanyName => 'Firma adı';
+
+  @override
+  String get sellerApplyCompanyTitle => 'Firma unvanı';
+
+  @override
+  String get sellerApplyTaxNumber => 'Vergi numarası';
+
+  @override
+  String get sellerApplyTaxOffice => 'Vergi dairesi';
+
+  @override
+  String get sellerApplyAddress => 'Adres';
+
+  @override
+  String get sellerApplyContact => 'İletişim';
+
+  @override
+  String get sellerApplyIban => 'IBAN';
+
+  @override
+  String get sellerApplyRequired => 'Zorunlu';
+
+  @override
+  String get sellerApplyKvkk => 'KVKK metnini onaylıyorum';
+
+  @override
+  String get sellerApplyContract => 'Satıcı sözleşmesini onaylıyorum';
+
+  @override
+  String get sellerApplyApprovalsRequired => 'Onaylar zorunlu';
+
+  @override
+  String get sellerApplySending => 'Gönderiliyor...';
+
+  @override
+  String get sellerApplySendBtn => 'Başvuru gönder';
+
+  @override
+  String get sellerApplyFailed => 'Başvuru gönderilemedi.';
+
+  @override
+  String get sellerApplyPending => 'Başvurunuz inceleniyor';
+
+  @override
+  String get productsPageTitle => 'Ürünlerim';
+
+  @override
+  String get productsActive => 'Aktif';
+
+  @override
+  String get productsPassive => 'Pasif';
+
+  @override
+  String get productsLoadErr => 'Ürünler yüklenemedi.';
+
+  @override
+  String productsStockStatus(int stock, String status) {
+    return 'Stok: $stock • $status';
+  }
+
+  @override
+  String get productAddTitle => 'Ürün Ekle';
+
+  @override
+  String get productAddName => 'Ürün adı';
+
+  @override
+  String get productAddRequired => 'Zorunlu';
+
+  @override
+  String get productAddCategory => 'Kategori';
+
+  @override
+  String get productAddNoCategoryFound => 'Kategori bulunamadı.';
+
+  @override
+  String get productAddCategoryLoading => 'Kategoriler yükleniyor...';
+
+  @override
+  String productAddCategoryLoadErr(String error) {
+    return 'Kategoriler yüklenemedi: $error';
+  }
+
+  @override
+  String get productAddCategorySelect => 'Kategori seçin';
+
+  @override
+  String get productAddDescription => 'Açıklama';
+
+  @override
+  String get productAddPrice => 'Fiyat';
+
+  @override
+  String get productAddStock => 'Stok';
+
+  @override
+  String get productAddSaving => 'Kaydediliyor...';
+
+  @override
+  String get productAddSaveBtn => 'Kaydet';
+
+  @override
+  String get productEditTitle => 'Ürün Düzenle';
+
+  @override
+  String get productEditUpdating => 'Güncelleniyor...';
+
+  @override
+  String get productEditUpdateBtn => 'Güncelle';
+
+  @override
+  String get productEditFailed => 'Güncelleme başarısız.';
+
+  @override
+  String get productEditActive => 'Aktif';
+
+  @override
+  String get storeCategoryAll => 'Tümü';
+
+  @override
+  String productCardAddedToCart(String title) {
+    return '$title sepete eklendi';
+  }
+
+  @override
+  String productCardAddErr(String error) {
+    return 'Sepete eklenemedi: $error';
+  }
+
+  @override
+  String get productCardNoTitle => 'Ürün adı yok';
+
+  @override
+  String get aiSpeciesDog => 'Köpek';
+
+  @override
+  String get aiSpeciesCat => 'Kedi';
+
+  @override
+  String get aiSpeciesBird => 'Kuş';
+
+  @override
+  String get aiSpeciesOther => 'Diğer';
+
+  @override
+  String get aiSymptomLossOfAppetite => 'İştahsızlık';
+
+  @override
+  String get aiSymptomFever => 'Ateş';
+
+  @override
+  String get aiSymptomDiarrhea => 'İshal';
+
+  @override
+  String get aiSymptomVomiting => 'Kusma';
+
+  @override
+  String get aiSymptomCough => 'Öksürük';
+
+  @override
+  String get aiSymptomShortnessOfBreath => 'Nefes darlığı';
+
+  @override
+  String get aiSymptomLethargy => 'Uyuşukluk';
+
+  @override
+  String get aiSymptomBloodyStool => 'Kanlı dışkı';
+
+  @override
+  String get aiSymptomExcessiveItching => 'Aşırı kaşınma';
+
+  @override
+  String get aiSymptomHairLoss => 'Tüy dökülmesi';
+
+  @override
+  String get aiSymptomLimping => 'Topallama';
+
+  @override
+  String get aiSymptomExcessiveThirst => 'Aşırı su içme';
+
+  @override
+  String get aiSymptomUnableToUrinate => 'İdrar yapmama';
+
+  @override
+  String get aiSymptomBloatedBelly => 'Şişmiş karın';
+
+  @override
+  String get aiSymptomLossOfConsciousness => 'Bilinç kaybı';
+
+  @override
+  String get aiSymptomRunnyNose => 'Burun akıntısı';
+
+  @override
+  String get aiSymptomEyeDischarge => 'Göz akıntısı';
+
+  @override
+  String get aiSymptomBreathingDifficulty => 'Nefes güçlüğü';
+
+  @override
+  String get aiSymptomWeightLoss => 'Kilo kaybı';
+
+  @override
+  String get aiSymptomFeatherPlucking => 'Tüy yolma';
+
+  @override
+  String get aiSymptomBloodyUrine => 'Kanlı idrar';
+
+  @override
+  String get aiSymptomJaundice => 'Sarılık';
+
+  @override
+  String get aiSymptomSeizures => 'Nöbet/Titreme';
+
+  @override
+  String get aiSymptomFeatherLoss => 'Tüy döküyor';
+
+  @override
+  String get aiSymptomNotEating => 'Yemiyor';
+
+  @override
+  String get aiSymptomPuffed => 'Şişmiş/Kabarık';
+
+  @override
+  String get aiSymptomUnableToStand => 'Ayakta duramıyor';
+
+  @override
+  String get aiSymptomHavingSeizure => 'Nöbet geçiriyor';
+
+  @override
+  String get aiSymptomBleeding => 'Kanıyor';
+
+  @override
+  String get aiSymptomScratch => 'Kaşınma';
+
+  @override
+  String aiSymptomPrefix(String species) {
+    return '$species, belirtiler: ';
+  }
+
+  @override
+  String get aiGenSug1 => 'Köpeğime ne kadar su vermeli?';
+
+  @override
+  String get aiGenSug2 => 'Kedi kumu ne sıklıkla değiştirilmeli?';
+
+  @override
+  String get aiGenSug3 => 'Yavru köpek eğitimi nasıl yapılır?';
+
+  @override
+  String get aiGenSug4 => 'Kedim neden gece bağırıyor?';
+
+  @override
+  String get aiGenSug5 => 'Köpek ısırması ne yapmalı?';
+
+  @override
+  String get guideSug1 => 'Sahiplendirme ilanlarına bak';
+
+  @override
+  String get guideSug2 => 'Veteriner bul';
+
+  @override
+  String get guideSug3 => 'Eşleştirme yap';
+
+  @override
+  String get guideSug4 => 'Sepetimi göster';
+
+  @override
+  String get guideSug5 => 'Kayıp ilan oluştur';
+
+  @override
+  String get guideSug6 => 'Etkinliklere katıl';
+
+  @override
+  String get eventLocationObtained => 'Konum Alındı ✓';
+
+  @override
+  String get eventUseMyLocation => 'Konumumu Kullan';
+
+  @override
+  String get eventCreateTitle => 'Etkinlik Oluştur';
+
+  @override
+  String get eventCatParkMeetup => 'Park Buluşması';
+
+  @override
+  String get eventCatAdoptionDay => 'Sahiplendirme Günü';
+
+  @override
+  String get eventCatTraining => 'Eğitim Semineri';
+
+  @override
+  String get eventCatCompetition => 'Yarış / Gösterim';
+
+  @override
+  String get eventCatGrooming => 'Bakım Günü';
+
+  @override
+  String get eventCatHealth => 'Sağlık / Aşı';
+
+  @override
+  String get eventCatOther => 'Diğer';
+
+  @override
+  String get eventSpeciesAll => 'Tümü';
+
+  @override
+  String get eventSpeciesDog => 'Köpek';
+
+  @override
+  String get eventSpeciesCat => 'Kedi';
+
+  @override
+  String get eventSpeciesBird => 'Kuş';
+
+  @override
+  String get eventSpeciesRabbit => 'Tavşan';
+
+  @override
+  String get eventSpeciesOther => 'Diğer';
+
+  @override
+  String get eventErrLocationPerm => 'Konum izni gerekli';
+
+  @override
+  String get eventErrMaxPhotos => 'En fazla 5 fotoğraf eklenebilir';
+
+  @override
+  String get eventErrEndBeforeStart =>
+      'Bitiş tarihi başlangıç tarihinden önce olamaz';
+
+  @override
+  String get eventCreated => 'Etkinlik oluşturuldu!';
+
+  @override
+  String get eventPhotosLabel => 'Fotoğraflar (max 5)';
+
+  @override
+  String get eventDateTimeLabel => 'Tarih ve Saat';
+
+  @override
+  String get eventStartLabel => 'Başlangıç *';
+
+  @override
+  String get eventEndLabel => 'Bitiş *';
+
+  @override
+  String get eventLocationLabel => 'Konum';
+
+  @override
+  String get eventCapacityLabel => 'Kapasite ve Ücret';
+
+  @override
+  String get eventFreeLabel => 'Ücretsiz Etkinlik';
+
+  @override
+  String get eventAnimalsLabel => 'Katılabilecek Hayvanlar';
+
+  @override
+  String get eventCreateBtn => 'Etkinliği Oluştur';
+
+  @override
+  String eventErrLocationFail(String error) {
+    return 'Konum alınamadı: $error';
+  }
+
+  @override
+  String eventCreateErr(String error) {
+    return 'Hata: $error';
+  }
+
+  @override
+  String get themeSelectTitle => 'Temanı Seç';
+
+  @override
+  String get themeSelectSub => 'Sana en uygun görünümü seç';
+
+  @override
+  String get themeSelectLight => 'Açık';
+
+  @override
+  String get themeSelectDark => 'Koyu';
+
+  @override
+  String get themeSelectConfirm => 'Devam Et';
+
+  @override
+  String get themeSelectChangeHint =>
+      'Bunu istediğin zaman Ayarlar\'dan değiştirebilirsin';
 }

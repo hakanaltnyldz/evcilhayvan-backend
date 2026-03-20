@@ -142,7 +142,7 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                       value: _selectedPetId,
                       hint: const Text('Pet secin'),
                       decoration: InputDecoration(
-                        filled: true, fillColor: Colors.white,
+                        filled: true,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                       ),
                       items: pets.map((p) => DropdownMenuItem(value: p.id, child: Text(p.name))).toList(),
@@ -170,7 +170,7 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Baslangic', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                          Text('Baslangic', style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                           const SizedBox(height: 4),
                           Text(_fmt(_startDate), style: const TextStyle(fontWeight: FontWeight.w600)),
                         ],
@@ -193,7 +193,7 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Bitis', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                          Text('Bitis', style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                           const SizedBox(height: 4),
                           Text(_fmt(_endDate), style: const TextStyle(fontWeight: FontWeight.w600)),
                         ],
@@ -210,7 +210,7 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
               controller: _notesController,
               decoration: InputDecoration(
                 labelText: 'Notlar (opsiyonel)',
-                filled: true, fillColor: Colors.white,
+                filled: true,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               ),
               maxLines: 3,

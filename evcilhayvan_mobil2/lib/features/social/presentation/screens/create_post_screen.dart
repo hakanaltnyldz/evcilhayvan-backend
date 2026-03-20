@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/post_repository.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
@@ -27,7 +28,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   Future<void> _pickImages() async {
     if (_selectedImages.length >= 4) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('En fazla 4 fotograf ekleyebilirsiniz')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.createPostMaxImages)),
       );
       return;
     }
@@ -56,7 +57,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     final content = _contentCtrl.text.trim();
     if (content.isEmpty && _selectedImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lutfen bir sey yazin veya fotograf ekleyin')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.createPostValidation)),
       );
       return;
     }
@@ -79,7 +80,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context)!.createPostErr(e.toString())), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -90,11 +91,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Gonderi Olustur', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        title: Text(AppLocalizations.of(context)!.createPostTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
         actions: [
           Padding(
@@ -109,7 +107,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                     ),
-                    child: const Text('Paylas', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(AppLocalizations.of(context)!.createPostShareBtn, style: const TextStyle(fontWeight: FontWeight.bold)),
                   ),
           ),
         ],
@@ -126,17 +124,14 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               minLines: 3,
               maxLength: 1000,
               decoration: InputDecoration(
-                hintText: 'Ne paylasiyorsun? Sevimli hayvaninizi anlatın...',
-                hintStyle: const TextStyle(color: Colors.grey),
+                hintText: AppLocalizations.of(context)!.createPostHint,
+                hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                 filled: true,
-                fillColor: Colors.grey.shade50,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -151,14 +146,14 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             // Image picker
             Row(
               children: [
-                const Text('Fotograflar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(AppLocalizations.of(context)!.createPostPhotosLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(width: 8),
-                Text('(${_selectedImages.length}/4)', style: const TextStyle(color: Colors.grey)),
+                Text('(${_selectedImages.length}/4)', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                 const Spacer(),
                 TextButton.icon(
                   onPressed: _selectedImages.length < 4 ? _pickImages : null,
                   icon: const Icon(Icons.add_photo_alternate_rounded),
-                  label: const Text('Ekle'),
+                  label: Text(AppLocalizations.of(context)!.createPostAddBtn),
                   style: TextButton.styleFrom(foregroundColor: const Color(0xFF6C63FF)),
                 ),
               ],
@@ -210,16 +205,16 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   height: 100,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
+                    color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.shade200, style: BorderStyle.solid),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                   ),
-                  child: const Column(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_photo_alternate_outlined, size: 36, color: Colors.grey),
-                      SizedBox(height: 8),
-                      Text('Fotograf eklemek icin dokunun', style: TextStyle(color: Colors.grey)),
+                      Icon(Icons.add_photo_alternate_outlined, size: 36, color: Theme.of(context).colorScheme.outlineVariant),
+                      const SizedBox(height: 8),
+                      Text(AppLocalizations.of(context)!.createPostEmptyHint, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                     ],
                   ),
                 ),

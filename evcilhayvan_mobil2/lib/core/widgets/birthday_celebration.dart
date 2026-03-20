@@ -91,13 +91,13 @@ class _BirthdayCelebrationDialogState extends State<BirthdayCelebrationDialog>
                   Text(
                     '$names bugün dogum gununü kutluyor! 🎉',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16, color: Colors.black87, height: 1.5),
+                    style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface, height: 1.5),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Minik dostunuza sürpriz bir ikram yapmayi unutmayin! 🐾',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600, height: 1.4),
+                    style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant, height: 1.4),
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(

@@ -81,7 +81,6 @@ class SellerDashboardScreen extends ConsumerWidget {
           l10n.sellerPanelTitle,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        backgroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
@@ -193,9 +192,9 @@ class SellerDashboardScreen extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Row(
                       children: [
-                        const Icon(Icons.info_outline, size: 16, color: Colors.grey),
+                        Icon(Icons.info_outline, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
                         const SizedBox(width: 6),
-                        Text(AppLocalizations.of(context)!.sellerProductStatsLoadErr, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                        Text(AppLocalizations.of(context)!.sellerProductStatsLoadErr, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
                       ],
                     ),
                   ),
@@ -220,9 +219,9 @@ class SellerDashboardScreen extends ConsumerWidget {
                           padding: const EdgeInsets.all(16),
                           child: Row(
                             children: [
-                              const Icon(Icons.bar_chart, color: Colors.grey),
+                              Icon(Icons.bar_chart, color: Theme.of(context).colorScheme.onSurfaceVariant),
                               const SizedBox(width: 8),
-                              Text(AppLocalizations.of(context)!.sellerRevenueChartLoadErr, style: TextStyle(color: Colors.grey[600])),
+                              Text(AppLocalizations.of(context)!.sellerRevenueChartLoadErr, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                             ],
                           ),
                         ),
@@ -367,8 +366,6 @@ class _NoStoreCard extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: onCreateStore,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppPalette.onBackground,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -1182,8 +1179,8 @@ class _RevenueChartCardState extends State<_RevenueChartCard> {
                   show: true,
                   drawVerticalLine: false,
                   horizontalInterval: maxY / 4,
-                  getDrawingHorizontalLine: (_) => const FlLine(
-                    color: Color(0xFFEEEEEE),
+                  getDrawingHorizontalLine: (_) => FlLine(
+                    color: Theme.of(context).dividerColor,
                     strokeWidth: 1,
                   ),
                 ),
@@ -1205,7 +1202,7 @@ class _RevenueChartCardState extends State<_RevenueChartCard> {
                         }
                         return Text(
                           label,
-                          style: const TextStyle(fontSize: 10, color: Colors.grey),
+                          style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant),
                         );
                       },
                     ),

@@ -7,6 +7,7 @@ import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/order_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/order_model.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class SellerOrdersScreen extends ConsumerStatefulWidget {
   const SellerOrdersScreen({super.key});
@@ -37,14 +38,14 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
     final ordersAsync = ref.watch(sellerOrdersProvider);
     final statsAsync = ref.watch(sellerOrderStatsProvider);
 
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FD),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
-          'Siparişlerim',
-          style: TextStyle(fontWeight: FontWeight.w800),
+        title: Text(
+          l10n.sellerOrdersTitle,
+          style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        backgroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
@@ -59,14 +60,14 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
           controller: _tabController,
           isScrollable: true,
           labelColor: AppPalette.storePrimary,
-          unselectedLabelColor: Colors.grey,
+          unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
           indicatorColor: AppPalette.storePrimary,
-          tabs: const [
-            Tab(text: 'Tümü'),
-            Tab(text: 'Bekleyen'),
-            Tab(text: 'Hazırlanan'),
-            Tab(text: 'Kargoda'),
-            Tab(text: 'Tamamlanan'),
+          tabs: [
+            Tab(text: l10n.sellerOrdersTabAll),
+            Tab(text: l10n.sellerOrdersTabPending),
+            Tab(text: l10n.sellerOrdersTabProcessing),
+            Tab(text: l10n.sellerOrdersTabShipped),
+            Tab(text: l10n.sellerOrdersTabCompleted),
           ],
         ),
       ),
@@ -127,12 +128,12 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
                   children: [
                     const Icon(Icons.error_outline, size: 64, color: Colors.red),
                     const SizedBox(height: 16),
-                    Text('Siparişler yüklenemedi: $e'),
+                    Text(l10n.sellerOrdersLoadErr(e.toString())),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
                       onPressed: () => ref.invalidate(sellerOrdersProvider),
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Yeniden Dene'),
+                      label: Text(l10n.storesListRetry),
                     ),
                   ],
                 ),
@@ -152,6 +153,7 @@ class _StatsSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
@@ -174,22 +176,22 @@ class _StatsSummary extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _StatItem(
-            label: 'Toplam',
+            label: l10n.sellerOrdersStatTotal,
             value: stats.totalOrders.toString(),
             icon: Icons.receipt_long,
           ),
           _StatItem(
-            label: 'Bekleyen',
+            label: l10n.sellerOrdersStatPending,
             value: stats.activeOrders.toString(),
             icon: Icons.pending_actions,
           ),
           _StatItem(
-            label: 'Satış',
+            label: l10n.sellerOrdersStatSales,
             value: stats.totalItemsSold.toString(),
             icon: Icons.shopping_bag,
           ),
           _StatItem(
-            label: 'Gelir',
+            label: l10n.sellerOrdersStatRevenue,
             value: '₺${stats.totalRevenue.toStringAsFixed(0)}',
             icon: Icons.monetization_on,
           ),
@@ -247,22 +249,22 @@ class _EmptyState extends StatelessWidget {
           Icon(
             Icons.receipt_long_outlined,
             size: 80,
-            color: Colors.grey.shade300,
+            color: Theme.of(context).colorScheme.outlineVariant,
           ),
           const SizedBox(height: 16),
           Text(
-            'Henüz sipariş yok',
+            AppLocalizations.of(context)!.sellerOrdersEmpty,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Colors.grey.shade600,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Ürünlerinize sipariş geldiğinde burada görünecek',
+            AppLocalizations.of(context)!.sellerOrdersEmptyDesc,
             style: TextStyle(
-              color: Colors.grey.shade500,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),
@@ -286,8 +288,8 @@ class _OrdersList extends ConsumerWidget {
     if (orders.isEmpty) {
       return Center(
         child: Text(
-          'Bu kategoride sipariş yok',
-          style: TextStyle(color: Colors.grey.shade600),
+          AppLocalizations.of(context)!.sellerOrdersCategoryEmpty,
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
     }
@@ -313,8 +315,8 @@ class _OrdersList extends ConsumerWidget {
                 ref.invalidate(sellerOrderStatsProvider);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Sipariş durumu güncellendi'),
+                    SnackBar(
+                      content: Text(AppLocalizations.of(context)!.sellerOrdersStatusUpdated),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -323,7 +325,7 @@ class _OrdersList extends ConsumerWidget {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Hata: $e'),
+                      content: Text(AppLocalizations.of(context)!.sellerOrdersStatusError(e.toString())),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -365,6 +367,7 @@ class _OrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final statusColor = _getStatusColor(order.status);
 
     return Container(
@@ -410,7 +413,7 @@ class _OrderCard extends StatelessWidget {
                 Text(
                   dateFormat.format(order.createdAt),
                   style: TextStyle(
-                    color: Colors.grey.shade600,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 12,
                   ),
                 ),
@@ -426,7 +429,7 @@ class _OrderCard extends StatelessWidget {
                 if (order.buyerName != null) ...[
                   Row(
                     children: [
-                      Icon(Icons.person_outline, size: 18, color: Colors.grey.shade600),
+                      Icon(Icons.person_outline, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
                       const SizedBox(width: 8),
                       Text(
                         order.buyerName!,
@@ -438,7 +441,7 @@ class _OrderCard extends StatelessWidget {
                           child: Text(
                             order.buyerEmail!,
                             style: TextStyle(
-                              color: Colors.grey.shade600,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                               fontSize: 12,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -457,9 +460,9 @@ class _OrderCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '${order.itemCount} ürün',
+                      l10n.sellerOrdersItemCount(order.itemCount),
                       style: TextStyle(
-                        color: Colors.grey.shade600,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -481,7 +484,7 @@ class _OrderCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: context.subtleBackground,
                 borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
               ),
               child: Row(
@@ -497,7 +500,7 @@ class _OrderCard extends StatelessWidget {
                           ),
                         ),
                         icon: const Icon(Icons.check, size: 18),
-                        label: const Text('Hazırla'),
+                        label: Text(l10n.sellerOrdersPrepare),
                       ),
                     ),
                   if (order.status == OrderStatus.processing) ...[
@@ -511,7 +514,7 @@ class _OrderCard extends StatelessWidget {
                           ),
                         ),
                         icon: const Icon(Icons.local_shipping, size: 18),
-                        label: const Text('Kargola'),
+                        label: Text(l10n.sellerOrdersShip),
                       ),
                     ),
                   ],
@@ -526,7 +529,7 @@ class _OrderCard extends StatelessWidget {
                           ),
                         ),
                         icon: const Icon(Icons.check_circle, size: 18),
-                        label: const Text('Teslim Edildi'),
+                        label: Text(l10n.sellerOrdersDelivered),
                       ),
                     ),
                   ],
@@ -561,7 +564,7 @@ class _OrderItemRow extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: context.cardColor,
               borderRadius: BorderRadius.circular(8),
               image: imageUrl != null
                   ? DecorationImage(
@@ -571,7 +574,7 @@ class _OrderItemRow extends StatelessWidget {
                   : null,
             ),
             child: imageUrl == null
-                ? Icon(Icons.image_outlined, color: Colors.grey.shade400)
+                ? Icon(Icons.image_outlined, color: Theme.of(context).colorScheme.outlineVariant)
                 : null,
           ),
           const SizedBox(width: 12),
@@ -586,10 +589,10 @@ class _OrderItemRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  '${item.quantity} adet x ₺${item.price.toStringAsFixed(2)}',
+                  AppLocalizations.of(context)!.sellerOrdersItemQty(item.quantity, item.price.toStringAsFixed(2)),
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],

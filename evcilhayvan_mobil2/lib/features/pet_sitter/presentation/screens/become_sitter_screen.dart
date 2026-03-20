@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
 import '../../domain/models/pet_sitter_model.dart';
 
@@ -26,25 +27,27 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
   final _expCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
 
-  // Hizmetler
+  // Services
   final List<_ServiceEntry> _services = [];
-  static const _serviceTypes = [
-    {'value': 'walking', 'label': 'Gezdirme'},
-    {'value': 'home_sitting', 'label': 'Ev Bakimi'},
-    {'value': 'boarding', 'label': 'Pansiyonda Bakim'},
-    {'value': 'daycare', 'label': 'Gunduz Bakimi'},
-    {'value': 'grooming', 'label': 'Timar/Bakim'},
+
+  List<Map<String, String>> _getServiceTypes(AppLocalizations l10n) => [
+    {'value': 'walking', 'label': l10n.sitterServiceWalkingLabel},
+    {'value': 'home_sitting', 'label': l10n.sitterServiceHomeSittingLabel},
+    {'value': 'boarding', 'label': l10n.sitterServiceBoardingLabel},
+    {'value': 'daycare', 'label': l10n.sitterServiceDaycareLabel},
+    {'value': 'grooming', 'label': l10n.sitterServiceGroomingLabel},
   ];
 
-  // Bakilan turler
-  final Set<String> _speciesServed = {'dog'};
-  static const _speciesOptions = [
-    {'value': 'dog', 'label': 'Kopek'},
-    {'value': 'cat', 'label': 'Kedi'},
-    {'value': 'bird', 'label': 'Kus'},
-    {'value': 'rabbit', 'label': 'Tavsan'},
-    {'value': 'other', 'label': 'Diger'},
+  List<Map<String, String>> _getSpeciesOptions(AppLocalizations l10n) => [
+    {'value': 'dog', 'label': l10n.sitterSpeciesDog},
+    {'value': 'cat', 'label': l10n.sitterSpeciesCat},
+    {'value': 'bird', 'label': l10n.sitterSpeciesBird},
+    {'value': 'rabbit', 'label': l10n.sitterSpeciesRabbit},
+    {'value': 'other', 'label': l10n.sitterSpeciesOther},
   ];
+
+  // Species served
+  final Set<String> _speciesServed = {'dog'};
 
   double? _lat;
   double? _lng;
@@ -101,7 +104,10 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
         perm = await Geolocator.requestPermission();
       }
       if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Konum izni gerekli')));
+        if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.sitterLocationPermRequired)));
+        }
         setState(() => _locationLoading = false);
         return;
       }
@@ -109,7 +115,10 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
       setState(() { _lat = pos.latitude; _lng = pos.longitude; _locationLoading = false; });
     } catch (e) {
       setState(() => _locationLoading = false);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Konum alinamadi: $e')));
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.sitterLocationErr(e.toString()))));
+      }
     }
   }
 
@@ -141,7 +150,8 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_speciesServed.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('En az bir hayvan turu secin')));
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.sitterSpeciesRequired)));
       return;
     }
 
@@ -180,16 +190,20 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
 
       ref.invalidate(mySitterProfileProvider);
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.existing != null ? 'Profil guncellendi!' : 'Bakici profili olusturuldu!'),
+            content: Text(widget.existing != null ? l10n.sitterProfileUpdated : l10n.sitterProfileCreated),
             backgroundColor: Colors.green,
           ),
         );
         context.pop();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red));
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.sitterSubmitErr(e.toString())), backgroundColor: Colors.red));
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -197,12 +211,15 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isEdit = widget.existing != null;
+    final serviceTypes = _getServiceTypes(l10n);
+    final speciesOptions = _getSpeciesOptions(l10n);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Profili Duzenle' : 'Bakici Ol'),
+        title: Text(isEdit ? l10n.sitterEditProfile : l10n.sitterBecomeSitterBtn),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -245,37 +262,37 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Isim
-              Text('Temel Bilgiler', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              // Basic Info
+              Text(l10n.sitterBasicInfo, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _nameCtrl,
-                decoration: _deco('Goruntulenen Isim *'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Isim gerekli' : null,
+                decoration: _deco(l10n.sitterDisplayName),
+                validator: (v) => (v == null || v.trim().isEmpty) ? l10n.sitterDisplayNameRequired : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _bioCtrl,
-                decoration: _deco('Hakkinda / Tanitim'),
+                decoration: _deco(l10n.sitterBio),
                 maxLines: 3,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _expCtrl,
-                decoration: _deco('Deneyim'),
+                decoration: _deco(l10n.sitterExperience),
                 maxLines: 2,
               ),
               const SizedBox(height: 24),
 
-              // Konum
-              Text('Konum', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              // Location
+              Text(l10n.sitterLocation, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               ElevatedButton.icon(
                 onPressed: _locationLoading ? null : _getLocation,
                 icon: _locationLoading
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                     : const Icon(Icons.my_location),
-                label: Text(_lat != null ? 'Konum Alindi ✓' : 'Konumumu Kullan'),
+                label: Text(_lat != null ? l10n.sitterLocationObtained : l10n.sitterUseLocation),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _lat != null ? Colors.green : null,
                   foregroundColor: _lat != null ? Colors.white : null,
@@ -284,17 +301,17 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _addressCtrl,
-                decoration: _deco('Adres / Semt'),
+                decoration: _deco(l10n.sitterAddress),
                 maxLines: 2,
               ),
               const SizedBox(height: 24),
 
-              // Bakilan hayvanlar
-              Text('Hangi Hayvanlarla Calisiyorsunuz?', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              // Species
+              Text(l10n.sitterSpeciesTitle, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
-                children: _speciesOptions.map((opt) {
+                children: speciesOptions.map((opt) {
                   final selected = _speciesServed.contains(opt['value']);
                   return FilterChip(
                     label: Text(opt['label']!),
@@ -310,28 +327,28 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Hizmetler
+              // Services
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Sundugunuz Hizmetler', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(l10n.sitterServicesTitle, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                   TextButton.icon(
                     onPressed: () {
                       final usedTypes = _services.map((s) => s.type).toSet();
-                      final available = _serviceTypes.where((t) => !usedTypes.contains(t['value'])).toList();
+                      final available = serviceTypes.where((t) => !usedTypes.contains(t['value'])).toList();
                       if (available.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tum hizmetler eklendi')));
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.sitterServicesAllAdded)));
                         return;
                       }
                       setState(() => _services.add(_ServiceEntry(type: available.first['value']!)));
                     },
                     icon: const Icon(Icons.add),
-                    label: const Text('Ekle'),
+                    label: Text(l10n.sitterServicesAdd),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              ..._services.asMap().entries.map((entry) => _buildServiceRow(entry.key, entry.value, theme)),
+              ..._services.asMap().entries.map((entry) => _buildServiceRow(entry.key, entry.value, theme, l10n, serviceTypes)),
               const SizedBox(height: 32),
 
               // Submit
@@ -345,7 +362,7 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
                 ),
                 child: _loading
                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : Text(isEdit ? 'Profili Guncelle' : 'Bakici Profili Olustur',
+                    : Text(isEdit ? l10n.sitterUpdateBtn : l10n.sitterCreateBtn,
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
               const SizedBox(height: 40),
@@ -356,12 +373,12 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
     );
   }
 
-  Widget _buildServiceRow(int index, _ServiceEntry entry, ThemeData theme) {
+  Widget _buildServiceRow(int index, _ServiceEntry entry, ThemeData theme, AppLocalizations l10n, List<Map<String, String>> serviceTypes) {
     final usedTypes = _services.asMap().entries
         .where((e) => e.key != index)
         .map((e) => e.value.type)
         .toSet();
-    final availableTypes = _serviceTypes.where((t) => !usedTypes.contains(t['value']) || t['value'] == entry.type).toList();
+    final availableTypes = serviceTypes.where((t) => !usedTypes.contains(t['value']) || t['value'] == entry.type).toList();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -376,7 +393,7 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: entry.type,
-                    decoration: _deco('Hizmet Turu').copyWith(contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                    decoration: _deco(l10n.sitterServiceType).copyWith(contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
                     items: availableTypes.map((t) => DropdownMenuItem(value: t['value'], child: Text(t['label']!))).toList(),
                     onChanged: (v) => setState(() => entry.type = v ?? entry.type),
                   ),
@@ -395,7 +412,7 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: entry.hourCtrl,
-                    decoration: _deco('Saat Fiyati (TL)').copyWith(contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                    decoration: _deco(l10n.sitterHourlyPrice).copyWith(contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
                     keyboardType: TextInputType.number,
                   ),
                 ),
@@ -403,7 +420,7 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: entry.dayCtrl,
-                    decoration: _deco('Gun Fiyati (TL)').copyWith(contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                    decoration: _deco(l10n.sitterDailyPrice).copyWith(contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
                     keyboardType: TextInputType.number,
                   ),
                 ),
@@ -418,7 +435,6 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
   InputDecoration _deco(String label) => InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.white,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       );
 }

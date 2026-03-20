@@ -141,7 +141,7 @@ class Pet {
         }
       }
     } catch (e) {
-      print('⚠️ Failed to parse Pet owner: $e');
+      debugPrint('⚠️ Failed to parse Pet owner: $e');
       ownerObj = null;
     }
 

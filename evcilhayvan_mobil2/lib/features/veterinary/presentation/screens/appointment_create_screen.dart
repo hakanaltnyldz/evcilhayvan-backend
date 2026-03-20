@@ -7,6 +7,7 @@ import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/pets/data/repositories/pets_repository.dart';
 import 'package:evcilhayvan_mobil2/features/pets/domain/models/pet_model.dart';
 import '../../data/repositories/appointment_repository.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class AppointmentCreateScreen extends ConsumerStatefulWidget {
   final String vetId;
@@ -64,13 +65,13 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
       });
     } catch (e) {
       setState(() => _slotsLoading = false);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Slotlar alinamadi: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.apptCreateSlotsError(e.toString()))));
     }
   }
 
   Future<void> _submit() async {
     if (_selectedPet == null || _selectedDate == null || _selectedSlot == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lutfen pet, tarih ve saat secin')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.apptCreateValidation)));
       return;
     }
     setState(() => _loading = true);
@@ -92,11 +93,11 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Randevu olusturuldu!')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.apptCreateSuccess)));
         context.pop();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.apptCreateError(e.toString()))));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -104,11 +105,12 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final myPetsAsync = ref.watch(myPetsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Randevu Olustur'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(l10n.apptCreateTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -132,14 +134,14 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
             const SizedBox(height: 20),
 
             // Pet secimi
-            Text('Evcil Hayvan Secin', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+            Text(l10n.apptCreateSelectPet, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             myPetsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text('Petler yuklenemedi: $e'),
+              error: (e, _) => Text(l10n.apptCreatePetsError(e.toString())),
               data: (pets) {
                 if (pets.isEmpty) {
-                  return const Text('Henuz evcil hayvan eklememissiniz');
+                  return Text(l10n.apptCreateNoPets);
                 }
                 return Wrap(
                   spacing: 8,
@@ -159,7 +161,7 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
             const SizedBox(height: 20),
 
             // Tarih secimi
-            Text('Tarih', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+            Text(l10n.apptCreateDate, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             InkWell(
               onTap: _pickDate,
@@ -178,7 +180,7 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
                     Text(
                       _selectedDate != null
                           ? '${_selectedDate!.day.toString().padLeft(2, '0')}.${_selectedDate!.month.toString().padLeft(2, '0')}.${_selectedDate!.year}'
-                          : 'Tarih secin',
+                          : l10n.apptCreateSelectDateBtn,
                       style: theme.textTheme.bodyLarge,
                     ),
                   ],
@@ -189,7 +191,7 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
 
             // Saat secimi
             if (_selectedDate != null) ...[
-              Text('Saat', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+              Text(l10n.apptCreateTime, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               if (_slotsLoading)
                 const Center(child: CircularProgressIndicator())
@@ -197,7 +199,7 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: const Text('Bu tarihte uygun slot bulunamadi', textAlign: TextAlign.center),
+                  child: Text(l10n.apptCreateNoSlots, textAlign: TextAlign.center),
                 )
               else
                 Wrap(
@@ -219,9 +221,8 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
             TextFormField(
               controller: _reasonController,
               decoration: InputDecoration(
-                labelText: 'Randevu Nedeni',
+                labelText: l10n.apptCreateReason,
                 filled: true,
-                fillColor: Colors.white,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               ),
             ),
@@ -231,9 +232,8 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
             TextFormField(
               controller: _notesController,
               decoration: InputDecoration(
-                labelText: 'Notlar (opsiyonel)',
+                labelText: l10n.apptCreateNotes,
                 filled: true,
-                fillColor: Colors.white,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               ),
               maxLines: 3,
@@ -250,7 +250,7 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
               ),
               child: _loading
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Randevu Olustur'),
+                  : Text(l10n.apptCreateBtn),
             ),
           ],
         ),

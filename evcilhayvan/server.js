@@ -191,7 +191,9 @@ app.use("/api", adminSellerRoutes);
 app.use("/api/my-adverts", myAdvertRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/admin", auditRoutes);
-app.use("/api/test", testSocketRoutes);
+if (process.env.NODE_ENV !== 'production') {
+  app.use("/api/test", testSocketRoutes);
+}
 app.use("/api/favorites", favoriteRoutes);
 app.use("/api", reviewRoutes);
 app.use("/api", couponRoutes);

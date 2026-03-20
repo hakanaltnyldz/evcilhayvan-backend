@@ -27,13 +27,12 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FD),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           l10n.productMgmtTitle,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        backgroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
@@ -113,14 +112,14 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                         Icon(
                           Icons.inventory_2_outlined,
                           size: 80,
-                          color: Colors.grey.shade300,
+                          color: Theme.of(context).colorScheme.outlineVariant,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           _filter == 'all' ? l10n.productMgmtNoProducts : l10n.productMgmtNoCategoryProducts,
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.grey.shade600,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -294,7 +293,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                         Text(
                           product.displayName,
                           style: TextStyle(
-                            color: Colors.grey.shade600,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w500,
                           ),
                           maxLines: 1,
@@ -310,7 +309,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: context.cardColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -596,16 +595,16 @@ class _FilterChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? chipColor : Colors.grey.shade100,
+          color: isSelected ? chipColor : context.cardColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? chipColor : Colors.grey.shade300,
+            color: isSelected ? chipColor : Theme.of(context).dividerColor,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey.shade700,
+            color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -639,10 +638,10 @@ class _ActionButton extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? btnColor.withOpacity(0.1) : Colors.grey.shade50,
+          color: isSelected ? btnColor.withOpacity(0.1) : context.subtleBackground,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? btnColor : Colors.grey.shade200,
+            color: isSelected ? btnColor : Theme.of(context).dividerColor,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -650,7 +649,7 @@ class _ActionButton extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? btnColor : Colors.grey.shade500,
+              color: isSelected ? btnColor : Theme.of(context).colorScheme.onSurfaceVariant,
               size: 24,
             ),
             const SizedBox(height: 4),
@@ -658,7 +657,7 @@ class _ActionButton extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: 12,
-                color: isSelected ? btnColor : Colors.grey.shade600,
+                color: isSelected ? btnColor : Theme.of(context).colorScheme.onSurfaceVariant,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
@@ -718,7 +717,7 @@ class _ProductCard extends StatelessWidget {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: context.cardColor,
                     borderRadius: BorderRadius.circular(12),
                     image: imageUrl != null
                         ? DecorationImage(
@@ -731,7 +730,7 @@ class _ProductCard extends StatelessWidget {
                       ? Icon(
                           Icons.image_outlined,
                           size: 32,
-                          color: Colors.grey.shade400,
+                          color: Theme.of(context).colorScheme.outlineVariant,
                         )
                       : null,
                 ),
@@ -763,7 +762,7 @@ class _ProductCard extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: product.isActive
                                   ? Colors.green.shade50
-                                  : Colors.grey.shade100,
+                                  : context.cardColor,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -773,7 +772,7 @@ class _ProductCard extends StatelessWidget {
                                 fontWeight: FontWeight.w700,
                                 color: product.isActive
                                     ? Colors.green.shade700
-                                    : Colors.grey.shade600,
+                                    : Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ),
@@ -859,7 +858,7 @@ class _ProductCard extends StatelessWidget {
           // Action buttons
           Container(
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
+              color: context.subtleBackground,
               borderRadius: const BorderRadius.vertical(
                 bottom: Radius.circular(16),
               ),

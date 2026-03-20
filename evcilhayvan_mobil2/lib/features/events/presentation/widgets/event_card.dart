@@ -51,7 +51,7 @@ class EventCard extends StatelessWidget {
                     height: 160,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    placeholder: (_, __) => Container(height: 160, color: Colors.grey.shade200),
+                    placeholder: (_, __) => Container(height: 160, color: Theme.of(context).colorScheme.surfaceVariant),
                     errorWidget: (_, __, ___) => _NoPhotoPlaceholder(color: catColor),
                   ),
                   if (event.isCancelled)
@@ -99,14 +99,14 @@ class EventCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                      Icon(Icons.calendar_today, size: 14, color: theme.colorScheme.onSurfaceVariant),
                       const SizedBox(width: 4),
-                      Text(fmt.format(event.startDate), style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                      Text(fmt.format(event.startDate), style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 13)),
                       if (event.distanceKm != null) ...[
                         const SizedBox(width: 12),
-                        const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                        Icon(Icons.location_on, size: 14, color: theme.colorScheme.onSurfaceVariant),
                         const SizedBox(width: 2),
-                        Text('${event.distanceKm!.toStringAsFixed(1)} km', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                        Text('${event.distanceKm!.toStringAsFixed(1)} km', style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 13)),
                       ],
                     ],
                   ),
@@ -114,12 +114,12 @@ class EventCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.place, size: 14, color: Colors.grey),
+                        Icon(Icons.place, size: 14, color: theme.colorScheme.onSurfaceVariant),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             event.venueName ?? event.address ?? '',
-                            style: const TextStyle(color: Colors.grey, fontSize: 13),
+                            style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 13),
                             maxLines: 1, overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -182,11 +182,11 @@ class _AttendeeChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.group, size: 16, color: Colors.grey),
+        Icon(Icons.group, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
         const SizedBox(width: 4),
         Text(
           max != null ? '$count/$max katilimci' : '$count katilimci',
-          style: const TextStyle(color: Colors.grey, fontSize: 13),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
         ),
       ],
     );

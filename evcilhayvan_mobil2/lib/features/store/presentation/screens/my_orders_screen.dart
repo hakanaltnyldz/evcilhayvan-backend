@@ -26,11 +26,8 @@ class MyOrdersScreen extends ConsumerWidget {
     final ordersAsync = ref.watch(myOrdersProvider);
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text(l10n.orderMyOrdersTitle),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
         elevation: 0,
       ),
       body: ordersAsync.when(
@@ -40,16 +37,16 @@ class MyOrdersScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.shopping_bag_outlined, size: 80, color: Colors.grey[400]),
+                  Icon(Icons.shopping_bag_outlined, size: 80, color: Theme.of(context).colorScheme.outlineVariant),
                   const SizedBox(height: 16),
                   Text(
                     l10n.orderNoOrders,
-                    style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.onSurface),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     l10n.orderNoOrdersDesc,
-                    style: TextStyle(color: Colors.grey[500]),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -280,7 +277,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                     children: [
                       Text(
                         _formatDate(order.createdAt),
-                        style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                       ),
                       Text(
                         '₺${order.totalAmount.toStringAsFixed(2)}',
@@ -298,11 +295,11 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                     children: [
                       Text(
                         l10n.orderItemCount(order.items.length),
-                        style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                       ),
                       Icon(
                         _expanded ? Icons.expand_less : Icons.expand_more,
-                        color: Colors.grey,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ],
                   ),
@@ -329,7 +326,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.grey[50],
+                      color: context.subtleBackground,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Column(
@@ -340,7 +337,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                               width: 50,
                               height: 50,
                               decoration: BoxDecoration(
-                                color: Colors.grey[200],
+                                color: context.cardColor,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: item.image != null
@@ -352,10 +349,10 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                                             : '$apiBaseUrl${item.image}',
                                         fit: BoxFit.cover,
                                         errorBuilder: (_, __, ___) =>
-                                            const Icon(Icons.image, color: Colors.grey),
+                                            Icon(Icons.image, color: Theme.of(context).colorScheme.outlineVariant),
                                       ),
                                     )
-                                  : const Icon(Icons.image, color: Colors.grey),
+                                  : Icon(Icons.image, color: Theme.of(context).colorScheme.outlineVariant),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -373,7 +370,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                                       item.quantity,
                                       item.price.toStringAsFixed(2),
                                     ),
-                                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12),
                                   ),
                                 ],
                               ),
@@ -399,7 +396,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                                 Text(
                                   l10n.orderMyRating(item.myReview!.rating),
                                   style: TextStyle(
-                                    color: Colors.grey[600],
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                                     fontSize: 12,
                                   ),
                                 ),
@@ -511,7 +508,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                                       Text(
                                         order.trackingCompany!,
                                         style: TextStyle(
-                                          color: Colors.grey[600],
+                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                                           fontSize: 12,
                                         ),
                                       ),
@@ -562,7 +559,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                     const SizedBox(height: 8),
                     Text(
                       order.shippingAddress!.fullAddress,
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                     ),
                   ],
 

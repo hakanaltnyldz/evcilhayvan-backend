@@ -31,6 +31,7 @@ void main() async {
 
   await FcmService.init();
   final onboardingSeen = await loadOnboardingSeen();
+  final themeSelected = await loadThemeSelected();
 
   // Load saved locale once before runApp (avoids calling load() on every build)
   final prefs = await SharedPreferences.getInstance();
@@ -40,6 +41,7 @@ void main() async {
   runApp(ProviderScope(
     overrides: [
       onboardingSeenProvider.overrideWith((ref) => onboardingSeen),
+      themeSelectedProvider.overrideWith((ref) => themeSelected),
       localeProvider.overrideWith((ref) => LocaleNotifier(savedLocale)),
     ],
     child: const MyApp(),

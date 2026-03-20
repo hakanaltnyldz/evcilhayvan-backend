@@ -43,7 +43,7 @@ class LostFoundCard extends StatelessWidget {
                           imageUrl: _resolvePhoto(report.firstPhoto),
                           fit: BoxFit.cover,
                           placeholder: (_, __) => Container(
-                            color: Colors.grey.shade200,
+                            color: Theme.of(context).colorScheme.surfaceVariant,
                             child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                           ),
                           errorWidget: (_, __, ___) => _noPhotoPlaceholder(isLost),
@@ -166,11 +166,11 @@ class LostFoundCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      Icon(Icons.pets, size: 14, color: Colors.grey.shade600),
+                      Icon(Icons.pets, size: 14, color: theme.colorScheme.onSurfaceVariant),
                       const SizedBox(width: 4),
                       Text('${report.speciesLabel} - ${report.genderLabel}', style: theme.textTheme.bodySmall),
                       const Spacer(),
-                      Icon(Icons.calendar_today, size: 14, color: Colors.grey.shade600),
+                      Icon(Icons.calendar_today, size: 14, color: theme.colorScheme.onSurfaceVariant),
                       const SizedBox(width: 4),
                       Text(dateStr, style: theme.textTheme.bodySmall),
                     ],
@@ -179,12 +179,12 @@ class LostFoundCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.location_on, size: 14, color: Colors.grey.shade600),
+                        Icon(Icons.location_on, size: 14, color: theme.colorScheme.onSurfaceVariant),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             report.lastSeenAddress!,
-                            style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+                            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),

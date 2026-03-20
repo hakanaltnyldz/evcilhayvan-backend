@@ -17,6 +17,14 @@ class ModernBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (isDark) {
+      // Dark modda gradient yerine düz scaffold rengi kullan
+      return Container(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: child,
+      );
+    }
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(

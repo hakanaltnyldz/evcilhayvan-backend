@@ -7,6 +7,7 @@ import { sendOk, sendError } from "../utils/apiResponse.js";
 import User from "../models/User.js";
 import Pet from "../models/Pet.js";
 import Order from "../models/Order.js";
+import Post from "../models/Post.js";
 import UserReport from "../models/UserReport.js";
 
 const router = Router();
@@ -195,6 +196,79 @@ router.patch(
       if (!report) return sendError(res, 404, "Şikayet bulunamadı", "report_not_found");
 
       return sendOk(res, 200, { message: "Şikayet güncellendi", report });
+    } catch (err) {
+      return sendError(res, 500, "İşlem başarısız", "internal_error", err.message);
+    }
+  }
+);
+
+// GET /api/admin/orders?page=1&status=all|pending|processing|shipped|delivered|cancelled
+router.get("/orders", async (req, res) => {
+  try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = 20;
+    const skip = (page - 1) * limit;
+    const status = req.query.status;
+
+    const filter = {};
+    const validStatuses = ["pending", "processing", "shipped", "delivered", "cancelled"];
+    if (status && validStatuses.includes(status)) filter.status = status;
+
+    const [orders, total] = await Promise.all([
+      Order.find(filter)
+        .populate("user", "name email")
+        .select("user totalAmount status paymentStatus items createdAt")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Order.countDocuments(filter),
+    ]);
+
+    return sendOk(res, 200, { orders, total, page, hasMore: skip + orders.length < total });
+  } catch (err) {
+    return sendError(res, 500, "Siparişler alınamadı", "internal_error", err.message);
+  }
+});
+
+// GET /api/admin/posts?page=1
+router.get("/posts", async (req, res) => {
+  try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = 20;
+    const skip = (page - 1) * limit;
+
+    const [posts, total] = await Promise.all([
+      Post.find()
+        .populate("userId", "name avatarUrl")
+        .select("userId userName content photos likes comments isActive createdAt")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Post.countDocuments(),
+    ]);
+
+    return sendOk(res, 200, { posts, total, page, hasMore: skip + posts.length < total });
+  } catch (err) {
+    return sendError(res, 500, "Gönderiler alınamadı", "internal_error", err.message);
+  }
+});
+
+// PATCH /api/admin/posts/:id/hide
+router.patch(
+  "/posts/:id/hide",
+  [param("id").isMongoId().withMessage("Geçersiz gönderi ID")],
+  async (req, res) => {
+    try {
+      const post = await Post.findById(req.params.id);
+      if (!post) return sendError(res, 404, "Gönderi bulunamadı", "post_not_found");
+
+      post.isActive = !post.isActive;
+      await post.save();
+
+      return sendOk(res, 200, {
+        message: post.isActive ? "Gönderi yayında" : "Gönderi gizlendi",
+        post: { id: post._id, isActive: post.isActive },
+      });
     } catch (err) {
       return sendError(res, 500, "İşlem başarısız", "internal_error", err.message);
     }

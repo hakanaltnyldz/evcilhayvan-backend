@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
 import '../../domain/models/pet_sitter_model.dart';
 import '../widgets/sitter_card.dart';
@@ -24,13 +25,13 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
   bool _loading = true;
   String? _error;
 
-  final _services = [
-    {'value': null, 'label': 'Tumu'},
-    {'value': 'walking', 'label': 'Gezdirme'},
-    {'value': 'home_sitting', 'label': 'Ev Bakimi'},
-    {'value': 'boarding', 'label': 'Pansiyon'},
-    {'value': 'daycare', 'label': 'Gunduz Bakimi'},
-    {'value': 'grooming', 'label': 'Timar'},
+  List<Map<String, Object?>> _getServices(AppLocalizations l10n) => [
+    {'value': null, 'label': l10n.sitterServiceAll},
+    {'value': 'walking', 'label': l10n.sitterServiceWalking},
+    {'value': 'home_sitting', 'label': l10n.sitterServiceHomeSitting},
+    {'value': 'boarding', 'label': l10n.sitterServiceBoarding},
+    {'value': 'daycare', 'label': l10n.sitterServiceDaycare},
+    {'value': 'grooming', 'label': l10n.sitterServiceGrooming},
   ];
 
   @override
@@ -65,50 +66,54 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final user = ref.watch(authProvider);
+    final services = _getServices(l10n);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Bakici Bul'),
+        title: Text(l10n.sitterFindTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           if (user != null)
             IconButton(
               icon: const Icon(Icons.assignment),
-              tooltip: 'Rezervasyonlarim',
+              tooltip: l10n.sitterMyBookingsTooltip,
               onPressed: () => context.pushNamed('my-bookings'),
             ),
         ],
       ),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFe8f5e9), Color(0xFFF8F9FB)],
+            colors: Theme.of(context).brightness == Brightness.dark
+                ? [const Color(0xFF0E1F16), const Color(0xFF12111F)]
+                : [const Color(0xFFe8f5e9), const Color(0xFFF8F9FB)],
             begin: Alignment.topCenter, end: Alignment.bottomCenter,
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // Hizmet filtreleri
+              // Service filters
               SizedBox(
                 height: 48,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  itemCount: _services.length,
+                  itemCount: services.length,
                   itemBuilder: (context, i) {
-                    final s = _services[i];
+                    final s = services[i];
                     final selected = _selectedService == s['value'];
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: ChoiceChip(
-                        label: Text(s['label']!),
+                        label: Text(s['label']! as String),
                         selected: selected,
                         onSelected: (_) {
-                          setState(() => _selectedService = s['value']);
+                          setState(() => _selectedService = s['value'] as String?);
                           _load();
                         },
                         selectedColor: AppPalette.primary.withOpacity(0.2),
@@ -117,7 +122,7 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
                   },
                 ),
               ),
-              // Liste
+              // List
               Expanded(
                 child: _loading
                     ? const Center(child: CircularProgressIndicator())
@@ -128,12 +133,12 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
                                 onRefresh: _load,
                                 child: ListView(
                                   physics: const AlwaysScrollableScrollPhysics(),
-                                  children: const [
-                                    SizedBox(height: 80),
+                                  children: [
+                                    const SizedBox(height: 80),
                                     EmptyState(
                                       icon: Icons.home_work_outlined,
-                                      title: 'Yakında bakıcı bulunamadı',
-                                      subtitle: 'İlk bakıcı profilini oluştur ve diğer kullanıcılara hizmet ver!',
+                                      title: l10n.sitterEmptyTitle,
+                                      subtitle: l10n.sitterEmptySubtitle,
                                     ),
                                   ],
                                 ),
@@ -161,7 +166,7 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
               backgroundColor: Colors.green.shade600,
               foregroundColor: Colors.white,
               icon: const Icon(Icons.add),
-              label: const Text('Bakici Ol'),
+              label: Text(l10n.sitterBecomeSitterBtn),
             )
           : null,
     );

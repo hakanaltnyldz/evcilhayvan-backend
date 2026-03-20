@@ -27,11 +27,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     final currentUser = ref.watch(authProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FF),
       appBar: AppBar(
         title: const Text('Sosyal Feed', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
         elevation: 0,
         actions: [
           IconButton(
@@ -60,11 +57,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.photo_album_outlined, size: 80, color: Colors.grey.shade300),
+                  Icon(Icons.photo_album_outlined, size: 80, color: Theme.of(context).colorScheme.outlineVariant),
                   const SizedBox(height: 16),
-                  const Text('Henuz gonderi yok', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                  Text('Henuz gonderi yok', style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 8),
-                  const Text('Ilk gonderiyi sen paylas!', style: TextStyle(color: Colors.grey)),
+                  Text('Ilk gonderiyi sen paylas!', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                 ],
               ),
             );
@@ -227,19 +224,19 @@ class _PostCard extends StatelessWidget {
                       if (post.petName != null)
                         Row(
                           children: [
-                            const Icon(Icons.pets, size: 12, color: Colors.grey),
+                            Icon(Icons.pets, size: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
                             const SizedBox(width: 4),
-                            Text(post.petName!, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                            Text(post.petName!, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                           ],
                         ),
                       if (timeStr.isNotEmpty)
-                        Text(timeStr, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                        Text(timeStr, style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                     ],
                   ),
                 ),
                 if (onDelete != null)
                   IconButton(
-                    icon: const Icon(Icons.more_vert, color: Colors.grey),
+                    icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.onSurfaceVariant),
                     onPressed: onDelete,
                     iconSize: 20,
                   ),
@@ -268,8 +265,8 @@ class _PostCard extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorWidget: (_, __, ___) => Container(
                           height: 200,
-                          color: Colors.grey.shade100,
-                          child: const Icon(Icons.broken_image, size: 40, color: Colors.grey),
+                          color: Theme.of(context).colorScheme.surfaceVariant,
+                          child: Icon(Icons.broken_image, size: 40, color: Theme.of(context).colorScheme.outlineVariant),
                         ),
                       ),
                     )
@@ -309,7 +306,7 @@ class _PostCard extends StatelessWidget {
                 _ActionBtn(
                   icon: Icons.chat_bubble_outline_rounded,
                   label: '${post.comments.length}',
-                  color: Colors.grey,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   onTap: onComment,
                 ),
               ],
@@ -372,7 +369,7 @@ class _AnimatedLikeBtnState extends State<_AnimatedLikeBtn> {
 
   @override
   Widget build(BuildContext context) {
-    final color = widget.isLiked ? Colors.red : Colors.grey;
+    final color = widget.isLiked ? Colors.red : Theme.of(context).colorScheme.onSurfaceVariant;
 
     return InkWell(
       onTap: _handleTap,
@@ -480,7 +477,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
               margin: const EdgeInsets.only(top: 12),
               width: 40,
               height: 4,
-              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+              decoration: BoxDecoration(color: Theme.of(context).dividerColor, borderRadius: BorderRadius.circular(2)),
             ),
             Padding(
               padding: const EdgeInsets.all(16),
@@ -490,7 +487,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
             const Divider(height: 1),
             Expanded(
               child: _comments.isEmpty
-                  ? const Center(child: Text('Henuz yorum yok. Ilk yorumu sen yaz!', style: TextStyle(color: Colors.grey)))
+                  ? Center(child: Text('Henuz yorum yok. Ilk yorumu sen yaz!', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)))
                   : ListView.builder(
                       controller: sc,
                       padding: const EdgeInsets.all(12),
@@ -520,7 +517,6 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                       decoration: InputDecoration(
                         hintText: 'Bir yorum yaz...',
                         filled: true,
-                        fillColor: Colors.grey.shade100,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide.none,

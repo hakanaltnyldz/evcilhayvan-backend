@@ -1346,5 +1346,867 @@
     }
   },
   "vetSearchPrompt": "Aramak için yukarıya yazın veya konumunuzu paylaşın",
-  "vetSearchNoResults": "Sonuç bulunamadı"
+  "vetSearchNoResults": "Sonuç bulunamadı",
+
+  "vetHomeTabSearch": "Ara",
+  "vetHomeTabAppointments": "Randevular",
+  "vetHomeTabVaccine": "Aşı Takvimi",
+  "vetHomeSearchHint": "Veteriner kliniği ara...",
+  "vetHomeNearMe": "Yakınımda",
+  "vetHomeSaveClinic": "Klinik Kaydet",
+  "vetHomeGoogleSearch": "Google ile Ara",
+  "vetHomeReminders": "Hatırlatmalar",
+  "vetHomeNearbyTitle": "Yakınındaki Veterinerler",
+  "vetHomeNearbyPermRequired": "Yakın veterinerleri görmek için konum izni verin",
+  "vetHomeNearbyEmpty": "Yakında veteriner bulunamadı",
+  "vetHomeApptsEmpty": "Henüz randevunuz yok",
+  "vetHomeApptsEmptyDesc": "Veteriner arayın ve randevu alın",
+  "vetHomeVaccineTitle": "Aşı Hatırlatmaları",
+  "vetHomeVaccineEmpty": "Yaklaşan aşı hatırlatması yok",
+  "vetHomeVaccineEmptyDesc": "Evcil hayvanınızın profil sayfasından aşı takvimini görüntüleyin",
+  "vetHomeVaccineOverdue": "Gecikti",
+  "vetHomeVaccineUpcoming": "Yaklaşıyor",
+  "vetHomeLoadError": "Hata: {error}",
+  "@vetHomeLoadError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "storeHomeLive": "Canlı Mağaza",
+  "storeHomeLiveDesc": "Gerçek mağazalar ve gerçek ürünler burada.",
+  "storeHomeQuickExplore": "Hızlı keşfet",
+  "storeHomeAll": "Tümü",
+  "storeHomeFeatured": "Öne çıkan mağazalar",
+  "storeHomeNoDesc": "Açıklama yok.",
+  "storeHomeGoToStore": "Mağazaya git",
+  "storeHomeProducts": "Ürünler",
+  "storeHomeLatest": "En Yeni",
+  "storeNoDescAdded": "Açıklama eklenmemiş.",
+  "storeHomeCategoryLoadErr": "Kategoriler yüklenemedi.",
+  "storeHomeFeaturedEmpty": "Şimdilik öne çıkan mağaza yok.",
+  "storeHomeStoresLoadErr": "Mağazalar yüklenemedi.",
+  "storeHomeProductsEmpty": "Ürün bulunamadı",
+  "storeHomeProductsNotFound": "Arama kriterlerinize uygun ürün yok.",
+  "storeHomeProductsNone": "Henüz ürün eklenmemiş.",
+  "storeHomeProductsLoadErr": "Ürünler yüklenemedi.",
+  "storeHomeFiltersClear": "Filtreleri temizle",
+  "storeHomeMyStoreLoadErr": "Mağazanız alınamadı: {error}",
+  "@storeHomeMyStoreLoadErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "storeHomeCategoryNotFound": "Kategori bulunamadı.",
+  "storeHomeSearchHint": "Ürün veya mağaza ara",
+  "storeHomeSearchBtn": "Ara",
+  "storeHomeOpenStore": "Mağaza aç, ürünlerini vitrine çıkar!",
+  "storeHomeOpenStoreDesc": "Dakikalar içinde başvur, petseverlere ulaş.",
+  "storeHomeOpenStoreBtn": "Mağaza Aç",
+  "storeHomeRetry": "Yeniden dene",
+  "storeHomeSoldOut": "Tükendi",
+  "storeHomeLastStock": "Son {count}",
+  "@storeHomeLastStock": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "storePriceAsc": "Fiyat ↑",
+  "storePriceDesc": "Fiyat ↓",
+  "storeNameAz": "A–Z",
+
+  "storesListTitle": "Mağazalar",
+  "storesListSearchHint": "Mağaza ara...",
+  "storesListEmpty": "Henüz mağaza yok",
+  "storesListSearchEmpty": "Arama sonucu bulunamadı",
+  "storesListLoadErr": "Mağazalar yüklenemedi",
+  "storesListRetry": "Yeniden Dene",
+
+  "storeDetailTitle": "Mağaza",
+  "storeDetailLoadErr": "Mağaza yüklenemedi",
+  "storeDetailProductsLoadErr": "Ürünler yüklenemedi",
+  "storeDetailNoProducts": "Bu mağazada henüz ürün yok.",
+  "storeDetailTotalProducts": "Toplam ürün",
+  "storeDetailAddProduct": "Urun ekle",
+  "storeDetailFavorited": "Favorilerde",
+  "storeDetailAddToFavorites": "Favorilere ekle",
+  "storeDetailRemovedFav": "Favorilerden kaldırıldı",
+  "storeDetailAddedFav": "Favorilere eklendi",
+  "storeDetailFavError": "Hata: {error}",
+  "@storeDetailFavError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "storeDetailShare": "Paylaş",
+  "storeDetailProductActive": "Aktif",
+  "storeDetailProductInactive": "Pasif",
+  "storeDetailProductSoldOut": "Tukendi",
+  "storeDetailProductStock": "Stok: {count}",
+  "@storeDetailProductStock": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "storeDetailMenuEdit": "Duzenle",
+  "storeDetailMenuToggle": "Aktif/Pasif",
+  "storeDetailMenuDelete": "Sil",
+  "storeDetailDeleteTitle": "Urunu sil",
+  "storeDetailDeleteContent": "Bu urunu silmek istediginize emin misiniz?",
+  "storeDetailDeleteCancel": "Vazgec",
+  "storeDetailProductActivated": "Urun aktif edildi.",
+  "storeDetailProductDeactivated": "Urun pasif edildi.",
+  "storeDetailProductUpdateErr": "Urun guncellenemedi: {error}",
+  "@storeDetailProductUpdateErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "storeDetailProductDeleted": "Urun silindi.",
+  "storeDetailProductDeleteErr": "Urun silinemedi: {error}",
+  "@storeDetailProductDeleteErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "storeDetailRetry": "Yeniden Dene",
+
+  "applySellerTitle": "Mağaza Aç",
+  "applySellerLogoTitle": "Mağaza Logosu Seç",
+  "applySellerPickGallery": "Galeriden Seç",
+  "applySellerPickCamera": "Kamerayı Aç",
+  "applySellerLogoSection": "Mağaza Logosu",
+  "applySellerLogoAdd": "Logo Ekle",
+  "applySellerLogoHint": "Kare formatta, minimum 200x200 piksel önerilir",
+  "applySellerInfoSection": "Mağaza Bilgileri",
+  "applySellerNameLabel": "Mağaza Adı *",
+  "applySellerNameHint": "Örn: Happy Pets Store",
+  "applySellerNameRequired": "Mağaza adı gerekli",
+  "applySellerNameTooShort": "En az 3 karakter olmalı",
+  "applySellerDescLabel": "Mağaza Açıklaması",
+  "applySellerDescHint": "Mağazanızı tanıtın...",
+  "applySellerTermsTitle": "Satıcı Sözleşmesi",
+  "applySellerTermsAccepted": "Kabul Edildi",
+  "applySellerTermsRead": "Satıcı sözleşmesini okudum ve kabul ediyorum",
+  "applySellerTermsDialogTitle": "Satıcı Sözleşmesi",
+  "applySellerTermsAcceptBtn": "Okudum ve Kabul Ediyorum",
+  "applySellerStepLogo": "Logo",
+  "applySellerStepInfo": "Bilgiler",
+  "applySellerStepContract": "Sözleşme",
+  "applySellerOpenBtn": "Mağazamı Aç",
+  "applySellerApprovalNote": "Mağazanız onaylandıktan sonra ürün eklemeye başlayabilirsiniz.",
+  "applySellerSuccessTitle": "Tebrikler!",
+  "applySellerSuccessDesc": "\"{storeName}\" mağazanız başarıyla oluşturuldu!",
+  "@applySellerSuccessDesc": {
+    "placeholders": {
+      "storeName": {"type": "String"}
+    }
+  },
+  "applySellerGoToStore": "Mağazama Git",
+  "applySellerGenericError": "Bir hata oluştu, lütfen tekrar deneyin.",
+
+  "addProductTitle": "Ürün Ekle",
+  "addProductEditTitle": "Ürün Düzenle",
+  "addProductPhotosSection": "Ürün Fotoğrafları",
+  "addProductPickGallery": "Galeriden Seç",
+  "addProductPickGallerySub": "Mevcut fotoğraflarınızdan seçin",
+  "addProductPickCamera": "Kamerayı Aç",
+  "addProductPickCameraSub": "Yeni fotoğraf çekin",
+  "addProductPickDialogTitle": "Fotoğraf Ekle",
+  "addProductAddBtn": "Ekle",
+  "addProductMaxWarning": "En fazla {max} fotoğraf ekleyebilirsiniz",
+  "@addProductMaxWarning": {
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "addProductPhotosHint": "Ürününüzün fotoğraflarını ekleyin (max {max})",
+  "@addProductPhotosHint": {
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "addProductTitleField": "Ürün Başlığı",
+  "addProductTitleHint": "Örn: Renkli kedi oyuncağı",
+  "addProductTitleRequired": "Başlık gerekli",
+  "addProductCategoryLabel": "Kategori",
+  "addProductCategoryRequired": "Kategori seçin",
+  "addProductDescLabel": "Açıklama",
+  "addProductDescHint": "Ürün özellikleri, boyut, malzeme...",
+  "addProductPriceLabel": "Fiyat (₺)",
+  "addProductPriceRequired": "Gerekli",
+  "addProductPriceInvalid": "Geçersiz",
+  "addProductStockLabel": "Stok",
+  "addProductActiveLabel": "Ürün Aktif",
+  "addProductInactiveLabel": "Ürün Pasif",
+  "addProductSaving": "Kaydediliyor...",
+  "addProductSaveBtn": "Kaydet",
+  "addProductUpdated": "Ürün güncellendi!",
+  "addProductAdded": "Ürün eklendi!",
+  "addProductCategoryLoadErr": "Kategoriler yüklenemedi.",
+  "addProductCategoryNotFound": "Kategori bulunamadı.",
+  "addProductRetry": "Yeniden dene",
+  "addProductCategoryLoading": "{label} yükleniyor...",
+  "@addProductCategoryLoading": {
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+
+  "sellerOrdersTitle": "Siparişlerim",
+  "sellerOrdersTabAll": "Tümü",
+  "sellerOrdersTabPending": "Bekleyen",
+  "sellerOrdersTabProcessing": "Hazırlanan",
+  "sellerOrdersTabShipped": "Kargoda",
+  "sellerOrdersTabCompleted": "Tamamlanan",
+  "sellerOrdersEmpty": "Henüz sipariş yok",
+  "sellerOrdersEmptyDesc": "Ürünlerinize sipariş geldiğinde burada görünecek",
+  "sellerOrdersLoadErr": "Siparişler yüklenemedi: {error}",
+  "@sellerOrdersLoadErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "sellerOrdersCategoryEmpty": "Bu kategoride sipariş yok",
+  "sellerOrdersStatusUpdated": "Sipariş durumu güncellendi",
+  "sellerOrdersStatusError": "Hata: {error}",
+  "@sellerOrdersStatusError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "sellerOrdersStatTotal": "Toplam",
+  "sellerOrdersStatPending": "Bekleyen",
+  "sellerOrdersStatSales": "Satış",
+  "sellerOrdersStatRevenue": "Gelir",
+  "sellerOrdersPrepare": "Hazırla",
+  "sellerOrdersShip": "Kargola",
+  "sellerOrdersDelivered": "Teslim Edildi",
+  "sellerOrdersItemCount": "{count} ürün",
+  "@sellerOrdersItemCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "sellerOrdersItemQty": "{qty} adet x ₺{price}",
+  "@sellerOrdersItemQty": {
+    "placeholders": {
+      "qty": {"type": "int"},
+      "price": {"type": "String"}
+    }
+  },
+
+  "petCardMating": "Eşleştirme",
+  "petCardAdoption": "Sahiplendirme",
+  "petCardVaccinated": "Aşılı",
+  "petCardOwnerUnknown": "Bilinmiyor",
+
+  "apptCreateTitle": "Randevu Oluştur",
+  "apptCreateSelectPet": "Evcil Hayvan Seçin",
+  "apptCreateDate": "Tarih",
+  "apptCreateTime": "Saat",
+  "apptCreateReason": "Randevu Nedeni",
+  "apptCreateNotes": "Notlar (opsiyonel)",
+  "apptCreateBtn": "Randevu Oluştur",
+  "apptCreateSuccess": "Randevu oluşturuldu!",
+  "apptCreateSelectDateBtn": "Tarih seçin",
+  "apptCreateNoPets": "Henüz evcil hayvan eklememişsiniz",
+  "apptCreateNoSlots": "Bu tarihte uygun slot bulunamadı",
+  "apptCreateValidation": "Lütfen pet, tarih ve saat seçin",
+  "apptCreateSlotsError": "Slotlar alınamadı: {error}",
+  "@apptCreateSlotsError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "apptCreatePetsError": "Petler yüklenemedi: {error}",
+  "@apptCreatePetsError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "apptCreateError": "Hata: {error}",
+  "@apptCreateError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "apptDetailTitle": "Randevu Detay",
+  "apptDetailDate": "Tarih ve Saat",
+  "apptDetailVet": "Veteriner",
+  "apptDetailPet": "Evcil Hayvan",
+  "apptDetailReason": "Randevu Nedeni",
+  "apptDetailNotes": "Notlar",
+  "apptDetailVetNotes": "Veteriner Notları",
+  "apptDetailCancelBtn": "Randevuyu İptal Et",
+  "apptDetailCancelTitle": "Randevuyu İptal Et",
+  "apptDetailCancelContent": "Randevuyu iptal etmek istediğinize emin misiniz?",
+  "apptDetailCancelConfirm": "İptal Et",
+  "apptDetailCancelBack": "Vazgeç",
+  "apptDetailCancelSuccess": "Randevu iptal edildi",
+  "apptDetailError": "Hata: {error}",
+  "@apptDetailError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "vetRegisterTitle": "Klinik Kaydet",
+  "vetRegisterClinicName": "Klinik Adı *",
+  "vetRegisterAddress": "Adres *",
+  "vetRegisterPhone": "Telefon",
+  "vetRegisterEmail": "E-posta",
+  "vetRegisterDesc": "Açıklama",
+  "vetRegisterLocationLabel": "Konum: {lat}, {lng}",
+  "@vetRegisterLocationLabel": {
+    "placeholders": {
+      "lat": {"type": "String"},
+      "lng": {"type": "String"}
+    }
+  },
+  "vetRegisterLocationNone": "Konum eklenmedi",
+  "vetRegisterGetLocation": "Konum Al",
+  "vetRegisterGettingLocation": "Alınıyor...",
+  "vetRegisterSpecies": "Hizmet Verilen Türler",
+  "vetRegisterSaveBtn": "Kaydet",
+  "vetRegisterSuccess": "Klinik kaydedildi ve hesabınıza bağlandı!",
+  "vetRegisterClinicNameRequired": "Klinik adı gerekli",
+  "vetRegisterAddressRequired": "Adres gerekli",
+  "vetRegisterLocationError": "Konum alınamadı: {error}",
+  "@vetRegisterLocationError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "vetRegisterLocationDenied": "Konum izni reddedildi. Ayarlardan izin verin.",
+  "vetRegisterError": "Hata: {error}",
+  "@vetRegisterError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "searchHint": "İlan, mağaza veya veteriner ara...",
+  "searchTypeHint": "Aramak istediğinizi yazın",
+  "searchTypeHintSub": "İlan, mağaza veya veteriner arayabilirsiniz",
+  "searchHistory": "Son Aramalar",
+  "searchClearHistory": "Tümünü Temizle",
+  "searchError": "Arama hatası: {error}",
+  "@searchError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "searchNoResults": "\"{query}\" için sonuç bulunamadı",
+  "@searchNoResults": {
+    "placeholders": {
+      "query": {"type": "String"}
+    }
+  },
+  "searchSectionListings": "İlanlar",
+  "searchSectionStores": "Mağazalar",
+  "searchSectionVets": "Veterinerler",
+  "searchStoreSubtitle": "Mağaza",
+  "searchVetSubtitle": "Veteriner",
+
+  "aiAssistantTitle": "Pati Asistan",
+  "aiModeReset": "Sıfırla",
+  "aiModeDiagnosis": "Teşhis",
+  "aiModeGeneral": "Genel",
+  "aiSymptomLabel": "Semptom seç (çoklu):",
+  "aiDiagnoseBtn": "Teşhis Et →",
+  "aiSymptomSelected": "Seçili: {symptoms}",
+  "@aiSymptomSelected": {
+    "placeholders": {
+      "symptoms": {"type": "String"}
+    }
+  },
+  "aiWelcomeDiagnosis": "Semptom seç veya yaz → Teşhis al",
+  "aiWelcomeGeneral": "Evcil hayvanın hakkında ne sormak istiyorsun?",
+  "aiWelcomeDiagnosisSub": "Yukarıdan türü ve belirtileri seç,\nyoksa metin kutusuna yaz.",
+  "aiWelcomeGeneralSub": "Bakım, beslenme, eğitim hakkında\nkısa ve pratik yanıtlar alırsın.",
+  "aiExampleLabel": "Örnek sorular:",
+  "aiInputDiagnosisHint": "Ek bilgi ekle veya direkt yaz...",
+  "aiInputGeneralHint": "Sorunuzu yazın...",
+  "aiErrorResponse": "Üzgünüm, şu an yanıt veremiyorum. Lütfen tekrar deneyin.",
+  "aiNoReply": "Yanıt alınamadı.",
+
+  "guideTitle": "Rehber Pati",
+  "guideNewChat": "Yeni sohbet",
+  "guideWelcome": "Merhaba! 👋",
+  "guideWelcomeSub": "Ne yapmak istiyorsun?\nSana en kısa yoldan yardım edeyim.",
+  "guideQuickOptions": "Hızlı seçenekler:",
+  "guideNavigateBtn": "Götür beni →",
+  "guideInputHint": "Ne yapmak istiyorsun?",
+  "guideConnError": "Bağlantı hatası, lütfen tekrar dene.",
+  "guideUnknown": "Anlayamadım.",
+
+  "monthJan": "Oca",
+  "monthFeb": "Şub",
+  "monthMar": "Mar",
+  "monthApr": "Nis",
+  "monthMay": "May",
+  "monthJun": "Haz",
+  "monthJul": "Tem",
+  "monthAug": "Ağu",
+  "monthSep": "Eyl",
+  "monthOct": "Eki",
+  "monthNov": "Kas",
+  "monthDec": "Ara",
+
+  "sitterFindTitle": "Bakıcı Bul",
+  "sitterMyBookingsTooltip": "Rezervasyonlarım",
+  "sitterServiceAll": "Tümü",
+  "sitterServiceWalking": "Gezdirme",
+  "sitterServiceHomeSitting": "Ev Bakımı",
+  "sitterServiceBoarding": "Pansiyon",
+  "sitterServiceDaycare": "Gündüz Bakımı",
+  "sitterServiceGrooming": "Tımar",
+  "sitterEmptyTitle": "Yakında bakıcı bulunamadı",
+  "sitterEmptySubtitle": "İlk bakıcı profilini oluştur ve diğer kullanıcılara hizmet ver!",
+  "sitterBecomeSitterBtn": "Bakıcı Ol",
+  "sitterEditProfile": "Profili Düzenle",
+  "sitterBasicInfo": "Temel Bilgiler",
+  "sitterDisplayName": "Görüntülenen İsim *",
+  "sitterDisplayNameRequired": "İsim gerekli",
+  "sitterBio": "Hakkında / Tanıtım",
+  "sitterExperience": "Deneyim",
+  "sitterLocation": "Konum",
+  "sitterUseLocation": "Konumumu Kullan",
+  "sitterLocationObtained": "Konum Alındı ✓",
+  "sitterAddress": "Adres / Semt",
+  "sitterSpeciesTitle": "Hangi Hayvanlarla Çalışıyorsunuz?",
+  "sitterSpeciesDog": "Köpek",
+  "sitterSpeciesCat": "Kedi",
+  "sitterSpeciesBird": "Kuş",
+  "sitterSpeciesRabbit": "Tavşan",
+  "sitterSpeciesOther": "Diğer",
+  "sitterServicesTitle": "Sunduğunuz Hizmetler",
+  "sitterServicesAdd": "Ekle",
+  "sitterServicesAllAdded": "Tüm hizmetler eklendi",
+  "sitterServiceType": "Hizmet Türü",
+  "sitterServiceWalkingLabel": "Gezdirme",
+  "sitterServiceHomeSittingLabel": "Ev Bakımı",
+  "sitterServiceBoardingLabel": "Pansiyonda Bakım",
+  "sitterServiceDaycareLabel": "Gündüz Bakımı",
+  "sitterServiceGroomingLabel": "Tımar/Bakım",
+  "sitterHourlyPrice": "Saat Fiyatı (TL)",
+  "sitterDailyPrice": "Gün Fiyatı (TL)",
+  "sitterSpeciesRequired": "En az bir hayvan türü seçin",
+  "sitterLocationPermRequired": "Konum izni gerekli",
+  "sitterLocationErr": "Konum alınamadı: {error}",
+  "@sitterLocationErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "sitterProfileUpdated": "Profil güncellendi!",
+  "sitterProfileCreated": "Bakıcı profili oluşturuldu!",
+  "sitterSubmitErr": "Hata: {error}",
+  "@sitterSubmitErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "sitterCreateBtn": "Bakıcı Profili Oluştur",
+  "sitterUpdateBtn": "Profili Güncelle",
+
+  "bookingsTitle": "Rezervasyonlar",
+  "bookingsTabMine": "Rezervasyonlarım",
+  "bookingsTabIncoming": "Gelen Talepler",
+  "bookingsEmptyTitle": "Henüz rezervasyon yok",
+  "bookingsEmptySubtitle": "Onaylanan rezervasyonlarınız burada görünecek.",
+  "bookingsOwnerLabel": "Sahip",
+  "bookingsSitterLabel": "Bakıcı",
+  "bookingsAccept": "Kabul Et",
+  "bookingsReject": "Reddet",
+  "bookingsMarkCompleted": "Tamamlandı Olarak İşaretle",
+  "bookingsReview": "Değerlendir",
+  "bookingsReviewDialogTitle": "Bakıcıyı Değerlendir",
+  "bookingsReviewHint": "Yorum (opsiyonel)",
+  "bookingsReviewCancel": "İptal",
+  "bookingsReviewSend": "Gönder",
+  "bookingsActionErr": "Hata: {error}",
+  "@bookingsActionErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "adoptionAppsTitle": "Sahiplendirme Başvuruları",
+  "adoptionAppsTabInbox": "Gelen Başvurular",
+  "adoptionAppsTabSent": "Gönderdiklerim",
+  "adoptionAppsInboxEmpty": "Gelen başvuru yok",
+  "adoptionAppsInboxEmptyDesc": "Sahiplendirme ilanlarınıza gelen başvurular burada görünecek.",
+  "adoptionAppsSentEmpty": "Gönderilen başvuru yok",
+  "adoptionAppsSentEmptyDesc": "Sahiplendirme ilanlarına yaptığınız başvurular burada görünecek.",
+  "adoptionAppsErrGeneric": "Hata: {error}",
+  "@adoptionAppsErrGeneric": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "adoptionAppsAcceptTitle": "Başvuruyu Kabul Et",
+  "adoptionAppsRejectTitle": "Başvuruyu Reddet",
+  "adoptionAppsAcceptContent": "Bu başvuruyu kabul etmek istediğinize emin misiniz? Mesajlaşma başlatılacaktır.",
+  "adoptionAppsRejectContent": "Bu başvuruyu reddetmek istediğinize emin misiniz?",
+  "adoptionAppsCancel": "Vazgeç",
+  "adoptionAppsAcceptBtn": "Kabul Et",
+  "adoptionAppsRejectBtn": "Reddet",
+  "adoptionAppsAcceptedStarted": "Başvuru kabul edildi! Mesajlaşma başlatıldı.",
+  "adoptionAppsAccepted": "Başvuru kabul edildi",
+  "adoptionAppsRejected": "Başvuru reddedildi",
+  "adoptionAppsGoToChat": "Mesajlaşma",
+  "adoptionAppsApplicant": "Başvuran: {name}",
+  "@adoptionAppsApplicant": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "adoptionAppsListing": "İlan",
+  "adoptionAppsStatusAccepted": "Kabul Edildi",
+  "adoptionAppsStatusRejected": "Reddedildi",
+  "adoptionAppsStatusCancelled": "İptal Edildi",
+  "adoptionAppsStatusPending": "Beklemede",
+  "adoptionAppsTimelineApplication": "Başvuru",
+  "adoptionAppsTimelineReview": "İnceleme",
+  "adoptionAppsTimelineApproval": "Onay",
+  "adoptionAppsTimelineCompleted": "Tamamlandı",
+  "adoptionAppsTimelineRejected": "Reddedildi",
+  "adoptionAppsTimelineCancelled": "İptal",
+  "adoptionAppsTimelineDecision": "Karar",
+
+  "adoptionApplyTitle": "Sahiplendirme Başvurusu",
+  "adoptionApplyInfoText": "Başvurunuz ilan sahibine iletilecektir. İlan sahibi başvurunuzu kabul ederse mesajlaşma başlatılacaktır.",
+  "adoptionApplyNoteLabel": "Başvuru Notu (opsiyonel)",
+  "adoptionApplyNoteHint": "Kendinizi tanıtın, neden bu hayvanı sahiplenmek istediğinizi açıklayın...",
+  "adoptionApplyErrGeneric": "Hata: {error}",
+  "@adoptionApplyErrGeneric": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "adoptionApplySuccessTitle": "Başvuru Gönderildi!",
+  "adoptionApplySuccessContent": "Sahiplendirme başvurunuz ilan sahibine iletildi. Sonucu başvurularım sayfasından takip edebilirsiniz.",
+  "adoptionApplySuccessOk": "Tamam",
+  "adoptionApplySending": "Gönderiliyor...",
+  "adoptionApplySendBtn": "Başvuru Gönder",
+
+  "lostFoundTitle2": "Kayıp & Bulunan",
+  "lostFoundListView": "Liste Görünümü",
+  "lostFoundMapView": "Harita Görünümü",
+  "lostFoundLostTab": "Kayıp",
+  "lostFoundFoundTab": "Bulunan",
+  "lostFoundEmptyTitle": "Yakında ilan yok",
+  "lostFoundEmptySubtitle": "Yakınınızdaki kayıp veya bulunan hayvan ilanları burada görünecek.",
+  "lostFoundCreateBtn": "İlan Oluştur",
+
+  "eventsTitle2": "Etkinlikler",
+  "eventsMyEventsTooltip": "Katıldıklarım",
+  "eventsCreateBtn": "Etkinlik Oluştur",
+  "eventsCatAll": "Tümü",
+  "eventsCatPark": "Park",
+  "eventsCatAdoption": "Sahiplen",
+  "eventsCatTraining": "Eğitim",
+  "eventsCatCompetition": "Yarış",
+  "eventsCatGrooming": "Bakım",
+  "eventsCatHealth": "Sağlık",
+  "eventsEmptyTitle": "Etkinlik Bulunamadı",
+  "eventsEmptySubtitle": "Bu bölge veya kategoride henüz etkinlik yok.",
+  "eventsLocationBannerText": "Yakın etkinlikler için konum gerekli",
+  "eventsLocationBannerBtn": "İzin Ver",
+
+  "myEventsTitle": "Etkinliklerim",
+  "myEventsTabAttending": "Katılacaklarım",
+  "myEventsTabOrganized": "Organize Ettiklerim",
+  "myEventsEmptyTitle": "Etkinlik Yok",
+  "myEventsEmptySubtitle": "Henüz bu kategoride etkinliğiniz yok.",
+
+  "createPostTitle": "Gönderi Oluştur",
+  "createPostShareBtn": "Paylaş",
+  "createPostPhotosLabel": "Fotoğraflar",
+  "createPostAddBtn": "Ekle",
+  "createPostEmptyHint": "Fotoğraf eklemek için dokunun",
+  "createPostHint": "Ne paylaşıyorsun? Sevimli hayvanınızı anlatın...",
+  "createPostMaxImages": "En fazla 4 fotoğraf ekleyebilirsiniz",
+  "createPostValidation": "Lütfen bir şey yazın veya fotoğraf ekleyin",
+  "createPostErr": "Hata: {error}",
+  "@createPostErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "connectTitle": "Keşfet",
+  "connectSocialFeed": "Sosyal Akış",
+  "connectSocialFeedSub": "Evcil hayvan sahiplerini takip et",
+  "connectSearch": "Ara",
+  "connectSearchSub": "Evcil hayvan, mağaza ve veteriner bul",
+  "connectMapDiscover": "Haritada Keşfet",
+  "connectMapDiscoverSub": "Yakınındaki ilanları haritada gör",
+  "connectFavorites": "Favoriler",
+  "connectFavoritesSub": "Kaydettiğin ilanlar",
+
+  "reviewAddTitle": "Yorum Yap",
+  "reviewEditTitle": "Yorumu Düzenle",
+  "reviewProductLabel": "Ürün",
+  "reviewRatingLabel": "Puanınız *",
+  "reviewCommentLabel": "Yorumunuz (Opsiyonel)",
+  "reviewCommentHint": "Ürün hakkındaki düşüncelerinizi paylaşın...",
+  "reviewSubmitBtn": "Gönder",
+  "reviewUpdateBtn": "Güncelle",
+  "reviewRating1": "Çok Kötü",
+  "reviewRating2": "Kötü",
+  "reviewRating3": "Orta",
+  "reviewRating4": "İyi",
+  "reviewRating5": "Mükemmel",
+  "reviewNoRatingErr": "Lütfen bir puan seçin",
+  "reviewUpdated": "Yorum güncellendi",
+  "reviewAdded": "Yorum eklendi",
+  "reviewErr": "Hata: {error}",
+  "@reviewErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "reviewsSectionTitle": "Değerlendirmeler",
+  "reviewsSectionEdit": "Düzenle",
+  "reviewsSectionAdd": "Yorum Yap",
+  "reviewsCount": "{count} değerlendirme",
+  "@reviewsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "reviewsVerifiedBuyer": "Alıcı",
+  "reviewsLoadErr": "Yorumlar yüklenemedi: {error}",
+  "@reviewsLoadErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "reviewsEmptyTitle": "Henüz değerlendirme yok",
+  "reviewsEmptySubtitle": "İlk yorumu siz yapın!",
+
+  "editProfileTitle": "Profili Düzenle",
+  "editProfilePhotoUpdated": "Profil fotoğrafı güncellendi!",
+  "editProfileNameLabel": "İsim Soyisim",
+  "editProfileCityLabel": "Şehir",
+  "editProfileAboutLabel": "Hakkımda",
+  "editProfileNameRequired": "İsim boş olamaz",
+  "editProfileSaveBtn": "Değişiklikleri Kaydet",
+
+  "onboardingSkip": "Atla",
+  "onboardingNext": "Devam Et",
+  "onboardingStart": "Hadi Başlayalım!",
+  "onboardingPage1Title": "Evcil Dostunuzu Keşfedin",
+  "onboardingPage1Subtitle": "Binlerce evcil hayvan ilanına göz atın. Sahiplendirme veya eşleştirme için doğru dostu bulun.",
+  "onboardingPage2Title": "Eşleştirme & Sahiplendirme",
+  "onboardingPage2Subtitle": "Doğum tarihleri, ırk ve konum filtrelerine göre evcil hayvanları eşleştirin veya sahiplendirin.",
+  "onboardingPage3Title": "Sağlık Takibi",
+  "onboardingPage3Subtitle": "Aşı takvimi, veteriner randevuları ve sağlık günlüğü ile dostunuzun sağlığını kontrol altında tutun.",
+  "onboardingPage4Title": "Mağaza & Topluluk",
+  "onboardingPage4Subtitle": "Evcil hayvan ürünleri alın, bakıcı tutun, etkinliklere katılın ve sosyal topluluğun parçası olun.",
+
+  "adminAppsTitle": "Satıcı Başvuruları",
+  "adminAppsStatus": "Durum: {status}",
+  "@adminAppsStatus": {
+    "placeholders": {
+      "status": {"type": "String"}
+    }
+  },
+  "adminAppsLoadErr": "Başvurular yüklenemedi.",
+
+  "productDetailOwnProduct": "Bu sizin ürününüz",
+  "productDetailOwnProductErr": "Kendi ürünlerinizi sepete ekleyemezsiniz",
+  "productDetailOutOfStock": "Bu ürün stokta yok",
+  "productDetailMaxStock": "Maksimum {stock} adet ekleyebilirsiniz",
+  "@productDetailMaxStock": {
+    "placeholders": {
+      "stock": {"type": "int"}
+    }
+  },
+  "productDetailAddedToCart": "{count} adet sepete eklendi",
+  "@productDetailAddedToCart": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "productDetailGoToCart": "Sepete Git",
+  "productDetailAddErr": "Sepete eklenemedi: {error}",
+  "@productDetailAddErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "productDetailShareSoon": "Paylaşma özelliği yakında eklenecek",
+  "productDetailAddingToCart": "Ekleniyor...",
+  "productDetailAddToCartBtn": "Sepete Ekle",
+  "productDetailNoTitle": "Ürün adı yok",
+  "productDetailNoDesc": "Açıklama yok",
+  "productDetailStock": "Stok: {count}",
+  "@productDetailStock": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "productDetailNotFound": "Ürün bulunamadı.",
+
+  "sellerApplyTitle": "Satıcı Ol",
+  "sellerApplyCompanyName": "Firma adı",
+  "sellerApplyCompanyTitle": "Firma unvanı",
+  "sellerApplyTaxNumber": "Vergi numarası",
+  "sellerApplyTaxOffice": "Vergi dairesi",
+  "sellerApplyAddress": "Adres",
+  "sellerApplyContact": "İletişim",
+  "sellerApplyIban": "IBAN",
+  "sellerApplyRequired": "Zorunlu",
+  "sellerApplyKvkk": "KVKK metnini onaylıyorum",
+  "sellerApplyContract": "Satıcı sözleşmesini onaylıyorum",
+  "sellerApplyApprovalsRequired": "Onaylar zorunlu",
+  "sellerApplySending": "Gönderiliyor...",
+  "sellerApplySendBtn": "Başvuru gönder",
+  "sellerApplyFailed": "Başvuru gönderilemedi.",
+  "sellerApplyPending": "Başvurunuz inceleniyor",
+
+  "productsPageTitle": "Ürünlerim",
+  "productsActive": "Aktif",
+  "productsPassive": "Pasif",
+  "productsLoadErr": "Ürünler yüklenemedi.",
+  "productsStockStatus": "Stok: {stock} • {status}",
+  "@productsStockStatus": {
+    "placeholders": {
+      "stock": {"type": "int"},
+      "status": {"type": "String"}
+    }
+  },
+
+  "productAddTitle": "Ürün Ekle",
+  "productAddName": "Ürün adı",
+  "productAddRequired": "Zorunlu",
+  "productAddCategory": "Kategori",
+  "productAddNoCategoryFound": "Kategori bulunamadı.",
+  "productAddCategoryLoading": "Kategoriler yükleniyor...",
+  "productAddCategoryLoadErr": "Kategoriler yüklenemedi: {error}",
+  "@productAddCategoryLoadErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "productAddCategorySelect": "Kategori seçin",
+  "productAddDescription": "Açıklama",
+  "productAddPrice": "Fiyat",
+  "productAddStock": "Stok",
+  "productAddSaving": "Kaydediliyor...",
+  "productAddSaveBtn": "Kaydet",
+
+  "productEditTitle": "Ürün Düzenle",
+  "productEditUpdating": "Güncelleniyor...",
+  "productEditUpdateBtn": "Güncelle",
+  "productEditFailed": "Güncelleme başarısız.",
+  "productEditActive": "Aktif",
+
+  "storeCategoryAll": "Tümü",
+
+  "productCardAddedToCart": "{title} sepete eklendi",
+  "@productCardAddedToCart": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "productCardAddErr": "Sepete eklenemedi: {error}",
+  "@productCardAddErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "productCardNoTitle": "Ürün adı yok",
+  "aiSpeciesDog": "Köpek",
+  "aiSpeciesCat": "Kedi",
+  "aiSpeciesBird": "Kuş",
+  "aiSpeciesOther": "Diğer",
+  "aiSymptomLossOfAppetite": "İştahsızlık",
+  "aiSymptomFever": "Ateş",
+  "aiSymptomDiarrhea": "İshal",
+  "aiSymptomVomiting": "Kusma",
+  "aiSymptomCough": "Öksürük",
+  "aiSymptomShortnessOfBreath": "Nefes darlığı",
+  "aiSymptomLethargy": "Uyuşukluk",
+  "aiSymptomBloodyStool": "Kanlı dışkı",
+  "aiSymptomExcessiveItching": "Aşırı kaşınma",
+  "aiSymptomHairLoss": "Tüy dökülmesi",
+  "aiSymptomLimping": "Topallama",
+  "aiSymptomExcessiveThirst": "Aşırı su içme",
+  "aiSymptomUnableToUrinate": "İdrar yapmama",
+  "aiSymptomBloatedBelly": "Şişmiş karın",
+  "aiSymptomLossOfConsciousness": "Bilinç kaybı",
+  "aiSymptomRunnyNose": "Burun akıntısı",
+  "aiSymptomEyeDischarge": "Göz akıntısı",
+  "aiSymptomBreathingDifficulty": "Nefes güçlüğü",
+  "aiSymptomWeightLoss": "Kilo kaybı",
+  "aiSymptomFeatherPlucking": "Tüy yolma",
+  "aiSymptomBloodyUrine": "Kanlı idrar",
+  "aiSymptomJaundice": "Sarılık",
+  "aiSymptomSeizures": "Nöbet/Titreme",
+  "aiSymptomFeatherLoss": "Tüy döküyor",
+  "aiSymptomNotEating": "Yemiyor",
+  "aiSymptomPuffed": "Şişmiş/Kabarık",
+  "aiSymptomUnableToStand": "Ayakta duramıyor",
+  "aiSymptomHavingSeizure": "Nöbet geçiriyor",
+  "aiSymptomBleeding": "Kanıyor",
+  "aiSymptomScratch": "Kaşınma",
+  "aiSymptomPrefix": "{species}, belirtiler: ",
+  "@aiSymptomPrefix": {"placeholders": {"species": {"type": "String"}}},
+  "aiGenSug1": "Köpeğime ne kadar su vermeli?",
+  "aiGenSug2": "Kedi kumu ne sıklıkla değiştirilmeli?",
+  "aiGenSug3": "Yavru köpek eğitimi nasıl yapılır?",
+  "aiGenSug4": "Kedim neden gece bağırıyor?",
+  "aiGenSug5": "Köpek ısırması ne yapmalı?",
+  "guideSug1": "Sahiplendirme ilanlarına bak",
+  "guideSug2": "Veteriner bul",
+  "guideSug3": "Eşleştirme yap",
+  "guideSug4": "Sepetimi göster",
+  "guideSug5": "Kayıp ilan oluştur",
+  "guideSug6": "Etkinliklere katıl",
+  "eventLocationObtained": "Konum Alındı ✓",
+  "eventUseMyLocation": "Konumumu Kullan",
+  "eventCreateTitle": "Etkinlik Oluştur",
+  "eventCatParkMeetup": "Park Buluşması",
+  "eventCatAdoptionDay": "Sahiplendirme Günü",
+  "eventCatTraining": "Eğitim Semineri",
+  "eventCatCompetition": "Yarış / Gösterim",
+  "eventCatGrooming": "Bakım Günü",
+  "eventCatHealth": "Sağlık / Aşı",
+  "eventCatOther": "Diğer",
+  "eventSpeciesAll": "Tümü",
+  "eventSpeciesDog": "Köpek",
+  "eventSpeciesCat": "Kedi",
+  "eventSpeciesBird": "Kuş",
+  "eventSpeciesRabbit": "Tavşan",
+  "eventSpeciesOther": "Diğer",
+  "eventErrLocationPerm": "Konum izni gerekli",
+  "eventErrMaxPhotos": "En fazla 5 fotoğraf eklenebilir",
+  "eventErrEndBeforeStart": "Bitiş tarihi başlangıç tarihinden önce olamaz",
+  "eventCreated": "Etkinlik oluşturuldu!",
+  "eventPhotosLabel": "Fotoğraflar (max 5)",
+  "eventDateTimeLabel": "Tarih ve Saat",
+  "eventStartLabel": "Başlangıç *",
+  "eventEndLabel": "Bitiş *",
+  "eventLocationLabel": "Konum",
+  "eventCapacityLabel": "Kapasite ve Ücret",
+  "eventFreeLabel": "Ücretsiz Etkinlik",
+  "eventAnimalsLabel": "Katılabilecek Hayvanlar",
+  "eventCreateBtn": "Etkinliği Oluştur",
+  "eventErrLocationFail": "Konum alınamadı: {error}",
+  "@eventErrLocationFail": {"placeholders": {"error": {"type": "String"}}},
+  "eventCreateErr": "Hata: {error}",
+  "@eventCreateErr": {"placeholders": {"error": {"type": "String"}}},
+
+  "themeSelectTitle": "Temanı Seç",
+  "themeSelectSub": "Sana en uygun görünümü seç",
+  "themeSelectLight": "Açık",
+  "themeSelectDark": "Koyu",
+  "themeSelectConfirm": "Devam Et",
+  "themeSelectChangeHint": "Bunu istediğin zaman Ayarlar'dan değiştirebilirsin"
 }

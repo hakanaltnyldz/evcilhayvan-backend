@@ -50,9 +50,9 @@ class LostFoundDetailScreen extends ConsumerWidget {
                             return CachedNetworkImage(
                               imageUrl: _resolvePhoto(report.photos[index]),
                               fit: BoxFit.cover,
-                              placeholder: (_, __) => Container(color: Colors.grey.shade200),
+                              placeholder: (_, __) => Container(color: Theme.of(context).colorScheme.surfaceVariant),
                               errorWidget: (_, __, ___) => Container(
-                                color: Colors.grey.shade200,
+                                color: Theme.of(context).colorScheme.surfaceVariant,
                                 child: const Icon(Icons.broken_image, size: 48),
                               ),
                             );
@@ -349,8 +349,8 @@ class _StatusBadge extends StatelessWidget {
       label = 'Kavusturuldu';
       icon = Icons.check_circle;
     } else if (report.status == 'cancelled') {
-      bg = Colors.grey.shade200;
-      fg = Colors.grey.shade700;
+      bg = Theme.of(context).colorScheme.surfaceVariant;
+      fg = Theme.of(context).colorScheme.onSurfaceVariant;
       label = 'Iptal';
       icon = Icons.cancel;
     } else if (report.isLost) {
@@ -398,12 +398,13 @@ class _InfoCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _infoRow(Icons.pets, 'Tur', report.speciesLabel),
-            if (report.breed != null) _infoRow(Icons.category, 'Cins', report.breed!),
-            _infoRow(Icons.palette, 'Renk', report.color),
-            _infoRow(Icons.wc, 'Cinsiyet', report.genderLabel),
-            if (report.ageApprox != null) _infoRow(Icons.cake, 'Tahmini Yas', report.ageApprox!),
+            _infoRow(context, Icons.pets, 'Tur', report.speciesLabel),
+            if (report.breed != null) _infoRow(context, Icons.category, 'Cins', report.breed!),
+            _infoRow(context, Icons.palette, 'Renk', report.color),
+            _infoRow(context, Icons.wc, 'Cinsiyet', report.genderLabel),
+            if (report.ageApprox != null) _infoRow(context, Icons.cake, 'Tahmini Yas', report.ageApprox!),
             _infoRow(
+              context,
               Icons.calendar_today,
               report.isLost ? 'Son Gorulme' : 'Bulunma Tarihi',
               dateStr,
@@ -414,12 +415,12 @@ class _InfoCard extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(IconData icon, String label, String value) {
+  Widget _infoRow(BuildContext context, IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: Colors.grey.shade600),
+          Icon(icon, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(width: 10),
           Text('$label: ', style: const TextStyle(fontWeight: FontWeight.w600)),
           Expanded(child: Text(value)),

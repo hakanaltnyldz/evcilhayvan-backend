@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/lost_found_repository.dart';
 import '../../domain/models/lost_found_model.dart';
 import '../widgets/lost_found_card.dart';
@@ -94,34 +95,36 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Kayip & Bulunan'),
+        title: Text(AppLocalizations.of(context)!.lostFoundTitle2),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
             icon: Icon(_showMap ? Icons.list : Icons.map),
-            tooltip: _showMap ? 'Liste Gorunumu' : 'Harita Gorunumu',
+            tooltip: _showMap ? AppLocalizations.of(context)!.lostFoundListView : AppLocalizations.of(context)!.lostFoundMapView,
             onPressed: () => setState(() => _showMap = !_showMap),
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
+          tabs: [
             Tab(
-              icon: Icon(Icons.search, size: 18),
-              text: 'Kayip',
+              icon: const Icon(Icons.search, size: 18),
+              text: AppLocalizations.of(context)!.lostFoundLostTab,
             ),
             Tab(
-              icon: Icon(Icons.pets, size: 18),
-              text: 'Bulunan',
+              icon: const Icon(Icons.pets, size: 18),
+              text: AppLocalizations.of(context)!.lostFoundFoundTab,
             ),
           ],
         ),
       ),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFeef2ff), Color(0xFFF8F9FB)],
+            colors: Theme.of(context).brightness == Brightness.dark
+                ? [const Color(0xFF12111F), const Color(0xFF0D0C1A)]
+                : [const Color(0xFFeef2ff), const Color(0xFFF8F9FB)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -152,7 +155,7 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
         backgroundColor: AppPalette.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('Ilan Olustur'),
+        label: Text(AppLocalizations.of(context)!.lostFoundCreateBtn),
       ),
     );
   }
@@ -163,12 +166,12 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
         onRefresh: _loadReports,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          children: const [
-            SizedBox(height: 100),
+          children: [
+            const SizedBox(height: 100),
             EmptyState(
               icon: Icons.search_off_outlined,
-              title: 'Yakında ilan yok',
-              subtitle: 'Yakınınızdaki kayıp veya bulunan hayvan ilanları burada görünecek.',
+              title: AppLocalizations.of(context)!.lostFoundEmptyTitle,
+              subtitle: AppLocalizations.of(context)!.lostFoundEmptySubtitle,
             ),
           ],
         ),

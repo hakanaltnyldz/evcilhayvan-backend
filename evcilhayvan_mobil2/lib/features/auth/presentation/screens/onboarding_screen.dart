@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:evcilhayvan_mobil2/core/providers/onboarding_provider.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class _OnboardingPage {
   final IconData icon;
@@ -19,34 +20,30 @@ class _OnboardingPage {
   });
 }
 
-const _pages = [
+List<_OnboardingPage> _getPages(AppLocalizations l10n) => [
   _OnboardingPage(
     icon: Icons.pets,
-    title: 'Evcil Dostunuzu Keşfedin',
-    subtitle:
-        'Binlerce evcil hayvan ilanına göz atın. Sahiplendirme veya eşleştirme için doğru dostu bulun.',
-    gradient: [Color(0xFF6C63FF), Color(0xFF8F7DFF)],
+    title: l10n.onboardingPage1Title,
+    subtitle: l10n.onboardingPage1Subtitle,
+    gradient: const [Color(0xFF6C63FF), Color(0xFF8F7DFF)],
   ),
   _OnboardingPage(
     icon: Icons.favorite_rounded,
-    title: 'Eşleştirme & Sahiplendirme',
-    subtitle:
-        'Doğum tarihleri, ırk ve konum filtrelerine göre evcil hayvanları eşleştirin veya sahiplendirin.',
-    gradient: [Color(0xFFFF7A59), Color(0xFFFF9F7F)],
+    title: l10n.onboardingPage2Title,
+    subtitle: l10n.onboardingPage2Subtitle,
+    gradient: const [Color(0xFFFF7A59), Color(0xFFFF9F7F)],
   ),
   _OnboardingPage(
     icon: Icons.local_hospital_rounded,
-    title: 'Sağlık Takibi',
-    subtitle:
-        'Aşı takvimi, veteriner randevuları ve sağlık günlüğü ile dostunuzun sağlığını kontrol altında tutun.',
-    gradient: [Color(0xFF2BB673), Color(0xFF54D99F)],
+    title: l10n.onboardingPage3Title,
+    subtitle: l10n.onboardingPage3Subtitle,
+    gradient: const [Color(0xFF2BB673), Color(0xFF54D99F)],
   ),
   _OnboardingPage(
     icon: Icons.storefront_rounded,
-    title: 'Mağaza & Topluluk',
-    subtitle:
-        'Evcil hayvan ürünleri alın, bakıcı tutun, etkinliklere katılın ve sosyal topluluğun parçası olun.',
-    gradient: [Color(0xFF7C7BFF), Color(0xFF5FD9C1)],
+    title: l10n.onboardingPage4Title,
+    subtitle: l10n.onboardingPage4Subtitle,
+    gradient: const [Color(0xFF7C7BFF), Color(0xFF5FD9C1)],
   ),
 ];
 
@@ -60,6 +57,13 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _controller = PageController();
   int _currentPage = 0;
+  late List<_OnboardingPage> _pages;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _pages = _getPages(AppLocalizations.of(context)!);
+  }
 
   @override
   void dispose() {
@@ -103,9 +107,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             right: 20,
             child: TextButton(
               onPressed: _finish,
-              child: const Text(
-                'Atla',
-                style: TextStyle(
+              child: Text(
+                AppLocalizations.of(context)!.onboardingSkip,
+                style: const TextStyle(
                   color: Colors.white70,
                   fontWeight: FontWeight.w600,
                   fontSize: 15,
@@ -161,8 +165,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ),
                       child: Text(
                         _currentPage == _pages.length - 1
-                            ? 'Hadi Başlayalım!'
-                            : 'Devam Et',
+                            ? AppLocalizations.of(context)!.onboardingStart
+                            : AppLocalizations.of(context)!.onboardingNext,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,

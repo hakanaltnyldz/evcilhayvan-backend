@@ -68,12 +68,10 @@ async function initCategories() {
   try {
     const count = await Category.countDocuments();
     if (count > 0) {
-      console.log("[initCategories] Already have", count, "categories");
       categoriesInitialized = true;
       return;
     }
 
-    console.log("[initCategories] Creating default categories...");
     for (const cat of defaultCategories) {
       const slug = slugify(cat.name);
       try {
@@ -89,7 +87,6 @@ async function initCategories() {
         }
       }
     }
-    console.log("[initCategories] Categories created successfully");
     categoriesInitialized = true;
   } catch (err) {
     console.error("[initCategories] Error:", err.message);
@@ -97,12 +94,9 @@ async function initCategories() {
 }
 
 export async function getCategories(_req, res) {
-  console.log("[getCategories] >>> Called");
   try {
     await initCategories();
-    console.log("[getCategories] Init complete");
     const categories = await Category.find().sort({ name: 1 }).lean();
-    console.log("[getCategories] Found", categories.length, "categories");
     return sendOk(res, 200, { categories });
   } catch (err) {
     console.error("[getCategories] !!! ERROR:", err);

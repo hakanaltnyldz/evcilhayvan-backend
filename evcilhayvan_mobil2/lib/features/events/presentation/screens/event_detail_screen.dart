@@ -169,7 +169,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                           label: Text('#$t'),
                           padding: EdgeInsets.zero,
                           visualDensity: VisualDensity.compact,
-                          backgroundColor: Colors.grey.shade100,
+                          backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
                         )).toList(),
                       ),
                       const SizedBox(height: 16),
@@ -384,7 +384,7 @@ class _AttendanceBar extends StatelessWidget {
                   if (myStatus != null && myStatus != 'not_going')
                     TextButton(
                       onPressed: () => onAttend('not_going'),
-                      child: const Text('Katilmayacagim', style: TextStyle(color: Colors.grey)),
+                      child: Text('Katilmayacagim', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                     ),
                 ],
               ),

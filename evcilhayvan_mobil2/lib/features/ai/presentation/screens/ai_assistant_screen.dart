@@ -4,33 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
-// ─── Sabit semptom listesi ──────────────────────────────────────────────────
-// Backend'deki hastalık listesiyle paralel — token tasarrufu için Flutter'da da sabit
-const _speciesSymptoms = {
-  'Köpek': [
-    'İştahsızlık', 'Ateş', 'İshal', 'Kusma', 'Öksürük',
-    'Nefes darlığı', 'Uyuşukluk', 'Kanlı dışkı', 'Aşırı kaşınma',
-    'Tüy dökülmesi', 'Topallama', 'Aşırı su içme', 'İdrar yapmama',
-    'Şişmiş karın', 'Bilinç kaybı',
-  ],
-  'Kedi': [
-    'İştahsızlık', 'Ateş', 'Kusma', 'İshal', 'Burun akıntısı',
-    'Göz akıntısı', 'Nefes güçlüğü', 'İdrar yapamama', 'Aşırı su içme',
-    'Kilo kaybı', 'Tüy yolma', 'Uyuşukluk', 'Kanlı idrar',
-    'Sarılık', 'Nöbet/Titreme',
-  ],
-  'Kuş': [
-    'Tüy döküyor', 'Yemiyor', 'Şişmiş/Kabarık', 'Burun akıntısı',
-    'Nefes güçlüğü', 'İshal', 'Kusma', 'Ayakta duramıyor',
-    'Nöbet geçiriyor', 'Kanıyor',
-  ],
-  'Diğer': [
-    'İştahsızlık', 'Ateş', 'Uyuşukluk', 'Kaşınma',
-    'İshal', 'Kusma', 'Nefes güçlüğü', 'Kilo kaybı',
-  ],
-};
+// Species symptoms are built at runtime from l10n to support EN/TR
 
 // ─── Mod (Teşhis / Genel Sohbet) ──────────────────────────────────────────
 enum _AiMode { diagnosis, general }
@@ -45,14 +22,7 @@ class _ChatMessage {
       : timestamp = t ?? DateTime.now();
 }
 
-// ─── Genel öneriler (mod=general için) ─────────────────────────────────────
-const _generalSuggestions = [
-  'Köpeğime ne kadar su vermeli?',
-  'Kedi kumu ne sıklıkla değiştirilmeli?',
-  'Yavru köpek eğitimi nasıl yapılır?',
-  'Kedim neden gece bağırıyor?',
-  'Köpek ısırması ne yapmalı?',
-];
+// General suggestions are built at runtime from l10n
 
 // ─── Screen ────────────────────────────────────────────────────────────────
 class AiAssistantScreen extends ConsumerStatefulWidget {
@@ -72,8 +42,49 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
   final _timeFmt = DateFormat('HH:mm', 'tr');
 
   _AiMode _mode = _AiMode.diagnosis;
-  String _selectedSpecies = 'Köpek';
+  String _selectedSpecies = 'dog'; // internal key: dog/cat/bird/other
   final Set<String> _selectedSymptoms = {};
+
+  // Returns localized species map: internalKey -> displayName
+  Map<String, String> _getSpeciesNames(AppLocalizations l10n) => {
+    'dog': l10n.aiSpeciesDog,
+    'cat': l10n.aiSpeciesCat,
+    'bird': l10n.aiSpeciesBird,
+    'other': l10n.aiSpeciesOther,
+  };
+
+  // Returns localized symptom list per species internal key
+  Map<String, List<String>> _getSpeciesSymptoms(AppLocalizations l10n) => {
+    'dog': [
+      l10n.aiSymptomLossOfAppetite, l10n.aiSymptomFever, l10n.aiSymptomDiarrhea,
+      l10n.aiSymptomVomiting, l10n.aiSymptomCough, l10n.aiSymptomShortnessOfBreath,
+      l10n.aiSymptomLethargy, l10n.aiSymptomBloodyStool, l10n.aiSymptomExcessiveItching,
+      l10n.aiSymptomHairLoss, l10n.aiSymptomLimping, l10n.aiSymptomExcessiveThirst,
+      l10n.aiSymptomUnableToUrinate, l10n.aiSymptomBloatedBelly, l10n.aiSymptomLossOfConsciousness,
+    ],
+    'cat': [
+      l10n.aiSymptomLossOfAppetite, l10n.aiSymptomFever, l10n.aiSymptomVomiting,
+      l10n.aiSymptomDiarrhea, l10n.aiSymptomRunnyNose, l10n.aiSymptomEyeDischarge,
+      l10n.aiSymptomBreathingDifficulty, l10n.aiSymptomUnableToUrinate, l10n.aiSymptomExcessiveThirst,
+      l10n.aiSymptomWeightLoss, l10n.aiSymptomFeatherPlucking, l10n.aiSymptomLethargy,
+      l10n.aiSymptomBloodyUrine, l10n.aiSymptomJaundice, l10n.aiSymptomSeizures,
+    ],
+    'bird': [
+      l10n.aiSymptomFeatherLoss, l10n.aiSymptomNotEating, l10n.aiSymptomPuffed,
+      l10n.aiSymptomRunnyNose, l10n.aiSymptomBreathingDifficulty, l10n.aiSymptomDiarrhea,
+      l10n.aiSymptomVomiting, l10n.aiSymptomUnableToStand, l10n.aiSymptomHavingSeizure,
+      l10n.aiSymptomBleeding,
+    ],
+    'other': [
+      l10n.aiSymptomLossOfAppetite, l10n.aiSymptomFever, l10n.aiSymptomLethargy,
+      l10n.aiSymptomScratch, l10n.aiSymptomDiarrhea, l10n.aiSymptomVomiting,
+      l10n.aiSymptomBreathingDifficulty, l10n.aiSymptomWeightLoss,
+    ],
+  };
+
+  List<String> _getGeneralSuggestions(AppLocalizations l10n) => [
+    l10n.aiGenSug1, l10n.aiGenSug2, l10n.aiGenSug3, l10n.aiGenSug4, l10n.aiGenSug5,
+  ];
 
   @override
   void dispose() {
@@ -96,11 +107,15 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
 
   // Semptomları metin olarak birleştir
   String _buildSymptomText() {
+    final l10n = AppLocalizations.of(context)!;
+    final speciesNames = _getSpeciesNames(l10n);
+    final speciesDisplay = speciesNames[_selectedSpecies] ?? _selectedSpecies;
     final userText = _ctrl.text.trim();
     if (_selectedSymptoms.isEmpty) return userText;
     final symptoms = _selectedSymptoms.join(', ');
-    if (userText.isNotEmpty) return '$_selectedSpecies, belirtiler: $symptoms. $userText';
-    return '$_selectedSpecies, belirtiler: $symptoms.';
+    final prefix = l10n.aiSymptomPrefix(speciesDisplay);
+    if (userText.isNotEmpty) return '$prefix $symptoms. $userText';
+    return '$prefix $symptoms.';
   }
 
   Future<void> _sendMessage([String? overrideText]) async {
@@ -124,7 +139,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
         'messages': payload,
         'mode': _mode == _AiMode.diagnosis ? 'diagnosis' : 'general',
       });
-      final reply = res.data['reply'] as String? ?? 'Yanıt alınamadı.';
+      final reply = res.data['reply'] as String? ?? AppLocalizations.of(context)!.aiNoReply;
       setState(() {
         _messages.add(_ChatMessage(role: 'assistant', content: reply));
         _isLoading = false;
@@ -133,7 +148,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
       setState(() {
         _messages.add(_ChatMessage(
           role: 'assistant',
-          content: 'Üzgünüm, şu an yanıt veremiyorum. Lütfen tekrar deneyin.',
+          content: AppLocalizations.of(context)!.aiErrorResponse,
         ));
         _isLoading = false;
       });
@@ -164,8 +179,8 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
               child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 18),
             ),
             const SizedBox(width: 10),
-            const Text('Pati Asistan',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            Text(AppLocalizations.of(context)!.aiAssistantTitle,
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
           ],
         ),
         actions: [
@@ -177,16 +192,16 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 textStyle: const TextStyle(fontSize: 11),
               ),
-              segments: const [
+              segments: [
                 ButtonSegment(
                   value: _AiMode.diagnosis,
-                  icon: Icon(Icons.medical_services_outlined, size: 14),
-                  label: Text('Teşhis'),
+                  icon: const Icon(Icons.medical_services_outlined, size: 14),
+                  label: Text(AppLocalizations.of(context)!.aiModeDiagnosis),
                 ),
                 ButtonSegment(
                   value: _AiMode.general,
-                  icon: Icon(Icons.chat_outlined, size: 14),
-                  label: Text('Genel'),
+                  icon: const Icon(Icons.chat_outlined, size: 14),
+                  label: Text(AppLocalizations.of(context)!.aiModeGeneral),
                 ),
               ],
               selected: {_mode},
@@ -198,7 +213,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
           ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Sıfırla',
+            tooltip: AppLocalizations.of(context)!.aiModeReset,
             onPressed: () => setState(() {
               _messages.clear();
               _selectedSymptoms.clear();
@@ -248,7 +263,10 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
 
   // ─── Teşhis Paneli: Tür seçici + semptom chip'leri ─────────────────────
   Widget _buildDiagnosisPanel(ThemeData theme) {
-    final symptoms = _speciesSymptoms[_selectedSpecies] ?? _speciesSymptoms['Diğer']!;
+    final l10n = AppLocalizations.of(context)!;
+    final speciesNames = _getSpeciesNames(l10n);
+    final speciesSymptoms = _getSpeciesSymptoms(l10n);
+    final symptoms = speciesSymptoms[_selectedSpecies] ?? speciesSymptoms['other']!;
     return Container(
       color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
@@ -259,12 +277,12 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: _speciesSymptoms.keys.map((species) {
-                final selected = _selectedSpecies == species;
+              children: speciesNames.entries.map((entry) {
+                final selected = _selectedSpecies == entry.key;
                 return Padding(
                   padding: const EdgeInsets.only(right: 6),
                   child: ChoiceChip(
-                    label: Text(species),
+                    label: Text(entry.value),
                     selected: selected,
                     selectedColor: AppPalette.primary,
                     labelStyle: TextStyle(
@@ -273,7 +291,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
                       fontSize: 12,
                     ),
                     onSelected: (_) => setState(() {
-                      _selectedSpecies = species;
+                      _selectedSpecies = entry.key;
                       _selectedSymptoms.clear();
                     }),
                   ),
@@ -284,7 +302,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
           const SizedBox(height: 6),
           // Semptom chip'leri
           Text(
-            'Semptom seç (çoklu):',
+            AppLocalizations.of(context)!.aiSymptomLabel,
             style: theme.textTheme.labelSmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
@@ -322,7 +340,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
               children: [
                 Expanded(
                   child: Text(
-                    'Seçili: ${_selectedSymptoms.join(', ')}',
+                    AppLocalizations.of(context)!.aiSymptomSelected(_selectedSymptoms.join(', ')),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: AppPalette.secondary,
                       fontWeight: FontWeight.w600,
@@ -337,7 +355,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     minimumSize: Size.zero,
                   ),
-                  child: const Text('Teşhis Et →'),
+                  child: Text(AppLocalizations.of(context)!.aiDiagnoseBtn),
                 ),
               ],
             ),
@@ -370,30 +388,30 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
         const SizedBox(height: 16),
         Text(
           _mode == _AiMode.diagnosis
-              ? 'Semptom seç veya yaz → Teşhis al'
-              : 'Evcil hayvanın hakkında ne sormak istiyorsun?',
+              ? AppLocalizations.of(context)!.aiWelcomeDiagnosis
+              : AppLocalizations.of(context)!.aiWelcomeGeneral,
           textAlign: TextAlign.center,
           style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 6),
         Text(
           _mode == _AiMode.diagnosis
-              ? 'Yukarıdan türü ve belirtileri seç,\nyoksa metin kutusuna yaz.'
-              : 'Bakım, beslenme, eğitim hakkında\nkısa ve pratik yanıtlar alırsın.',
+              ? AppLocalizations.of(context)!.aiWelcomeDiagnosisSub
+              : AppLocalizations.of(context)!.aiWelcomeGeneralSub,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant),
         ),
         if (_mode == _AiMode.general) ...[
           const SizedBox(height: 20),
-          Text('Örnek sorular:',
+          Text(AppLocalizations.of(context)!.aiExampleLabel,
               style: theme.textTheme.labelLarge
                   ?.copyWith(color: AppPalette.primary, fontWeight: FontWeight.w700)),
           const SizedBox(height: 10),
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: _generalSuggestions.map((s) {
+            children: _getGeneralSuggestions(AppLocalizations.of(context)!).map((s) {
               return ActionChip(
                 label: Text(s, style: const TextStyle(fontSize: 12)),
                 onPressed: () => _sendMessage(s),
@@ -621,9 +639,10 @@ class _InputBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final hint = mode == _AiMode.diagnosis
-        ? 'Ek bilgi ekle veya direkt yaz...'
-        : 'Sorunuzu yazın...';
+        ? l10n.aiInputDiagnosisHint
+        : l10n.aiInputGeneralHint;
 
     return Container(
       padding: EdgeInsets.fromLTRB(12, 8, 12, 12 + MediaQuery.of(context).padding.bottom),

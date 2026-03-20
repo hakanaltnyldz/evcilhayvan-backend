@@ -93,7 +93,7 @@ class UserProfileScreen extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(32),
                     child: Center(
-                      child: Text(l10n.userProfileNoListings, style: const TextStyle(color: Colors.grey)),
+                      child: Text(l10n.userProfileNoListings, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                     ),
                   ),
                 )
@@ -164,7 +164,7 @@ class UserProfileScreen extends ConsumerWidget {
                 children: [
                   CircleAvatar(
                     radius: 40,
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppPalette.primary.withOpacity(0.15),
                     backgroundImage:
                         avatarUrl != null && avatarUrl.isNotEmpty
                             ? NetworkImage(_imgUrl(avatarUrl))
@@ -335,13 +335,13 @@ class _PetMiniCard extends StatelessWidget {
                             photoUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => Container(
-                              color: Colors.grey.shade200,
-                              child: const Icon(Icons.pets, color: Colors.grey, size: 40),
+                              color: Theme.of(context).colorScheme.surfaceVariant,
+                              child: Icon(Icons.pets, color: Theme.of(context).colorScheme.outlineVariant, size: 40),
                             ),
                           )
                         : Container(
-                            color: Colors.grey.shade200,
-                            child: const Icon(Icons.pets, color: Colors.grey, size: 40),
+                            color: Theme.of(context).colorScheme.surfaceVariant,
+                            child: Icon(Icons.pets, color: Theme.of(context).colorScheme.outlineVariant, size: 40),
                           ),
                     if (typeLabel.isNotEmpty)
                       Positioned(
@@ -381,7 +381,7 @@ class _PetMiniCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     breed.isNotEmpty ? '$species · $breed' : species,
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 11),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 11),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

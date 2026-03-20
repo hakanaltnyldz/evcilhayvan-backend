@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class ConnectScreen extends StatelessWidget {
   const ConnectScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Keşfet'),
+        title: Text(l10n.connectTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -27,32 +29,32 @@ class ConnectScreen extends StatelessWidget {
           children: [
             _FeatureTile(
               icon: Icons.dynamic_feed_rounded,
-              title: 'Sosyal Akış',
-              subtitle: 'Evcil hayvan sahiplerini takip et',
+              title: l10n.connectSocialFeed,
+              subtitle: l10n.connectSocialFeedSub,
               color: AppPalette.primary,
               onTap: () => context.pushNamed('feed'),
             ),
             const SizedBox(height: 12),
             _FeatureTile(
               icon: Icons.search_rounded,
-              title: 'Ara',
-              subtitle: 'Evcil hayvan, mağaza ve veteriner bul',
+              title: l10n.connectSearch,
+              subtitle: l10n.connectSearchSub,
               color: AppPalette.secondary,
               onTap: () => context.pushNamed('search'),
             ),
             const SizedBox(height: 12),
             _FeatureTile(
               icon: Icons.map_rounded,
-              title: 'Haritada Keşfet',
-              subtitle: 'Yakınındaki ilanları haritada gör',
+              title: l10n.connectMapDiscover,
+              subtitle: l10n.connectMapDiscoverSub,
               color: AppPalette.tertiary,
               onTap: () => context.pushNamed('map'),
             ),
             const SizedBox(height: 12),
             _FeatureTile(
               icon: Icons.favorite_rounded,
-              title: 'Favoriler',
-              subtitle: 'Kaydettiğin ilanlar',
+              title: l10n.connectFavorites,
+              subtitle: l10n.connectFavoritesSub,
               color: Colors.red,
               onTap: () => context.pushNamed('favorites'),
             ),

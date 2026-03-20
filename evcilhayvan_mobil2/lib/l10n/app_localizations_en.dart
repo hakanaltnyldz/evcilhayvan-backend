@@ -2716,4 +2716,1931 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get vetSearchNoResults => 'No results found';
+
+  @override
+  String get vetHomeTabSearch => 'Search';
+
+  @override
+  String get vetHomeTabAppointments => 'Appointments';
+
+  @override
+  String get vetHomeTabVaccine => 'Vaccine Schedule';
+
+  @override
+  String get vetHomeSearchHint => 'Search veterinary clinic...';
+
+  @override
+  String get vetHomeNearMe => 'Near Me';
+
+  @override
+  String get vetHomeSaveClinic => 'Register Clinic';
+
+  @override
+  String get vetHomeGoogleSearch => 'Search with Google';
+
+  @override
+  String get vetHomeReminders => 'Reminders';
+
+  @override
+  String get vetHomeNearbyTitle => 'Nearby Veterinarians';
+
+  @override
+  String get vetHomeNearbyPermRequired =>
+      'Allow location access to see nearby vets';
+
+  @override
+  String get vetHomeNearbyEmpty => 'No nearby vets found';
+
+  @override
+  String get vetHomeApptsEmpty => 'No appointments yet';
+
+  @override
+  String get vetHomeApptsEmptyDesc =>
+      'Search for a vet and book an appointment';
+
+  @override
+  String get vetHomeVaccineTitle => 'Vaccine Reminders';
+
+  @override
+  String get vetHomeVaccineEmpty => 'No upcoming vaccine reminders';
+
+  @override
+  String get vetHomeVaccineEmptyDesc =>
+      'View the vaccine schedule from your pet\'s profile page';
+
+  @override
+  String get vetHomeVaccineOverdue => 'Overdue';
+
+  @override
+  String get vetHomeVaccineUpcoming => 'Upcoming';
+
+  @override
+  String vetHomeLoadError(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get storeHomeLive => 'Live Store';
+
+  @override
+  String get storeHomeLiveDesc => 'Real stores and real products are here.';
+
+  @override
+  String get storeHomeQuickExplore => 'Quick explore';
+
+  @override
+  String get storeHomeAll => 'All';
+
+  @override
+  String get storeHomeFeatured => 'Featured stores';
+
+  @override
+  String get storeHomeNoDesc => 'No description.';
+
+  @override
+  String get storeHomeGoToStore => 'Go to store';
+
+  @override
+  String get storeHomeProducts => 'Products';
+
+  @override
+  String get storeHomeLatest => 'Latest';
+
+  @override
+  String get storeNoDescAdded => 'No description added.';
+
+  @override
+  String get storeHomeCategoryLoadErr => 'Could not load categories.';
+
+  @override
+  String get storeHomeFeaturedEmpty => 'No featured stores for now.';
+
+  @override
+  String get storeHomeStoresLoadErr => 'Could not load stores.';
+
+  @override
+  String get storeHomeProductsEmpty => 'No products found';
+
+  @override
+  String get storeHomeProductsNotFound =>
+      'No products match your search criteria.';
+
+  @override
+  String get storeHomeProductsNone => 'No products added yet.';
+
+  @override
+  String get storeHomeProductsLoadErr => 'Could not load products.';
+
+  @override
+  String get storeHomeFiltersClear => 'Clear filters';
+
+  @override
+  String storeHomeMyStoreLoadErr(String error) {
+    return 'Could not get your store: $error';
+  }
+
+  @override
+  String get storeHomeCategoryNotFound => 'Category not found.';
+
+  @override
+  String get storeHomeSearchHint => 'Search product or store';
+
+  @override
+  String get storeHomeSearchBtn => 'Search';
+
+  @override
+  String get storeHomeOpenStore => 'Open a store, showcase your products!';
+
+  @override
+  String get storeHomeOpenStoreDesc => 'Apply in minutes, reach pet lovers.';
+
+  @override
+  String get storeHomeOpenStoreBtn => 'Open Store';
+
+  @override
+  String get storeHomeRetry => 'Retry';
+
+  @override
+  String get storeHomeSoldOut => 'Sold Out';
+
+  @override
+  String storeHomeLastStock(int count) {
+    return 'Last $count';
+  }
+
+  @override
+  String get storePriceAsc => 'Price ↑';
+
+  @override
+  String get storePriceDesc => 'Price ↓';
+
+  @override
+  String get storeNameAz => 'A–Z';
+
+  @override
+  String get storesListTitle => 'Stores';
+
+  @override
+  String get storesListSearchHint => 'Search store...';
+
+  @override
+  String get storesListEmpty => 'No stores yet';
+
+  @override
+  String get storesListSearchEmpty => 'No search results found';
+
+  @override
+  String get storesListLoadErr => 'Could not load stores';
+
+  @override
+  String get storesListRetry => 'Retry';
+
+  @override
+  String get storeDetailTitle => 'Store';
+
+  @override
+  String get storeDetailLoadErr => 'Could not load store';
+
+  @override
+  String get storeDetailProductsLoadErr => 'Could not load products';
+
+  @override
+  String get storeDetailNoProducts => 'This store has no products yet.';
+
+  @override
+  String get storeDetailTotalProducts => 'Total products';
+
+  @override
+  String get storeDetailAddProduct => 'Add product';
+
+  @override
+  String get storeDetailFavorited => 'In favorites';
+
+  @override
+  String get storeDetailAddToFavorites => 'Add to favorites';
+
+  @override
+  String get storeDetailRemovedFav => 'Removed from favorites';
+
+  @override
+  String get storeDetailAddedFav => 'Added to favorites';
+
+  @override
+  String storeDetailFavError(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get storeDetailShare => 'Share';
+
+  @override
+  String get storeDetailProductActive => 'Active';
+
+  @override
+  String get storeDetailProductInactive => 'Inactive';
+
+  @override
+  String get storeDetailProductSoldOut => 'Sold Out';
+
+  @override
+  String storeDetailProductStock(int count) {
+    return 'Stock: $count';
+  }
+
+  @override
+  String get storeDetailMenuEdit => 'Edit';
+
+  @override
+  String get storeDetailMenuToggle => 'Active/Inactive';
+
+  @override
+  String get storeDetailMenuDelete => 'Delete';
+
+  @override
+  String get storeDetailDeleteTitle => 'Delete product';
+
+  @override
+  String get storeDetailDeleteContent =>
+      'Are you sure you want to delete this product?';
+
+  @override
+  String get storeDetailDeleteCancel => 'Cancel';
+
+  @override
+  String get storeDetailProductActivated => 'Product activated.';
+
+  @override
+  String get storeDetailProductDeactivated => 'Product deactivated.';
+
+  @override
+  String storeDetailProductUpdateErr(String error) {
+    return 'Could not update product: $error';
+  }
+
+  @override
+  String get storeDetailProductDeleted => 'Product deleted.';
+
+  @override
+  String storeDetailProductDeleteErr(String error) {
+    return 'Could not delete product: $error';
+  }
+
+  @override
+  String get storeDetailRetry => 'Retry';
+
+  @override
+  String get applySellerTitle => 'Open Store';
+
+  @override
+  String get applySellerLogoTitle => 'Select Store Logo';
+
+  @override
+  String get applySellerPickGallery => 'Choose from Gallery';
+
+  @override
+  String get applySellerPickCamera => 'Open Camera';
+
+  @override
+  String get applySellerLogoSection => 'Store Logo';
+
+  @override
+  String get applySellerLogoAdd => 'Add Logo';
+
+  @override
+  String get applySellerLogoHint =>
+      'Square format, minimum 200x200 pixels recommended';
+
+  @override
+  String get applySellerInfoSection => 'Store Information';
+
+  @override
+  String get applySellerNameLabel => 'Store Name *';
+
+  @override
+  String get applySellerNameHint => 'E.g.: Happy Pets Store';
+
+  @override
+  String get applySellerNameRequired => 'Store name is required';
+
+  @override
+  String get applySellerNameTooShort => 'Must be at least 3 characters';
+
+  @override
+  String get applySellerDescLabel => 'Store Description';
+
+  @override
+  String get applySellerDescHint => 'Introduce your store...';
+
+  @override
+  String get applySellerTermsTitle => 'Seller Agreement';
+
+  @override
+  String get applySellerTermsAccepted => 'Accepted';
+
+  @override
+  String get applySellerTermsRead =>
+      'I have read and accept the seller agreement';
+
+  @override
+  String get applySellerTermsDialogTitle => 'Seller Agreement';
+
+  @override
+  String get applySellerTermsAcceptBtn => 'I Have Read and Accept';
+
+  @override
+  String get applySellerStepLogo => 'Logo';
+
+  @override
+  String get applySellerStepInfo => 'Info';
+
+  @override
+  String get applySellerStepContract => 'Agreement';
+
+  @override
+  String get applySellerOpenBtn => 'Open My Store';
+
+  @override
+  String get applySellerApprovalNote =>
+      'You can start adding products after your store is approved.';
+
+  @override
+  String get applySellerSuccessTitle => 'Congratulations!';
+
+  @override
+  String applySellerSuccessDesc(String storeName) {
+    return 'Your store \"$storeName\" has been successfully created!';
+  }
+
+  @override
+  String get applySellerGoToStore => 'Go to My Store';
+
+  @override
+  String get applySellerGenericError => 'An error occurred, please try again.';
+
+  @override
+  String get addProductTitle => 'Add Product';
+
+  @override
+  String get addProductEditTitle => 'Edit Product';
+
+  @override
+  String get addProductPhotosSection => 'Product Photos';
+
+  @override
+  String get addProductPickGallery => 'Choose from Gallery';
+
+  @override
+  String get addProductPickGallerySub => 'Select from your existing photos';
+
+  @override
+  String get addProductPickCamera => 'Open Camera';
+
+  @override
+  String get addProductPickCameraSub => 'Take a new photo';
+
+  @override
+  String get addProductPickDialogTitle => 'Add Photo';
+
+  @override
+  String get addProductAddBtn => 'Add';
+
+  @override
+  String addProductMaxWarning(int max) {
+    return 'You can add at most $max photos';
+  }
+
+  @override
+  String addProductPhotosHint(int max) {
+    return 'Add photos of your product (max $max)';
+  }
+
+  @override
+  String get addProductTitleField => 'Product Title';
+
+  @override
+  String get addProductTitleHint => 'E.g.: Colorful cat toy';
+
+  @override
+  String get addProductTitleRequired => 'Title is required';
+
+  @override
+  String get addProductCategoryLabel => 'Category';
+
+  @override
+  String get addProductCategoryRequired => 'Select a category';
+
+  @override
+  String get addProductDescLabel => 'Description';
+
+  @override
+  String get addProductDescHint => 'Product features, size, material...';
+
+  @override
+  String get addProductPriceLabel => 'Price';
+
+  @override
+  String get addProductPriceRequired => 'Required';
+
+  @override
+  String get addProductPriceInvalid => 'Invalid';
+
+  @override
+  String get addProductStockLabel => 'Stock';
+
+  @override
+  String get addProductActiveLabel => 'Product Active';
+
+  @override
+  String get addProductInactiveLabel => 'Product Inactive';
+
+  @override
+  String get addProductSaving => 'Saving...';
+
+  @override
+  String get addProductSaveBtn => 'Save';
+
+  @override
+  String get addProductUpdated => 'Product updated!';
+
+  @override
+  String get addProductAdded => 'Product added!';
+
+  @override
+  String get addProductCategoryLoadErr => 'Could not load categories.';
+
+  @override
+  String get addProductCategoryNotFound => 'Category not found.';
+
+  @override
+  String get addProductRetry => 'Retry';
+
+  @override
+  String addProductCategoryLoading(String label) {
+    return 'Loading $label...';
+  }
+
+  @override
+  String get sellerOrdersTitle => 'My Orders';
+
+  @override
+  String get sellerOrdersTabAll => 'All';
+
+  @override
+  String get sellerOrdersTabPending => 'Pending';
+
+  @override
+  String get sellerOrdersTabProcessing => 'Processing';
+
+  @override
+  String get sellerOrdersTabShipped => 'Shipped';
+
+  @override
+  String get sellerOrdersTabCompleted => 'Completed';
+
+  @override
+  String get sellerOrdersEmpty => 'No orders yet';
+
+  @override
+  String get sellerOrdersEmptyDesc =>
+      'Orders for your products will appear here';
+
+  @override
+  String sellerOrdersLoadErr(String error) {
+    return 'Could not load orders: $error';
+  }
+
+  @override
+  String get sellerOrdersCategoryEmpty => 'No orders in this category';
+
+  @override
+  String get sellerOrdersStatusUpdated => 'Order status updated';
+
+  @override
+  String sellerOrdersStatusError(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get sellerOrdersStatTotal => 'Total';
+
+  @override
+  String get sellerOrdersStatPending => 'Pending';
+
+  @override
+  String get sellerOrdersStatSales => 'Sales';
+
+  @override
+  String get sellerOrdersStatRevenue => 'Revenue';
+
+  @override
+  String get sellerOrdersPrepare => 'Prepare';
+
+  @override
+  String get sellerOrdersShip => 'Ship';
+
+  @override
+  String get sellerOrdersDelivered => 'Delivered';
+
+  @override
+  String sellerOrdersItemCount(int count) {
+    return '$count items';
+  }
+
+  @override
+  String sellerOrdersItemQty(int qty, String price) {
+    return '$qty pcs x \$$price';
+  }
+
+  @override
+  String get petCardMating => 'Mating';
+
+  @override
+  String get petCardAdoption => 'Adoption';
+
+  @override
+  String get petCardVaccinated => 'Vaccinated';
+
+  @override
+  String get petCardOwnerUnknown => 'Unknown';
+
+  @override
+  String get apptCreateTitle => 'Create Appointment';
+
+  @override
+  String get apptCreateSelectPet => 'Select Pet';
+
+  @override
+  String get apptCreateDate => 'Date';
+
+  @override
+  String get apptCreateTime => 'Time';
+
+  @override
+  String get apptCreateReason => 'Reason for Appointment';
+
+  @override
+  String get apptCreateNotes => 'Notes (optional)';
+
+  @override
+  String get apptCreateBtn => 'Create Appointment';
+
+  @override
+  String get apptCreateSuccess => 'Appointment created!';
+
+  @override
+  String get apptCreateSelectDateBtn => 'Select date';
+
+  @override
+  String get apptCreateNoPets => 'You haven\'t added any pets yet';
+
+  @override
+  String get apptCreateNoSlots => 'No available slots on this date';
+
+  @override
+  String get apptCreateValidation => 'Please select pet, date and time';
+
+  @override
+  String apptCreateSlotsError(String error) {
+    return 'Could not get slots: $error';
+  }
+
+  @override
+  String apptCreatePetsError(String error) {
+    return 'Could not load pets: $error';
+  }
+
+  @override
+  String apptCreateError(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get apptDetailTitle => 'Appointment Detail';
+
+  @override
+  String get apptDetailDate => 'Date and Time';
+
+  @override
+  String get apptDetailVet => 'Veterinarian';
+
+  @override
+  String get apptDetailPet => 'Pet';
+
+  @override
+  String get apptDetailReason => 'Reason for Appointment';
+
+  @override
+  String get apptDetailNotes => 'Notes';
+
+  @override
+  String get apptDetailVetNotes => 'Vet Notes';
+
+  @override
+  String get apptDetailCancelBtn => 'Cancel Appointment';
+
+  @override
+  String get apptDetailCancelTitle => 'Cancel Appointment';
+
+  @override
+  String get apptDetailCancelContent =>
+      'Are you sure you want to cancel the appointment?';
+
+  @override
+  String get apptDetailCancelConfirm => 'Cancel';
+
+  @override
+  String get apptDetailCancelBack => 'Go Back';
+
+  @override
+  String get apptDetailCancelSuccess => 'Appointment cancelled';
+
+  @override
+  String apptDetailError(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get vetRegisterTitle => 'Register Clinic';
+
+  @override
+  String get vetRegisterClinicName => 'Clinic Name *';
+
+  @override
+  String get vetRegisterAddress => 'Address *';
+
+  @override
+  String get vetRegisterPhone => 'Phone';
+
+  @override
+  String get vetRegisterEmail => 'Email';
+
+  @override
+  String get vetRegisterDesc => 'Description';
+
+  @override
+  String vetRegisterLocationLabel(String lat, String lng) {
+    return 'Location: $lat, $lng';
+  }
+
+  @override
+  String get vetRegisterLocationNone => 'No location added';
+
+  @override
+  String get vetRegisterGetLocation => 'Get Location';
+
+  @override
+  String get vetRegisterGettingLocation => 'Getting...';
+
+  @override
+  String get vetRegisterSpecies => 'Species Served';
+
+  @override
+  String get vetRegisterSaveBtn => 'Save';
+
+  @override
+  String get vetRegisterSuccess =>
+      'Clinic registered and linked to your account!';
+
+  @override
+  String get vetRegisterClinicNameRequired => 'Clinic name is required';
+
+  @override
+  String get vetRegisterAddressRequired => 'Address is required';
+
+  @override
+  String vetRegisterLocationError(String error) {
+    return 'Could not get location: $error';
+  }
+
+  @override
+  String get vetRegisterLocationDenied =>
+      'Location permission denied. Please allow it in settings.';
+
+  @override
+  String vetRegisterError(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get searchHint => 'Search listings, stores or vets...';
+
+  @override
+  String get searchTypeHint => 'Type what you want to search';
+
+  @override
+  String get searchTypeHintSub => 'You can search listings, stores or vets';
+
+  @override
+  String get searchHistory => 'Recent Searches';
+
+  @override
+  String get searchClearHistory => 'Clear All';
+
+  @override
+  String searchError(String error) {
+    return 'Search error: $error';
+  }
+
+  @override
+  String searchNoResults(String query) {
+    return 'No results found for \"$query\"';
+  }
+
+  @override
+  String get searchSectionListings => 'Listings';
+
+  @override
+  String get searchSectionStores => 'Stores';
+
+  @override
+  String get searchSectionVets => 'Vets';
+
+  @override
+  String get searchStoreSubtitle => 'Store';
+
+  @override
+  String get searchVetSubtitle => 'Vet';
+
+  @override
+  String get aiAssistantTitle => 'Pati Assistant';
+
+  @override
+  String get aiModeReset => 'Reset';
+
+  @override
+  String get aiModeDiagnosis => 'Diagnosis';
+
+  @override
+  String get aiModeGeneral => 'General';
+
+  @override
+  String get aiSymptomLabel => 'Select symptoms (multiple):';
+
+  @override
+  String get aiDiagnoseBtn => 'Diagnose →';
+
+  @override
+  String aiSymptomSelected(String symptoms) {
+    return 'Selected: $symptoms';
+  }
+
+  @override
+  String get aiWelcomeDiagnosis => 'Select or type symptom → Get diagnosis';
+
+  @override
+  String get aiWelcomeGeneral => 'What do you want to ask about your pet?';
+
+  @override
+  String get aiWelcomeDiagnosisSub =>
+      'Select the species and symptoms above,\nor type directly in the text box.';
+
+  @override
+  String get aiWelcomeGeneralSub =>
+      'Get short and practical answers\nabout care, nutrition, and training.';
+
+  @override
+  String get aiExampleLabel => 'Example questions:';
+
+  @override
+  String get aiInputDiagnosisHint => 'Add extra info or type directly...';
+
+  @override
+  String get aiInputGeneralHint => 'Type your question...';
+
+  @override
+  String get aiErrorResponse =>
+      'Sorry, I can\'t respond right now. Please try again.';
+
+  @override
+  String get aiNoReply => 'No reply received.';
+
+  @override
+  String get guideTitle => 'Guide Pati';
+
+  @override
+  String get guideNewChat => 'New chat';
+
+  @override
+  String get guideWelcome => 'Hello! 👋';
+
+  @override
+  String get guideWelcomeSub =>
+      'What do you want to do?\nLet me help you the fastest way.';
+
+  @override
+  String get guideQuickOptions => 'Quick options:';
+
+  @override
+  String get guideNavigateBtn => 'Take me there →';
+
+  @override
+  String get guideInputHint => 'What do you want to do?';
+
+  @override
+  String get guideConnError => 'Connection error, please try again.';
+
+  @override
+  String get guideUnknown => 'I didn\'t understand.';
+
+  @override
+  String get monthJan => 'Jan';
+
+  @override
+  String get monthFeb => 'Feb';
+
+  @override
+  String get monthMar => 'Mar';
+
+  @override
+  String get monthApr => 'Apr';
+
+  @override
+  String get monthMay => 'May';
+
+  @override
+  String get monthJun => 'Jun';
+
+  @override
+  String get monthJul => 'Jul';
+
+  @override
+  String get monthAug => 'Aug';
+
+  @override
+  String get monthSep => 'Sep';
+
+  @override
+  String get monthOct => 'Oct';
+
+  @override
+  String get monthNov => 'Nov';
+
+  @override
+  String get monthDec => 'Dec';
+
+  @override
+  String get sitterFindTitle => 'Find a Sitter';
+
+  @override
+  String get sitterMyBookingsTooltip => 'My Bookings';
+
+  @override
+  String get sitterServiceAll => 'All';
+
+  @override
+  String get sitterServiceWalking => 'Walking';
+
+  @override
+  String get sitterServiceHomeSitting => 'Home Sitting';
+
+  @override
+  String get sitterServiceBoarding => 'Boarding';
+
+  @override
+  String get sitterServiceDaycare => 'Daycare';
+
+  @override
+  String get sitterServiceGrooming => 'Grooming';
+
+  @override
+  String get sitterEmptyTitle => 'No sitters found nearby';
+
+  @override
+  String get sitterEmptySubtitle =>
+      'Create the first sitter profile and serve other users!';
+
+  @override
+  String get sitterBecomeSitterBtn => 'Become a Sitter';
+
+  @override
+  String get sitterEditProfile => 'Edit Profile';
+
+  @override
+  String get sitterBasicInfo => 'Basic Information';
+
+  @override
+  String get sitterDisplayName => 'Display Name *';
+
+  @override
+  String get sitterDisplayNameRequired => 'Name is required';
+
+  @override
+  String get sitterBio => 'About / Introduction';
+
+  @override
+  String get sitterExperience => 'Experience';
+
+  @override
+  String get sitterLocation => 'Location';
+
+  @override
+  String get sitterUseLocation => 'Use My Location';
+
+  @override
+  String get sitterLocationObtained => 'Location Obtained ✓';
+
+  @override
+  String get sitterAddress => 'Address / Neighborhood';
+
+  @override
+  String get sitterSpeciesTitle => 'Which Animals Do You Work With?';
+
+  @override
+  String get sitterSpeciesDog => 'Dog';
+
+  @override
+  String get sitterSpeciesCat => 'Cat';
+
+  @override
+  String get sitterSpeciesBird => 'Bird';
+
+  @override
+  String get sitterSpeciesRabbit => 'Rabbit';
+
+  @override
+  String get sitterSpeciesOther => 'Other';
+
+  @override
+  String get sitterServicesTitle => 'Services You Offer';
+
+  @override
+  String get sitterServicesAdd => 'Add';
+
+  @override
+  String get sitterServicesAllAdded => 'All services added';
+
+  @override
+  String get sitterServiceType => 'Service Type';
+
+  @override
+  String get sitterServiceWalkingLabel => 'Walking';
+
+  @override
+  String get sitterServiceHomeSittingLabel => 'Home Sitting';
+
+  @override
+  String get sitterServiceBoardingLabel => 'Boarding';
+
+  @override
+  String get sitterServiceDaycareLabel => 'Daycare';
+
+  @override
+  String get sitterServiceGroomingLabel => 'Grooming/Care';
+
+  @override
+  String get sitterHourlyPrice => 'Hourly Rate (₺)';
+
+  @override
+  String get sitterDailyPrice => 'Daily Rate (₺)';
+
+  @override
+  String get sitterSpeciesRequired => 'Select at least one animal type';
+
+  @override
+  String get sitterLocationPermRequired => 'Location permission required';
+
+  @override
+  String sitterLocationErr(String error) {
+    return 'Could not get location: $error';
+  }
+
+  @override
+  String get sitterProfileUpdated => 'Profile updated!';
+
+  @override
+  String get sitterProfileCreated => 'Sitter profile created!';
+
+  @override
+  String sitterSubmitErr(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get sitterCreateBtn => 'Create Sitter Profile';
+
+  @override
+  String get sitterUpdateBtn => 'Update Profile';
+
+  @override
+  String get bookingsTitle => 'Bookings';
+
+  @override
+  String get bookingsTabMine => 'My Bookings';
+
+  @override
+  String get bookingsTabIncoming => 'Incoming Requests';
+
+  @override
+  String get bookingsEmptyTitle => 'No bookings yet';
+
+  @override
+  String get bookingsEmptySubtitle => 'Confirmed bookings will appear here.';
+
+  @override
+  String get bookingsOwnerLabel => 'Owner';
+
+  @override
+  String get bookingsSitterLabel => 'Sitter';
+
+  @override
+  String get bookingsAccept => 'Accept';
+
+  @override
+  String get bookingsReject => 'Reject';
+
+  @override
+  String get bookingsMarkCompleted => 'Mark as Completed';
+
+  @override
+  String get bookingsReview => 'Review';
+
+  @override
+  String get bookingsReviewDialogTitle => 'Rate the Sitter';
+
+  @override
+  String get bookingsReviewHint => 'Comment (optional)';
+
+  @override
+  String get bookingsReviewCancel => 'Cancel';
+
+  @override
+  String get bookingsReviewSend => 'Send';
+
+  @override
+  String bookingsActionErr(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get adoptionAppsTitle => 'Adoption Applications';
+
+  @override
+  String get adoptionAppsTabInbox => 'Received Applications';
+
+  @override
+  String get adoptionAppsTabSent => 'Sent';
+
+  @override
+  String get adoptionAppsInboxEmpty => 'No incoming applications';
+
+  @override
+  String get adoptionAppsInboxEmptyDesc =>
+      'Applications for your adoption listings will appear here.';
+
+  @override
+  String get adoptionAppsSentEmpty => 'No sent applications';
+
+  @override
+  String get adoptionAppsSentEmptyDesc =>
+      'Applications you sent to adoption listings will appear here.';
+
+  @override
+  String adoptionAppsErrGeneric(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get adoptionAppsAcceptTitle => 'Accept Application';
+
+  @override
+  String get adoptionAppsRejectTitle => 'Reject Application';
+
+  @override
+  String get adoptionAppsAcceptContent =>
+      'Are you sure you want to accept this application? A conversation will be started.';
+
+  @override
+  String get adoptionAppsRejectContent =>
+      'Are you sure you want to reject this application?';
+
+  @override
+  String get adoptionAppsCancel => 'Cancel';
+
+  @override
+  String get adoptionAppsAcceptBtn => 'Accept';
+
+  @override
+  String get adoptionAppsRejectBtn => 'Reject';
+
+  @override
+  String get adoptionAppsAcceptedStarted =>
+      'Application accepted! Conversation started.';
+
+  @override
+  String get adoptionAppsAccepted => 'Application accepted';
+
+  @override
+  String get adoptionAppsRejected => 'Application rejected';
+
+  @override
+  String get adoptionAppsGoToChat => 'Go to Chat';
+
+  @override
+  String adoptionAppsApplicant(String name) {
+    return 'Applicant: $name';
+  }
+
+  @override
+  String get adoptionAppsListing => 'Listing';
+
+  @override
+  String get adoptionAppsStatusAccepted => 'Accepted';
+
+  @override
+  String get adoptionAppsStatusRejected => 'Rejected';
+
+  @override
+  String get adoptionAppsStatusCancelled => 'Cancelled';
+
+  @override
+  String get adoptionAppsStatusPending => 'Pending';
+
+  @override
+  String get adoptionAppsTimelineApplication => 'Application';
+
+  @override
+  String get adoptionAppsTimelineReview => 'Review';
+
+  @override
+  String get adoptionAppsTimelineApproval => 'Approval';
+
+  @override
+  String get adoptionAppsTimelineCompleted => 'Completed';
+
+  @override
+  String get adoptionAppsTimelineRejected => 'Rejected';
+
+  @override
+  String get adoptionAppsTimelineCancelled => 'Cancelled';
+
+  @override
+  String get adoptionAppsTimelineDecision => 'Decision';
+
+  @override
+  String get adoptionApplyTitle => 'Adoption Application';
+
+  @override
+  String get adoptionApplyInfoText =>
+      'Your application will be sent to the listing owner. If accepted, a conversation will be started.';
+
+  @override
+  String get adoptionApplyNoteLabel => 'Application Note (optional)';
+
+  @override
+  String get adoptionApplyNoteHint =>
+      'Introduce yourself, explain why you want to adopt this animal...';
+
+  @override
+  String adoptionApplyErrGeneric(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get adoptionApplySuccessTitle => 'Application Sent!';
+
+  @override
+  String get adoptionApplySuccessContent =>
+      'Your adoption application has been sent to the listing owner. You can track the result in My Applications.';
+
+  @override
+  String get adoptionApplySuccessOk => 'OK';
+
+  @override
+  String get adoptionApplySending => 'Sending...';
+
+  @override
+  String get adoptionApplySendBtn => 'Send Application';
+
+  @override
+  String get lostFoundTitle2 => 'Lost & Found';
+
+  @override
+  String get lostFoundListView => 'List View';
+
+  @override
+  String get lostFoundMapView => 'Map View';
+
+  @override
+  String get lostFoundLostTab => 'Lost';
+
+  @override
+  String get lostFoundFoundTab => 'Found';
+
+  @override
+  String get lostFoundEmptyTitle => 'No listings nearby';
+
+  @override
+  String get lostFoundEmptySubtitle =>
+      'Lost or found animal listings near you will appear here.';
+
+  @override
+  String get lostFoundCreateBtn => 'Create Listing';
+
+  @override
+  String get eventsTitle2 => 'Events';
+
+  @override
+  String get eventsMyEventsTooltip => 'My Events';
+
+  @override
+  String get eventsCreateBtn => 'Create Event';
+
+  @override
+  String get eventsCatAll => 'All';
+
+  @override
+  String get eventsCatPark => 'Park';
+
+  @override
+  String get eventsCatAdoption => 'Adopt';
+
+  @override
+  String get eventsCatTraining => 'Training';
+
+  @override
+  String get eventsCatCompetition => 'Race';
+
+  @override
+  String get eventsCatGrooming => 'Care';
+
+  @override
+  String get eventsCatHealth => 'Health';
+
+  @override
+  String get eventsEmptyTitle => 'No Events Found';
+
+  @override
+  String get eventsEmptySubtitle => 'No events in this area or category yet.';
+
+  @override
+  String get eventsLocationBannerText => 'Location required for nearby events';
+
+  @override
+  String get eventsLocationBannerBtn => 'Allow';
+
+  @override
+  String get myEventsTitle => 'My Events';
+
+  @override
+  String get myEventsTabAttending => 'Attending';
+
+  @override
+  String get myEventsTabOrganized => 'Organizing';
+
+  @override
+  String get myEventsEmptyTitle => 'No Events';
+
+  @override
+  String get myEventsEmptySubtitle =>
+      'You have no events in this category yet.';
+
+  @override
+  String get createPostTitle => 'Create Post';
+
+  @override
+  String get createPostShareBtn => 'Share';
+
+  @override
+  String get createPostPhotosLabel => 'Photos';
+
+  @override
+  String get createPostAddBtn => 'Add';
+
+  @override
+  String get createPostEmptyHint => 'Tap to add photos';
+
+  @override
+  String get createPostHint =>
+      'What are you sharing? Tell us about your adorable pet...';
+
+  @override
+  String get createPostMaxImages => 'You can add up to 4 photos';
+
+  @override
+  String get createPostValidation => 'Please write something or add a photo';
+
+  @override
+  String createPostErr(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get connectTitle => 'Discover';
+
+  @override
+  String get connectSocialFeed => 'Social Feed';
+
+  @override
+  String get connectSocialFeedSub => 'Follow pet owners';
+
+  @override
+  String get connectSearch => 'Search';
+
+  @override
+  String get connectSearchSub => 'Find pets, stores and vets';
+
+  @override
+  String get connectMapDiscover => 'Discover on Map';
+
+  @override
+  String get connectMapDiscoverSub => 'View nearby listings on the map';
+
+  @override
+  String get connectFavorites => 'Favorites';
+
+  @override
+  String get connectFavoritesSub => 'Saved listings';
+
+  @override
+  String get reviewAddTitle => 'Write a Review';
+
+  @override
+  String get reviewEditTitle => 'Edit Review';
+
+  @override
+  String get reviewProductLabel => 'Product';
+
+  @override
+  String get reviewRatingLabel => 'Your Rating *';
+
+  @override
+  String get reviewCommentLabel => 'Your Comment (Optional)';
+
+  @override
+  String get reviewCommentHint => 'Share your thoughts about the product...';
+
+  @override
+  String get reviewSubmitBtn => 'Submit';
+
+  @override
+  String get reviewUpdateBtn => 'Update';
+
+  @override
+  String get reviewRating1 => 'Very Bad';
+
+  @override
+  String get reviewRating2 => 'Bad';
+
+  @override
+  String get reviewRating3 => 'Average';
+
+  @override
+  String get reviewRating4 => 'Good';
+
+  @override
+  String get reviewRating5 => 'Excellent';
+
+  @override
+  String get reviewNoRatingErr => 'Please select a rating';
+
+  @override
+  String get reviewUpdated => 'Review updated';
+
+  @override
+  String get reviewAdded => 'Review added';
+
+  @override
+  String reviewErr(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get reviewsSectionTitle => 'Reviews';
+
+  @override
+  String get reviewsSectionEdit => 'Edit';
+
+  @override
+  String get reviewsSectionAdd => 'Write a Review';
+
+  @override
+  String reviewsCount(int count) {
+    return '$count reviews';
+  }
+
+  @override
+  String get reviewsVerifiedBuyer => 'Buyer';
+
+  @override
+  String reviewsLoadErr(String error) {
+    return 'Could not load reviews: $error';
+  }
+
+  @override
+  String get reviewsEmptyTitle => 'No reviews yet';
+
+  @override
+  String get reviewsEmptySubtitle => 'Be the first to review!';
+
+  @override
+  String get editProfileTitle => 'Edit Profile';
+
+  @override
+  String get editProfilePhotoUpdated => 'Profile photo updated!';
+
+  @override
+  String get editProfileNameLabel => 'Full Name';
+
+  @override
+  String get editProfileCityLabel => 'City';
+
+  @override
+  String get editProfileAboutLabel => 'About Me';
+
+  @override
+  String get editProfileNameRequired => 'Name cannot be empty';
+
+  @override
+  String get editProfileSaveBtn => 'Save Changes';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingNext => 'Continue';
+
+  @override
+  String get onboardingStart => 'Let\'s Get Started!';
+
+  @override
+  String get onboardingPage1Title => 'Discover Your Pet Companion';
+
+  @override
+  String get onboardingPage1Subtitle =>
+      'Browse thousands of pet listings. Find the right friend for adoption or matching.';
+
+  @override
+  String get onboardingPage2Title => 'Matching & Adoption';
+
+  @override
+  String get onboardingPage2Subtitle =>
+      'Match or adopt pets based on birth dates, breed and location filters.';
+
+  @override
+  String get onboardingPage3Title => 'Health Tracking';
+
+  @override
+  String get onboardingPage3Subtitle =>
+      'Keep your friend\'s health under control with vaccination schedule, vet appointments and health journal.';
+
+  @override
+  String get onboardingPage4Title => 'Store & Community';
+
+  @override
+  String get onboardingPage4Subtitle =>
+      'Buy pet products, hire sitters, join events and be part of the social community.';
+
+  @override
+  String get adminAppsTitle => 'Seller Applications';
+
+  @override
+  String adminAppsStatus(String status) {
+    return 'Status: $status';
+  }
+
+  @override
+  String get adminAppsLoadErr => 'Could not load applications.';
+
+  @override
+  String get productDetailOwnProduct => 'This is your product';
+
+  @override
+  String get productDetailOwnProductErr =>
+      'You cannot add your own products to cart';
+
+  @override
+  String get productDetailOutOfStock => 'This product is out of stock';
+
+  @override
+  String productDetailMaxStock(int stock) {
+    return 'You can add maximum $stock items';
+  }
+
+  @override
+  String productDetailAddedToCart(int count) {
+    return '$count item(s) added to cart';
+  }
+
+  @override
+  String get productDetailGoToCart => 'Go to Cart';
+
+  @override
+  String productDetailAddErr(String error) {
+    return 'Could not add to cart: $error';
+  }
+
+  @override
+  String get productDetailShareSoon => 'Share feature coming soon';
+
+  @override
+  String get productDetailAddingToCart => 'Adding...';
+
+  @override
+  String get productDetailAddToCartBtn => 'Add to Cart';
+
+  @override
+  String get productDetailNoTitle => 'No product name';
+
+  @override
+  String get productDetailNoDesc => 'No description';
+
+  @override
+  String productDetailStock(int count) {
+    return 'Stock: $count';
+  }
+
+  @override
+  String get productDetailNotFound => 'Product not found.';
+
+  @override
+  String get sellerApplyTitle => 'Become a Seller';
+
+  @override
+  String get sellerApplyCompanyName => 'Company Name';
+
+  @override
+  String get sellerApplyCompanyTitle => 'Company Title';
+
+  @override
+  String get sellerApplyTaxNumber => 'Tax Number';
+
+  @override
+  String get sellerApplyTaxOffice => 'Tax Office';
+
+  @override
+  String get sellerApplyAddress => 'Address';
+
+  @override
+  String get sellerApplyContact => 'Contact';
+
+  @override
+  String get sellerApplyIban => 'IBAN';
+
+  @override
+  String get sellerApplyRequired => 'Required';
+
+  @override
+  String get sellerApplyKvkk => 'I approve the KVKK text';
+
+  @override
+  String get sellerApplyContract => 'I approve the seller agreement';
+
+  @override
+  String get sellerApplyApprovalsRequired => 'Approvals are required';
+
+  @override
+  String get sellerApplySending => 'Sending...';
+
+  @override
+  String get sellerApplySendBtn => 'Submit Application';
+
+  @override
+  String get sellerApplyFailed => 'Application could not be sent.';
+
+  @override
+  String get sellerApplyPending => 'Your application is under review';
+
+  @override
+  String get productsPageTitle => 'My Products';
+
+  @override
+  String get productsActive => 'Active';
+
+  @override
+  String get productsPassive => 'Inactive';
+
+  @override
+  String get productsLoadErr => 'Could not load products.';
+
+  @override
+  String productsStockStatus(int stock, String status) {
+    return 'Stock: $stock • $status';
+  }
+
+  @override
+  String get productAddTitle => 'Add Product';
+
+  @override
+  String get productAddName => 'Product Name';
+
+  @override
+  String get productAddRequired => 'Required';
+
+  @override
+  String get productAddCategory => 'Category';
+
+  @override
+  String get productAddNoCategoryFound => 'No category found.';
+
+  @override
+  String get productAddCategoryLoading => 'Loading categories...';
+
+  @override
+  String productAddCategoryLoadErr(String error) {
+    return 'Could not load categories: $error';
+  }
+
+  @override
+  String get productAddCategorySelect => 'Select category';
+
+  @override
+  String get productAddDescription => 'Description';
+
+  @override
+  String get productAddPrice => 'Price';
+
+  @override
+  String get productAddStock => 'Stock';
+
+  @override
+  String get productAddSaving => 'Saving...';
+
+  @override
+  String get productAddSaveBtn => 'Save';
+
+  @override
+  String get productEditTitle => 'Edit Product';
+
+  @override
+  String get productEditUpdating => 'Updating...';
+
+  @override
+  String get productEditUpdateBtn => 'Update';
+
+  @override
+  String get productEditFailed => 'Update failed.';
+
+  @override
+  String get productEditActive => 'Active';
+
+  @override
+  String get storeCategoryAll => 'All';
+
+  @override
+  String productCardAddedToCart(String title) {
+    return '$title added to cart';
+  }
+
+  @override
+  String productCardAddErr(String error) {
+    return 'Could not add to cart: $error';
+  }
+
+  @override
+  String get productCardNoTitle => 'No product name';
+
+  @override
+  String get aiSpeciesDog => 'Dog';
+
+  @override
+  String get aiSpeciesCat => 'Cat';
+
+  @override
+  String get aiSpeciesBird => 'Bird';
+
+  @override
+  String get aiSpeciesOther => 'Other';
+
+  @override
+  String get aiSymptomLossOfAppetite => 'Loss of appetite';
+
+  @override
+  String get aiSymptomFever => 'Fever';
+
+  @override
+  String get aiSymptomDiarrhea => 'Diarrhea';
+
+  @override
+  String get aiSymptomVomiting => 'Vomiting';
+
+  @override
+  String get aiSymptomCough => 'Cough';
+
+  @override
+  String get aiSymptomShortnessOfBreath => 'Shortness of breath';
+
+  @override
+  String get aiSymptomLethargy => 'Lethargy';
+
+  @override
+  String get aiSymptomBloodyStool => 'Bloody stool';
+
+  @override
+  String get aiSymptomExcessiveItching => 'Excessive itching';
+
+  @override
+  String get aiSymptomHairLoss => 'Hair loss';
+
+  @override
+  String get aiSymptomLimping => 'Limping';
+
+  @override
+  String get aiSymptomExcessiveThirst => 'Excessive thirst';
+
+  @override
+  String get aiSymptomUnableToUrinate => 'Unable to urinate';
+
+  @override
+  String get aiSymptomBloatedBelly => 'Bloated belly';
+
+  @override
+  String get aiSymptomLossOfConsciousness => 'Loss of consciousness';
+
+  @override
+  String get aiSymptomRunnyNose => 'Runny nose';
+
+  @override
+  String get aiSymptomEyeDischarge => 'Eye discharge';
+
+  @override
+  String get aiSymptomBreathingDifficulty => 'Breathing difficulty';
+
+  @override
+  String get aiSymptomWeightLoss => 'Weight loss';
+
+  @override
+  String get aiSymptomFeatherPlucking => 'Feather plucking';
+
+  @override
+  String get aiSymptomBloodyUrine => 'Bloody urine';
+
+  @override
+  String get aiSymptomJaundice => 'Jaundice';
+
+  @override
+  String get aiSymptomSeizures => 'Seizure / Tremors';
+
+  @override
+  String get aiSymptomFeatherLoss => 'Feather loss';
+
+  @override
+  String get aiSymptomNotEating => 'Not eating';
+
+  @override
+  String get aiSymptomPuffed => 'Swollen / Puffy';
+
+  @override
+  String get aiSymptomUnableToStand => 'Unable to stand';
+
+  @override
+  String get aiSymptomHavingSeizure => 'Having seizures';
+
+  @override
+  String get aiSymptomBleeding => 'Bleeding';
+
+  @override
+  String get aiSymptomScratch => 'Scratching';
+
+  @override
+  String aiSymptomPrefix(String species) {
+    return '$species, symptoms: ';
+  }
+
+  @override
+  String get aiGenSug1 => 'How much water should I give my dog?';
+
+  @override
+  String get aiGenSug2 => 'How often should cat litter be changed?';
+
+  @override
+  String get aiGenSug3 => 'How to train a puppy?';
+
+  @override
+  String get aiGenSug4 => 'Why does my cat cry at night?';
+
+  @override
+  String get aiGenSug5 => 'What to do after a dog bite?';
+
+  @override
+  String get guideSug1 => 'Browse adoption listings';
+
+  @override
+  String get guideSug2 => 'Find a veterinarian';
+
+  @override
+  String get guideSug3 => 'Find a match';
+
+  @override
+  String get guideSug4 => 'Show my cart';
+
+  @override
+  String get guideSug5 => 'Create lost pet listing';
+
+  @override
+  String get guideSug6 => 'Join events';
+
+  @override
+  String get eventLocationObtained => 'Location Obtained ✓';
+
+  @override
+  String get eventUseMyLocation => 'Use My Location';
+
+  @override
+  String get eventCreateTitle => 'Create Event';
+
+  @override
+  String get eventCatParkMeetup => 'Park Meetup';
+
+  @override
+  String get eventCatAdoptionDay => 'Adoption Day';
+
+  @override
+  String get eventCatTraining => 'Training Seminar';
+
+  @override
+  String get eventCatCompetition => 'Race / Show';
+
+  @override
+  String get eventCatGrooming => 'Grooming Day';
+
+  @override
+  String get eventCatHealth => 'Health / Vaccination';
+
+  @override
+  String get eventCatOther => 'Other';
+
+  @override
+  String get eventSpeciesAll => 'All';
+
+  @override
+  String get eventSpeciesDog => 'Dog';
+
+  @override
+  String get eventSpeciesCat => 'Cat';
+
+  @override
+  String get eventSpeciesBird => 'Bird';
+
+  @override
+  String get eventSpeciesRabbit => 'Rabbit';
+
+  @override
+  String get eventSpeciesOther => 'Other';
+
+  @override
+  String get eventErrLocationPerm => 'Location permission required';
+
+  @override
+  String get eventErrMaxPhotos => 'Maximum 5 photos can be added';
+
+  @override
+  String get eventErrEndBeforeStart => 'End date cannot be before start date';
+
+  @override
+  String get eventCreated => 'Event created!';
+
+  @override
+  String get eventPhotosLabel => 'Photos (max 5)';
+
+  @override
+  String get eventDateTimeLabel => 'Date and Time';
+
+  @override
+  String get eventStartLabel => 'Start *';
+
+  @override
+  String get eventEndLabel => 'End *';
+
+  @override
+  String get eventLocationLabel => 'Location';
+
+  @override
+  String get eventCapacityLabel => 'Capacity and Fee';
+
+  @override
+  String get eventFreeLabel => 'Free Event';
+
+  @override
+  String get eventAnimalsLabel => 'Animals Allowed';
+
+  @override
+  String get eventCreateBtn => 'Create Event';
+
+  @override
+  String eventErrLocationFail(String error) {
+    return 'Could not get location: $error';
+  }
+
+  @override
+  String eventCreateErr(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get themeSelectTitle => 'Choose Your Theme';
+
+  @override
+  String get themeSelectSub => 'Pick the look that suits you best';
+
+  @override
+  String get themeSelectLight => 'Light';
+
+  @override
+  String get themeSelectDark => 'Dark';
+
+  @override
+  String get themeSelectConfirm => 'Continue';
+
+  @override
+  String get themeSelectChangeHint => 'You can change this anytime in Settings';
 }

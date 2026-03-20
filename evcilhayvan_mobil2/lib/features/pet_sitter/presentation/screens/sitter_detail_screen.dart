@@ -74,7 +74,7 @@ class SitterDetailScreen extends ConsumerWidget {
                               style: Theme.of(context).textTheme.bodyMedium),
                           if (sitter.distanceKm != null) ...[
                             const SizedBox(width: 16),
-                            const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                            Icon(Icons.location_on, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
                             Text('${sitter.distanceKm!.toStringAsFixed(1)} km',
                                 style: Theme.of(context).textTheme.bodyMedium),
                           ],
@@ -85,14 +85,14 @@ class SitterDetailScreen extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: sitter.availability ? Colors.green.shade50 : Colors.grey.shade100,
+                          color: sitter.availability ? Colors.green.withOpacity(0.1) : Theme.of(context).colorScheme.surfaceVariant,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           sitter.availability ? 'Simdi Musait' : 'Simdilik Dolu',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: sitter.availability ? Colors.green.shade700 : Colors.grey,
+                            color: sitter.availability ? Colors.green.shade700 : Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -125,7 +125,7 @@ class SitterDetailScreen extends ConsumerWidget {
                                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                                 if (s.pricePerDay > 0)
                                   Text('${s.pricePerDay.toInt()} TL/gun',
-                                      style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                                      style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                               ],
                             ),
                           )).toList(),

@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import '../../data/repositories/adoption_repository.dart';
 import '../../domain/models/adoption_application.dart';
@@ -36,7 +37,7 @@ class _AdoptionApplicationsScreenState extends ConsumerState<AdoptionApplication
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sahiplendirme Basvurulari'),
+        title: Text(AppLocalizations.of(context)!.adoptionAppsTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
         bottom: TabBar(
@@ -44,9 +45,9 @@ class _AdoptionApplicationsScreenState extends ConsumerState<AdoptionApplication
           labelColor: AppPalette.primary,
           unselectedLabelColor: AppPalette.onSurfaceVariant,
           indicatorColor: AppPalette.primary,
-          tabs: const [
-            Tab(text: 'Gelen Basvurular'),
-            Tab(text: 'Gonderdiklerim'),
+          tabs: [
+            Tab(text: AppLocalizations.of(context)!.adoptionAppsTabInbox),
+            Tab(text: AppLocalizations.of(context)!.adoptionAppsTabSent),
           ],
         ),
       ),
@@ -68,10 +69,11 @@ class _InboxTab extends ConsumerWidget {
 
     return inboxAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Hata: $e')),
+      error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.adoptionAppsErrGeneric(e.toString()))),
       data: (applications) {
         if (applications.isEmpty) {
-          return _emptyState(context, Icons.inbox, 'Gelen basvuru yok', 'Sahiplendirme ilanlariniza gelen basvurular burada gorunecek.');
+          final l10n = AppLocalizations.of(context)!;
+          return _emptyState(context, Icons.inbox, l10n.adoptionAppsInboxEmpty, l10n.adoptionAppsInboxEmptyDesc);
         }
         return RefreshIndicator(
           onRefresh: () async => ref.invalidate(inboxAdoptionApplicationsProvider),
@@ -91,18 +93,19 @@ class _InboxTab extends ConsumerWidget {
   }
 
   Future<void> _respond(BuildContext context, WidgetRef ref, AdoptionApplication app, String action) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(action == 'accept' ? 'Basvuruyu Kabul Et' : 'Basvuruyu Reddet'),
+        title: Text(action == 'accept' ? l10n.adoptionAppsAcceptTitle : l10n.adoptionAppsRejectTitle),
         content: Text(action == 'accept'
-            ? 'Bu basvuruyu kabul etmek istediginize emin misiniz? Mesajlasma baslatilacaktir.'
-            : 'Bu basvuruyu reddetmek istediginize emin misiniz?'),
+            ? l10n.adoptionAppsAcceptContent
+            : l10n.adoptionAppsRejectContent),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Vazgec')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.adoptionAppsCancel)),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(action == 'accept' ? 'Kabul Et' : 'Reddet',
+            child: Text(action == 'accept' ? l10n.adoptionAppsAcceptBtn : l10n.adoptionAppsRejectBtn,
                 style: TextStyle(color: action == 'accept' ? Colors.green : Colors.red)),
           ),
         ],
@@ -116,18 +119,20 @@ class _InboxTab extends ConsumerWidget {
       ref.invalidate(inboxAdoptionApplicationsProvider);
 
       if (context.mounted) {
+        final l10n2 = AppLocalizations.of(context)!;
         if (action == 'accept' && result.conversationId != null) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Basvuru kabul edildi! Mesajlasma baslatildi.')));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n2.adoptionAppsAcceptedStarted)));
           context.pushNamed('chat', pathParameters: {'conversationId': result.conversationId!});
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(action == 'accept' ? 'Basvuru kabul edildi' : 'Basvuru reddedildi')),
+            SnackBar(content: Text(action == 'accept' ? l10n2.adoptionAppsAccepted : l10n2.adoptionAppsRejected)),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red));
+        final l10n2 = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n2.adoptionAppsErrGeneric(e.toString())), backgroundColor: Colors.red));
       }
     }
   }
@@ -140,10 +145,11 @@ class _SentTab extends ConsumerWidget {
 
     return sentAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Hata: $e')),
+      error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.adoptionAppsErrGeneric(e.toString()))),
       data: (applications) {
         if (applications.isEmpty) {
-          return _emptyState(context, Icons.outbox, 'Gonderilen basvuru yok', 'Sahiplendirme ilanlarına yaptığınız basvurular burada gorunecek.');
+          final l10n = AppLocalizations.of(context)!;
+          return _emptyState(context, Icons.outbox, l10n.adoptionAppsSentEmpty, l10n.adoptionAppsSentEmptyDesc);
         }
         return RefreshIndicator(
           onRefresh: () async => ref.invalidate(sentAdoptionApplicationsProvider),
@@ -197,12 +203,13 @@ class _ApplicationCard extends StatelessWidget {
     }
   }
 
-  String get _statusText {
+  String _getStatusText(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (application.status) {
-      case 'ACCEPTED': return 'Kabul Edildi';
-      case 'REJECTED': return 'Reddedildi';
-      case 'CANCELLED': return 'Iptal Edildi';
-      default: return 'Beklemede';
+      case 'ACCEPTED': return l10n.adoptionAppsStatusAccepted;
+      case 'REJECTED': return l10n.adoptionAppsStatusRejected;
+      case 'CANCELLED': return l10n.adoptionAppsStatusCancelled;
+      default: return l10n.adoptionAppsStatusPending;
     }
   }
 
@@ -254,7 +261,7 @@ class _ApplicationCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       if (isInbox && applicant != null)
-                        Text('Basvuran: ${applicant.name}', style: theme.textTheme.bodySmall?.copyWith(color: AppPalette.onSurfaceVariant))
+                        Text(AppLocalizations.of(context)!.adoptionAppsApplicant(applicant.name), style: theme.textTheme.bodySmall?.copyWith(color: AppPalette.onSurfaceVariant))
                       else if (listing?.species != null)
                         Text(listing!.species!, style: theme.textTheme.bodySmall?.copyWith(color: AppPalette.onSurfaceVariant)),
                       const SizedBox(height: 4),
@@ -274,7 +281,7 @@ class _ApplicationCard extends StatelessWidget {
                     color: _statusColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(_statusText, style: theme.textTheme.labelSmall?.copyWith(color: _statusColor, fontWeight: FontWeight.w600)),
+                  child: Text(_getStatusText(context), style: theme.textTheme.labelSmall?.copyWith(color: _statusColor, fontWeight: FontWeight.w600)),
                 ),
               ],
             ),
@@ -306,7 +313,7 @@ class _ApplicationCard extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: onReject,
                       icon: const Icon(Icons.close, size: 18),
-                      label: const Text('Reddet'),
+                      label: Text(AppLocalizations.of(context)!.adoptionAppsRejectBtn),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.red,
                         side: const BorderSide(color: Colors.red),
@@ -319,7 +326,7 @@ class _ApplicationCard extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: onAccept,
                       icon: const Icon(Icons.check, size: 18),
-                      label: const Text('Kabul Et'),
+                      label: Text(AppLocalizations.of(context)!.adoptionAppsAcceptBtn),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
@@ -339,7 +346,7 @@ class _ApplicationCard extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: () => context.pushNamed('chat', pathParameters: {'conversationId': application.conversationId!}),
                   icon: const Icon(Icons.chat),
-                  label: const Text('Mesajlasma'),
+                  label: Text(AppLocalizations.of(context)!.adoptionAppsGoToChat),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppPalette.primary,
                     foregroundColor: Colors.white,
@@ -370,7 +377,7 @@ class _ApplicationTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final steps = _buildSteps(status);
+    final steps = _buildSteps(status, context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
       child: Row(
@@ -386,7 +393,7 @@ class _ApplicationTimeline extends StatelessWidget {
                   height: 2,
                   color: steps[i].$2 == _StepState.done
                       ? Colors.green.withOpacity(0.6)
-                      : Colors.grey.shade300,
+                      : Theme.of(context).dividerColor,
                 ),
               ),
           ],
@@ -395,35 +402,36 @@ class _ApplicationTimeline extends StatelessWidget {
     );
   }
 
-  List<(String, _StepState)> _buildSteps(String status) {
+  List<(String, _StepState)> _buildSteps(String status, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (status) {
       case 'ACCEPTED':
         return [
-          ('Başvuru', _StepState.done),
-          ('İnceleme', _StepState.done),
-          ('Onay', _StepState.done),
-          ('Tamamlandı', _StepState.done),
+          (l10n.adoptionAppsTimelineApplication, _StepState.done),
+          (l10n.adoptionAppsTimelineReview, _StepState.done),
+          (l10n.adoptionAppsTimelineApproval, _StepState.done),
+          (l10n.adoptionAppsTimelineCompleted, _StepState.done),
         ];
       case 'REJECTED':
         return [
-          ('Başvuru', _StepState.done),
-          ('İnceleme', _StepState.done),
-          ('Reddedildi', _StepState.error),
+          (l10n.adoptionAppsTimelineApplication, _StepState.done),
+          (l10n.adoptionAppsTimelineReview, _StepState.done),
+          (l10n.adoptionAppsTimelineRejected, _StepState.error),
           ('', _StepState.inactive),
         ];
       case 'CANCELLED':
         return [
-          ('Başvuru', _StepState.done),
-          ('İptal', _StepState.error),
+          (l10n.adoptionAppsTimelineApplication, _StepState.done),
+          (l10n.adoptionAppsTimelineCancelled, _StepState.error),
           ('', _StepState.inactive),
           ('', _StepState.inactive),
         ];
       default: // PENDING
         return [
-          ('Başvuru', _StepState.done),
-          ('İnceleme', _StepState.active),
-          ('Karar', _StepState.inactive),
-          ('Tamamlandı', _StepState.inactive),
+          (l10n.adoptionAppsTimelineApplication, _StepState.done),
+          (l10n.adoptionAppsTimelineReview, _StepState.active),
+          (l10n.adoptionAppsTimelineDecision, _StepState.inactive),
+          (l10n.adoptionAppsTimelineCompleted, _StepState.inactive),
         ];
     }
   }
@@ -457,7 +465,7 @@ class _TimelineStep extends StatelessWidget {
         icon = Icons.cancel_rounded;
         break;
       case _StepState.inactive:
-        color = Colors.grey.shade300;
+        color = Theme.of(context).colorScheme.outlineVariant;
         icon = Icons.circle_outlined;
         break;
     }
@@ -471,7 +479,7 @@ class _TimelineStep extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 9,
-            color: state == _StepState.inactive ? Colors.grey.shade400 : color,
+            color: state == _StepState.inactive ? Theme.of(context).colorScheme.outlineVariant : color,
             fontWeight: state == _StepState.active ? FontWeight.w700 : FontWeight.w500,
           ),
         ),

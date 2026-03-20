@@ -11,6 +11,7 @@ import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/product_model.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/category_model.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class AddProductScreen extends ConsumerStatefulWidget {
   const AddProductScreen({super.key, this.product});
@@ -93,8 +94,8 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
   void _showMaxImagesWarning() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('En fazla $_maxImages fotoğraf ekleyebilirsiniz'),
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.addProductMaxWarning(_maxImages)),
         backgroundColor: Colors.orange,
       ),
     );
@@ -125,14 +126,14 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                 height: 4,
                 margin: const EdgeInsets.only(top: 12),
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: Theme.of(context).dividerColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Fotoğraf Ekle',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)!.addProductPickDialogTitle,
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -147,8 +148,8 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                   ),
                   child: const Icon(Icons.photo_library, color: AppPalette.storePrimary),
                 ),
-                title: const Text('Galeriden Seç'),
-                subtitle: const Text('Mevcut fotoğraflarınızdan seçin'),
+                title: Text(AppLocalizations.of(context)!.addProductPickGallery),
+                subtitle: Text(AppLocalizations.of(context)!.addProductPickGallerySub),
                 onTap: () {
                   Navigator.pop(context);
                   _pickFromGallery();
@@ -163,8 +164,8 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                   ),
                   child: const Icon(Icons.camera_alt, color: AppPalette.storeSecondary),
                 ),
-                title: const Text('Kamerayı Aç'),
-                subtitle: const Text('Yeni fotoğraf çekin'),
+                title: Text(AppLocalizations.of(context)!.addProductPickCamera),
+                subtitle: Text(AppLocalizations.of(context)!.addProductPickCameraSub),
                 onTap: () {
                   Navigator.pop(context);
                   _pickFromCamera();
@@ -191,7 +192,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategoryId == null) {
       setState(() {
-        _error = 'Kategori seçin';
+        _error = AppLocalizations.of(context)!.addProductCategoryRequired;
       });
       return;
     }
@@ -240,7 +241,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_isEditMode ? 'Ürün güncellendi!' : 'Ürün eklendi!'),
+            content: Text(_isEditMode ? AppLocalizations.of(context)!.addProductUpdated : AppLocalizations.of(context)!.addProductAdded),
             backgroundColor: Colors.green,
           ),
         );
@@ -280,10 +281,11 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final categoriesAsync = ref.watch(categoriesProvider);
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditMode ? 'Ürün Düzenle' : 'Ürün Ekle'),
+        title: Text(_isEditMode ? l10n.addProductEditTitle : l10n.addProductTitle),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -333,8 +335,8 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                               child: const Icon(Icons.photo_camera, color: Colors.white, size: 20),
                             ),
                             const SizedBox(width: 12),
-                            const Text(
-                              'Ürün Fotoğrafları',
+                            Text(
+                              l10n.addProductPhotosSection,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -344,7 +346,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                             Text(
                               '${_selectedImages.length}/$_maxImages',
                               style: TextStyle(
-                                color: Colors.grey[600],
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -382,7 +384,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        'Ekle',
+                                        l10n.addProductAddBtn,
                                         style: TextStyle(
                                           color: AppPalette.storePrimary,
                                           fontWeight: FontWeight.w600,
@@ -446,9 +448,9 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                           Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(
-                              'Ürününüzün fotoğraflarını ekleyin (max $_maxImages)',
+                              l10n.addProductPhotosHint(_maxImages),
                               style: TextStyle(
-                                color: Colors.grey[500],
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 fontSize: 13,
                               ),
                             ),
@@ -475,21 +477,21 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                       children: [
                         _LabeledField(
                           controller: _titleController,
-                          label: 'Ürün Başlığı',
-                          hint: 'Örn: Renkli kedi oyuncağı',
+                          label: l10n.addProductTitleField,
+                          hint: l10n.addProductTitleHint,
                           icon: Icons.label_outline,
-                          validator: (value) => value == null || value.trim().isEmpty ? 'Başlık gerekli' : null,
+                          validator: (value) => value == null || value.trim().isEmpty ? l10n.addProductTitleRequired : null,
                         ),
                         const SizedBox(height: 12),
                         categoriesAsync.when(
                           data: (categories) {
                             if (categories.isEmpty) {
-                              return const _ErrorChip(message: 'Kategori bulunamadı.');
+                              return _ErrorChip(message: l10n.addProductCategoryNotFound);
                             }
                             return DropdownButtonFormField<String>(
                               value: _selectedCategoryId,
                               decoration: InputDecoration(
-                                labelText: 'Kategori',
+                                labelText: l10n.addProductCategoryLabel,
                                 prefixIcon: const Icon(Icons.category_outlined),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -528,18 +530,18 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                                   .toList(),
                               onChanged: (value) => setState(() => _selectedCategoryId = value),
                               validator: (_) =>
-                                  _selectedCategoryId == null ? 'Kategori seçin' : null,
+                                  _selectedCategoryId == null ? l10n.addProductCategoryRequired : null,
                             );
                           },
-                          loading: () => const _FieldSkeleton(label: 'Kategori'),
+                          loading: () => _FieldSkeleton(label: l10n.addProductCategoryLabel),
                           error: (e, _) => Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const _ErrorChip(message: 'Kategoriler yüklenemedi.'),
+                              _ErrorChip(message: l10n.addProductCategoryLoadErr),
                               const SizedBox(height: 6),
                               TextButton(
                                 onPressed: () => ref.invalidate(categoriesProvider),
-                                child: const Text('Yeniden dene'),
+                                child: Text(l10n.addProductRetry),
                               ),
                             ],
                           ),
@@ -547,8 +549,8 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                         const SizedBox(height: 12),
                         _LabeledField(
                           controller: _descController,
-                          label: 'Açıklama',
-                          hint: 'Ürün özellikleri, boyut, malzeme...',
+                          label: l10n.addProductDescLabel,
+                          hint: l10n.addProductDescHint,
                           icon: Icons.notes_outlined,
                           maxLines: 3,
                         ),
@@ -558,14 +560,14 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                             Expanded(
                               child: _LabeledField(
                                 controller: _priceController,
-                                label: 'Fiyat (₺)',
+                                label: l10n.addProductPriceLabel,
                                 hint: '249.90',
                                 icon: Icons.payments_outlined,
                                 keyboardType: TextInputType.number,
                                 validator: (value) {
-                                  if (value == null || value.trim().isEmpty) return 'Gerekli';
+                                  if (value == null || value.trim().isEmpty) return l10n.addProductPriceRequired;
                                   final parsed = double.tryParse(value);
-                                  if (parsed == null || parsed < 0) return 'Geçersiz';
+                                  if (parsed == null || parsed < 0) return l10n.addProductPriceInvalid;
                                   return null;
                                 },
                               ),
@@ -574,7 +576,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                             Expanded(
                               child: _LabeledField(
                                 controller: _stockController,
-                                label: 'Stok',
+                                label: l10n.addProductStockLabel,
                                 hint: '15',
                                 icon: Icons.inventory_2_outlined,
                                 keyboardType: TextInputType.number,
@@ -594,9 +596,9 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                             child: SwitchListTile.adaptive(
                               value: _isActive,
                               title: Text(
-                                _isActive ? 'Ürün Aktif' : 'Ürün Pasif',
+                                _isActive ? l10n.addProductActiveLabel : l10n.addProductInactiveLabel,
                                 style: TextStyle(
-                                  color: _isActive ? Colors.green[700] : Colors.grey[700],
+                                  color: _isActive ? Colors.green[700] : Theme.of(context).colorScheme.onSurfaceVariant,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -627,7 +629,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                               ),
                               icon: const Icon(Icons.save_alt_outlined),
-                              label: Text(_loading ? 'Kaydediliyor...' : 'Kaydet'),
+                              label: Text(_loading ? l10n.addProductSaving : l10n.addProductSaveBtn),
                             ),
                           ),
                         ),
@@ -725,7 +727,7 @@ class _FieldSkeleton extends StatelessWidget {
       ),
       alignment: Alignment.centerLeft,
       child: Text(
-        '$label yükleniyor...',
+        AppLocalizations.of(context)!.addProductCategoryLoading(label),
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppPalette.onSurfaceVariant,
               fontWeight: FontWeight.w600,

@@ -274,21 +274,9 @@ export async function updateMatchRequestStatus(req, res) {
 
     const isOwnerAction = action === "accept" || action === "reject";
     if (isOwnerAction && String(toUserId) !== String(userId)) {
-      console.log('[updateMatchRequestStatus] Auth failed:', {
-        action,
-        toUserId: String(toUserId),
-        userId: String(userId),
-        match: String(toUserId) === String(userId)
-      });
       return sendError(res, 403, "Bu islem icin yetkiniz yok", "forbidden");
     }
     if (action === "cancel" && String(fromUserId) !== String(userId)) {
-      console.log('[updateMatchRequestStatus] Auth failed:', {
-        action,
-        fromUserId: String(fromUserId),
-        userId: String(userId),
-        match: String(fromUserId) === String(userId)
-      });
       return sendError(res, 403, "Bu islem icin yetkiniz yok", "forbidden");
     }
 

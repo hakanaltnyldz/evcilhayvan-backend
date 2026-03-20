@@ -29,6 +29,7 @@ const PetSchema = new mongoose.Schema(
       },
     },
     isActive: { type: Boolean, default: true },
+    viewCount: { type: Number, default: 0 },
   },
   {
     timestamps: true,

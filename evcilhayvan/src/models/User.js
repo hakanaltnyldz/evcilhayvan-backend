@@ -1,5 +1,6 @@
 // models/User.js
 import mongoose from "mongoose";
+import { randomInt } from "crypto";
 
 const UserSchema = new mongoose.Schema(
   {
@@ -42,14 +43,14 @@ const UserSchema = new mongoose.Schema(
 );
 
 UserSchema.methods.createVerificationToken = function () {
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const code = randomInt(100000, 1000000).toString();
   this.verificationToken = code;
   this.verificationTokenExpires = Date.now() + 10 * 60 * 1000;
   return code;
 };
 
 UserSchema.methods.createPasswordResetToken = function () {
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const code = randomInt(100000, 1000000).toString();
   this.passwordResetToken = code;
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
   return code;

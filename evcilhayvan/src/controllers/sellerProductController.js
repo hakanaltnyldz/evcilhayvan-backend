@@ -123,7 +123,6 @@ export async function createSellerProductWithImages(req, res) {
     // Yüklenen dosyaların path'lerini al
     const imagePaths = req.files ? req.files.map((file) => `/uploads/products/${file.filename}`) : [];
 
-    console.log("[createSellerProductWithImages] Creating product:", { name, price, store: store._id, seller: sellerId });
 
     const product = await Product.create({
       name,
@@ -138,8 +137,6 @@ export async function createSellerProductWithImages(req, res) {
       seller: sellerId,
       store: store._id,
     });
-
-    console.log("[createSellerProductWithImages] Product created:", product._id);
 
     await recordAudit("product.create", {
       userId: sellerId,
@@ -287,7 +284,6 @@ export async function seedDemoProducts(req, res) {
     const sellerId = req.user?.sub;
     if (!sellerId) return sendError(res, 401, "Kimlik doğrulama gerekli", "auth_required");
 
-    console.log("[seedDemoProducts] Starting seed for seller:", sellerId);
 
     // Satıcının mağazasını bul
     const store = await Store.findOne({ owner: sellerId });
@@ -298,8 +294,7 @@ export async function seedDemoProducts(req, res) {
     // Mevcut ürünleri kontrol et
     const existingProducts = await Product.countDocuments({ store: store._id });
     if (existingProducts > 0) {
-      console.log(`[seedDemoProducts] Deleting ${existingProducts} existing products`);
-      await Product.deleteMany({ store: store._id });
+        await Product.deleteMany({ store: store._id });
     }
 
     // Demo kategori ve ürün verileri
@@ -372,8 +367,7 @@ export async function seedDemoProducts(req, res) {
           description: `${categoryName} kategorisi altındaki tüm ürünler`
         });
         await category.save();
-        console.log(`[seedDemoProducts] Created category: ${categoryName}`);
-      }
+        }
 
       createdCategories.push(categoryName);
 
@@ -391,15 +385,14 @@ export async function seedDemoProducts(req, res) {
           images: productImages,
           photos: productImages, // Duplicate for legacy support
           isActive: true,
-          averageRating: parseFloat((Math.random() * 1.5 + 3.5).toFixed(1)), // 3.5-5.0 arası rating
-          reviewCount: Math.floor(Math.random() * 50)
+          averageRating: 0,
+          reviewCount: 0
         });
 
         await product.save();
         totalProducts++;
       }
 
-      console.log(`[seedDemoProducts] Added ${products.length} products to ${categoryName}`);
     }
 
     await recordAudit("store.seed_demo_products", {
@@ -412,7 +405,6 @@ export async function seedDemoProducts(req, res) {
       },
     });
 
-    console.log(`[seedDemoProducts] Successfully seeded ${totalProducts} products`);
 
     return sendOk(res, 200, {
       message: "Demo ürünler başarıyla oluşturuldu",

@@ -528,7 +528,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                               border: Border.all(
                                 color: _selectedLocation != null
                                     ? AppPalette.primary
-                                    : Colors.grey.shade300,
+                                    : Theme.of(context).dividerColor,
                               ),
                               borderRadius: BorderRadius.circular(12),
                               color: _selectedLocation != null
@@ -543,7 +543,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                                       : Icons.add_location_alt_outlined,
                                   color: _selectedLocation != null
                                       ? AppPalette.primary
-                                      : Colors.grey,
+                                      : Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -556,7 +556,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                                           fontWeight: FontWeight.w600,
                                           color: _selectedLocation != null
                                               ? AppPalette.primary
-                                              : Colors.grey[700],
+                                              : Theme.of(context).colorScheme.onSurface,
                                         ),
                                       ),
                                       if (_selectedLocation?.address != null)
@@ -564,7 +564,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                                           padding: const EdgeInsets.only(top: 2),
                                           child: Text(
                                             _selectedLocation!.address!,
-                                            style: const TextStyle(fontSize: 12, color: Colors.black87),
+                                            style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface),
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
                                           ),
@@ -572,14 +572,14 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                                       else
                                         Text(
                                           l10n.createPetLocationHint,
-                                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                          style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
                                         ),
                                       if (_selectedLocation?.note != null)
                                         Padding(
                                           padding: const EdgeInsets.only(top: 2),
                                           child: Text(
                                             '📝 ${_selectedLocation!.note!}',
-                                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                            style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
@@ -587,7 +587,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                                     ],
                                   ),
                                 ),
-                                const Icon(Icons.chevron_right, color: Colors.grey),
+                                Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
                               ],
                             ),
                           ),
@@ -748,7 +748,7 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: Theme.of(context).dividerColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

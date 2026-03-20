@@ -89,7 +89,6 @@ class _VerificationScreenState extends ConsumerState<VerificationScreen> {
                     decoration: InputDecoration(
                       labelText: l10n.verifyCodeLabel,
                       filled: true,
-                      fillColor: Colors.white,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                     ),
                   ),

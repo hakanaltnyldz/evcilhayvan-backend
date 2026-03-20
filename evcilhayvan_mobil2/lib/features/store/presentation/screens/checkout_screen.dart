@@ -206,7 +206,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   Text(
                     l10n.checkoutOrderSuccessDesc,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.grey),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -248,11 +248,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final addressesAsync = ref.watch(addressNotifierProvider);
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text(l10n.checkoutTitle),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -414,7 +411,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           IconButton(
                             onPressed: _removeCoupon,
                             icon: const Icon(Icons.close, size: 20),
-                            color: Colors.grey,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ],
                       ),
@@ -512,7 +509,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(l10n.checkoutSubtotal, style: const TextStyle(color: Colors.grey)),
+                          Text(l10n.checkoutSubtotal, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                           Text('₺${cart.total.toStringAsFixed(2)}'),
                         ],
                       ),
@@ -520,7 +517,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(l10n.checkoutShipping, style: const TextStyle(color: Colors.grey)),
+                          Text(l10n.checkoutShipping, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                           Text(
                             cart.total >= 200 ? l10n.checkoutFreeShipping : '₺29.99',
                             style: TextStyle(
@@ -680,10 +677,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected ? AppPalette.storePrimary.withOpacity(0.1) : Colors.grey[50],
+          color: isSelected ? AppPalette.storePrimary.withOpacity(0.1) : Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? AppPalette.storePrimary : Colors.grey[300]!,
+            color: isSelected ? AppPalette.storePrimary : Theme.of(context).dividerColor,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -691,7 +688,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           children: [
             Icon(
               isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: isSelected ? AppPalette.storePrimary : Colors.grey,
+              color: isSelected ? AppPalette.storePrimary : Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -723,14 +720,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   const SizedBox(height: 4),
                   Text(
                     address.fullAddress,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${address.fullName} • ${address.phone}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -770,10 +767,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected ? AppPalette.storePrimary.withOpacity(0.1) : Colors.grey[50],
+          color: isSelected ? AppPalette.storePrimary.withOpacity(0.1) : Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? AppPalette.storePrimary : Colors.grey[300]!,
+            color: isSelected ? AppPalette.storePrimary : Theme.of(context).dividerColor,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -781,10 +778,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           children: [
             Icon(
               isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: isSelected ? AppPalette.storePrimary : Colors.grey,
+              color: isSelected ? AppPalette.storePrimary : Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(width: 12),
-            Icon(icon, color: isSelected ? AppPalette.storePrimary : Colors.grey[600]),
+            Icon(icon, color: isSelected ? AppPalette.storePrimary : Theme.of(context).colorScheme.onSurfaceVariant),
             const SizedBox(width: 8),
             Text(
               label,

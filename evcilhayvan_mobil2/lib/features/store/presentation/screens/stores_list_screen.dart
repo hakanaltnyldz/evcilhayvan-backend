@@ -9,6 +9,7 @@ import 'package:evcilhayvan_mobil2/core/widgets/shimmer_box.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/store_model.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 const List<Color> _storeListGradientA = [
   Color(0xFF7C7BFF),
@@ -40,25 +41,24 @@ class _StoresListScreenState extends ConsumerState<StoresListScreen> {
     final storesAsync = ref.watch(storesListProvider);
     final theme = Theme.of(context);
 
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppPalette.storeSoftBlue.withOpacity(0.3),
       appBar: AppBar(
-        title: const Text(
-          'Mağazalar',
-          style: TextStyle(fontWeight: FontWeight.w800),
+        title: Text(
+          l10n.storesListTitle,
+          style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        backgroundColor: Colors.white,
         elevation: 0,
       ),
       body: Column(
         children: [
           Container(
-            color: Colors.white,
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: TextField(
               onChanged: (value) => setState(() => _searchQuery = value),
               decoration: InputDecoration(
-                hintText: 'Mağaza ara...',
+                hintText: l10n.storesListSearchHint,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -95,8 +95,8 @@ class _StoresListScreenState extends ConsumerState<StoresListScreen> {
                   if (filteredStores.isEmpty) {
                     return _EmptyState(
                       message: _searchQuery.isEmpty
-                          ? 'Henüz mağaza yok'
-                          : 'Arama sonucu bulunamadı',
+                          ? l10n.storesListEmpty
+                          : l10n.storesListSearchEmpty,
                     );
                   }
 
@@ -142,7 +142,7 @@ class _StoresListScreenState extends ConsumerState<StoresListScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Mağazalar yüklenemedi',
+                          l10n.storesListLoadErr,
                           style: theme.textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
@@ -159,7 +159,7 @@ class _StoresListScreenState extends ConsumerState<StoresListScreen> {
                         ElevatedButton.icon(
                           onPressed: () => ref.invalidate(storesListProvider),
                           icon: const Icon(Icons.refresh),
-                          label: const Text('Yeniden Dene'),
+                          label: Text(l10n.storesListRetry),
                         ),
                       ],
                     ),
@@ -211,7 +211,7 @@ class _StoreCard extends StatelessWidget {
         padding: const EdgeInsets.all(2),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(18),
           ),
           padding: const EdgeInsets.all(16),
@@ -345,7 +345,7 @@ class _StoreCardSkeleton extends StatelessWidget {
       padding: const EdgeInsets.all(2),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(18),
         ),
       ),

@@ -12,6 +12,7 @@ import 'package:evcilhayvan_mobil2/features/store/domain/models/store_model.dart
 import 'package:evcilhayvan_mobil2/features/store/presentation/widgets/store_product_card.dart';
 import 'package:evcilhayvan_mobil2/features/store/presentation/widgets/store_stats_card.dart';
 import 'package:go_router/go_router.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 const List<Color> _storeDetailGradient = [
   Color(0xFF2F1BFF),
@@ -24,6 +25,7 @@ class StoreDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final storeAsync = ref.watch(_storeProvider(storeId));
     final user = ref.watch(authProvider);
     final isOwner = storeAsync.maybeWhen(
@@ -59,7 +61,7 @@ class StoreDetailScreen extends ConsumerWidget {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(nextActive ? 'Urun aktif edildi.' : 'Urun pasif edildi.'),
+              content: Text(nextActive ? l10n.storeDetailProductActivated : l10n.storeDetailProductDeactivated),
             ),
           );
         }
@@ -67,7 +69,7 @@ class StoreDetailScreen extends ConsumerWidget {
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Urun guncellenemedi: $e')),
+            SnackBar(content: Text(l10n.storeDetailProductUpdateErr(e.toString()))),
           );
         }
       }
@@ -77,16 +79,16 @@ class StoreDetailScreen extends ConsumerWidget {
       final shouldDelete = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: const Text('Urunu sil'),
-          content: const Text('Bu urunu silmek istediginize emin misiniz?'),
+          title: Text(l10n.storeDetailDeleteTitle),
+          content: Text(l10n.storeDetailDeleteContent),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Vazgec'),
+              child: Text(l10n.storeDetailDeleteCancel),
             ),
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Sil'),
+              child: Text(l10n.storeDetailMenuDelete),
             ),
           ],
         ),
@@ -98,14 +100,14 @@ class StoreDetailScreen extends ConsumerWidget {
         await repo.deleteProduct(product.id);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Urun silindi.')),
+            SnackBar(content: Text(l10n.storeDetailProductDeleted)),
           );
         }
         await refreshProducts();
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Urun silinemedi: $e')),
+            SnackBar(content: Text(l10n.storeDetailProductDeleteErr(e.toString()))),
           );
         }
       }
@@ -116,7 +118,7 @@ class StoreDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Mağaza'),
+        title: Text(l10n.storeDetailTitle),
       ),
       body: ModernBackground(
         colors: AppPalette.storeBackground,
@@ -133,7 +135,7 @@ class StoreDetailScreen extends ConsumerWidget {
                     ),
                     loading: () => const _StoreHeaderSkeleton(),
                     error: (e, _) => _ErrorCard(
-                      message: 'Mağaza yüklenemedi',
+                      message: l10n.storeDetailLoadErr,
                       detail: e.toString(),
                       onRetry: () => ref.invalidate(_storeProvider(storeId)),
                     ),
@@ -155,10 +157,10 @@ class StoreDetailScreen extends ConsumerWidget {
                 sliver: productsAsync.when(
                   data: (products) {
                     if (products.isEmpty) {
-                      return const SliverToBoxAdapter(
+                      return SliverToBoxAdapter(
                         child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 60),
-                          child: Center(child: Text('Bu mağazada henüz ürün yok.')),
+                          padding: const EdgeInsets.symmetric(vertical: 60),
+                          child: Center(child: Text(l10n.storeDetailNoProducts)),
                         ),
                       );
                     }
@@ -187,7 +189,7 @@ class StoreDetailScreen extends ConsumerWidget {
                   loading: () => const _StoreProductsSkeletonSliver(),
                   error: (e, _) => SliverToBoxAdapter(
                     child: _ErrorCard(
-                      message: 'Ürünler yüklenemedi',
+                      message: l10n.storeDetailProductsLoadErr,
                       detail: e.toString(),
                       onRetry: () {
                         ref.invalidate(_storeProductsProvider(storeId));
@@ -252,6 +254,7 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
 
   Future<void> _toggleFavorite() async {
     if (_isLoading) return;
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
 
     try {
@@ -263,7 +266,7 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
         if (mounted) {
           setState(() => _isFavorite = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Favorilerden kaldırıldı'), backgroundColor: Colors.orange),
+            SnackBar(content: Text(l10n.storeDetailRemovedFav), backgroundColor: Colors.orange),
           );
         }
       } else {
@@ -274,14 +277,14 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
         if (mounted) {
           setState(() => _isFavorite = true);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Favorilere eklendi'), backgroundColor: Colors.green),
+            SnackBar(content: Text(l10n.storeDetailAddedFav), backgroundColor: Colors.green),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata: ${e.toString()}'), backgroundColor: Colors.red),
+          SnackBar(content: Text(l10n.storeDetailFavError(e.toString())), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -294,6 +297,7 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
     final store = widget.store;
     final isOwner = widget.isOwner;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final logoUrl = _resolveMediaUrl(store.logoUrl);
     return Container(
       padding: const EdgeInsets.all(18),
@@ -392,8 +396,8 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
                     ? () => context.pushNamed('store-add-product')
                     : (_isLoading ? null : _toggleFavorite),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _isFavorite ? Colors.red.shade50 : Colors.white,
-                  foregroundColor: _isFavorite ? Colors.red : AppPalette.onBackground,
+                  backgroundColor: _isFavorite ? Colors.red.shade50 : Theme.of(context).colorScheme.surface,
+                  foregroundColor: _isFavorite ? Colors.red : Theme.of(context).colorScheme.onSurface,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
                 icon: _isLoading
@@ -403,13 +407,13 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : Icon(isOwner ? Icons.add : (_isFavorite ? Icons.favorite : Icons.favorite_border)),
-                label: Text(isOwner ? 'Urun ekle' : (_isFavorite ? 'Favorilerde' : 'Favorilere ekle')),
+                label: Text(isOwner ? l10n.storeDetailAddProduct : (_isFavorite ? l10n.storeDetailFavorited : l10n.storeDetailAddToFavorites)),
               ),
               const SizedBox(width: 10),
               OutlinedButton.icon(
                 onPressed: () {},
                 icon: const Icon(Icons.share_outlined, size: 18),
-                label: const Text('Paylaş'),
+                label: Text(l10n.storeDetailShare),
               ),
             ],
           )
@@ -430,7 +434,7 @@ class _StoreStatsRow extends StatelessWidget {
       width: double.infinity,
       child: StoreStatsCard(
         icon: Icons.inventory_2_outlined,
-        label: 'Toplam ürün',
+        label: AppLocalizations.of(context)!.storeDetailTotalProducts,
         value: productsCount.toString(),
         color: AppPalette.storePrimary,
       ),
@@ -579,6 +583,7 @@ class _StoreProductTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         Expanded(
@@ -586,8 +591,8 @@ class _StoreProductTile extends StatelessWidget {
             product: product,
             showStoreName: false,
             badge: product.stock <= 0
-                ? 'Tukendi'
-                : (product.stock <= 3 ? 'Son ${product.stock}' : null),
+                ? l10n.storeDetailProductSoldOut
+                : (product.stock <= 3 ? l10n.storeDetailProductStock(product.stock) : null),
             onTap: () => context.pushNamed(
               'store-new-product',
               pathParameters: {'id': product.id},
@@ -604,7 +609,7 @@ class _StoreProductTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                'Stok: ${product.stock}',
+                l10n.storeDetailProductStock(product.stock),
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
@@ -619,7 +624,7 @@ class _StoreProductTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  product.isActive ? 'Aktif' : 'Pasif',
+                  product.isActive ? l10n.storeDetailProductActive : l10n.storeDetailProductInactive,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     color: product.isActive ? Colors.green : Colors.black54,
@@ -639,10 +644,10 @@ class _StoreProductTile extends StatelessWidget {
                     onDelete?.call();
                   }
                 },
-                itemBuilder: (_) => const [
-                  PopupMenuItem(value: 'edit', child: Text('Duzenle')),
-                  PopupMenuItem(value: 'toggle', child: Text('Aktif/Pasif')),
-                  PopupMenuItem(value: 'delete', child: Text('Sil')),
+                itemBuilder: (_) => [
+                  PopupMenuItem(value: 'edit', child: Text(l10n.storeDetailMenuEdit)),
+                  PopupMenuItem(value: 'toggle', child: Text(l10n.storeDetailMenuToggle)),
+                  PopupMenuItem(value: 'delete', child: Text(l10n.storeDetailMenuDelete)),
                 ],
                 child: Container(
                   padding: const EdgeInsets.all(8),
@@ -745,7 +750,7 @@ class _ErrorCard extends StatelessWidget {
               detail!,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
               maxLines: 2,
@@ -757,7 +762,7 @@ class _ErrorCard extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('Yeniden Dene'),
+              label: Text(AppLocalizations.of(context)!.storeDetailRetry),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppPalette.storePrimary,
                 foregroundColor: Colors.white,

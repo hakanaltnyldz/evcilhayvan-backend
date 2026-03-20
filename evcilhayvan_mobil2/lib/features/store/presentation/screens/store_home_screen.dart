@@ -15,6 +15,7 @@ import 'package:evcilhayvan_mobil2/features/store/domain/models/store_model.dart
 import 'package:evcilhayvan_mobil2/features/store/presentation/widgets/store_category_chips.dart';
 import 'package:evcilhayvan_mobil2/features/store/presentation/widgets/store_product_card.dart';
 import 'package:evcilhayvan_mobil2/features/store/providers/store_providers.dart' as catalog;
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 const List<Color> _storeBoldBackground = [
   Color(0xFFF5F2FF),
@@ -143,7 +144,7 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                         categoriesAsync.when(
                           data: (categories) {
                             if (categories.isEmpty) {
-                              return const _InfoBanner(message: 'Kategori bulunamadı.');
+                              return _InfoBanner(message: AppLocalizations.of(context)!.storeHomeCategoryNotFound);
                             }
                             return StoreCategoryChips(
                               categories: categories,
@@ -155,11 +156,11 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                           error: (e, _) => Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const _InfoBanner(message: 'Kategoriler yüklenemedi.'),
+                              _InfoBanner(message: AppLocalizations.of(context)!.storeHomeCategoryLoadErr),
                               const SizedBox(height: 6),
                               TextButton(
                                 onPressed: () => ref.invalidate(catalog.categoriesProvider),
-                                child: const Text('Yeniden dene'),
+                                child: Text(AppLocalizations.of(context)!.storeHomeRetry),
                               ),
                             ],
                           ),
@@ -189,18 +190,18 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                             },
                             loading: () => const _MiniCardSkeleton(),
                             error: (e, _) =>
-                                Text('Mağazanız alınamadı: $e'),
+                                Text(AppLocalizations.of(context)!.storeHomeMyStoreLoadErr(e.toString())),
                           ),
                         const SizedBox(height: 14),
-                        const _SectionHeader(
-                          title: 'Öne çıkan mağazalar',
+                        _SectionHeader(
+                          title: AppLocalizations.of(context)!.storeHomeFeatured,
                         ),
                         const SizedBox(height: 8),
                         storesAsync.when(
                           data: (stores) {
                             if (stores.isEmpty) {
-                              return const _InfoBanner(
-                                message: 'Öne çıkan mağaza bulunamadı.',
+                              return _InfoBanner(
+                                message: AppLocalizations.of(context)!.storeHomeFeaturedEmpty,
                               );
                             }
                             return _StoreCarousel(stores: stores);
@@ -209,14 +210,14 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                           error: (e, _) => Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const _InfoBanner(
-                                message: 'Mağazalar yüklenemedi.',
+                              _InfoBanner(
+                                message: AppLocalizations.of(context)!.storeHomeStoresLoadErr,
                               ),
                               const SizedBox(height: 6),
                               TextButton(
                                 onPressed: () =>
                                     ref.invalidate(store_data.storeDiscoverProvider),
-                                child: const Text('Yeniden dene'),
+                                child: Text(AppLocalizations.of(context)!.storeHomeRetry),
                               ),
                             ],
                           ),
@@ -226,8 +227,8 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             _SectionHeader(
-                              title: 'Ürünler',
-                              actionLabel: hasFilters ? 'Filtreleri temizle' : null,
+                              title: AppLocalizations.of(context)!.storeHomeProducts,
+                              actionLabel: hasFilters ? AppLocalizations.of(context)!.storeHomeFiltersClear : null,
                               onActionTap: hasFilters ? _clearFilters : null,
                             ),
                             // Sıralama seçici
@@ -238,11 +239,11 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                                 borderRadius: BorderRadius.circular(12),
                                 icon: const Icon(Icons.sort, size: 18),
                                 style: Theme.of(context).textTheme.bodySmall,
-                                items: const [
-                                  DropdownMenuItem(value: 'newest',     child: Text('En Yeni')),
-                                  DropdownMenuItem(value: 'price_asc',  child: Text('Fiyat ↑')),
-                                  DropdownMenuItem(value: 'price_desc', child: Text('Fiyat ↓')),
-                                  DropdownMenuItem(value: 'name_asc',   child: Text('A–Z')),
+                                items: [
+                                  DropdownMenuItem(value: 'newest',     child: Text(AppLocalizations.of(context)!.storeHomeLatest)),
+                                  DropdownMenuItem(value: 'price_asc',  child: Text(AppLocalizations.of(context)!.storePriceAsc)),
+                                  DropdownMenuItem(value: 'price_desc', child: Text(AppLocalizations.of(context)!.storePriceDesc)),
+                                  DropdownMenuItem(value: 'name_asc',   child: Text(AppLocalizations.of(context)!.storeNameAz)),
                                 ],
                                 onChanged: (v) {
                                   if (v != null) setState(() => _sort = v);
@@ -261,14 +262,14 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                       return SliverToBoxAdapter(
                         child: EmptyState(
                           icon: Icons.shopping_bag_outlined,
-                          title: 'Ürün bulunamadı',
+                          title: AppLocalizations.of(context)!.storeHomeProductsEmpty,
                           subtitle: hasFilters
-                              ? 'Arama kriterlerinize uygun ürün yok.'
-                              : 'Henüz ürün eklenmemiş.',
+                              ? AppLocalizations.of(context)!.storeHomeProductsNotFound
+                              : AppLocalizations.of(context)!.storeHomeProductsNone,
                           action: hasFilters
                               ? TextButton(
                                   onPressed: _clearFilters,
-                                  child: const Text('Filtreleri temizle'),
+                                  child: Text(AppLocalizations.of(context)!.storeHomeFiltersClear),
                                 )
                               : null,
                         ),
@@ -292,9 +293,9 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                               product: product,
                               isOwnProduct: myStoreId != null && product.store?.id == myStoreId,
                               badge: product.stock <= 0
-                                  ? 'Tükendi'
+                                  ? AppLocalizations.of(context)!.storeHomeSoldOut
                                   : (product.stock <= 3
-                                      ? 'Son ${product.stock}'
+                                      ? AppLocalizations.of(context)!.storeHomeLastStock(product.stock)
                                       : null),
                               onTap: () => context.pushNamed(
                                 'store-new-product',
@@ -313,13 +314,13 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
                       child: Column(
                         children: [
-                          const _InfoBanner(
-                            message: 'Ürünler yüklenemedi.',
+                          _InfoBanner(
+                            message: AppLocalizations.of(context)!.storeHomeProductsLoadErr,
                           ),
                           const SizedBox(height: 6),
                           TextButton(
                             onPressed: () => ref.invalidate(productsProvider),
-                            child: const Text('Yeniden dene'),
+                            child: Text(AppLocalizations.of(context)!.storeHomeRetry),
                           ),
                         ],
                       ),
@@ -404,9 +405,9 @@ class _Header extends StatelessWidget {
                     child: TextField(
                       controller: controller,
                       onChanged: onChanged,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         isDense: true,
-                        hintText: 'Ürün veya mağaza ara',
+                        hintText: AppLocalizations.of(context)!.storeHomeSearchHint,
                         border: InputBorder.none,
                       ),
                     ),
@@ -423,7 +424,7 @@ class _Header extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       child: Text(
-                        'Ara',
+                        AppLocalizations.of(context)!.storeHomeSearchBtn,
                         style: theme.textTheme.labelMedium?.copyWith(
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
@@ -496,6 +497,7 @@ class _HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -546,7 +548,7 @@ class _HeroCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Canlı Mağaza',
+                      l10n.storeHomeLive,
                       style: theme.textTheme.titleLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
@@ -554,7 +556,7 @@ class _HeroCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Gerçek mağazalar ve gerçek ürünler burada.',
+                      l10n.storeHomeLiveDesc,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: Colors.white.withOpacity(0.92),
                         fontWeight: FontWeight.w600,
@@ -573,7 +575,7 @@ class _HeroCard extends StatelessWidget {
                           const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
                           const SizedBox(width: 6),
                           Text(
-                            'Hızlı keşfet',
+                            l10n.storeHomeQuickExplore,
                             style: theme.textTheme.labelLarge?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
@@ -610,6 +612,7 @@ class _SellerCTA extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -631,18 +634,18 @@ class _SellerCTA extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Mağaza aç, ürünlerini vitrine çıkar!',
-            style: TextStyle(
+          Text(
+            l10n.storeHomeOpenStore,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Dakikalar içinde başvur, petseverlere ulaş.',
-            style: TextStyle(
+          Text(
+            l10n.storeHomeOpenStoreDesc,
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
@@ -651,14 +654,12 @@ class _SellerCTA extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: onTap,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppPalette.onBackground,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
             icon: const Icon(Icons.store_mall_directory_outlined),
-            label: const Text('Mağaza Aç'),
+            label: Text(l10n.storeHomeOpenStoreBtn),
           ),
         ],
       ),
@@ -674,6 +675,7 @@ class _MyStoreMiniCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final description = (store.description ?? '').trim();
     return Container(
       padding: const EdgeInsets.all(1.4),
@@ -736,7 +738,7 @@ class _MyStoreMiniCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    description.isNotEmpty ? description : 'Açıklama eklenmemiş.',
+                    description.isNotEmpty ? description : l10n.storeNoDescAdded,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: AppPalette.onSurfaceVariant,
                     ),
@@ -768,8 +770,9 @@ class _StoreCarousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     if (stores.isEmpty) {
-      return const Text('Şimdilik öne çıkan mağaza yok.');
+      return Text(l10n.storeHomeFeaturedEmpty);
     }
     return SizedBox(
       height: 170,
@@ -841,7 +844,7 @@ class _StoreCarousel extends StatelessWidget {
                 const SizedBox(height: 10),
                 Expanded(
                   child: Text(
-                    description.isNotEmpty ? description : 'Açıklama yok.',
+                    description.isNotEmpty ? description : l10n.storeHomeNoDesc,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: Colors.white.withOpacity(0.92),
                       fontWeight: FontWeight.w600,
@@ -865,7 +868,7 @@ class _StoreCarousel extends StatelessWidget {
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.white,
                       ),
-                      child: const Text('Mağazaya git'),
+                      child: Text(l10n.storeHomeGoToStore),
                     ),
                   ),
                 ),

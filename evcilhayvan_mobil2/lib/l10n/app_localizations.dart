@@ -5065,6 +5065,3606 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Sonuç bulunamadı'**
   String get vetSearchNoResults;
+
+  /// No description provided for @vetHomeTabSearch.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ara'**
+  String get vetHomeTabSearch;
+
+  /// No description provided for @vetHomeTabAppointments.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevular'**
+  String get vetHomeTabAppointments;
+
+  /// No description provided for @vetHomeTabVaccine.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aşı Takvimi'**
+  String get vetHomeTabVaccine;
+
+  /// No description provided for @vetHomeSearchHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner kliniği ara...'**
+  String get vetHomeSearchHint;
+
+  /// No description provided for @vetHomeNearMe.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yakınımda'**
+  String get vetHomeNearMe;
+
+  /// No description provided for @vetHomeSaveClinic.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik Kaydet'**
+  String get vetHomeSaveClinic;
+
+  /// No description provided for @vetHomeGoogleSearch.
+  ///
+  /// In tr, this message translates to:
+  /// **'Google ile Ara'**
+  String get vetHomeGoogleSearch;
+
+  /// No description provided for @vetHomeReminders.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hatırlatmalar'**
+  String get vetHomeReminders;
+
+  /// No description provided for @vetHomeNearbyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yakınındaki Veterinerler'**
+  String get vetHomeNearbyTitle;
+
+  /// No description provided for @vetHomeNearbyPermRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yakın veterinerleri görmek için konum izni verin'**
+  String get vetHomeNearbyPermRequired;
+
+  /// No description provided for @vetHomeNearbyEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yakında veteriner bulunamadı'**
+  String get vetHomeNearbyEmpty;
+
+  /// No description provided for @vetHomeApptsEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz randevunuz yok'**
+  String get vetHomeApptsEmpty;
+
+  /// No description provided for @vetHomeApptsEmptyDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner arayın ve randevu alın'**
+  String get vetHomeApptsEmptyDesc;
+
+  /// No description provided for @vetHomeVaccineTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aşı Hatırlatmaları'**
+  String get vetHomeVaccineTitle;
+
+  /// No description provided for @vetHomeVaccineEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yaklaşan aşı hatırlatması yok'**
+  String get vetHomeVaccineEmpty;
+
+  /// No description provided for @vetHomeVaccineEmptyDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evcil hayvanınızın profil sayfasından aşı takvimini görüntüleyin'**
+  String get vetHomeVaccineEmptyDesc;
+
+  /// No description provided for @vetHomeVaccineOverdue.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gecikti'**
+  String get vetHomeVaccineOverdue;
+
+  /// No description provided for @vetHomeVaccineUpcoming.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yaklaşıyor'**
+  String get vetHomeVaccineUpcoming;
+
+  /// No description provided for @vetHomeLoadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: {error}'**
+  String vetHomeLoadError(String error);
+
+  /// No description provided for @storeHomeLive.
+  ///
+  /// In tr, this message translates to:
+  /// **'Canlı Mağaza'**
+  String get storeHomeLive;
+
+  /// No description provided for @storeHomeLiveDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gerçek mağazalar ve gerçek ürünler burada.'**
+  String get storeHomeLiveDesc;
+
+  /// No description provided for @storeHomeQuickExplore.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hızlı keşfet'**
+  String get storeHomeQuickExplore;
+
+  /// No description provided for @storeHomeAll.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tümü'**
+  String get storeHomeAll;
+
+  /// No description provided for @storeHomeFeatured.
+  ///
+  /// In tr, this message translates to:
+  /// **'Öne çıkan mağazalar'**
+  String get storeHomeFeatured;
+
+  /// No description provided for @storeHomeNoDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıklama yok.'**
+  String get storeHomeNoDesc;
+
+  /// No description provided for @storeHomeGoToStore.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağazaya git'**
+  String get storeHomeGoToStore;
+
+  /// No description provided for @storeHomeProducts.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürünler'**
+  String get storeHomeProducts;
+
+  /// No description provided for @storeHomeLatest.
+  ///
+  /// In tr, this message translates to:
+  /// **'En Yeni'**
+  String get storeHomeLatest;
+
+  /// No description provided for @storeNoDescAdded.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıklama eklenmemiş.'**
+  String get storeNoDescAdded;
+
+  /// No description provided for @storeHomeCategoryLoadErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategoriler yüklenemedi.'**
+  String get storeHomeCategoryLoadErr;
+
+  /// No description provided for @storeHomeFeaturedEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şimdilik öne çıkan mağaza yok.'**
+  String get storeHomeFeaturedEmpty;
+
+  /// No description provided for @storeHomeStoresLoadErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağazalar yüklenemedi.'**
+  String get storeHomeStoresLoadErr;
+
+  /// No description provided for @storeHomeProductsEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün bulunamadı'**
+  String get storeHomeProductsEmpty;
+
+  /// No description provided for @storeHomeProductsNotFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Arama kriterlerinize uygun ürün yok.'**
+  String get storeHomeProductsNotFound;
+
+  /// No description provided for @storeHomeProductsNone.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz ürün eklenmemiş.'**
+  String get storeHomeProductsNone;
+
+  /// No description provided for @storeHomeProductsLoadErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürünler yüklenemedi.'**
+  String get storeHomeProductsLoadErr;
+
+  /// No description provided for @storeHomeFiltersClear.
+  ///
+  /// In tr, this message translates to:
+  /// **'Filtreleri temizle'**
+  String get storeHomeFiltersClear;
+
+  /// No description provided for @storeHomeMyStoreLoadErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağazanız alınamadı: {error}'**
+  String storeHomeMyStoreLoadErr(String error);
+
+  /// No description provided for @storeHomeCategoryNotFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategori bulunamadı.'**
+  String get storeHomeCategoryNotFound;
+
+  /// No description provided for @storeHomeSearchHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün veya mağaza ara'**
+  String get storeHomeSearchHint;
+
+  /// No description provided for @storeHomeSearchBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ara'**
+  String get storeHomeSearchBtn;
+
+  /// No description provided for @storeHomeOpenStore.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza aç, ürünlerini vitrine çıkar!'**
+  String get storeHomeOpenStore;
+
+  /// No description provided for @storeHomeOpenStoreDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Dakikalar içinde başvur, petseverlere ulaş.'**
+  String get storeHomeOpenStoreDesc;
+
+  /// No description provided for @storeHomeOpenStoreBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza Aç'**
+  String get storeHomeOpenStoreBtn;
+
+  /// No description provided for @storeHomeRetry.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeniden dene'**
+  String get storeHomeRetry;
+
+  /// No description provided for @storeHomeSoldOut.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tükendi'**
+  String get storeHomeSoldOut;
+
+  /// No description provided for @storeHomeLastStock.
+  ///
+  /// In tr, this message translates to:
+  /// **'Son {count}'**
+  String storeHomeLastStock(int count);
+
+  /// No description provided for @storePriceAsc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Fiyat ↑'**
+  String get storePriceAsc;
+
+  /// No description provided for @storePriceDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Fiyat ↓'**
+  String get storePriceDesc;
+
+  /// No description provided for @storeNameAz.
+  ///
+  /// In tr, this message translates to:
+  /// **'A–Z'**
+  String get storeNameAz;
+
+  /// No description provided for @storesListTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağazalar'**
+  String get storesListTitle;
+
+  /// No description provided for @storesListSearchHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza ara...'**
+  String get storesListSearchHint;
+
+  /// No description provided for @storesListEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz mağaza yok'**
+  String get storesListEmpty;
+
+  /// No description provided for @storesListSearchEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Arama sonucu bulunamadı'**
+  String get storesListSearchEmpty;
+
+  /// No description provided for @storesListLoadErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağazalar yüklenemedi'**
+  String get storesListLoadErr;
+
+  /// No description provided for @storesListRetry.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeniden Dene'**
+  String get storesListRetry;
+
+  /// No description provided for @storeDetailTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza'**
+  String get storeDetailTitle;
+
+  /// No description provided for @storeDetailLoadErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza yüklenemedi'**
+  String get storeDetailLoadErr;
+
+  /// No description provided for @storeDetailProductsLoadErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürünler yüklenemedi'**
+  String get storeDetailProductsLoadErr;
+
+  /// No description provided for @storeDetailNoProducts.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu mağazada henüz ürün yok.'**
+  String get storeDetailNoProducts;
+
+  /// No description provided for @storeDetailTotalProducts.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplam ürün'**
+  String get storeDetailTotalProducts;
+
+  /// No description provided for @storeDetailAddProduct.
+  ///
+  /// In tr, this message translates to:
+  /// **'Urun ekle'**
+  String get storeDetailAddProduct;
+
+  /// No description provided for @storeDetailFavorited.
+  ///
+  /// In tr, this message translates to:
+  /// **'Favorilerde'**
+  String get storeDetailFavorited;
+
+  /// No description provided for @storeDetailAddToFavorites.
+  ///
+  /// In tr, this message translates to:
+  /// **'Favorilere ekle'**
+  String get storeDetailAddToFavorites;
+
+  /// No description provided for @storeDetailRemovedFav.
+  ///
+  /// In tr, this message translates to:
+  /// **'Favorilerden kaldırıldı'**
+  String get storeDetailRemovedFav;
+
+  /// No description provided for @storeDetailAddedFav.
+  ///
+  /// In tr, this message translates to:
+  /// **'Favorilere eklendi'**
+  String get storeDetailAddedFav;
+
+  /// No description provided for @storeDetailFavError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: {error}'**
+  String storeDetailFavError(String error);
+
+  /// No description provided for @storeDetailShare.
+  ///
+  /// In tr, this message translates to:
+  /// **'Paylaş'**
+  String get storeDetailShare;
+
+  /// No description provided for @storeDetailProductActive.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aktif'**
+  String get storeDetailProductActive;
+
+  /// No description provided for @storeDetailProductInactive.
+  ///
+  /// In tr, this message translates to:
+  /// **'Pasif'**
+  String get storeDetailProductInactive;
+
+  /// No description provided for @storeDetailProductSoldOut.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tukendi'**
+  String get storeDetailProductSoldOut;
+
+  /// No description provided for @storeDetailProductStock.
+  ///
+  /// In tr, this message translates to:
+  /// **'Stok: {count}'**
+  String storeDetailProductStock(int count);
+
+  /// No description provided for @storeDetailMenuEdit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Duzenle'**
+  String get storeDetailMenuEdit;
+
+  /// No description provided for @storeDetailMenuToggle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aktif/Pasif'**
+  String get storeDetailMenuToggle;
+
+  /// No description provided for @storeDetailMenuDelete.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sil'**
+  String get storeDetailMenuDelete;
+
+  /// No description provided for @storeDetailDeleteTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Urunu sil'**
+  String get storeDetailDeleteTitle;
+
+  /// No description provided for @storeDetailDeleteContent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu urunu silmek istediginize emin misiniz?'**
+  String get storeDetailDeleteContent;
+
+  /// No description provided for @storeDetailDeleteCancel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Vazgec'**
+  String get storeDetailDeleteCancel;
+
+  /// No description provided for @storeDetailProductActivated.
+  ///
+  /// In tr, this message translates to:
+  /// **'Urun aktif edildi.'**
+  String get storeDetailProductActivated;
+
+  /// No description provided for @storeDetailProductDeactivated.
+  ///
+  /// In tr, this message translates to:
+  /// **'Urun pasif edildi.'**
+  String get storeDetailProductDeactivated;
+
+  /// No description provided for @storeDetailProductUpdateErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Urun guncellenemedi: {error}'**
+  String storeDetailProductUpdateErr(String error);
+
+  /// No description provided for @storeDetailProductDeleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Urun silindi.'**
+  String get storeDetailProductDeleted;
+
+  /// No description provided for @storeDetailProductDeleteErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Urun silinemedi: {error}'**
+  String storeDetailProductDeleteErr(String error);
+
+  /// No description provided for @storeDetailRetry.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeniden Dene'**
+  String get storeDetailRetry;
+
+  /// No description provided for @applySellerTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza Aç'**
+  String get applySellerTitle;
+
+  /// No description provided for @applySellerLogoTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza Logosu Seç'**
+  String get applySellerLogoTitle;
+
+  /// No description provided for @applySellerPickGallery.
+  ///
+  /// In tr, this message translates to:
+  /// **'Galeriden Seç'**
+  String get applySellerPickGallery;
+
+  /// No description provided for @applySellerPickCamera.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kamerayı Aç'**
+  String get applySellerPickCamera;
+
+  /// No description provided for @applySellerLogoSection.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza Logosu'**
+  String get applySellerLogoSection;
+
+  /// No description provided for @applySellerLogoAdd.
+  ///
+  /// In tr, this message translates to:
+  /// **'Logo Ekle'**
+  String get applySellerLogoAdd;
+
+  /// No description provided for @applySellerLogoHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kare formatta, minimum 200x200 piksel önerilir'**
+  String get applySellerLogoHint;
+
+  /// No description provided for @applySellerInfoSection.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza Bilgileri'**
+  String get applySellerInfoSection;
+
+  /// No description provided for @applySellerNameLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza Adı *'**
+  String get applySellerNameLabel;
+
+  /// No description provided for @applySellerNameHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn: Happy Pets Store'**
+  String get applySellerNameHint;
+
+  /// No description provided for @applySellerNameRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza adı gerekli'**
+  String get applySellerNameRequired;
+
+  /// No description provided for @applySellerNameTooShort.
+  ///
+  /// In tr, this message translates to:
+  /// **'En az 3 karakter olmalı'**
+  String get applySellerNameTooShort;
+
+  /// No description provided for @applySellerDescLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza Açıklaması'**
+  String get applySellerDescLabel;
+
+  /// No description provided for @applySellerDescHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağazanızı tanıtın...'**
+  String get applySellerDescHint;
+
+  /// No description provided for @applySellerTermsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satıcı Sözleşmesi'**
+  String get applySellerTermsTitle;
+
+  /// No description provided for @applySellerTermsAccepted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kabul Edildi'**
+  String get applySellerTermsAccepted;
+
+  /// No description provided for @applySellerTermsRead.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satıcı sözleşmesini okudum ve kabul ediyorum'**
+  String get applySellerTermsRead;
+
+  /// No description provided for @applySellerTermsDialogTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satıcı Sözleşmesi'**
+  String get applySellerTermsDialogTitle;
+
+  /// No description provided for @applySellerTermsAcceptBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Okudum ve Kabul Ediyorum'**
+  String get applySellerTermsAcceptBtn;
+
+  /// No description provided for @applySellerStepLogo.
+  ///
+  /// In tr, this message translates to:
+  /// **'Logo'**
+  String get applySellerStepLogo;
+
+  /// No description provided for @applySellerStepInfo.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bilgiler'**
+  String get applySellerStepInfo;
+
+  /// No description provided for @applySellerStepContract.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sözleşme'**
+  String get applySellerStepContract;
+
+  /// No description provided for @applySellerOpenBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağazamı Aç'**
+  String get applySellerOpenBtn;
+
+  /// No description provided for @applySellerApprovalNote.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağazanız onaylandıktan sonra ürün eklemeye başlayabilirsiniz.'**
+  String get applySellerApprovalNote;
+
+  /// No description provided for @applySellerSuccessTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tebrikler!'**
+  String get applySellerSuccessTitle;
+
+  /// No description provided for @applySellerSuccessDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'\"{storeName}\" mağazanız başarıyla oluşturuldu!'**
+  String applySellerSuccessDesc(String storeName);
+
+  /// No description provided for @applySellerGoToStore.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağazama Git'**
+  String get applySellerGoToStore;
+
+  /// No description provided for @applySellerGenericError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir hata oluştu, lütfen tekrar deneyin.'**
+  String get applySellerGenericError;
+
+  /// No description provided for @addProductTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün Ekle'**
+  String get addProductTitle;
+
+  /// No description provided for @addProductEditTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün Düzenle'**
+  String get addProductEditTitle;
+
+  /// No description provided for @addProductPhotosSection.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün Fotoğrafları'**
+  String get addProductPhotosSection;
+
+  /// No description provided for @addProductPickGallery.
+  ///
+  /// In tr, this message translates to:
+  /// **'Galeriden Seç'**
+  String get addProductPickGallery;
+
+  /// No description provided for @addProductPickGallerySub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mevcut fotoğraflarınızdan seçin'**
+  String get addProductPickGallerySub;
+
+  /// No description provided for @addProductPickCamera.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kamerayı Aç'**
+  String get addProductPickCamera;
+
+  /// No description provided for @addProductPickCameraSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni fotoğraf çekin'**
+  String get addProductPickCameraSub;
+
+  /// No description provided for @addProductPickDialogTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Fotoğraf Ekle'**
+  String get addProductPickDialogTitle;
+
+  /// No description provided for @addProductAddBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ekle'**
+  String get addProductAddBtn;
+
+  /// No description provided for @addProductMaxWarning.
+  ///
+  /// In tr, this message translates to:
+  /// **'En fazla {max} fotoğraf ekleyebilirsiniz'**
+  String addProductMaxWarning(int max);
+
+  /// No description provided for @addProductPhotosHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürününüzün fotoğraflarını ekleyin (max {max})'**
+  String addProductPhotosHint(int max);
+
+  /// No description provided for @addProductTitleField.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün Başlığı'**
+  String get addProductTitleField;
+
+  /// No description provided for @addProductTitleHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn: Renkli kedi oyuncağı'**
+  String get addProductTitleHint;
+
+  /// No description provided for @addProductTitleRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başlık gerekli'**
+  String get addProductTitleRequired;
+
+  /// No description provided for @addProductCategoryLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategori'**
+  String get addProductCategoryLabel;
+
+  /// No description provided for @addProductCategoryRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategori seçin'**
+  String get addProductCategoryRequired;
+
+  /// No description provided for @addProductDescLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıklama'**
+  String get addProductDescLabel;
+
+  /// No description provided for @addProductDescHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün özellikleri, boyut, malzeme...'**
+  String get addProductDescHint;
+
+  /// No description provided for @addProductPriceLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Fiyat (₺)'**
+  String get addProductPriceLabel;
+
+  /// No description provided for @addProductPriceRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gerekli'**
+  String get addProductPriceRequired;
+
+  /// No description provided for @addProductPriceInvalid.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçersiz'**
+  String get addProductPriceInvalid;
+
+  /// No description provided for @addProductStockLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Stok'**
+  String get addProductStockLabel;
+
+  /// No description provided for @addProductActiveLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün Aktif'**
+  String get addProductActiveLabel;
+
+  /// No description provided for @addProductInactiveLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün Pasif'**
+  String get addProductInactiveLabel;
+
+  /// No description provided for @addProductSaving.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydediliyor...'**
+  String get addProductSaving;
+
+  /// No description provided for @addProductSaveBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydet'**
+  String get addProductSaveBtn;
+
+  /// No description provided for @addProductUpdated.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün güncellendi!'**
+  String get addProductUpdated;
+
+  /// No description provided for @addProductAdded.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün eklendi!'**
+  String get addProductAdded;
+
+  /// No description provided for @addProductCategoryLoadErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategoriler yüklenemedi.'**
+  String get addProductCategoryLoadErr;
+
+  /// No description provided for @addProductCategoryNotFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategori bulunamadı.'**
+  String get addProductCategoryNotFound;
+
+  /// No description provided for @addProductRetry.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeniden dene'**
+  String get addProductRetry;
+
+  /// No description provided for @addProductCategoryLoading.
+  ///
+  /// In tr, this message translates to:
+  /// **'{label} yükleniyor...'**
+  String addProductCategoryLoading(String label);
+
+  /// No description provided for @sellerOrdersTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Siparişlerim'**
+  String get sellerOrdersTitle;
+
+  /// No description provided for @sellerOrdersTabAll.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tümü'**
+  String get sellerOrdersTabAll;
+
+  /// No description provided for @sellerOrdersTabPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bekleyen'**
+  String get sellerOrdersTabPending;
+
+  /// No description provided for @sellerOrdersTabProcessing.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hazırlanan'**
+  String get sellerOrdersTabProcessing;
+
+  /// No description provided for @sellerOrdersTabShipped.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kargoda'**
+  String get sellerOrdersTabShipped;
+
+  /// No description provided for @sellerOrdersTabCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlanan'**
+  String get sellerOrdersTabCompleted;
+
+  /// No description provided for @sellerOrdersEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz sipariş yok'**
+  String get sellerOrdersEmpty;
+
+  /// No description provided for @sellerOrdersEmptyDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürünlerinize sipariş geldiğinde burada görünecek'**
+  String get sellerOrdersEmptyDesc;
+
+  /// No description provided for @sellerOrdersLoadErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Siparişler yüklenemedi: {error}'**
+  String sellerOrdersLoadErr(String error);
+
+  /// No description provided for @sellerOrdersCategoryEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu kategoride sipariş yok'**
+  String get sellerOrdersCategoryEmpty;
+
+  /// No description provided for @sellerOrdersStatusUpdated.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sipariş durumu güncellendi'**
+  String get sellerOrdersStatusUpdated;
+
+  /// No description provided for @sellerOrdersStatusError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: {error}'**
+  String sellerOrdersStatusError(String error);
+
+  /// No description provided for @sellerOrdersStatTotal.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplam'**
+  String get sellerOrdersStatTotal;
+
+  /// No description provided for @sellerOrdersStatPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bekleyen'**
+  String get sellerOrdersStatPending;
+
+  /// No description provided for @sellerOrdersStatSales.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satış'**
+  String get sellerOrdersStatSales;
+
+  /// No description provided for @sellerOrdersStatRevenue.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelir'**
+  String get sellerOrdersStatRevenue;
+
+  /// No description provided for @sellerOrdersPrepare.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hazırla'**
+  String get sellerOrdersPrepare;
+
+  /// No description provided for @sellerOrdersShip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kargola'**
+  String get sellerOrdersShip;
+
+  /// No description provided for @sellerOrdersDelivered.
+  ///
+  /// In tr, this message translates to:
+  /// **'Teslim Edildi'**
+  String get sellerOrdersDelivered;
+
+  /// No description provided for @sellerOrdersItemCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} ürün'**
+  String sellerOrdersItemCount(int count);
+
+  /// No description provided for @sellerOrdersItemQty.
+  ///
+  /// In tr, this message translates to:
+  /// **'{qty} adet x ₺{price}'**
+  String sellerOrdersItemQty(int qty, String price);
+
+  /// No description provided for @petCardMating.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşleştirme'**
+  String get petCardMating;
+
+  /// No description provided for @petCardAdoption.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sahiplendirme'**
+  String get petCardAdoption;
+
+  /// No description provided for @petCardVaccinated.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aşılı'**
+  String get petCardVaccinated;
+
+  /// No description provided for @petCardOwnerUnknown.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bilinmiyor'**
+  String get petCardOwnerUnknown;
+
+  /// No description provided for @apptCreateTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevu Oluştur'**
+  String get apptCreateTitle;
+
+  /// No description provided for @apptCreateSelectPet.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evcil Hayvan Seçin'**
+  String get apptCreateSelectPet;
+
+  /// No description provided for @apptCreateDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarih'**
+  String get apptCreateDate;
+
+  /// No description provided for @apptCreateTime.
+  ///
+  /// In tr, this message translates to:
+  /// **'Saat'**
+  String get apptCreateTime;
+
+  /// No description provided for @apptCreateReason.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevu Nedeni'**
+  String get apptCreateReason;
+
+  /// No description provided for @apptCreateNotes.
+  ///
+  /// In tr, this message translates to:
+  /// **'Notlar (opsiyonel)'**
+  String get apptCreateNotes;
+
+  /// No description provided for @apptCreateBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevu Oluştur'**
+  String get apptCreateBtn;
+
+  /// No description provided for @apptCreateSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevu oluşturuldu!'**
+  String get apptCreateSuccess;
+
+  /// No description provided for @apptCreateSelectDateBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarih seçin'**
+  String get apptCreateSelectDateBtn;
+
+  /// No description provided for @apptCreateNoPets.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz evcil hayvan eklememişsiniz'**
+  String get apptCreateNoPets;
+
+  /// No description provided for @apptCreateNoSlots.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu tarihte uygun slot bulunamadı'**
+  String get apptCreateNoSlots;
+
+  /// No description provided for @apptCreateValidation.
+  ///
+  /// In tr, this message translates to:
+  /// **'Lütfen pet, tarih ve saat seçin'**
+  String get apptCreateValidation;
+
+  /// No description provided for @apptCreateSlotsError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Slotlar alınamadı: {error}'**
+  String apptCreateSlotsError(String error);
+
+  /// No description provided for @apptCreatePetsError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Petler yüklenemedi: {error}'**
+  String apptCreatePetsError(String error);
+
+  /// No description provided for @apptCreateError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: {error}'**
+  String apptCreateError(String error);
+
+  /// No description provided for @apptDetailTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevu Detay'**
+  String get apptDetailTitle;
+
+  /// No description provided for @apptDetailDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarih ve Saat'**
+  String get apptDetailDate;
+
+  /// No description provided for @apptDetailVet.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner'**
+  String get apptDetailVet;
+
+  /// No description provided for @apptDetailPet.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evcil Hayvan'**
+  String get apptDetailPet;
+
+  /// No description provided for @apptDetailReason.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevu Nedeni'**
+  String get apptDetailReason;
+
+  /// No description provided for @apptDetailNotes.
+  ///
+  /// In tr, this message translates to:
+  /// **'Notlar'**
+  String get apptDetailNotes;
+
+  /// No description provided for @apptDetailVetNotes.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner Notları'**
+  String get apptDetailVetNotes;
+
+  /// No description provided for @apptDetailCancelBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevuyu İptal Et'**
+  String get apptDetailCancelBtn;
+
+  /// No description provided for @apptDetailCancelTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevuyu İptal Et'**
+  String get apptDetailCancelTitle;
+
+  /// No description provided for @apptDetailCancelContent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevuyu iptal etmek istediğinize emin misiniz?'**
+  String get apptDetailCancelContent;
+
+  /// No description provided for @apptDetailCancelConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'İptal Et'**
+  String get apptDetailCancelConfirm;
+
+  /// No description provided for @apptDetailCancelBack.
+  ///
+  /// In tr, this message translates to:
+  /// **'Vazgeç'**
+  String get apptDetailCancelBack;
+
+  /// No description provided for @apptDetailCancelSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevu iptal edildi'**
+  String get apptDetailCancelSuccess;
+
+  /// No description provided for @apptDetailError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: {error}'**
+  String apptDetailError(String error);
+
+  /// No description provided for @vetRegisterTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik Kaydet'**
+  String get vetRegisterTitle;
+
+  /// No description provided for @vetRegisterClinicName.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik Adı *'**
+  String get vetRegisterClinicName;
+
+  /// No description provided for @vetRegisterAddress.
+  ///
+  /// In tr, this message translates to:
+  /// **'Adres *'**
+  String get vetRegisterAddress;
+
+  /// No description provided for @vetRegisterPhone.
+  ///
+  /// In tr, this message translates to:
+  /// **'Telefon'**
+  String get vetRegisterPhone;
+
+  /// No description provided for @vetRegisterEmail.
+  ///
+  /// In tr, this message translates to:
+  /// **'E-posta'**
+  String get vetRegisterEmail;
+
+  /// No description provided for @vetRegisterDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıklama'**
+  String get vetRegisterDesc;
+
+  /// No description provided for @vetRegisterLocationLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum: {lat}, {lng}'**
+  String vetRegisterLocationLabel(String lat, String lng);
+
+  /// No description provided for @vetRegisterLocationNone.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum eklenmedi'**
+  String get vetRegisterLocationNone;
+
+  /// No description provided for @vetRegisterGetLocation.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum Al'**
+  String get vetRegisterGetLocation;
+
+  /// No description provided for @vetRegisterGettingLocation.
+  ///
+  /// In tr, this message translates to:
+  /// **'Alınıyor...'**
+  String get vetRegisterGettingLocation;
+
+  /// No description provided for @vetRegisterSpecies.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hizmet Verilen Türler'**
+  String get vetRegisterSpecies;
+
+  /// No description provided for @vetRegisterSaveBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydet'**
+  String get vetRegisterSaveBtn;
+
+  /// No description provided for @vetRegisterSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik kaydedildi ve hesabınıza bağlandı!'**
+  String get vetRegisterSuccess;
+
+  /// No description provided for @vetRegisterClinicNameRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik adı gerekli'**
+  String get vetRegisterClinicNameRequired;
+
+  /// No description provided for @vetRegisterAddressRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Adres gerekli'**
+  String get vetRegisterAddressRequired;
+
+  /// No description provided for @vetRegisterLocationError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum alınamadı: {error}'**
+  String vetRegisterLocationError(String error);
+
+  /// No description provided for @vetRegisterLocationDenied.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum izni reddedildi. Ayarlardan izin verin.'**
+  String get vetRegisterLocationDenied;
+
+  /// No description provided for @vetRegisterError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: {error}'**
+  String vetRegisterError(String error);
+
+  /// No description provided for @searchHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlan, mağaza veya veteriner ara...'**
+  String get searchHint;
+
+  /// No description provided for @searchTypeHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aramak istediğinizi yazın'**
+  String get searchTypeHint;
+
+  /// No description provided for @searchTypeHintSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlan, mağaza veya veteriner arayabilirsiniz'**
+  String get searchTypeHintSub;
+
+  /// No description provided for @searchHistory.
+  ///
+  /// In tr, this message translates to:
+  /// **'Son Aramalar'**
+  String get searchHistory;
+
+  /// No description provided for @searchClearHistory.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tümünü Temizle'**
+  String get searchClearHistory;
+
+  /// No description provided for @searchError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Arama hatası: {error}'**
+  String searchError(String error);
+
+  /// No description provided for @searchNoResults.
+  ///
+  /// In tr, this message translates to:
+  /// **'\"{query}\" için sonuç bulunamadı'**
+  String searchNoResults(String query);
+
+  /// No description provided for @searchSectionListings.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlanlar'**
+  String get searchSectionListings;
+
+  /// No description provided for @searchSectionStores.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağazalar'**
+  String get searchSectionStores;
+
+  /// No description provided for @searchSectionVets.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veterinerler'**
+  String get searchSectionVets;
+
+  /// No description provided for @searchStoreSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza'**
+  String get searchStoreSubtitle;
+
+  /// No description provided for @searchVetSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner'**
+  String get searchVetSubtitle;
+
+  /// No description provided for @aiAssistantTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Pati Asistan'**
+  String get aiAssistantTitle;
+
+  /// No description provided for @aiModeReset.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sıfırla'**
+  String get aiModeReset;
+
+  /// No description provided for @aiModeDiagnosis.
+  ///
+  /// In tr, this message translates to:
+  /// **'Teşhis'**
+  String get aiModeDiagnosis;
+
+  /// No description provided for @aiModeGeneral.
+  ///
+  /// In tr, this message translates to:
+  /// **'Genel'**
+  String get aiModeGeneral;
+
+  /// No description provided for @aiSymptomLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Semptom seç (çoklu):'**
+  String get aiSymptomLabel;
+
+  /// No description provided for @aiDiagnoseBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Teşhis Et →'**
+  String get aiDiagnoseBtn;
+
+  /// No description provided for @aiSymptomSelected.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçili: {symptoms}'**
+  String aiSymptomSelected(String symptoms);
+
+  /// No description provided for @aiWelcomeDiagnosis.
+  ///
+  /// In tr, this message translates to:
+  /// **'Semptom seç veya yaz → Teşhis al'**
+  String get aiWelcomeDiagnosis;
+
+  /// No description provided for @aiWelcomeGeneral.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evcil hayvanın hakkında ne sormak istiyorsun?'**
+  String get aiWelcomeGeneral;
+
+  /// No description provided for @aiWelcomeDiagnosisSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yukarıdan türü ve belirtileri seç,\nyoksa metin kutusuna yaz.'**
+  String get aiWelcomeDiagnosisSub;
+
+  /// No description provided for @aiWelcomeGeneralSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakım, beslenme, eğitim hakkında\nkısa ve pratik yanıtlar alırsın.'**
+  String get aiWelcomeGeneralSub;
+
+  /// No description provided for @aiExampleLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örnek sorular:'**
+  String get aiExampleLabel;
+
+  /// No description provided for @aiInputDiagnosisHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ek bilgi ekle veya direkt yaz...'**
+  String get aiInputDiagnosisHint;
+
+  /// No description provided for @aiInputGeneralHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sorunuzu yazın...'**
+  String get aiInputGeneralHint;
+
+  /// No description provided for @aiErrorResponse.
+  ///
+  /// In tr, this message translates to:
+  /// **'Üzgünüm, şu an yanıt veremiyorum. Lütfen tekrar deneyin.'**
+  String get aiErrorResponse;
+
+  /// No description provided for @aiNoReply.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yanıt alınamadı.'**
+  String get aiNoReply;
+
+  /// No description provided for @guideTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rehber Pati'**
+  String get guideTitle;
+
+  /// No description provided for @guideNewChat.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni sohbet'**
+  String get guideNewChat;
+
+  /// No description provided for @guideWelcome.
+  ///
+  /// In tr, this message translates to:
+  /// **'Merhaba! 👋'**
+  String get guideWelcome;
+
+  /// No description provided for @guideWelcomeSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ne yapmak istiyorsun?\nSana en kısa yoldan yardım edeyim.'**
+  String get guideWelcomeSub;
+
+  /// No description provided for @guideQuickOptions.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hızlı seçenekler:'**
+  String get guideQuickOptions;
+
+  /// No description provided for @guideNavigateBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Götür beni →'**
+  String get guideNavigateBtn;
+
+  /// No description provided for @guideInputHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ne yapmak istiyorsun?'**
+  String get guideInputHint;
+
+  /// No description provided for @guideConnError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bağlantı hatası, lütfen tekrar dene.'**
+  String get guideConnError;
+
+  /// No description provided for @guideUnknown.
+  ///
+  /// In tr, this message translates to:
+  /// **'Anlayamadım.'**
+  String get guideUnknown;
+
+  /// No description provided for @monthJan.
+  ///
+  /// In tr, this message translates to:
+  /// **'Oca'**
+  String get monthJan;
+
+  /// No description provided for @monthFeb.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şub'**
+  String get monthFeb;
+
+  /// No description provided for @monthMar.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mar'**
+  String get monthMar;
+
+  /// No description provided for @monthApr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Nis'**
+  String get monthApr;
+
+  /// No description provided for @monthMay.
+  ///
+  /// In tr, this message translates to:
+  /// **'May'**
+  String get monthMay;
+
+  /// No description provided for @monthJun.
+  ///
+  /// In tr, this message translates to:
+  /// **'Haz'**
+  String get monthJun;
+
+  /// No description provided for @monthJul.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tem'**
+  String get monthJul;
+
+  /// No description provided for @monthAug.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ağu'**
+  String get monthAug;
+
+  /// No description provided for @monthSep.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eyl'**
+  String get monthSep;
+
+  /// No description provided for @monthOct.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eki'**
+  String get monthOct;
+
+  /// No description provided for @monthNov.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kas'**
+  String get monthNov;
+
+  /// No description provided for @monthDec.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ara'**
+  String get monthDec;
+
+  /// No description provided for @sitterFindTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcı Bul'**
+  String get sitterFindTitle;
+
+  /// No description provided for @sitterMyBookingsTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rezervasyonlarım'**
+  String get sitterMyBookingsTooltip;
+
+  /// No description provided for @sitterServiceAll.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tümü'**
+  String get sitterServiceAll;
+
+  /// No description provided for @sitterServiceWalking.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gezdirme'**
+  String get sitterServiceWalking;
+
+  /// No description provided for @sitterServiceHomeSitting.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ev Bakımı'**
+  String get sitterServiceHomeSitting;
+
+  /// No description provided for @sitterServiceBoarding.
+  ///
+  /// In tr, this message translates to:
+  /// **'Pansiyon'**
+  String get sitterServiceBoarding;
+
+  /// No description provided for @sitterServiceDaycare.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gündüz Bakımı'**
+  String get sitterServiceDaycare;
+
+  /// No description provided for @sitterServiceGrooming.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tımar'**
+  String get sitterServiceGrooming;
+
+  /// No description provided for @sitterEmptyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yakında bakıcı bulunamadı'**
+  String get sitterEmptyTitle;
+
+  /// No description provided for @sitterEmptySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlk bakıcı profilini oluştur ve diğer kullanıcılara hizmet ver!'**
+  String get sitterEmptySubtitle;
+
+  /// No description provided for @sitterBecomeSitterBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcı Ol'**
+  String get sitterBecomeSitterBtn;
+
+  /// No description provided for @sitterEditProfile.
+  ///
+  /// In tr, this message translates to:
+  /// **'Profili Düzenle'**
+  String get sitterEditProfile;
+
+  /// No description provided for @sitterBasicInfo.
+  ///
+  /// In tr, this message translates to:
+  /// **'Temel Bilgiler'**
+  String get sitterBasicInfo;
+
+  /// No description provided for @sitterDisplayName.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görüntülenen İsim *'**
+  String get sitterDisplayName;
+
+  /// No description provided for @sitterDisplayNameRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'İsim gerekli'**
+  String get sitterDisplayNameRequired;
+
+  /// No description provided for @sitterBio.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hakkında / Tanıtım'**
+  String get sitterBio;
+
+  /// No description provided for @sitterExperience.
+  ///
+  /// In tr, this message translates to:
+  /// **'Deneyim'**
+  String get sitterExperience;
+
+  /// No description provided for @sitterLocation.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum'**
+  String get sitterLocation;
+
+  /// No description provided for @sitterUseLocation.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konumumu Kullan'**
+  String get sitterUseLocation;
+
+  /// No description provided for @sitterLocationObtained.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum Alındı ✓'**
+  String get sitterLocationObtained;
+
+  /// No description provided for @sitterAddress.
+  ///
+  /// In tr, this message translates to:
+  /// **'Adres / Semt'**
+  String get sitterAddress;
+
+  /// No description provided for @sitterSpeciesTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hangi Hayvanlarla Çalışıyorsunuz?'**
+  String get sitterSpeciesTitle;
+
+  /// No description provided for @sitterSpeciesDog.
+  ///
+  /// In tr, this message translates to:
+  /// **'Köpek'**
+  String get sitterSpeciesDog;
+
+  /// No description provided for @sitterSpeciesCat.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kedi'**
+  String get sitterSpeciesCat;
+
+  /// No description provided for @sitterSpeciesBird.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kuş'**
+  String get sitterSpeciesBird;
+
+  /// No description provided for @sitterSpeciesRabbit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tavşan'**
+  String get sitterSpeciesRabbit;
+
+  /// No description provided for @sitterSpeciesOther.
+  ///
+  /// In tr, this message translates to:
+  /// **'Diğer'**
+  String get sitterSpeciesOther;
+
+  /// No description provided for @sitterServicesTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sunduğunuz Hizmetler'**
+  String get sitterServicesTitle;
+
+  /// No description provided for @sitterServicesAdd.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ekle'**
+  String get sitterServicesAdd;
+
+  /// No description provided for @sitterServicesAllAdded.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tüm hizmetler eklendi'**
+  String get sitterServicesAllAdded;
+
+  /// No description provided for @sitterServiceType.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hizmet Türü'**
+  String get sitterServiceType;
+
+  /// No description provided for @sitterServiceWalkingLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gezdirme'**
+  String get sitterServiceWalkingLabel;
+
+  /// No description provided for @sitterServiceHomeSittingLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ev Bakımı'**
+  String get sitterServiceHomeSittingLabel;
+
+  /// No description provided for @sitterServiceBoardingLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Pansiyonda Bakım'**
+  String get sitterServiceBoardingLabel;
+
+  /// No description provided for @sitterServiceDaycareLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gündüz Bakımı'**
+  String get sitterServiceDaycareLabel;
+
+  /// No description provided for @sitterServiceGroomingLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tımar/Bakım'**
+  String get sitterServiceGroomingLabel;
+
+  /// No description provided for @sitterHourlyPrice.
+  ///
+  /// In tr, this message translates to:
+  /// **'Saat Fiyatı (TL)'**
+  String get sitterHourlyPrice;
+
+  /// No description provided for @sitterDailyPrice.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gün Fiyatı (TL)'**
+  String get sitterDailyPrice;
+
+  /// No description provided for @sitterSpeciesRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'En az bir hayvan türü seçin'**
+  String get sitterSpeciesRequired;
+
+  /// No description provided for @sitterLocationPermRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum izni gerekli'**
+  String get sitterLocationPermRequired;
+
+  /// No description provided for @sitterLocationErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum alınamadı: {error}'**
+  String sitterLocationErr(String error);
+
+  /// No description provided for @sitterProfileUpdated.
+  ///
+  /// In tr, this message translates to:
+  /// **'Profil güncellendi!'**
+  String get sitterProfileUpdated;
+
+  /// No description provided for @sitterProfileCreated.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcı profili oluşturuldu!'**
+  String get sitterProfileCreated;
+
+  /// No description provided for @sitterSubmitErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: {error}'**
+  String sitterSubmitErr(String error);
+
+  /// No description provided for @sitterCreateBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcı Profili Oluştur'**
+  String get sitterCreateBtn;
+
+  /// No description provided for @sitterUpdateBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Profili Güncelle'**
+  String get sitterUpdateBtn;
+
+  /// No description provided for @bookingsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rezervasyonlar'**
+  String get bookingsTitle;
+
+  /// No description provided for @bookingsTabMine.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rezervasyonlarım'**
+  String get bookingsTabMine;
+
+  /// No description provided for @bookingsTabIncoming.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelen Talepler'**
+  String get bookingsTabIncoming;
+
+  /// No description provided for @bookingsEmptyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz rezervasyon yok'**
+  String get bookingsEmptyTitle;
+
+  /// No description provided for @bookingsEmptySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onaylanan rezervasyonlarınız burada görünecek.'**
+  String get bookingsEmptySubtitle;
+
+  /// No description provided for @bookingsOwnerLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sahip'**
+  String get bookingsOwnerLabel;
+
+  /// No description provided for @bookingsSitterLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcı'**
+  String get bookingsSitterLabel;
+
+  /// No description provided for @bookingsAccept.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kabul Et'**
+  String get bookingsAccept;
+
+  /// No description provided for @bookingsReject.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reddet'**
+  String get bookingsReject;
+
+  /// No description provided for @bookingsMarkCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlandı Olarak İşaretle'**
+  String get bookingsMarkCompleted;
+
+  /// No description provided for @bookingsReview.
+  ///
+  /// In tr, this message translates to:
+  /// **'Değerlendir'**
+  String get bookingsReview;
+
+  /// No description provided for @bookingsReviewDialogTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcıyı Değerlendir'**
+  String get bookingsReviewDialogTitle;
+
+  /// No description provided for @bookingsReviewHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yorum (opsiyonel)'**
+  String get bookingsReviewHint;
+
+  /// No description provided for @bookingsReviewCancel.
+  ///
+  /// In tr, this message translates to:
+  /// **'İptal'**
+  String get bookingsReviewCancel;
+
+  /// No description provided for @bookingsReviewSend.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gönder'**
+  String get bookingsReviewSend;
+
+  /// No description provided for @bookingsActionErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: {error}'**
+  String bookingsActionErr(String error);
+
+  /// No description provided for @adoptionAppsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sahiplendirme Başvuruları'**
+  String get adoptionAppsTitle;
+
+  /// No description provided for @adoptionAppsTabInbox.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelen Başvurular'**
+  String get adoptionAppsTabInbox;
+
+  /// No description provided for @adoptionAppsTabSent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gönderdiklerim'**
+  String get adoptionAppsTabSent;
+
+  /// No description provided for @adoptionAppsInboxEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelen başvuru yok'**
+  String get adoptionAppsInboxEmpty;
+
+  /// No description provided for @adoptionAppsInboxEmptyDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sahiplendirme ilanlarınıza gelen başvurular burada görünecek.'**
+  String get adoptionAppsInboxEmptyDesc;
+
+  /// No description provided for @adoptionAppsSentEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gönderilen başvuru yok'**
+  String get adoptionAppsSentEmpty;
+
+  /// No description provided for @adoptionAppsSentEmptyDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sahiplendirme ilanlarına yaptığınız başvurular burada görünecek.'**
+  String get adoptionAppsSentEmptyDesc;
+
+  /// No description provided for @adoptionAppsErrGeneric.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: {error}'**
+  String adoptionAppsErrGeneric(String error);
+
+  /// No description provided for @adoptionAppsAcceptTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuruyu Kabul Et'**
+  String get adoptionAppsAcceptTitle;
+
+  /// No description provided for @adoptionAppsRejectTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuruyu Reddet'**
+  String get adoptionAppsRejectTitle;
+
+  /// No description provided for @adoptionAppsAcceptContent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu başvuruyu kabul etmek istediğinize emin misiniz? Mesajlaşma başlatılacaktır.'**
+  String get adoptionAppsAcceptContent;
+
+  /// No description provided for @adoptionAppsRejectContent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu başvuruyu reddetmek istediğinize emin misiniz?'**
+  String get adoptionAppsRejectContent;
+
+  /// No description provided for @adoptionAppsCancel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Vazgeç'**
+  String get adoptionAppsCancel;
+
+  /// No description provided for @adoptionAppsAcceptBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kabul Et'**
+  String get adoptionAppsAcceptBtn;
+
+  /// No description provided for @adoptionAppsRejectBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reddet'**
+  String get adoptionAppsRejectBtn;
+
+  /// No description provided for @adoptionAppsAcceptedStarted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru kabul edildi! Mesajlaşma başlatıldı.'**
+  String get adoptionAppsAcceptedStarted;
+
+  /// No description provided for @adoptionAppsAccepted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru kabul edildi'**
+  String get adoptionAppsAccepted;
+
+  /// No description provided for @adoptionAppsRejected.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru reddedildi'**
+  String get adoptionAppsRejected;
+
+  /// No description provided for @adoptionAppsGoToChat.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mesajlaşma'**
+  String get adoptionAppsGoToChat;
+
+  /// No description provided for @adoptionAppsApplicant.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuran: {name}'**
+  String adoptionAppsApplicant(String name);
+
+  /// No description provided for @adoptionAppsListing.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlan'**
+  String get adoptionAppsListing;
+
+  /// No description provided for @adoptionAppsStatusAccepted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kabul Edildi'**
+  String get adoptionAppsStatusAccepted;
+
+  /// No description provided for @adoptionAppsStatusRejected.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reddedildi'**
+  String get adoptionAppsStatusRejected;
+
+  /// No description provided for @adoptionAppsStatusCancelled.
+  ///
+  /// In tr, this message translates to:
+  /// **'İptal Edildi'**
+  String get adoptionAppsStatusCancelled;
+
+  /// No description provided for @adoptionAppsStatusPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Beklemede'**
+  String get adoptionAppsStatusPending;
+
+  /// No description provided for @adoptionAppsTimelineApplication.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru'**
+  String get adoptionAppsTimelineApplication;
+
+  /// No description provided for @adoptionAppsTimelineReview.
+  ///
+  /// In tr, this message translates to:
+  /// **'İnceleme'**
+  String get adoptionAppsTimelineReview;
+
+  /// No description provided for @adoptionAppsTimelineApproval.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onay'**
+  String get adoptionAppsTimelineApproval;
+
+  /// No description provided for @adoptionAppsTimelineCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlandı'**
+  String get adoptionAppsTimelineCompleted;
+
+  /// No description provided for @adoptionAppsTimelineRejected.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reddedildi'**
+  String get adoptionAppsTimelineRejected;
+
+  /// No description provided for @adoptionAppsTimelineCancelled.
+  ///
+  /// In tr, this message translates to:
+  /// **'İptal'**
+  String get adoptionAppsTimelineCancelled;
+
+  /// No description provided for @adoptionAppsTimelineDecision.
+  ///
+  /// In tr, this message translates to:
+  /// **'Karar'**
+  String get adoptionAppsTimelineDecision;
+
+  /// No description provided for @adoptionApplyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sahiplendirme Başvurusu'**
+  String get adoptionApplyTitle;
+
+  /// No description provided for @adoptionApplyInfoText.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvurunuz ilan sahibine iletilecektir. İlan sahibi başvurunuzu kabul ederse mesajlaşma başlatılacaktır.'**
+  String get adoptionApplyInfoText;
+
+  /// No description provided for @adoptionApplyNoteLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru Notu (opsiyonel)'**
+  String get adoptionApplyNoteLabel;
+
+  /// No description provided for @adoptionApplyNoteHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kendinizi tanıtın, neden bu hayvanı sahiplenmek istediğinizi açıklayın...'**
+  String get adoptionApplyNoteHint;
+
+  /// No description provided for @adoptionApplyErrGeneric.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: {error}'**
+  String adoptionApplyErrGeneric(String error);
+
+  /// No description provided for @adoptionApplySuccessTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru Gönderildi!'**
+  String get adoptionApplySuccessTitle;
+
+  /// No description provided for @adoptionApplySuccessContent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sahiplendirme başvurunuz ilan sahibine iletildi. Sonucu başvurularım sayfasından takip edebilirsiniz.'**
+  String get adoptionApplySuccessContent;
+
+  /// No description provided for @adoptionApplySuccessOk.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamam'**
+  String get adoptionApplySuccessOk;
+
+  /// No description provided for @adoptionApplySending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gönderiliyor...'**
+  String get adoptionApplySending;
+
+  /// No description provided for @adoptionApplySendBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru Gönder'**
+  String get adoptionApplySendBtn;
+
+  /// No description provided for @lostFoundTitle2.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kayıp & Bulunan'**
+  String get lostFoundTitle2;
+
+  /// No description provided for @lostFoundListView.
+  ///
+  /// In tr, this message translates to:
+  /// **'Liste Görünümü'**
+  String get lostFoundListView;
+
+  /// No description provided for @lostFoundMapView.
+  ///
+  /// In tr, this message translates to:
+  /// **'Harita Görünümü'**
+  String get lostFoundMapView;
+
+  /// No description provided for @lostFoundLostTab.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kayıp'**
+  String get lostFoundLostTab;
+
+  /// No description provided for @lostFoundFoundTab.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bulunan'**
+  String get lostFoundFoundTab;
+
+  /// No description provided for @lostFoundEmptyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yakında ilan yok'**
+  String get lostFoundEmptyTitle;
+
+  /// No description provided for @lostFoundEmptySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yakınınızdaki kayıp veya bulunan hayvan ilanları burada görünecek.'**
+  String get lostFoundEmptySubtitle;
+
+  /// No description provided for @lostFoundCreateBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlan Oluştur'**
+  String get lostFoundCreateBtn;
+
+  /// No description provided for @eventsTitle2.
+  ///
+  /// In tr, this message translates to:
+  /// **'Etkinlikler'**
+  String get eventsTitle2;
+
+  /// No description provided for @eventsMyEventsTooltip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Katıldıklarım'**
+  String get eventsMyEventsTooltip;
+
+  /// No description provided for @eventsCreateBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Etkinlik Oluştur'**
+  String get eventsCreateBtn;
+
+  /// No description provided for @eventsCatAll.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tümü'**
+  String get eventsCatAll;
+
+  /// No description provided for @eventsCatPark.
+  ///
+  /// In tr, this message translates to:
+  /// **'Park'**
+  String get eventsCatPark;
+
+  /// No description provided for @eventsCatAdoption.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sahiplen'**
+  String get eventsCatAdoption;
+
+  /// No description provided for @eventsCatTraining.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eğitim'**
+  String get eventsCatTraining;
+
+  /// No description provided for @eventsCatCompetition.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yarış'**
+  String get eventsCatCompetition;
+
+  /// No description provided for @eventsCatGrooming.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakım'**
+  String get eventsCatGrooming;
+
+  /// No description provided for @eventsCatHealth.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sağlık'**
+  String get eventsCatHealth;
+
+  /// No description provided for @eventsEmptyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Etkinlik Bulunamadı'**
+  String get eventsEmptyTitle;
+
+  /// No description provided for @eventsEmptySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu bölge veya kategoride henüz etkinlik yok.'**
+  String get eventsEmptySubtitle;
+
+  /// No description provided for @eventsLocationBannerText.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yakın etkinlikler için konum gerekli'**
+  String get eventsLocationBannerText;
+
+  /// No description provided for @eventsLocationBannerBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'İzin Ver'**
+  String get eventsLocationBannerBtn;
+
+  /// No description provided for @myEventsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Etkinliklerim'**
+  String get myEventsTitle;
+
+  /// No description provided for @myEventsTabAttending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Katılacaklarım'**
+  String get myEventsTabAttending;
+
+  /// No description provided for @myEventsTabOrganized.
+  ///
+  /// In tr, this message translates to:
+  /// **'Organize Ettiklerim'**
+  String get myEventsTabOrganized;
+
+  /// No description provided for @myEventsEmptyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Etkinlik Yok'**
+  String get myEventsEmptyTitle;
+
+  /// No description provided for @myEventsEmptySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz bu kategoride etkinliğiniz yok.'**
+  String get myEventsEmptySubtitle;
+
+  /// No description provided for @createPostTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gönderi Oluştur'**
+  String get createPostTitle;
+
+  /// No description provided for @createPostShareBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Paylaş'**
+  String get createPostShareBtn;
+
+  /// No description provided for @createPostPhotosLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Fotoğraflar'**
+  String get createPostPhotosLabel;
+
+  /// No description provided for @createPostAddBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ekle'**
+  String get createPostAddBtn;
+
+  /// No description provided for @createPostEmptyHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Fotoğraf eklemek için dokunun'**
+  String get createPostEmptyHint;
+
+  /// No description provided for @createPostHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ne paylaşıyorsun? Sevimli hayvanınızı anlatın...'**
+  String get createPostHint;
+
+  /// No description provided for @createPostMaxImages.
+  ///
+  /// In tr, this message translates to:
+  /// **'En fazla 4 fotoğraf ekleyebilirsiniz'**
+  String get createPostMaxImages;
+
+  /// No description provided for @createPostValidation.
+  ///
+  /// In tr, this message translates to:
+  /// **'Lütfen bir şey yazın veya fotoğraf ekleyin'**
+  String get createPostValidation;
+
+  /// No description provided for @createPostErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: {error}'**
+  String createPostErr(String error);
+
+  /// No description provided for @connectTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Keşfet'**
+  String get connectTitle;
+
+  /// No description provided for @connectSocialFeed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sosyal Akış'**
+  String get connectSocialFeed;
+
+  /// No description provided for @connectSocialFeedSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evcil hayvan sahiplerini takip et'**
+  String get connectSocialFeedSub;
+
+  /// No description provided for @connectSearch.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ara'**
+  String get connectSearch;
+
+  /// No description provided for @connectSearchSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evcil hayvan, mağaza ve veteriner bul'**
+  String get connectSearchSub;
+
+  /// No description provided for @connectMapDiscover.
+  ///
+  /// In tr, this message translates to:
+  /// **'Haritada Keşfet'**
+  String get connectMapDiscover;
+
+  /// No description provided for @connectMapDiscoverSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yakınındaki ilanları haritada gör'**
+  String get connectMapDiscoverSub;
+
+  /// No description provided for @connectFavorites.
+  ///
+  /// In tr, this message translates to:
+  /// **'Favoriler'**
+  String get connectFavorites;
+
+  /// No description provided for @connectFavoritesSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydettiğin ilanlar'**
+  String get connectFavoritesSub;
+
+  /// No description provided for @reviewAddTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yorum Yap'**
+  String get reviewAddTitle;
+
+  /// No description provided for @reviewEditTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yorumu Düzenle'**
+  String get reviewEditTitle;
+
+  /// No description provided for @reviewProductLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün'**
+  String get reviewProductLabel;
+
+  /// No description provided for @reviewRatingLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Puanınız *'**
+  String get reviewRatingLabel;
+
+  /// No description provided for @reviewCommentLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yorumunuz (Opsiyonel)'**
+  String get reviewCommentLabel;
+
+  /// No description provided for @reviewCommentHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün hakkındaki düşüncelerinizi paylaşın...'**
+  String get reviewCommentHint;
+
+  /// No description provided for @reviewSubmitBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gönder'**
+  String get reviewSubmitBtn;
+
+  /// No description provided for @reviewUpdateBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Güncelle'**
+  String get reviewUpdateBtn;
+
+  /// No description provided for @reviewRating1.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çok Kötü'**
+  String get reviewRating1;
+
+  /// No description provided for @reviewRating2.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kötü'**
+  String get reviewRating2;
+
+  /// No description provided for @reviewRating3.
+  ///
+  /// In tr, this message translates to:
+  /// **'Orta'**
+  String get reviewRating3;
+
+  /// No description provided for @reviewRating4.
+  ///
+  /// In tr, this message translates to:
+  /// **'İyi'**
+  String get reviewRating4;
+
+  /// No description provided for @reviewRating5.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mükemmel'**
+  String get reviewRating5;
+
+  /// No description provided for @reviewNoRatingErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Lütfen bir puan seçin'**
+  String get reviewNoRatingErr;
+
+  /// No description provided for @reviewUpdated.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yorum güncellendi'**
+  String get reviewUpdated;
+
+  /// No description provided for @reviewAdded.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yorum eklendi'**
+  String get reviewAdded;
+
+  /// No description provided for @reviewErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: {error}'**
+  String reviewErr(String error);
+
+  /// No description provided for @reviewsSectionTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Değerlendirmeler'**
+  String get reviewsSectionTitle;
+
+  /// No description provided for @reviewsSectionEdit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Düzenle'**
+  String get reviewsSectionEdit;
+
+  /// No description provided for @reviewsSectionAdd.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yorum Yap'**
+  String get reviewsSectionAdd;
+
+  /// No description provided for @reviewsCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} değerlendirme'**
+  String reviewsCount(int count);
+
+  /// No description provided for @reviewsVerifiedBuyer.
+  ///
+  /// In tr, this message translates to:
+  /// **'Alıcı'**
+  String get reviewsVerifiedBuyer;
+
+  /// No description provided for @reviewsLoadErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yorumlar yüklenemedi: {error}'**
+  String reviewsLoadErr(String error);
+
+  /// No description provided for @reviewsEmptyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz değerlendirme yok'**
+  String get reviewsEmptyTitle;
+
+  /// No description provided for @reviewsEmptySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlk yorumu siz yapın!'**
+  String get reviewsEmptySubtitle;
+
+  /// No description provided for @editProfileTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Profili Düzenle'**
+  String get editProfileTitle;
+
+  /// No description provided for @editProfilePhotoUpdated.
+  ///
+  /// In tr, this message translates to:
+  /// **'Profil fotoğrafı güncellendi!'**
+  String get editProfilePhotoUpdated;
+
+  /// No description provided for @editProfileNameLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'İsim Soyisim'**
+  String get editProfileNameLabel;
+
+  /// No description provided for @editProfileCityLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şehir'**
+  String get editProfileCityLabel;
+
+  /// No description provided for @editProfileAboutLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hakkımda'**
+  String get editProfileAboutLabel;
+
+  /// No description provided for @editProfileNameRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'İsim boş olamaz'**
+  String get editProfileNameRequired;
+
+  /// No description provided for @editProfileSaveBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Değişiklikleri Kaydet'**
+  String get editProfileSaveBtn;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In tr, this message translates to:
+  /// **'Atla'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In tr, this message translates to:
+  /// **'Devam Et'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingStart.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hadi Başlayalım!'**
+  String get onboardingStart;
+
+  /// No description provided for @onboardingPage1Title.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evcil Dostunuzu Keşfedin'**
+  String get onboardingPage1Title;
+
+  /// No description provided for @onboardingPage1Subtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Binlerce evcil hayvan ilanına göz atın. Sahiplendirme veya eşleştirme için doğru dostu bulun.'**
+  String get onboardingPage1Subtitle;
+
+  /// No description provided for @onboardingPage2Title.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşleştirme & Sahiplendirme'**
+  String get onboardingPage2Title;
+
+  /// No description provided for @onboardingPage2Subtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Doğum tarihleri, ırk ve konum filtrelerine göre evcil hayvanları eşleştirin veya sahiplendirin.'**
+  String get onboardingPage2Subtitle;
+
+  /// No description provided for @onboardingPage3Title.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sağlık Takibi'**
+  String get onboardingPage3Title;
+
+  /// No description provided for @onboardingPage3Subtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aşı takvimi, veteriner randevuları ve sağlık günlüğü ile dostunuzun sağlığını kontrol altında tutun.'**
+  String get onboardingPage3Subtitle;
+
+  /// No description provided for @onboardingPage4Title.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza & Topluluk'**
+  String get onboardingPage4Title;
+
+  /// No description provided for @onboardingPage4Subtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evcil hayvan ürünleri alın, bakıcı tutun, etkinliklere katılın ve sosyal topluluğun parçası olun.'**
+  String get onboardingPage4Subtitle;
+
+  /// No description provided for @adminAppsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satıcı Başvuruları'**
+  String get adminAppsTitle;
+
+  /// No description provided for @adminAppsStatus.
+  ///
+  /// In tr, this message translates to:
+  /// **'Durum: {status}'**
+  String adminAppsStatus(String status);
+
+  /// No description provided for @adminAppsLoadErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvurular yüklenemedi.'**
+  String get adminAppsLoadErr;
+
+  /// No description provided for @productDetailOwnProduct.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu sizin ürününüz'**
+  String get productDetailOwnProduct;
+
+  /// No description provided for @productDetailOwnProductErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kendi ürünlerinizi sepete ekleyemezsiniz'**
+  String get productDetailOwnProductErr;
+
+  /// No description provided for @productDetailOutOfStock.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu ürün stokta yok'**
+  String get productDetailOutOfStock;
+
+  /// No description provided for @productDetailMaxStock.
+  ///
+  /// In tr, this message translates to:
+  /// **'Maksimum {stock} adet ekleyebilirsiniz'**
+  String productDetailMaxStock(int stock);
+
+  /// No description provided for @productDetailAddedToCart.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} adet sepete eklendi'**
+  String productDetailAddedToCart(int count);
+
+  /// No description provided for @productDetailGoToCart.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sepete Git'**
+  String get productDetailGoToCart;
+
+  /// No description provided for @productDetailAddErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sepete eklenemedi: {error}'**
+  String productDetailAddErr(String error);
+
+  /// No description provided for @productDetailShareSoon.
+  ///
+  /// In tr, this message translates to:
+  /// **'Paylaşma özelliği yakında eklenecek'**
+  String get productDetailShareSoon;
+
+  /// No description provided for @productDetailAddingToCart.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ekleniyor...'**
+  String get productDetailAddingToCart;
+
+  /// No description provided for @productDetailAddToCartBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sepete Ekle'**
+  String get productDetailAddToCartBtn;
+
+  /// No description provided for @productDetailNoTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün adı yok'**
+  String get productDetailNoTitle;
+
+  /// No description provided for @productDetailNoDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıklama yok'**
+  String get productDetailNoDesc;
+
+  /// No description provided for @productDetailStock.
+  ///
+  /// In tr, this message translates to:
+  /// **'Stok: {count}'**
+  String productDetailStock(int count);
+
+  /// No description provided for @productDetailNotFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün bulunamadı.'**
+  String get productDetailNotFound;
+
+  /// No description provided for @sellerApplyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satıcı Ol'**
+  String get sellerApplyTitle;
+
+  /// No description provided for @sellerApplyCompanyName.
+  ///
+  /// In tr, this message translates to:
+  /// **'Firma adı'**
+  String get sellerApplyCompanyName;
+
+  /// No description provided for @sellerApplyCompanyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Firma unvanı'**
+  String get sellerApplyCompanyTitle;
+
+  /// No description provided for @sellerApplyTaxNumber.
+  ///
+  /// In tr, this message translates to:
+  /// **'Vergi numarası'**
+  String get sellerApplyTaxNumber;
+
+  /// No description provided for @sellerApplyTaxOffice.
+  ///
+  /// In tr, this message translates to:
+  /// **'Vergi dairesi'**
+  String get sellerApplyTaxOffice;
+
+  /// No description provided for @sellerApplyAddress.
+  ///
+  /// In tr, this message translates to:
+  /// **'Adres'**
+  String get sellerApplyAddress;
+
+  /// No description provided for @sellerApplyContact.
+  ///
+  /// In tr, this message translates to:
+  /// **'İletişim'**
+  String get sellerApplyContact;
+
+  /// No description provided for @sellerApplyIban.
+  ///
+  /// In tr, this message translates to:
+  /// **'IBAN'**
+  String get sellerApplyIban;
+
+  /// No description provided for @sellerApplyRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Zorunlu'**
+  String get sellerApplyRequired;
+
+  /// No description provided for @sellerApplyKvkk.
+  ///
+  /// In tr, this message translates to:
+  /// **'KVKK metnini onaylıyorum'**
+  String get sellerApplyKvkk;
+
+  /// No description provided for @sellerApplyContract.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satıcı sözleşmesini onaylıyorum'**
+  String get sellerApplyContract;
+
+  /// No description provided for @sellerApplyApprovalsRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onaylar zorunlu'**
+  String get sellerApplyApprovalsRequired;
+
+  /// No description provided for @sellerApplySending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gönderiliyor...'**
+  String get sellerApplySending;
+
+  /// No description provided for @sellerApplySendBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru gönder'**
+  String get sellerApplySendBtn;
+
+  /// No description provided for @sellerApplyFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru gönderilemedi.'**
+  String get sellerApplyFailed;
+
+  /// No description provided for @sellerApplyPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvurunuz inceleniyor'**
+  String get sellerApplyPending;
+
+  /// No description provided for @productsPageTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürünlerim'**
+  String get productsPageTitle;
+
+  /// No description provided for @productsActive.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aktif'**
+  String get productsActive;
+
+  /// No description provided for @productsPassive.
+  ///
+  /// In tr, this message translates to:
+  /// **'Pasif'**
+  String get productsPassive;
+
+  /// No description provided for @productsLoadErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürünler yüklenemedi.'**
+  String get productsLoadErr;
+
+  /// No description provided for @productsStockStatus.
+  ///
+  /// In tr, this message translates to:
+  /// **'Stok: {stock} • {status}'**
+  String productsStockStatus(int stock, String status);
+
+  /// No description provided for @productAddTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün Ekle'**
+  String get productAddTitle;
+
+  /// No description provided for @productAddName.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün adı'**
+  String get productAddName;
+
+  /// No description provided for @productAddRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Zorunlu'**
+  String get productAddRequired;
+
+  /// No description provided for @productAddCategory.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategori'**
+  String get productAddCategory;
+
+  /// No description provided for @productAddNoCategoryFound.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategori bulunamadı.'**
+  String get productAddNoCategoryFound;
+
+  /// No description provided for @productAddCategoryLoading.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategoriler yükleniyor...'**
+  String get productAddCategoryLoading;
+
+  /// No description provided for @productAddCategoryLoadErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategoriler yüklenemedi: {error}'**
+  String productAddCategoryLoadErr(String error);
+
+  /// No description provided for @productAddCategorySelect.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kategori seçin'**
+  String get productAddCategorySelect;
+
+  /// No description provided for @productAddDescription.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıklama'**
+  String get productAddDescription;
+
+  /// No description provided for @productAddPrice.
+  ///
+  /// In tr, this message translates to:
+  /// **'Fiyat'**
+  String get productAddPrice;
+
+  /// No description provided for @productAddStock.
+  ///
+  /// In tr, this message translates to:
+  /// **'Stok'**
+  String get productAddStock;
+
+  /// No description provided for @productAddSaving.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydediliyor...'**
+  String get productAddSaving;
+
+  /// No description provided for @productAddSaveBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydet'**
+  String get productAddSaveBtn;
+
+  /// No description provided for @productEditTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün Düzenle'**
+  String get productEditTitle;
+
+  /// No description provided for @productEditUpdating.
+  ///
+  /// In tr, this message translates to:
+  /// **'Güncelleniyor...'**
+  String get productEditUpdating;
+
+  /// No description provided for @productEditUpdateBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Güncelle'**
+  String get productEditUpdateBtn;
+
+  /// No description provided for @productEditFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Güncelleme başarısız.'**
+  String get productEditFailed;
+
+  /// No description provided for @productEditActive.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aktif'**
+  String get productEditActive;
+
+  /// No description provided for @storeCategoryAll.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tümü'**
+  String get storeCategoryAll;
+
+  /// No description provided for @productCardAddedToCart.
+  ///
+  /// In tr, this message translates to:
+  /// **'{title} sepete eklendi'**
+  String productCardAddedToCart(String title);
+
+  /// No description provided for @productCardAddErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sepete eklenemedi: {error}'**
+  String productCardAddErr(String error);
+
+  /// No description provided for @productCardNoTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün adı yok'**
+  String get productCardNoTitle;
+
+  /// No description provided for @aiSpeciesDog.
+  ///
+  /// In tr, this message translates to:
+  /// **'Köpek'**
+  String get aiSpeciesDog;
+
+  /// No description provided for @aiSpeciesCat.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kedi'**
+  String get aiSpeciesCat;
+
+  /// No description provided for @aiSpeciesBird.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kuş'**
+  String get aiSpeciesBird;
+
+  /// No description provided for @aiSpeciesOther.
+  ///
+  /// In tr, this message translates to:
+  /// **'Diğer'**
+  String get aiSpeciesOther;
+
+  /// No description provided for @aiSymptomLossOfAppetite.
+  ///
+  /// In tr, this message translates to:
+  /// **'İştahsızlık'**
+  String get aiSymptomLossOfAppetite;
+
+  /// No description provided for @aiSymptomFever.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ateş'**
+  String get aiSymptomFever;
+
+  /// No description provided for @aiSymptomDiarrhea.
+  ///
+  /// In tr, this message translates to:
+  /// **'İshal'**
+  String get aiSymptomDiarrhea;
+
+  /// No description provided for @aiSymptomVomiting.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kusma'**
+  String get aiSymptomVomiting;
+
+  /// No description provided for @aiSymptomCough.
+  ///
+  /// In tr, this message translates to:
+  /// **'Öksürük'**
+  String get aiSymptomCough;
+
+  /// No description provided for @aiSymptomShortnessOfBreath.
+  ///
+  /// In tr, this message translates to:
+  /// **'Nefes darlığı'**
+  String get aiSymptomShortnessOfBreath;
+
+  /// No description provided for @aiSymptomLethargy.
+  ///
+  /// In tr, this message translates to:
+  /// **'Uyuşukluk'**
+  String get aiSymptomLethargy;
+
+  /// No description provided for @aiSymptomBloodyStool.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kanlı dışkı'**
+  String get aiSymptomBloodyStool;
+
+  /// No description provided for @aiSymptomExcessiveItching.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aşırı kaşınma'**
+  String get aiSymptomExcessiveItching;
+
+  /// No description provided for @aiSymptomHairLoss.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tüy dökülmesi'**
+  String get aiSymptomHairLoss;
+
+  /// No description provided for @aiSymptomLimping.
+  ///
+  /// In tr, this message translates to:
+  /// **'Topallama'**
+  String get aiSymptomLimping;
+
+  /// No description provided for @aiSymptomExcessiveThirst.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aşırı su içme'**
+  String get aiSymptomExcessiveThirst;
+
+  /// No description provided for @aiSymptomUnableToUrinate.
+  ///
+  /// In tr, this message translates to:
+  /// **'İdrar yapmama'**
+  String get aiSymptomUnableToUrinate;
+
+  /// No description provided for @aiSymptomBloatedBelly.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şişmiş karın'**
+  String get aiSymptomBloatedBelly;
+
+  /// No description provided for @aiSymptomLossOfConsciousness.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bilinç kaybı'**
+  String get aiSymptomLossOfConsciousness;
+
+  /// No description provided for @aiSymptomRunnyNose.
+  ///
+  /// In tr, this message translates to:
+  /// **'Burun akıntısı'**
+  String get aiSymptomRunnyNose;
+
+  /// No description provided for @aiSymptomEyeDischarge.
+  ///
+  /// In tr, this message translates to:
+  /// **'Göz akıntısı'**
+  String get aiSymptomEyeDischarge;
+
+  /// No description provided for @aiSymptomBreathingDifficulty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Nefes güçlüğü'**
+  String get aiSymptomBreathingDifficulty;
+
+  /// No description provided for @aiSymptomWeightLoss.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kilo kaybı'**
+  String get aiSymptomWeightLoss;
+
+  /// No description provided for @aiSymptomFeatherPlucking.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tüy yolma'**
+  String get aiSymptomFeatherPlucking;
+
+  /// No description provided for @aiSymptomBloodyUrine.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kanlı idrar'**
+  String get aiSymptomBloodyUrine;
+
+  /// No description provided for @aiSymptomJaundice.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sarılık'**
+  String get aiSymptomJaundice;
+
+  /// No description provided for @aiSymptomSeizures.
+  ///
+  /// In tr, this message translates to:
+  /// **'Nöbet/Titreme'**
+  String get aiSymptomSeizures;
+
+  /// No description provided for @aiSymptomFeatherLoss.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tüy döküyor'**
+  String get aiSymptomFeatherLoss;
+
+  /// No description provided for @aiSymptomNotEating.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yemiyor'**
+  String get aiSymptomNotEating;
+
+  /// No description provided for @aiSymptomPuffed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şişmiş/Kabarık'**
+  String get aiSymptomPuffed;
+
+  /// No description provided for @aiSymptomUnableToStand.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ayakta duramıyor'**
+  String get aiSymptomUnableToStand;
+
+  /// No description provided for @aiSymptomHavingSeizure.
+  ///
+  /// In tr, this message translates to:
+  /// **'Nöbet geçiriyor'**
+  String get aiSymptomHavingSeizure;
+
+  /// No description provided for @aiSymptomBleeding.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kanıyor'**
+  String get aiSymptomBleeding;
+
+  /// No description provided for @aiSymptomScratch.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaşınma'**
+  String get aiSymptomScratch;
+
+  /// No description provided for @aiSymptomPrefix.
+  ///
+  /// In tr, this message translates to:
+  /// **'{species}, belirtiler: '**
+  String aiSymptomPrefix(String species);
+
+  /// No description provided for @aiGenSug1.
+  ///
+  /// In tr, this message translates to:
+  /// **'Köpeğime ne kadar su vermeli?'**
+  String get aiGenSug1;
+
+  /// No description provided for @aiGenSug2.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kedi kumu ne sıklıkla değiştirilmeli?'**
+  String get aiGenSug2;
+
+  /// No description provided for @aiGenSug3.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yavru köpek eğitimi nasıl yapılır?'**
+  String get aiGenSug3;
+
+  /// No description provided for @aiGenSug4.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kedim neden gece bağırıyor?'**
+  String get aiGenSug4;
+
+  /// No description provided for @aiGenSug5.
+  ///
+  /// In tr, this message translates to:
+  /// **'Köpek ısırması ne yapmalı?'**
+  String get aiGenSug5;
+
+  /// No description provided for @guideSug1.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sahiplendirme ilanlarına bak'**
+  String get guideSug1;
+
+  /// No description provided for @guideSug2.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner bul'**
+  String get guideSug2;
+
+  /// No description provided for @guideSug3.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşleştirme yap'**
+  String get guideSug3;
+
+  /// No description provided for @guideSug4.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sepetimi göster'**
+  String get guideSug4;
+
+  /// No description provided for @guideSug5.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kayıp ilan oluştur'**
+  String get guideSug5;
+
+  /// No description provided for @guideSug6.
+  ///
+  /// In tr, this message translates to:
+  /// **'Etkinliklere katıl'**
+  String get guideSug6;
+
+  /// No description provided for @eventLocationObtained.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum Alındı ✓'**
+  String get eventLocationObtained;
+
+  /// No description provided for @eventUseMyLocation.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konumumu Kullan'**
+  String get eventUseMyLocation;
+
+  /// No description provided for @eventCreateTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Etkinlik Oluştur'**
+  String get eventCreateTitle;
+
+  /// No description provided for @eventCatParkMeetup.
+  ///
+  /// In tr, this message translates to:
+  /// **'Park Buluşması'**
+  String get eventCatParkMeetup;
+
+  /// No description provided for @eventCatAdoptionDay.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sahiplendirme Günü'**
+  String get eventCatAdoptionDay;
+
+  /// No description provided for @eventCatTraining.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eğitim Semineri'**
+  String get eventCatTraining;
+
+  /// No description provided for @eventCatCompetition.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yarış / Gösterim'**
+  String get eventCatCompetition;
+
+  /// No description provided for @eventCatGrooming.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakım Günü'**
+  String get eventCatGrooming;
+
+  /// No description provided for @eventCatHealth.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sağlık / Aşı'**
+  String get eventCatHealth;
+
+  /// No description provided for @eventCatOther.
+  ///
+  /// In tr, this message translates to:
+  /// **'Diğer'**
+  String get eventCatOther;
+
+  /// No description provided for @eventSpeciesAll.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tümü'**
+  String get eventSpeciesAll;
+
+  /// No description provided for @eventSpeciesDog.
+  ///
+  /// In tr, this message translates to:
+  /// **'Köpek'**
+  String get eventSpeciesDog;
+
+  /// No description provided for @eventSpeciesCat.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kedi'**
+  String get eventSpeciesCat;
+
+  /// No description provided for @eventSpeciesBird.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kuş'**
+  String get eventSpeciesBird;
+
+  /// No description provided for @eventSpeciesRabbit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tavşan'**
+  String get eventSpeciesRabbit;
+
+  /// No description provided for @eventSpeciesOther.
+  ///
+  /// In tr, this message translates to:
+  /// **'Diğer'**
+  String get eventSpeciesOther;
+
+  /// No description provided for @eventErrLocationPerm.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum izni gerekli'**
+  String get eventErrLocationPerm;
+
+  /// No description provided for @eventErrMaxPhotos.
+  ///
+  /// In tr, this message translates to:
+  /// **'En fazla 5 fotoğraf eklenebilir'**
+  String get eventErrMaxPhotos;
+
+  /// No description provided for @eventErrEndBeforeStart.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bitiş tarihi başlangıç tarihinden önce olamaz'**
+  String get eventErrEndBeforeStart;
+
+  /// No description provided for @eventCreated.
+  ///
+  /// In tr, this message translates to:
+  /// **'Etkinlik oluşturuldu!'**
+  String get eventCreated;
+
+  /// No description provided for @eventPhotosLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Fotoğraflar (max 5)'**
+  String get eventPhotosLabel;
+
+  /// No description provided for @eventDateTimeLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarih ve Saat'**
+  String get eventDateTimeLabel;
+
+  /// No description provided for @eventStartLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başlangıç *'**
+  String get eventStartLabel;
+
+  /// No description provided for @eventEndLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bitiş *'**
+  String get eventEndLabel;
+
+  /// No description provided for @eventLocationLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum'**
+  String get eventLocationLabel;
+
+  /// No description provided for @eventCapacityLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kapasite ve Ücret'**
+  String get eventCapacityLabel;
+
+  /// No description provided for @eventFreeLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ücretsiz Etkinlik'**
+  String get eventFreeLabel;
+
+  /// No description provided for @eventAnimalsLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Katılabilecek Hayvanlar'**
+  String get eventAnimalsLabel;
+
+  /// No description provided for @eventCreateBtn.
+  ///
+  /// In tr, this message translates to:
+  /// **'Etkinliği Oluştur'**
+  String get eventCreateBtn;
+
+  /// No description provided for @eventErrLocationFail.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum alınamadı: {error}'**
+  String eventErrLocationFail(String error);
+
+  /// No description provided for @eventCreateErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: {error}'**
+  String eventCreateErr(String error);
+
+  /// No description provided for @themeSelectTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Temanı Seç'**
+  String get themeSelectTitle;
+
+  /// No description provided for @themeSelectSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sana en uygun görünümü seç'**
+  String get themeSelectSub;
+
+  /// No description provided for @themeSelectLight.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açık'**
+  String get themeSelectLight;
+
+  /// No description provided for @themeSelectDark.
+  ///
+  /// In tr, this message translates to:
+  /// **'Koyu'**
+  String get themeSelectDark;
+
+  /// No description provided for @themeSelectConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'Devam Et'**
+  String get themeSelectConfirm;
+
+  /// No description provided for @themeSelectChangeHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bunu istediğin zaman Ayarlar\'dan değiştirebilirsin'**
+  String get themeSelectChangeHint;
 }
 
 class _AppLocalizationsDelegate

@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/reviews/domain/models/review_model.dart';
 import 'package:evcilhayvan_mobil2/features/reviews/presentation/screens/add_review_screen.dart';
@@ -37,7 +38,7 @@ class ReviewsSection extends ConsumerWidget {
           child: Row(
             children: [
               Text(
-                'Değerlendirmeler',
+                AppLocalizations.of(context)!.reviewsSectionTitle,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w900,
                     ),
@@ -74,7 +75,7 @@ class ReviewsSection extends ConsumerWidget {
                       size: 18,
                     ),
                     label: Text(
-                      existingReview != null ? 'Düzenle' : 'Yorum Yap',
+                      existingReview != null ? AppLocalizations.of(context)!.reviewsSectionEdit : AppLocalizations.of(context)!.reviewsSectionAdd,
                     ),
                   );
                 },
@@ -125,7 +126,7 @@ class ReviewsSection extends ConsumerWidget {
           error: (error, _) => Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              'Yorumlar yüklenemedi: ${error.toString()}',
+              AppLocalizations.of(context)!.reviewsLoadErr(error.toString()),
               style: const TextStyle(color: Colors.red),
             ),
           ),
@@ -170,7 +171,7 @@ class _StatsSummary extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '${stats.totalReviews} değerlendirme',
+                AppLocalizations.of(context)!.reviewsCount(stats.totalReviews),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: context.secondaryText,
                 ),
@@ -317,7 +318,7 @@ class _ReviewCard extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  'Alıcı',
+                                  AppLocalizations.of(context)!.reviewsVerifiedBuyer,
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700,
@@ -384,14 +385,14 @@ class _EmptyReviews extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Henüz değerlendirme yok',
+              AppLocalizations.of(context)!.reviewsEmptyTitle,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
             ),
             const SizedBox(height: 4),
             Text(
-              'İlk yorumu siz yapın!',
+              AppLocalizations.of(context)!.reviewsEmptySubtitle,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppPalette.onSurfaceVariant,
                   ),

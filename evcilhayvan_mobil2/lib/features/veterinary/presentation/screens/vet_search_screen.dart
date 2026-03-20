@@ -32,6 +32,7 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
   String _query = '';
   double? _lat;
   double? _lng;
+  double _radiusKm = 10;
   bool _locationLoading = false;
   List<VeterinaryModel>? _results;
   bool _loading = false;
@@ -115,6 +116,7 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
         results = await repo.searchVets(
           lat: _lat,
           lng: _lng,
+          radiusKm: _radiusKm,
           query: _query.isEmpty ? null : _query,
         );
       }
@@ -218,7 +220,6 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
                         )
                       : null,
                   filled: true,
-                  fillColor: Colors.white,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
                 ),
               ),
@@ -232,6 +233,29 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
                 onPressed: _fetchLocation,
                 icon: const Icon(Icons.my_location),
                 label: Text(l10n.vetSearchUseLocation),
+              ),
+            ),
+
+          // Radius chips (konum aktifse göster)
+          if (_lat != null && !widget.googleSearch)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Row(
+                children: [5.0, 10.0, 25.0, 50.0].map((km) {
+                  final selected = _radiusKm == km;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text('${km.toInt()} km'),
+                      selected: selected,
+                      onSelected: (_) {
+                        setState(() => _radiusKm = km);
+                        _doSearch();
+                      },
+                    ),
+                  );
+                }).toList(),
               ),
             ),
 

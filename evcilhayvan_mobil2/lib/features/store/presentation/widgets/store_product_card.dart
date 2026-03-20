@@ -8,6 +8,7 @@ import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/product_model.dart';
 import 'package:evcilhayvan_mobil2/features/favorites/presentation/widgets/favorite_button.dart';
 import 'package:evcilhayvan_mobil2/features/store/providers/cart_providers.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class StoreProductCard extends ConsumerStatefulWidget {
   const StoreProductCard({
@@ -61,7 +62,7 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '${widget.product.title} sepete eklendi',
+                    AppLocalizations.of(context)!.productCardAddedToCart(widget.product.title),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -81,7 +82,7 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Sepete eklenemedi: $e'),
+            content: Text(AppLocalizations.of(context)!.productCardAddErr(e.toString())),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
@@ -99,7 +100,7 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
     final hasImage = product.photos.isNotEmpty;
     final badge = widget.badge;
     final title = product.title.trim();
-    final displayTitle = title.isNotEmpty ? title : 'Ürün adı yok';
+    final displayTitle = title.isNotEmpty ? title : AppLocalizations.of(context)!.productCardNoTitle;
     final imageUrl = hasImage ? _resolveImageUrl(product.photos.first) : null;
     final isOutOfStock = product.stock <= 0;
 
@@ -153,7 +154,7 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
@@ -303,14 +304,7 @@ class _PlaceholderImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.grey[200]!,
-            Colors.grey[100]!,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Theme.of(context).colorScheme.surfaceVariant,
       ),
       alignment: Alignment.center,
       child: Column(
@@ -319,7 +313,7 @@ class _PlaceholderImage extends StatelessWidget {
           Icon(
             Icons.inventory_2_outlined,
             size: 32,
-            color: Colors.grey[400],
+            color: Theme.of(context).colorScheme.outlineVariant,
           ),
           const SizedBox(height: 4),
           Text(
@@ -327,7 +321,7 @@ class _PlaceholderImage extends StatelessWidget {
             style: TextStyle(
               fontWeight: FontWeight.w500,
               fontSize: 11,
-              color: Colors.grey[500],
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

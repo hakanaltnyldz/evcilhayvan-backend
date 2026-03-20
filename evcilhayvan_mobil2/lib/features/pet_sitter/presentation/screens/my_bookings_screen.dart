@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
 import '../../domain/models/sitter_booking_model.dart';
 
@@ -30,14 +31,15 @@ class _MyBookingsScreenState extends ConsumerState<MyBookingsScreen> with Single
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Rezervasyonlar'),
+        title: Text(l10n.bookingsTitle),
         bottom: TabBar(
           controller: _tab,
-          tabs: const [
-            Tab(text: 'Rezervasyonlarim'),
-            Tab(text: 'Gelen Talepler'),
+          tabs: [
+            Tab(text: l10n.bookingsTabMine),
+            Tab(text: l10n.bookingsTabIncoming),
           ],
         ),
       ),
@@ -66,10 +68,11 @@ class _BookingsList extends ConsumerWidget {
       error: (e, _) => ErrorView(message: e.toString(), onRetry: () => ref.invalidate(provider)),
       data: (bookings) {
         if (bookings.isEmpty) {
-          return const EmptyState(
+          final l10n = AppLocalizations.of(context)!;
+          return EmptyState(
             icon: Icons.calendar_today_outlined,
-            title: 'Henüz rezervasyon yok',
-            subtitle: 'Onaylanan rezervasyonlarınız burada görünecek.',
+            title: l10n.bookingsEmptyTitle,
+            subtitle: l10n.bookingsEmptySubtitle,
           );
         }
         return RefreshIndicator(
@@ -119,7 +122,7 @@ class _BookingCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    isSitter ? (booking.ownerName ?? 'Sahip') : (booking.sitterName ?? 'Bakici'),
+                    isSitter ? (booking.ownerName ?? AppLocalizations.of(context)!.bookingsOwnerLabel) : (booking.sitterName ?? AppLocalizations.of(context)!.bookingsSitterLabel),
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                   ),
                 ),
@@ -136,14 +139,14 @@ class _BookingCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text('${booking.serviceLabel} - ${booking.petName ?? "Pet"}',
-                style: const TextStyle(color: Colors.grey)),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
             const SizedBox(height: 4),
             Text('${fmt.format(booking.startDate)} - ${fmt.format(booking.endDate)}'),
             Text('${booking.totalPrice.toInt()} TL', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
             if (booking.notes?.isNotEmpty == true)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text(booking.notes!, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                child: Text(booking.notes!, style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
               ),
             // Actions
             if (booking.isPending && isSitter)
@@ -156,7 +159,7 @@ class _BookingCard extends StatelessWidget {
                         onPressed: () => _respond(context, 'accepted'),
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green, foregroundColor: Colors.white),
-                        child: const Text('Kabul Et'),
+                        child: Text(AppLocalizations.of(context)!.bookingsAccept),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -164,7 +167,7 @@ class _BookingCard extends StatelessWidget {
                       child: OutlinedButton(
                         onPressed: () => _respond(context, 'rejected'),
                         style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-                        child: const Text('Reddet'),
+                        child: Text(AppLocalizations.of(context)!.bookingsReject),
                       ),
                     ),
                   ],
@@ -176,7 +179,7 @@ class _BookingCard extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: () => _respond(context, 'completed'),
                   icon: const Icon(Icons.check_circle),
-                  label: const Text('Tamamlandi Olarak Isaretle'),
+                  label: Text(AppLocalizations.of(context)!.bookingsMarkCompleted),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
                 ),
               ),
@@ -186,7 +189,7 @@ class _BookingCard extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: () => _showReviewDialog(context),
                   icon: const Icon(Icons.star),
-                  label: const Text('Degerlendir'),
+                  label: Text(AppLocalizations.of(context)!.bookingsReview),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.white),
                 ),
               ),
@@ -202,11 +205,15 @@ class _BookingCard extends StatelessWidget {
       ref.invalidate(myBookingsProvider);
       ref.invalidate(incomingBookingsProvider);
     } catch (e) {
-      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e')));
+      if (context.mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.bookingsActionErr(e.toString()))));
+      }
     }
   }
 
   void _showReviewDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     double rating = 5;
     final commentCtrl = TextEditingController();
 
@@ -214,7 +221,7 @@ class _BookingCard extends StatelessWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
-          title: const Text('Bakiciyi Degerlendir'),
+          title: Text(l10n.bookingsReviewDialogTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -227,13 +234,13 @@ class _BookingCard extends StatelessWidget {
               ),
               TextField(
                 controller: commentCtrl,
-                decoration: const InputDecoration(hintText: 'Yorum (opsiyonel)', border: OutlineInputBorder()),
+                decoration: InputDecoration(hintText: l10n.bookingsReviewHint, border: const OutlineInputBorder()),
                 maxLines: 3,
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Iptal')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.bookingsReviewCancel)),
             ElevatedButton(
               onPressed: () async {
                 Navigator.pop(ctx);
@@ -244,10 +251,13 @@ class _BookingCard extends StatelessWidget {
                   );
                   ref.invalidate(myBookingsProvider);
                 } catch (e) {
-                  if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e')));
+                  if (context.mounted) {
+                    final l10n2 = AppLocalizations.of(context)!;
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n2.bookingsActionErr(e.toString()))));
+                  }
                 }
               },
-              child: const Text('Gonder'),
+              child: Text(l10n.bookingsReviewSend),
             ),
           ],
         ),

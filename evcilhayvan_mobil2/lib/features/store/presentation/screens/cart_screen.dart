@@ -154,7 +154,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           l10n.cartTitle,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        backgroundColor: Colors.white,
         elevation: 0,
         actions: [
           if (cartAsync.value != null && cartAsync.value!.items.isNotEmpty)

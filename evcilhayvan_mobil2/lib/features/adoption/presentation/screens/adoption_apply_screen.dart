@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/pets/domain/models/pet_model.dart';
 import '../../data/repositories/adoption_repository.dart';
@@ -48,8 +49,9 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(l10n.adoptionApplyErrGeneric(e.toString())), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -58,6 +60,7 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
   }
 
   void _showSuccessDialog(dynamic app) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -71,10 +74,10 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
               child: const Icon(Icons.check_circle, color: Colors.green),
             ),
             const SizedBox(width: 12),
-            const Expanded(child: Text('Basvuru Gonderildi!')),
+            Expanded(child: Text(l10n.adoptionApplySuccessTitle)),
           ],
         ),
-        content: const Text('Sahiplendirme basvurunuz ilan sahibine iletildi. Sonucu basvurularim sayfasindan takip edebilirsiniz.'),
+        content: Text(l10n.adoptionApplySuccessContent),
         actions: [
           ElevatedButton(
             onPressed: () {
@@ -85,7 +88,7 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
               backgroundColor: AppPalette.primary,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('Tamam'),
+            child: Text(l10n.adoptionApplySuccessOk),
           ),
         ],
       ),
@@ -99,7 +102,7 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
     final photoUrl = pet.photos.isNotEmpty ? '$apiBaseUrl${pet.photos[0]}' : null;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sahiplendirme Basvurusu'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.adoptionApplyTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -136,7 +139,7 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(pet.gender.toLowerCase().contains('erkek') ? Icons.male : Icons.female, size: 16, color: Colors.grey),
+                            Icon(pet.gender.toLowerCase().contains('erkek') ? Icons.male : Icons.female, size: 16, color: theme.colorScheme.onSurfaceVariant),
                             const SizedBox(width: 4),
                             Text('${pet.gender} - ${pet.ageMonths} ay', style: theme.textTheme.bodySmall),
                           ],
@@ -164,7 +167,7 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Basvurunuz ilan sahibine iletilecektir. Ilan sahibi basvurunuzu kabul ederse mesajlasma baslatilacaktir.',
+                      AppLocalizations.of(context)!.adoptionApplyInfoText,
                       style: theme.textTheme.bodyMedium?.copyWith(color: Colors.blue.shade700),
                     ),
                   ),
@@ -173,15 +176,15 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Not alani
-            Text('Basvuru Notu (opsiyonel)', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+            // Note field
+            Text(AppLocalizations.of(context)!.adoptionApplyNoteLabel, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
               controller: _noteController,
               maxLines: 5,
               maxLength: 500,
               decoration: InputDecoration(
-                hintText: 'Kendinizi tanıtın, neden bu hayvani sahiplenmek istediğinizi açıklayın...',
+                hintText: AppLocalizations.of(context)!.adoptionApplyNoteHint,
                 filled: true,
                 fillColor: context.inputFill,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -195,7 +198,7 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
               icon: _loading
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                   : const Icon(Icons.send),
-              label: Text(_loading ? 'Gonderiliyor...' : 'Basvuru Gonder'),
+              label: Text(_loading ? AppLocalizations.of(context)!.adoptionApplySending : AppLocalizations.of(context)!.adoptionApplySendBtn),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,

@@ -29,13 +29,8 @@ import '../features/store/presentation/screens/apply_seller_screen.dart';
 import '../features/store/presentation/screens/store_detail_screen.dart';
 import '../features/store/presentation/screens/store_home_screen.dart';
 import '../features/store/domain/models/product_model.dart';
-import '../features/store/screens/seller_apply_page.dart';
-import '../features/store/screens/admin_applications_page.dart';
-import '../features/store/screens/seller/products_page.dart';
-import '../features/store/screens/seller/product_add_page.dart';
-import '../features/store/screens/seller/product_edit_page.dart';
-import '../features/store/screens/product_detail_page.dart';
-import '../features/store/screens/cart_page.dart';
+import '../features/store/presentation/screens/admin_applications_screen.dart';
+import '../features/store/presentation/screens/product_detail_screen.dart';
 import '../features/store/presentation/screens/cart_screen.dart';
 import '../features/store/presentation/screens/seller_dashboard_screen.dart';
 import '../features/store/presentation/screens/stores_list_screen.dart';
@@ -95,7 +90,9 @@ import '../features/ai/presentation/screens/guide_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
 import '../features/auth/presentation/screens/user_profile_screen.dart';
 import '../features/auth/presentation/screens/privacy_policy_screen.dart';
+import '../features/auth/presentation/screens/theme_selection_screen.dart';
 import '../features/pets/presentation/screens/nearby_ads_screen.dart';
+import '../core/providers/theme_provider.dart';
 
 // Auth gerektirmeyen sayfalar
 const _publicRoutes = {
@@ -107,6 +104,7 @@ const _publicRoutes = {
   '/onboarding',
   '/splash',
   '/privacy-policy',
+  '/theme-selection',
 };
 
 /// Tüm push rotalarında tutarlı fade + hafif slideY geçiş animasyonu.
@@ -135,6 +133,7 @@ Page<void> _buildPage(GoRouterState state, Widget child) {
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
   final onboardingSeen = ref.watch(onboardingSeenProvider);
+  final themeSelected = ref.watch(themeSelectedProvider);
 
   return GoRouter(
     initialLocation: '/splash',
@@ -145,8 +144,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoggedIn = authState != null;
       final isPublicRoute = _publicRoutes.contains(state.matchedLocation);
 
+      // Tema henuz secilmediyse /theme-selection'a yonlendir
+      if (!themeSelected &&
+          state.matchedLocation != '/theme-selection' &&
+          state.matchedLocation != '/splash') {
+        return '/theme-selection';
+      }
+
       // Onboarding henuz gosterilmediyse /onboarding'e yonlendir
-      if (!onboardingSeen && state.matchedLocation != '/onboarding' && state.matchedLocation != '/splash') {
+      if (!onboardingSeen &&
+          state.matchedLocation != '/onboarding' &&
+          state.matchedLocation != '/splash' &&
+          state.matchedLocation != '/theme-selection') {
         return '/onboarding';
       }
 
@@ -211,6 +220,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       path: '/splash',
       name: 'splash',
       pageBuilder: (context, state) => _buildPage(state, const SplashScreen()),
+    ),
+    // Theme Selection (first-launch)
+    GoRoute(
+      path: '/theme-selection',
+      name: 'theme-selection',
+      pageBuilder: (context, state) => _buildPage(state, const ThemeSelectionScreen()),
     ),
     // Onboarding
     GoRoute(
@@ -408,7 +423,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     GoRoute(
       path: '/seller/apply-new',
       name: 'seller-apply-new',
-      pageBuilder: (context, state) => _buildPage(state, const SellerApplyPage()),
+      pageBuilder: (context, state) => _buildPage(state, const ApplySellerScreen()),
     ),
     GoRoute(
       path: '/admin/seller/applications',
@@ -418,12 +433,12 @@ final routerProvider = Provider<GoRouter>((ref) {
     GoRoute(
       path: '/seller/products',
       name: 'seller-products',
-      pageBuilder: (context, state) => _buildPage(state, const ProductsPage()),
+      pageBuilder: (context, state) => _buildPage(state, const ProductManagementScreen()),
     ),
     GoRoute(
       path: '/seller/products/add',
       name: 'seller-product-add',
-      pageBuilder: (context, state) => _buildPage(state, const ProductAddPage()),
+      pageBuilder: (context, state) => _buildPage(state, const AddProductScreen()),
     ),
     GoRoute(
       path: '/store-new',

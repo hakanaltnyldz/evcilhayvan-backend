@@ -68,19 +68,17 @@ class NotificationsScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.notifications_none, size: 72, color: Colors.grey.shade400),
+                      Icon(Icons.notifications_none, size: 72, color: Theme.of(context).colorScheme.outlineVariant),
                       const SizedBox(height: 16),
                       Text(
                         AppLocalizations.of(context)!.notificationsEmpty,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.grey.shade600,
-                            ),
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Yeni bildirimler burada gorunecek.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey.shade500,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
                       ),
                     ],

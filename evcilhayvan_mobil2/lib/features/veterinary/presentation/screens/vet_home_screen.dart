@@ -13,10 +13,15 @@ import '../../domain/models/veterinary_model.dart';
 import '../widgets/appointment_card.dart';
 import '../widgets/vet_card.dart';
 
-const List<Color> _vetBackground = [
+const List<Color> _vetBackgroundLight = [
   Color(0xFFF0FFF4),
   Color(0xFFE8F5FF),
   Color(0xFFFFF8F0),
+];
+const List<Color> _vetBackgroundDark = [
+  Color(0xFF0E1F16),
+  Color(0xFF0D1A26),
+  Color(0xFF1F1610),
 ];
 
 class VetHomeScreen extends ConsumerStatefulWidget {
@@ -46,12 +51,13 @@ class _VetHomeScreenState extends ConsumerState<VetHomeScreen> with SingleTicker
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: _vetBackground,
+          colors: isDark ? _vetBackgroundDark : _vetBackgroundLight,
         ),
       ),
       child: Scaffold(
@@ -65,10 +71,10 @@ class _VetHomeScreenState extends ConsumerState<VetHomeScreen> with SingleTicker
             labelColor: AppPalette.primary,
             unselectedLabelColor: AppPalette.onSurfaceVariant,
             indicatorColor: AppPalette.primary,
-            tabs: const [
-              Tab(icon: Icon(Icons.search), text: 'Ara'),
-              Tab(icon: Icon(Icons.calendar_today), text: 'Randevular'),
-              Tab(icon: Icon(Icons.vaccines), text: 'Asi Takvimi'),
+            tabs: [
+              Tab(icon: const Icon(Icons.search), text: AppLocalizations.of(context)!.vetHomeTabSearch),
+              Tab(icon: const Icon(Icons.calendar_today), text: AppLocalizations.of(context)!.vetHomeTabAppointments),
+              Tab(icon: const Icon(Icons.vaccines), text: AppLocalizations.of(context)!.vetHomeTabVaccine),
             ],
           ),
         ),
@@ -125,6 +131,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -148,7 +155,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
                 children: [
                   Icon(Icons.search, color: AppPalette.onSurfaceVariant),
                   const SizedBox(width: 12),
-                  Text('Veteriner klinigi ara...', style: theme.textTheme.bodyLarge?.copyWith(color: AppPalette.onSurfaceVariant)),
+                  Text(l10n.vetHomeSearchHint, style: theme.textTheme.bodyLarge?.copyWith(color: AppPalette.onSurfaceVariant)),
                 ],
               ),
             ),
@@ -161,7 +168,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
               Expanded(
                 child: _QuickActionCard(
                   icon: Icons.location_on,
-                  label: 'Yakinimda',
+                  label: l10n.vetHomeNearMe,
                   color: const Color(0xFF4CAF50),
                   onTap: () => context.pushNamed('vet-search', extra: {'nearMe': true}),
                 ),
@@ -170,7 +177,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
               Expanded(
                 child: _QuickActionCard(
                   icon: Icons.add_business,
-                  label: 'Klinik Kaydet',
+                  label: l10n.vetHomeSaveClinic,
                   color: const Color(0xFF2196F3),
                   onTap: () => context.pushNamed('vet-register'),
                 ),
@@ -183,7 +190,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
               Expanded(
                 child: _QuickActionCard(
                   icon: Icons.map,
-                  label: 'Google ile Ara',
+                  label: l10n.vetHomeGoogleSearch,
                   color: const Color(0xFFFF9800),
                   onTap: () => context.pushNamed('vet-search', extra: {'googleSearch': true}),
                 ),
@@ -192,7 +199,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
               Expanded(
                 child: _QuickActionCard(
                   icon: Icons.notifications_active,
-                  label: 'Hatirlatmalar',
+                  label: l10n.vetHomeReminders,
                   color: const Color(0xFFE91E63),
                   onTap: () => context.pushNamed('vaccination-reminders'),
                 ),
@@ -202,19 +209,19 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
           const SizedBox(height: 24),
 
           // Yakin veterinerler
-          Text('Yakinindaki Veterinerler', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          Text(l10n.vetHomeNearbyTitle, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           if (_loadingVets)
             const Center(child: CircularProgressIndicator())
           else if (_locationDenied)
             Center(
-              child: Text('Yakin veterinerleri gormek icin konum izni verin',
+              child: Text(l10n.vetHomeNearbyPermRequired,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant)),
             )
           else if (_nearbyVets == null || _nearbyVets!.isEmpty)
             Center(
-              child: Text('Yakinda veteriner bulunamadi',
+              child: Text(l10n.vetHomeNearbyEmpty,
                   style: theme.textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant)),
             )
           else
@@ -287,7 +294,7 @@ class _AppointmentsTab extends ConsumerWidget {
 
     return appointmentsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Hata: $e')),
+      error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.vetHomeLoadError(e.toString()))),
       data: (appointments) {
         if (appointments.isEmpty) {
           return Center(
@@ -296,9 +303,9 @@ class _AppointmentsTab extends ConsumerWidget {
               children: [
                 Icon(Icons.calendar_today, size: 64, color: AppPalette.onSurfaceVariant.withOpacity(0.3)),
                 const SizedBox(height: 16),
-                Text('Henuz randevunuz yok', style: Theme.of(context).textTheme.titleMedium),
+                Text(AppLocalizations.of(context)!.vetHomeApptsEmpty, style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
-                Text('Veteriner arayin ve randevu alin', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant)),
+                Text(AppLocalizations.of(context)!.vetHomeApptsEmptyDesc, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant)),
               ],
             ),
           );
@@ -330,16 +337,17 @@ class _VaccinationTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final remindersAsync = ref.watch(vaccinationRemindersProvider);
 
+    final l10n = AppLocalizations.of(context)!;
     return remindersAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Hata: $e')),
+      error: (e, _) => Center(child: Text(l10n.vetHomeLoadError(e.toString()))),
       data: (reminders) {
         return Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Asi Hatirlatmalari', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(l10n.vetHomeVaccineTitle, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               if (reminders.isEmpty)
                 Expanded(
@@ -349,9 +357,9 @@ class _VaccinationTab extends ConsumerWidget {
                       children: [
                         Icon(Icons.vaccines, size: 64, color: AppPalette.onSurfaceVariant.withOpacity(0.3)),
                         const SizedBox(height: 16),
-                        Text('Yaklasan asi hatirlatmasi yok', style: Theme.of(context).textTheme.bodyLarge),
+                        Text(l10n.vetHomeVaccineEmpty, style: Theme.of(context).textTheme.bodyLarge),
                         const SizedBox(height: 8),
-                        Text('Evcil hayvaninizin profil sayfasindan asi takvimini goruntuleyin',
+                        Text(l10n.vetHomeVaccineEmptyDesc,
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant)),
                       ],
@@ -378,8 +386,8 @@ class _VaccinationTab extends ConsumerWidget {
                                 : '',
                           ),
                           trailing: r.isOverdue
-                              ? const Chip(label: Text('Gecikti', style: TextStyle(color: Colors.white, fontSize: 11)), backgroundColor: Colors.red)
-                              : const Chip(label: Text('Yaklasıyor', style: TextStyle(color: Colors.white, fontSize: 11)), backgroundColor: Colors.orange),
+                              ? Chip(label: Text(l10n.vetHomeVaccineOverdue, style: const TextStyle(color: Colors.white, fontSize: 11)), backgroundColor: Colors.red)
+                              : Chip(label: Text(l10n.vetHomeVaccineUpcoming, style: const TextStyle(color: Colors.white, fontSize: 11)), backgroundColor: Colors.orange),
                           onTap: () => context.pushNamed('vaccination-calendar', pathParameters: {'petId': r.petId}),
                         ),
                       );

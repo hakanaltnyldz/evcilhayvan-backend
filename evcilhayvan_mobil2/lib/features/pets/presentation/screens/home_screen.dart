@@ -714,7 +714,7 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
             const SizedBox(height: 12),
             Container(
               width: 40, height: 4,
-              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+              decoration: BoxDecoration(color: Theme.of(context).dividerColor, borderRadius: BorderRadius.circular(2)),
             ),
             const SizedBox(height: 12),
             Padding(

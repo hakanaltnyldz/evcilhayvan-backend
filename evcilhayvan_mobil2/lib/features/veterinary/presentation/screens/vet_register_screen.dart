@@ -218,7 +218,6 @@ class _VetRegisterScreenState extends ConsumerState<VetRegisterScreen> {
   InputDecoration _inputDeco(String label) => InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.white,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       );
 }

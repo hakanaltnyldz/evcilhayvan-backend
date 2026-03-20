@@ -8,11 +8,32 @@ export async function getFeed(req, res) {
     const limit = Math.min(50, parseInt(req.query.limit) || 20);
     const skip = (page - 1) * limit;
 
-    const posts = await Post.find({ isActive: true })
+    const rawPosts = await Post.find({ isActive: true })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .lean();
+      .populate('userId', 'name avatarUrl')
+      .populate('comments.userId', 'name avatarUrl');
+
+    // Populate'dan gelen güncel kullanıcı adı/avatarını stale denormalized alanlara yaz
+    const posts = rawPosts.map(p => {
+      const obj = p.toJSON();
+      if (p.userId && typeof p.userId === 'object' && p.userId.name) {
+        obj.userName = p.userId.name;
+        obj.userAvatar = p.userId.avatarUrl || null;
+      }
+      if (Array.isArray(obj.comments)) {
+        obj.comments = obj.comments.map((c, i) => {
+          const rawComment = p.comments[i];
+          if (rawComment?.userId && typeof rawComment.userId === 'object' && rawComment.userId.name) {
+            c.userName = rawComment.userId.name;
+            c.userAvatar = rawComment.userId.avatarUrl || null;
+          }
+          return c;
+        });
+      }
+      return obj;
+    });
 
     const total = await Post.countDocuments({ isActive: true });
 
@@ -51,6 +72,25 @@ export async function createPost(req, res) {
     });
 
     return res.sendOk({ post }, 201);
+  } catch (err) {
+    return res.sendError(err.message, 500);
+  }
+}
+
+// PUT /api/posts/:id
+export async function updatePost(req, res) {
+  try {
+    const userId = req.user._id || req.user.id;
+    const post = await Post.findById(req.params.id);
+    if (!post || !post.isActive) return res.sendError("Gonderi bulunamadi", 404);
+    if (String(post.userId) !== String(userId)) return res.sendError("Yetkisiz", 403);
+
+    const { content, photos } = req.body;
+    if (content !== undefined) post.content = content?.trim();
+    if (photos !== undefined) post.photos = photos;
+    await post.save();
+
+    return res.sendOk({ post });
   } catch (err) {
     return res.sendError(err.message, 500);
   }

@@ -6,6 +6,7 @@ import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import '../../data/repositories/appointment_repository.dart';
 import '../../domain/models/appointment_model.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class AppointmentDetailScreen extends ConsumerWidget {
   final String appointmentId;
@@ -13,14 +14,15 @@ class AppointmentDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final aptAsync = ref.watch(appointmentDetailProvider(appointmentId));
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Randevu Detay'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(l10n.apptDetailTitle), backgroundColor: Colors.transparent, elevation: 0),
       body: aptAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Hata: $e')),
+        error: (e, _) => Center(child: Text(l10n.apptDetailError(e.toString()))),
         data: (apt) {
           final date = apt.date;
           final dateStr = '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';

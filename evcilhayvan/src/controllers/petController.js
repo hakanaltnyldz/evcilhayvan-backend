@@ -253,6 +253,7 @@ export async function getPet(req, res) {
       return sendError(res, 400, "Gecersiz ilan ID", "validation_error");
     }
 
+    await Pet.findByIdAndUpdate(id, { $inc: { viewCount: 1 } });
     const pet = await Pet.findById(id).populate("ownerId", "name avatarUrl");
     if (!pet || !pet.isActive) {
       return sendError(res, 404, "Ilan bulunamadi", "pet_not_found");

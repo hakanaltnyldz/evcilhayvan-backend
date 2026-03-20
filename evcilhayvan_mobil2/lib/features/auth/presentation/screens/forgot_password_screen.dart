@@ -121,7 +121,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               labelText: l10n.email,
               prefixIcon: const Icon(Icons.email_outlined),
               filled: true,
-              fillColor: Colors.white,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
             ),
             validator: (v) => (v == null || !v.contains('@')) ? l10n.loginEmailError : null,

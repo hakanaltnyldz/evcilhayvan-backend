@@ -102,8 +102,6 @@ class _MapDiscoverScreenState extends ConsumerState<MapDiscoverScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Haritada Kesfe', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
         elevation: 0,
         actions: [
           IconButton(
@@ -153,13 +151,13 @@ class _MapDiscoverScreenState extends ConsumerState<MapDiscoverScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(f['icon'] as IconData, size: 14,
-                              color: isSelected ? Colors.white : Colors.black87),
+                              color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface),
                           const SizedBox(width: 4),
                           Text(f['label'] as String,
-                              style: TextStyle(color: isSelected ? Colors.white : Colors.black87)),
+                              style: TextStyle(color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface)),
                         ],
                       ),
-                      backgroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
                       selectedColor: const Color(0xFF6C63FF),
                       checkmarkColor: Colors.white,
                       elevation: 2,

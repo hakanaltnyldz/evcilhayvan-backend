@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 // ─── Model ──────────────────────────────────────────────────────────────────
 
@@ -60,14 +61,14 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
   bool _loading = false;
   final _dio = ApiClient().dio;
 
-  // Başlangıç önerileri
-  static const _initSuggestions = [
-    'Sahiplendirme ilanlarına bak',
-    'Veteriner bul',
-    'Eşleştirme yap',
-    'Sepetimi göster',
-    'Kayıp ilan oluştur',
-    'Etkinliklere katıl',
+  // Başlangıç önerileri — built at runtime from l10n
+  List<String> _getInitSuggestions(AppLocalizations l10n) => [
+    l10n.guideSug1,
+    l10n.guideSug2,
+    l10n.guideSug3,
+    l10n.guideSug4,
+    l10n.guideSug5,
+    l10n.guideSug6,
   ];
 
   @override
@@ -103,7 +104,7 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
       final res = await _dio.post('/ai/navigate', data: {'message': text});
       final body = res.data as Map<String, dynamic>;
 
-      final reply = body['reply'] as String? ?? 'Anlayamadım.';
+      final reply = body['reply'] as String? ?? AppLocalizations.of(context)!.guideUnknown;
       final actionJson = body['action'] as Map<String, dynamic>?;
       final suggestions = List<String>.from(body['suggestions'] as List? ?? []);
 
@@ -127,10 +128,9 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
       }
     } catch (_) {
       setState(() {
-        _messages.add(const _GuideMessage(
+        _messages.add(_GuideMessage(
           isUser: false,
-          text: 'Bağlantı hatası, lütfen tekrar dene.',
-          suggestions: ['Ana Sayfa', 'Veteriner Ara'],
+          text: AppLocalizations.of(context)!.guideConnError,
         ));
         _loading = false;
       });
@@ -182,15 +182,15 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
               child: const Icon(Icons.assistant_rounded, color: Colors.white, size: 18),
             ),
             const SizedBox(width: 10),
-            const Text('Rehber Pati',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            Text(AppLocalizations.of(context)!.guideTitle,
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
           ],
         ),
         actions: [
           if (_messages.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.refresh_rounded),
-              tooltip: 'Yeni sohbet',
+              tooltip: AppLocalizations.of(context)!.guideNewChat,
               onPressed: () => setState(() => _messages.clear()),
             ),
         ],
@@ -237,19 +237,19 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
         ),
         const SizedBox(height: 20),
         Text(
-          'Merhaba! 👋',
+          AppLocalizations.of(context)!.guideWelcome,
           textAlign: TextAlign.center,
           style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
         ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
         const SizedBox(height: 8),
         Text(
-          'Ne yapmak istiyorsun?\nSana en kısa yoldan yardım edeyim.',
+          AppLocalizations.of(context)!.guideWelcomeSub,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant),
         ).animate().fadeIn(delay: 350.ms).slideY(begin: 0.2),
         const SizedBox(height: 24),
         Text(
-          'Hızlı seçenekler:',
+          AppLocalizations.of(context)!.guideQuickOptions,
           style: theme.textTheme.labelLarge?.copyWith(
             color: AppPalette.primary,
             fontWeight: FontWeight.w700,
@@ -259,7 +259,7 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: _initSuggestions.asMap().entries.map((e) {
+          children: _getInitSuggestions(AppLocalizations.of(context)!).asMap().entries.map((e) {
             return ActionChip(
               label: Text(e.value, style: const TextStyle(fontSize: 13)),
               onPressed: () => _send(e.value),
@@ -359,7 +359,7 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
               child: FilledButton.icon(
                 onPressed: () => _navigate(msg.action!),
                 icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                label: const Text('Götür beni →'),
+                label: Text(AppLocalizations.of(context)!.guideNavigateBtn),
                 style: FilledButton.styleFrom(
                   backgroundColor: AppPalette.primary,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -448,7 +448,7 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
               textInputAction: TextInputAction.send,
               onSubmitted: _send,
               decoration: InputDecoration(
-                hintText: 'Ne yapmak istiyorsun?',
+                hintText: AppLocalizations.of(context)!.guideInputHint,
                 hintStyle: const TextStyle(fontSize: 13),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(22),

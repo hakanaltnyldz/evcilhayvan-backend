@@ -186,11 +186,6 @@ class ProfileScreen extends ConsumerWidget {
 
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                  child: _QuickLinksCard(user: currentUser),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                   child: Row(
                     children: [
                       Expanded(
@@ -262,11 +257,14 @@ class _ProfileHeader extends StatelessWidget {
     final avatarUrl = _resolveAvatarUrl(user.avatarUrl);
     final initial = user.name.isNotEmpty ? user.name[0].toUpperCase() : '?';
 
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFB2F5EA), Color(0xFFE9D8FD)],
+        gradient: LinearGradient(
+          colors: isDark
+              ? [const Color(0xFF1A1A2E), const Color(0xFF2D1B4E)]
+              : [const Color(0xFFB2F5EA), const Color(0xFFE9D8FD)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -287,7 +285,7 @@ class _ProfileHeader extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 32,
-                  backgroundColor: Colors.white,
+                  backgroundColor: AppPalette.primary.withOpacity(0.15),
                   backgroundImage: avatarUrl != null ? CachedNetworkImageProvider(avatarUrl) : null,
                   child: avatarUrl == null
                       ? Text(initial, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold))
@@ -405,9 +403,9 @@ class _StatsRow extends StatelessWidget {
       child: Row(
         children: [
           _StatItem(icon: Icons.pets, color: Colors.green, intValue: adoptionCount, label: l10n.profileAdoptionCount),
-          Container(width: 1, height: 40, color: Colors.grey.shade200),
+          Container(width: 1, height: 40, color: Theme.of(context).dividerColor),
           _StatItem(icon: Icons.favorite, color: Colors.purple, intValue: matingCount, label: l10n.profileMatingCount),
-          Container(width: 1, height: 40, color: Colors.grey.shade200),
+          Container(width: 1, height: 40, color: Theme.of(context).dividerColor),
           _StatItem(
             icon: Icons.remove_red_eye_outlined,
             color: Colors.blue,
@@ -450,7 +448,7 @@ class _StatItem extends StatelessWidget {
           ),
           Text(
             label,
-            style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+            style: theme.textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
         ],
@@ -630,13 +628,13 @@ class _NoPetsCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.search_off, size: 64, color: Colors.grey),
+            Icon(Icons.search_off, size: 64, color: theme.colorScheme.outlineVariant),
             const SizedBox(height: 12),
             Text(l10n.profileNoPetsTitle, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
             const SizedBox(height: 8),
             Text(
               l10n.profileNoPetsDesc,
-              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+              style: theme.textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
           ],

@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/features/pets/domain/models/pet_model.dart';
 
 // ── Search History ─────────────────────────────────────────────────────────
@@ -111,7 +112,7 @@ class _GlobalSearchRepository {
         return _SearchResult(
           id: json['_id'] ?? json['id'] ?? '',
           title: json['name'] ?? '',
-          subtitle: json['description'] ?? 'Mağaza',
+          subtitle: json['description'] ?? 'Store',
           imageUrl: json['logo'],
           type: _ResultType.store,
         );
@@ -129,7 +130,7 @@ class _GlobalSearchRepository {
         return _SearchResult(
           id: json['_id'] ?? json['id'] ?? '',
           title: json['name'] ?? '',
-          subtitle: json['city'] ?? 'Veteriner',
+          subtitle: json['city'] ?? 'Vet',
           imageUrl: json['avatar'],
           type: _ResultType.vet,
         );
@@ -228,7 +229,7 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
           autofocus: true,
           onChanged: _onChanged,
           decoration: InputDecoration(
-            hintText: 'İlan, mağaza veya veteriner ara...',
+            hintText: AppLocalizations.of(context)!.searchHint,
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
@@ -261,14 +262,14 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
                 size: 64, color: theme.colorScheme.primary.withOpacity(0.3)),
             const SizedBox(height: 16),
             Text(
-              'Aramak istediğinizi yazın',
+              AppLocalizations.of(context)!.searchTypeHint,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'İlan, mağaza veya veteriner arayabilirsiniz',
+              AppLocalizations.of(context)!.searchTypeHintSub,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
               ),
@@ -288,7 +289,7 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Son Aramalar',
+                AppLocalizations.of(context)!.searchHistory,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: theme.colorScheme.onSurface,
@@ -296,8 +297,8 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
               ),
               TextButton(
                 onPressed: _clearHistory,
-                child: const Text('Tümünü Temizle',
-                    style: TextStyle(color: Colors.red, fontSize: 12)),
+                child: Text(AppLocalizations.of(context)!.searchClearHistory,
+                    style: const TextStyle(color: Colors.red, fontSize: 12)),
               ),
             ],
           ),
@@ -326,7 +327,7 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
 
     return resultsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Arama hatası: $e')),
+      error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.searchError(e.toString()))),
       data: (results) {
         if (results.isEmpty) {
           return Center(
@@ -338,7 +339,7 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
                     color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3)),
                 const SizedBox(height: 16),
                 Text(
-                  '"$_query" için sonuç bulunamadı',
+                  AppLocalizations.of(context)!.searchNoResults(_query),
                   style: theme.textTheme.bodyLarge,
                 ),
               ],
@@ -355,15 +356,15 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
           padding: const EdgeInsets.symmetric(vertical: 8),
           children: [
             if (pets.isNotEmpty) ...[
-              _SectionHeader(label: 'İlanlar', icon: Icons.pets),
+              _SectionHeader(label: AppLocalizations.of(context)!.searchSectionListings, icon: Icons.pets),
               ...pets.map((r) => _ResultTile(result: r, onTap: () => _navigate(r).ignore())),
             ],
             if (stores.isNotEmpty) ...[
-              _SectionHeader(label: 'Mağazalar', icon: Icons.storefront_outlined),
+              _SectionHeader(label: AppLocalizations.of(context)!.searchSectionStores, icon: Icons.storefront_outlined),
               ...stores.map((r) => _ResultTile(result: r, onTap: () => _navigate(r).ignore())),
             ],
             if (vets.isNotEmpty) ...[
-              _SectionHeader(label: 'Veterinerler', icon: Icons.local_hospital_outlined),
+              _SectionHeader(label: AppLocalizations.of(context)!.searchSectionVets, icon: Icons.local_hospital_outlined),
               ...vets.map((r) => _ResultTile(result: r, onTap: () => _navigate(r).ignore())),
             ],
           ],

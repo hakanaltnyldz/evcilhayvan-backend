@@ -1,7 +1,7 @@
 
 name: evcilhayvan_mobil2
 
-description: "A new Flutter project."
+description: "Evcil hayvan sahipleri için sosyal platform uygulaması."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.1.0+2
 
 environment:
   sdk: ^3.10.0
@@ -47,9 +47,7 @@ dependencies:
   flutter_card_swiper: ^7.1.0
   socket_io_client: ^3.0.2
   url_launcher: ^6.2.5
-  google_sign_in: ^6.2.1
   # flutter_facebook_auth: ^6.0.3  # KALDIRILDI - Facebook App ID olmadan crash yapıyor
-  google_api_availability: ^5.0.1
   intl: 0.20.2
 
   # The following adds the Cupertino Icons font to your application.

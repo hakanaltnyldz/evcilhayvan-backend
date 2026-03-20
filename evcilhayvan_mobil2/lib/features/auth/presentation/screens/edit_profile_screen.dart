@@ -7,6 +7,7 @@ import 'package:evcilhayvan_mobil2/features/auth/domain/user_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -60,7 +61,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       ref.read(authProvider.notifier).loginSuccess(updatedUser);
       
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profil fotoğrafı güncellendi!'))
+        SnackBar(content: Text(AppLocalizations.of(context)!.editProfilePhotoUpdated))
       );
     } catch (e) {
       setState(() => _errorMessage = e.toString());
@@ -102,7 +103,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profili Düzenle'),
+        title: Text(AppLocalizations.of(context)!.editProfileTitle),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -139,8 +140,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         child: IconButton(
                           icon: const Icon(Icons.camera_alt),
                           style: IconButton.styleFrom(
-                            backgroundColor: Colors.grey[200],
-                            foregroundColor: Colors.black,
+                            backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
                           ),
                           onPressed: _isLoading ? null : _uploadAvatar,
                         ),
@@ -153,20 +153,20 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 // --- Bilgi Formları ---
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'İsim Soyisim'),
-                  validator: (value) => (value?.isEmpty ?? true) ? 'İsim boş olamaz' : null,
+                  decoration: InputDecoration(labelText: AppLocalizations.of(context)!.editProfileNameLabel),
+                  validator: (value) => (value?.isEmpty ?? true) ? AppLocalizations.of(context)!.editProfileNameRequired : null,
                 ),
                 const SizedBox(height: 16),
-                
+
                 TextFormField(
                   controller: _cityController,
-                  decoration: const InputDecoration(labelText: 'Şehir'),
+                  decoration: InputDecoration(labelText: AppLocalizations.of(context)!.editProfileCityLabel),
                 ),
                 const SizedBox(height: 16),
 
                 TextFormField(
                   controller: _aboutController,
-                  decoration: const InputDecoration(labelText: 'Hakkımda', alignLabelWithHint: true),
+                  decoration: InputDecoration(labelText: AppLocalizations.of(context)!.editProfileAboutLabel, alignLabelWithHint: true),
                   maxLines: 5,
                 ),
                 const SizedBox(height: 24),
@@ -183,7 +183,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     onPressed: _isLoading ? null : _saveProfile,
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Değişiklikleri Kaydet'),
+                        : Text(AppLocalizations.of(context)!.editProfileSaveBtn),
                   ),
                 ),
               ],

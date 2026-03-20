@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/event_repository.dart';
 import '../widgets/event_card.dart';
 
@@ -30,14 +31,15 @@ class _MyEventsScreenState extends ConsumerState<MyEventsScreen> with SingleTick
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Etkinliklerim'),
+        title: Text(l10n.myEventsTitle),
         bottom: TabBar(
           controller: _tab,
-          tabs: const [
-            Tab(text: 'Katilacaklarim'),
-            Tab(text: 'Organize Ettiklerim'),
+          tabs: [
+            Tab(text: l10n.myEventsTabAttending),
+            Tab(text: l10n.myEventsTabOrganized),
           ],
         ),
       ),
@@ -64,10 +66,11 @@ class _EventList extends ConsumerWidget {
       error: (e, _) => ErrorView(message: e.toString(), onRetry: () => ref.invalidate(provider)),
       data: (events) {
         if (events.isEmpty) {
-          return const EmptyState(
+          final l10n = AppLocalizations.of(context)!;
+          return EmptyState(
             icon: Icons.event_outlined,
-            title: 'Etkinlik Yok',
-            subtitle: 'Henüz bu kategoride etkinliğiniz yok.',
+            title: l10n.myEventsEmptyTitle,
+            subtitle: l10n.myEventsEmptySubtitle,
           );
         }
         return RefreshIndicator(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../domain/models/appointment_model.dart';
 
 class AppointmentCard extends StatelessWidget {
@@ -56,7 +57,7 @@ class AppointmentCard extends StatelessWidget {
               child: Column(
                 children: [
                   Text('${date.day}', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: AppPalette.primary)),
-                  Text(_monthName(date.month), style: theme.textTheme.labelSmall?.copyWith(color: AppPalette.primary)),
+                  Text(_monthName(context, date.month), style: theme.textTheme.labelSmall?.copyWith(color: AppPalette.primary)),
                 ],
               ),
             ),
@@ -107,8 +108,13 @@ class AppointmentCard extends StatelessWidget {
     );
   }
 
-  String _monthName(int month) {
-    const months = ['Oca', 'Sub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Agu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+  String _monthName(BuildContext context, int month) {
+    final l10n = AppLocalizations.of(context)!;
+    final months = [
+      l10n.monthJan, l10n.monthFeb, l10n.monthMar, l10n.monthApr,
+      l10n.monthMay, l10n.monthJun, l10n.monthJul, l10n.monthAug,
+      l10n.monthSep, l10n.monthOct, l10n.monthNov, l10n.monthDec,
+    ];
     return months[(month - 1).clamp(0, 11)];
   }
 }

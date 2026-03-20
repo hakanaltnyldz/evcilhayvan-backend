@@ -28,18 +28,15 @@ const videoFilter = (_req, file, cb) => {
   cb(new Error("Only video uploads are allowed"));
 };
 
-const uploadImage = multer({ storage, fileFilter: imageFilter });
-const uploadVideo = multer({ storage, fileFilter: videoFilter });
+const uploadImage = multer({ storage, fileFilter: imageFilter, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB
+const uploadVideo = multer({ storage, fileFilter: videoFilter, limits: { fileSize: 100 * 1024 * 1024 } }); // 100MB
 
 router.post("/images", authRequired(), uploadImage.single("file"), async (req, res) => {
-  console.log("[Upload] /images called:", { hasFile: !!req.file, body: req.body });
   if (!req.file) {
-    console.log("[Upload] Error: No file provided");
     return sendError(res, 400, "Dosya gerekli", "file_required");
   }
   try {
     const publicPath = await storageService.save(req.file);
-    console.log("[Upload] File saved:", publicPath);
     return sendOk(res, 201, { url: publicPath, type: "image" });
   } catch (err) {
     console.error("[Upload] Error saving file:", err);

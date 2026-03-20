@@ -175,7 +175,7 @@ class PetDetailScreen extends ConsumerWidget {
                   e.toString(),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -228,23 +228,23 @@ class PetDetailScreen extends ConsumerWidget {
                         Text(pet.name,
                             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                         Text('${pet.species} • ${pet.breed}',
-                            style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
                       ],
                     ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(ctx),
                     icon: const Icon(Icons.close),
-                    color: Colors.grey,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ],
               ),
               const SizedBox(height: 20),
-              // QR Kod
+              // QR Kod (always white bg so camera can read)
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: context.cardColor,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 16, offset: const Offset(0, 6)),
@@ -264,7 +264,7 @@ class PetDetailScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
+                  color: context.subtleBackground,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Column(
@@ -294,8 +294,8 @@ class PetDetailScreen extends ConsumerWidget {
                 icon: const Icon(Icons.copy, size: 16),
                 label: Text('ID: ${pet.id.substring(0, 8)}...'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.grey,
-                  side: BorderSide(color: Colors.grey.shade300),
+                  foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
+                  side: BorderSide(color: Theme.of(context).dividerColor),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
@@ -627,7 +627,7 @@ class PetDetailScreen extends ConsumerWidget {
               Text(
                 pet.breed.isNotEmpty ? pet.breed : AppLocalizations.of(context)!.petDetailBreedUnspecified,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -728,7 +728,7 @@ class PetDetailScreen extends ConsumerWidget {
             pet.bio!,
             style: theme.textTheme.bodyLarge?.copyWith(
               height: 1.6,
-              color: Colors.grey[700],
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],
@@ -901,7 +901,7 @@ class PetDetailScreen extends ConsumerWidget {
         gradient: LinearGradient(
           colors: [
             AppPalette.heroGradient.first.withOpacity(0.1),
-            Colors.white,
+            Theme.of(context).colorScheme.surface,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -950,7 +950,7 @@ class PetDetailScreen extends ConsumerWidget {
                 Text(
                   l10n.petDetailOwnerLabel,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -1086,7 +1086,7 @@ class _QuickInfoCard extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey[500],
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -1111,12 +1111,12 @@ class _DetailRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: Colors.grey[400]),
+        Icon(icon, size: 20, color: Theme.of(context).colorScheme.outlineVariant),
         const SizedBox(width: 12),
         Text(
           label,
           style: TextStyle(
-            color: Colors.grey[600],
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             fontSize: 14,
           ),
         ),
@@ -1166,7 +1166,7 @@ class _HealthCard extends StatelessWidget {
             title,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey[600],
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),
@@ -1306,10 +1306,10 @@ class _LocationSection extends StatelessWidget {
                     Positioned.fill(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
+                          color: context.subtleBackground,
                         ),
                         child: CustomPaint(
-                          painter: _MapGridPainter(),
+                          painter: _MapGridPainter(gridColor: Theme.of(context).dividerColor),
                         ),
                       ),
                     ),
@@ -1369,7 +1369,7 @@ class _LocationSection extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.95),
+                          color: Theme.of(context).colorScheme.surface.withOpacity(0.95),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -1405,10 +1405,13 @@ class _LocationSection extends StatelessWidget {
 
 // Harita grid çizgisi painter
 class _MapGridPainter extends CustomPainter {
+  final Color gridColor;
+  const _MapGridPainter({required this.gridColor});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.grey.shade300
+      ..color = gridColor
       ..strokeWidth = 0.5;
 
     // Yatay çizgiler
@@ -1908,7 +1911,7 @@ class _PetSelectionModal extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: Theme.of(context).dividerColor,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -1943,7 +1946,7 @@ class _PetSelectionModal extends StatelessWidget {
                             AppLocalizations.of(context)!.petDetailSelectPetSubtitle(targetSpecies),
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.grey[600],
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -2017,17 +2020,17 @@ class _PetSelectionCard extends StatelessWidget {
                         imageUrl: '$apiBaseUrl${pet.photos[0]}',
                         fit: BoxFit.cover,
                         placeholder: (_, __) => Container(
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.pets, color: Colors.grey),
+                          color: context.cardColor,
+                          child: Icon(Icons.pets, color: Theme.of(context).colorScheme.outlineVariant),
                         ),
                         errorWidget: (_, __, ___) => Container(
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.pets, color: Colors.grey),
+                          color: context.cardColor,
+                          child: Icon(Icons.pets, color: Theme.of(context).colorScheme.outlineVariant),
                         ),
                       )
                     : Container(
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.pets, color: Colors.grey),
+                        color: context.cardColor,
+                        child: Icon(Icons.pets, color: Theme.of(context).colorScheme.outlineVariant),
                       ),
               ),
             ),
@@ -2048,7 +2051,7 @@ class _PetSelectionCard extends StatelessWidget {
                   Text(
                     '${pet.species} • ${pet.breed}',
                     style: TextStyle(
-                      color: Colors.grey[600],
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 13,
                     ),
                   ),
@@ -2069,21 +2072,21 @@ class _PetSelectionCard extends StatelessWidget {
                         pet.gender,
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[500],
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Icon(
                         Icons.cake,
                         size: 14,
-                        color: Colors.grey[400],
+                        color: Theme.of(context).colorScheme.outlineVariant,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         AppLocalizations.of(context)!.petDetailAgeMonths(pet.ageMonths),
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[500],
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -2123,15 +2126,15 @@ class _QrInfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.grey),
+        Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
         const SizedBox(width: 8),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+        Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
         const Spacer(),
         Text(value,
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 13,
-              color: valueColor ?? Colors.black87,
+              color: valueColor ?? Theme.of(context).colorScheme.onSurface,
             )),
       ],
     );

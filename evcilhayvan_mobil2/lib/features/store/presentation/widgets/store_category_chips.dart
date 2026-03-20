@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/category_model.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 const List<Color> _chipGradient = [
   Color(0xFF2F1BFF),
@@ -27,7 +28,7 @@ class StoreCategoryChips extends StatelessWidget {
       Padding(
         padding: const EdgeInsets.only(right: 8),
         child: _StoreChip(
-          label: 'Tümü',
+          label: AppLocalizations.of(context)!.storeCategoryAll,
           icon: Icons.apps_rounded,
           color: AppPalette.storePrimary,
           selected: selectedCategoryId == null,
@@ -90,7 +91,7 @@ class _StoreChip extends StatelessWidget {
                   end: Alignment.bottomRight,
                 )
               : null,
-          color: selected ? null : Colors.white,
+          color: selected ? null : Theme.of(context).colorScheme.surface,
           border: Border.all(
             color: selected
                 ? Colors.transparent

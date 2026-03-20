@@ -6,6 +6,7 @@ import 'package:evcilhayvan_mobil2/config/app_config.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/shimmer_box.dart';
 import 'package:evcilhayvan_mobil2/features/pets/domain/models/pet_model.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class PetCard extends StatefulWidget {
   final Pet pet;
@@ -70,9 +71,10 @@ class _PetImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final borderRadius = const BorderRadius.vertical(top: Radius.circular(20));
     final badgeColor = pet.advertType == 'mating' ? Colors.purple.shade200 : Colors.green.shade200;
-    final badgeText = pet.advertType == 'mating' ? 'Eşleştirme' : 'Sahiplendirme';
+    final badgeText = pet.advertType == 'mating' ? l10n.petCardMating : l10n.petCardAdoption;
     final badgeIcon = pet.advertType == 'mating' ? Icons.favorite : Icons.home;
 
     return Stack(
@@ -89,9 +91,9 @@ class _PetImage extends StatelessWidget {
                       imageUrl: '${AppConfig.current.apiBaseUrl}${pet.photos[0]}',
                       fit: BoxFit.cover,
                       placeholder: (context, url) => const ShimmerBox(height: 210),
-                      errorWidget: (context, url, error) => _fallback(),
+                      errorWidget: (context, url, error) => _fallback(context),
                     )
-                  : _fallback(),
+                  : _fallback(context),
             ),
           ),
         ),
@@ -124,7 +126,7 @@ class _PetImage extends StatelessWidget {
                 icon: badgeIcon,
                 label: badgeText,
                 backgroundColor: badgeColor,
-                foregroundColor: Colors.black87,
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
               ),
             ],
           ),
@@ -135,7 +137,7 @@ class _PetImage extends StatelessWidget {
             right: 16,
             child: _Badge(
               icon: Icons.verified,
-              label: 'Aşılı',
+              label: AppLocalizations.of(context)!.petCardVaccinated,
               backgroundColor: Colors.greenAccent.shade200,
               foregroundColor: Colors.green.shade900,
             ),
@@ -172,14 +174,14 @@ class _PetImage extends StatelessWidget {
     );
   }
 
-  Widget _fallback() {
+  Widget _fallback(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Color(0xFFE5E3FF),
-            Color(0xFFFDE4DF),
-          ],
+          colors: isDark
+              ? [const Color(0xFF1E1C30), const Color(0xFF2A2843)]
+              : [const Color(0xFFE5E3FF), const Color(0xFFFDE4DF)],
         ),
       ),
       child: Icon(
@@ -224,7 +226,7 @@ class _PetInfoSection extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  ownerName.isNotEmpty ? ownerName : 'Bilinmiyor',
+                  ownerName.isNotEmpty ? ownerName : AppLocalizations.of(context)!.petCardOwnerUnknown,
                   style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
@@ -267,18 +269,18 @@ class _Badge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.white.withOpacity(0.85),
+        color: backgroundColor ?? Theme.of(context).colorScheme.surface.withOpacity(0.88),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: foregroundColor ?? Colors.black87),
+          Icon(icon, size: 16, color: foregroundColor ?? Theme.of(context).colorScheme.onSurface),
           const SizedBox(width: 6),
           Text(
             label,
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              color: foregroundColor ?? Colors.black87,
+              color: foregroundColor ?? Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],

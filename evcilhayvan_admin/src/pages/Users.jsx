@@ -1,0 +1,123 @@
+import { useEffect, useState } from 'react'
+import api from '../api.js'
+import Table from '../components/Table.jsx'
+
+export default function Users() {
+  const [users, setUsers] = useState([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [q, setQ] = useState('')
+  const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [banning, setBanning] = useState(null)
+
+  useEffect(() => {
+    setLoading(true)
+    api.get('/admin/users', { params: { page, q: search } })
+      .then((res) => {
+        setUsers(res.data?.data?.users || [])
+        setTotal(res.data?.data?.total || 0)
+      })
+      .finally(() => setLoading(false))
+  }, [page, search])
+
+  async function toggleBan(user) {
+    setBanning(user._id)
+    try {
+      const res = await api.patch(`/admin/users/${user._id}/ban`)
+      const updated = res.data?.data?.user
+      setUsers((prev) =>
+        prev.map((u) => (u._id === user._id ? { ...u, role: updated.role } : u))
+      )
+    } catch (err) {
+      alert(err.response?.data?.message || 'İşlem başarısız')
+    } finally {
+      setBanning(null)
+    }
+  }
+
+  function handleSearch(e) {
+    e.preventDefault()
+    setSearch(q)
+    setPage(1)
+  }
+
+  const columns = [
+    { key: 'name', label: 'Ad' },
+    { key: 'email', label: 'E-posta' },
+    { key: 'role', label: 'Rol', render: (u) => (
+      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+        u.role === 'banned' ? 'bg-red-100 text-red-700'
+          : u.role === 'admin' ? 'bg-purple-100 text-purple-700'
+          : u.role === 'seller' ? 'bg-blue-100 text-blue-700'
+          : 'bg-gray-100 text-gray-700'
+      }`}>{u.role}</span>
+    )},
+    { key: 'city', label: 'Şehir' },
+    { key: 'createdAt', label: 'Kayıt', render: (u) =>
+      u.createdAt ? new Date(u.createdAt).toLocaleDateString('tr-TR') : '—'
+    },
+    { key: 'actions', label: '', render: (u) =>
+      u.role !== 'admin' ? (
+        <button
+          onClick={() => toggleBan(u)}
+          disabled={banning === u._id}
+          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+            u.role === 'banned'
+              ? 'bg-green-100 text-green-700 hover:bg-green-200'
+              : 'bg-red-100 text-red-700 hover:bg-red-200'
+          }`}
+        >
+          {banning === u._id ? '...' : u.role === 'banned' ? 'Ban Kaldır' : 'Banla'}
+        </button>
+      ) : null
+    },
+  ]
+
+  const totalPages = Math.ceil(total / 20)
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Kullanıcılar</h1>
+        <span className="text-sm text-gray-500">{total} kullanıcı</span>
+      </div>
+
+      <form onSubmit={handleSearch} className="flex gap-2 mb-6">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="İsim veya e-posta ara..."
+          className="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+        />
+        <button type="submit" className="bg-indigo-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
+          Ara
+        </button>
+      </form>
+
+      <div className="bg-white rounded-2xl shadow-sm p-4">
+        <Table columns={columns} rows={users} loading={loading} emptyText="Kullanıcı bulunamadı" />
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2 mt-6">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-4 py-2 rounded-xl border text-sm disabled:opacity-40 hover:bg-gray-50"
+          >
+            ← Önceki
+          </button>
+          <span className="px-4 py-2 text-sm text-gray-500">{page} / {totalPages}</span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-4 py-2 rounded-xl border text-sm disabled:opacity-40 hover:bg-gray-50"
+          >
+            Sonraki →
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}

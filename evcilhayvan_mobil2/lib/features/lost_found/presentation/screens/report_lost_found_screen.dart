@@ -323,11 +323,11 @@ class _ReportLostFoundScreenState extends ConsumerState<ReportLostFoundScreen> {
                           width: 100,
                           height: 100,
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
+                            color: Theme.of(context).colorScheme.surfaceVariant,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.shade400, style: BorderStyle.solid),
+                            border: Border.all(color: Theme.of(context).dividerColor),
                           ),
-                          child: const Icon(Icons.add_a_photo, color: Colors.grey, size: 32),
+                          child: Icon(Icons.add_a_photo, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 32),
                         ),
                       ),
                   ],
@@ -454,7 +454,6 @@ class _ReportLostFoundScreenState extends ConsumerState<ReportLostFoundScreen> {
   InputDecoration _inputDeco(String label) => InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.white,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       );
 }

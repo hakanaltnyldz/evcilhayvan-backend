@@ -134,11 +134,8 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text(isEditing ? l10n.addressEditTitle : l10n.addressNewTitle),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
         elevation: 0,
       ),
       body: SingleChildScrollView(

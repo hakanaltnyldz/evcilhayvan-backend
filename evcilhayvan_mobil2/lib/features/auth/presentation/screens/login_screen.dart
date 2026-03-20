@@ -84,11 +84,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: AppPalette.backgroundGradient,
+            colors: Theme.of(context).brightness == Brightness.dark
+                ? const [Color(0xFF0E0C1E), Color(0xFF1A1232)]
+                : AppPalette.backgroundGradient,
           ),
         ),
         child: SafeArea(
@@ -177,7 +179,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     labelText: label,
     prefixIcon: Icon(icon),
     filled: true,
-    fillColor: Colors.white,
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
   );
 }

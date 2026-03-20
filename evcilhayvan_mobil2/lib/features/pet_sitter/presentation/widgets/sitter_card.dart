@@ -33,7 +33,7 @@ class SitterCard extends StatelessWidget {
                 height: 120,
                 child: photo.isNotEmpty
                     ? CachedNetworkImage(imageUrl: _resolveUrl(photo), fit: BoxFit.cover,
-                        placeholder: (_, __) => Container(color: Colors.grey.shade200),
+                        placeholder: (_, __) => Container(color: Theme.of(context).colorScheme.surfaceVariant),
                         errorWidget: (_, __, ___) => _placeholder())
                     : _placeholder(),
               ),
@@ -100,14 +100,14 @@ class SitterCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
-                            color: sitter.availability ? Colors.green.shade50 : Colors.grey.shade100,
+                            color: sitter.availability ? Colors.green.withOpacity(0.1) : Theme.of(context).colorScheme.surfaceVariant,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
                             sitter.availability ? 'Musait' : 'Dolu',
                             style: TextStyle(
                               fontSize: 11, fontWeight: FontWeight.w600,
-                              color: sitter.availability ? Colors.green.shade700 : Colors.grey,
+                              color: sitter.availability ? Colors.green.shade700 : Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ),

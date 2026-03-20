@@ -176,7 +176,6 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
   InputDecoration _inputDeco(String label) => InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.white,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       );
 }

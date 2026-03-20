@@ -134,7 +134,6 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     labelText: label,
     prefixIcon: Icon(icon),
     filled: true,
-    fillColor: Colors.white,
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
   );
 }

@@ -1344,5 +1344,867 @@
     }
   },
   "vetSearchPrompt": "Type above to search or share your location",
-  "vetSearchNoResults": "No results found"
+  "vetSearchNoResults": "No results found",
+
+  "vetHomeTabSearch": "Search",
+  "vetHomeTabAppointments": "Appointments",
+  "vetHomeTabVaccine": "Vaccine Schedule",
+  "vetHomeSearchHint": "Search veterinary clinic...",
+  "vetHomeNearMe": "Near Me",
+  "vetHomeSaveClinic": "Register Clinic",
+  "vetHomeGoogleSearch": "Search with Google",
+  "vetHomeReminders": "Reminders",
+  "vetHomeNearbyTitle": "Nearby Veterinarians",
+  "vetHomeNearbyPermRequired": "Allow location access to see nearby vets",
+  "vetHomeNearbyEmpty": "No nearby vets found",
+  "vetHomeApptsEmpty": "No appointments yet",
+  "vetHomeApptsEmptyDesc": "Search for a vet and book an appointment",
+  "vetHomeVaccineTitle": "Vaccine Reminders",
+  "vetHomeVaccineEmpty": "No upcoming vaccine reminders",
+  "vetHomeVaccineEmptyDesc": "View the vaccine schedule from your pet's profile page",
+  "vetHomeVaccineOverdue": "Overdue",
+  "vetHomeVaccineUpcoming": "Upcoming",
+  "vetHomeLoadError": "Error: {error}",
+  "@vetHomeLoadError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "storeHomeLive": "Live Store",
+  "storeHomeLiveDesc": "Real stores and real products are here.",
+  "storeHomeQuickExplore": "Quick explore",
+  "storeHomeAll": "All",
+  "storeHomeFeatured": "Featured stores",
+  "storeHomeNoDesc": "No description.",
+  "storeHomeGoToStore": "Go to store",
+  "storeHomeProducts": "Products",
+  "storeHomeLatest": "Latest",
+  "storeNoDescAdded": "No description added.",
+  "storeHomeCategoryLoadErr": "Could not load categories.",
+  "storeHomeFeaturedEmpty": "No featured stores for now.",
+  "storeHomeStoresLoadErr": "Could not load stores.",
+  "storeHomeProductsEmpty": "No products found",
+  "storeHomeProductsNotFound": "No products match your search criteria.",
+  "storeHomeProductsNone": "No products added yet.",
+  "storeHomeProductsLoadErr": "Could not load products.",
+  "storeHomeFiltersClear": "Clear filters",
+  "storeHomeMyStoreLoadErr": "Could not get your store: {error}",
+  "@storeHomeMyStoreLoadErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "storeHomeCategoryNotFound": "Category not found.",
+  "storeHomeSearchHint": "Search product or store",
+  "storeHomeSearchBtn": "Search",
+  "storeHomeOpenStore": "Open a store, showcase your products!",
+  "storeHomeOpenStoreDesc": "Apply in minutes, reach pet lovers.",
+  "storeHomeOpenStoreBtn": "Open Store",
+  "storeHomeRetry": "Retry",
+  "storeHomeSoldOut": "Sold Out",
+  "storeHomeLastStock": "Last {count}",
+  "@storeHomeLastStock": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "storePriceAsc": "Price ↑",
+  "storePriceDesc": "Price ↓",
+  "storeNameAz": "A–Z",
+
+  "storesListTitle": "Stores",
+  "storesListSearchHint": "Search store...",
+  "storesListEmpty": "No stores yet",
+  "storesListSearchEmpty": "No search results found",
+  "storesListLoadErr": "Could not load stores",
+  "storesListRetry": "Retry",
+
+  "storeDetailTitle": "Store",
+  "storeDetailLoadErr": "Could not load store",
+  "storeDetailProductsLoadErr": "Could not load products",
+  "storeDetailNoProducts": "This store has no products yet.",
+  "storeDetailTotalProducts": "Total products",
+  "storeDetailAddProduct": "Add product",
+  "storeDetailFavorited": "In favorites",
+  "storeDetailAddToFavorites": "Add to favorites",
+  "storeDetailRemovedFav": "Removed from favorites",
+  "storeDetailAddedFav": "Added to favorites",
+  "storeDetailFavError": "Error: {error}",
+  "@storeDetailFavError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "storeDetailShare": "Share",
+  "storeDetailProductActive": "Active",
+  "storeDetailProductInactive": "Inactive",
+  "storeDetailProductSoldOut": "Sold Out",
+  "storeDetailProductStock": "Stock: {count}",
+  "@storeDetailProductStock": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "storeDetailMenuEdit": "Edit",
+  "storeDetailMenuToggle": "Active/Inactive",
+  "storeDetailMenuDelete": "Delete",
+  "storeDetailDeleteTitle": "Delete product",
+  "storeDetailDeleteContent": "Are you sure you want to delete this product?",
+  "storeDetailDeleteCancel": "Cancel",
+  "storeDetailProductActivated": "Product activated.",
+  "storeDetailProductDeactivated": "Product deactivated.",
+  "storeDetailProductUpdateErr": "Could not update product: {error}",
+  "@storeDetailProductUpdateErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "storeDetailProductDeleted": "Product deleted.",
+  "storeDetailProductDeleteErr": "Could not delete product: {error}",
+  "@storeDetailProductDeleteErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "storeDetailRetry": "Retry",
+
+  "applySellerTitle": "Open Store",
+  "applySellerLogoTitle": "Select Store Logo",
+  "applySellerPickGallery": "Choose from Gallery",
+  "applySellerPickCamera": "Open Camera",
+  "applySellerLogoSection": "Store Logo",
+  "applySellerLogoAdd": "Add Logo",
+  "applySellerLogoHint": "Square format, minimum 200x200 pixels recommended",
+  "applySellerInfoSection": "Store Information",
+  "applySellerNameLabel": "Store Name *",
+  "applySellerNameHint": "E.g.: Happy Pets Store",
+  "applySellerNameRequired": "Store name is required",
+  "applySellerNameTooShort": "Must be at least 3 characters",
+  "applySellerDescLabel": "Store Description",
+  "applySellerDescHint": "Introduce your store...",
+  "applySellerTermsTitle": "Seller Agreement",
+  "applySellerTermsAccepted": "Accepted",
+  "applySellerTermsRead": "I have read and accept the seller agreement",
+  "applySellerTermsDialogTitle": "Seller Agreement",
+  "applySellerTermsAcceptBtn": "I Have Read and Accept",
+  "applySellerStepLogo": "Logo",
+  "applySellerStepInfo": "Info",
+  "applySellerStepContract": "Agreement",
+  "applySellerOpenBtn": "Open My Store",
+  "applySellerApprovalNote": "You can start adding products after your store is approved.",
+  "applySellerSuccessTitle": "Congratulations!",
+  "applySellerSuccessDesc": "Your store \"{storeName}\" has been successfully created!",
+  "@applySellerSuccessDesc": {
+    "placeholders": {
+      "storeName": {"type": "String"}
+    }
+  },
+  "applySellerGoToStore": "Go to My Store",
+  "applySellerGenericError": "An error occurred, please try again.",
+
+  "addProductTitle": "Add Product",
+  "addProductEditTitle": "Edit Product",
+  "addProductPhotosSection": "Product Photos",
+  "addProductPickGallery": "Choose from Gallery",
+  "addProductPickGallerySub": "Select from your existing photos",
+  "addProductPickCamera": "Open Camera",
+  "addProductPickCameraSub": "Take a new photo",
+  "addProductPickDialogTitle": "Add Photo",
+  "addProductAddBtn": "Add",
+  "addProductMaxWarning": "You can add at most {max} photos",
+  "@addProductMaxWarning": {
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "addProductPhotosHint": "Add photos of your product (max {max})",
+  "@addProductPhotosHint": {
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "addProductTitleField": "Product Title",
+  "addProductTitleHint": "E.g.: Colorful cat toy",
+  "addProductTitleRequired": "Title is required",
+  "addProductCategoryLabel": "Category",
+  "addProductCategoryRequired": "Select a category",
+  "addProductDescLabel": "Description",
+  "addProductDescHint": "Product features, size, material...",
+  "addProductPriceLabel": "Price",
+  "addProductPriceRequired": "Required",
+  "addProductPriceInvalid": "Invalid",
+  "addProductStockLabel": "Stock",
+  "addProductActiveLabel": "Product Active",
+  "addProductInactiveLabel": "Product Inactive",
+  "addProductSaving": "Saving...",
+  "addProductSaveBtn": "Save",
+  "addProductUpdated": "Product updated!",
+  "addProductAdded": "Product added!",
+  "addProductCategoryLoadErr": "Could not load categories.",
+  "addProductCategoryNotFound": "Category not found.",
+  "addProductRetry": "Retry",
+  "addProductCategoryLoading": "Loading {label}...",
+  "@addProductCategoryLoading": {
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+
+  "sellerOrdersTitle": "My Orders",
+  "sellerOrdersTabAll": "All",
+  "sellerOrdersTabPending": "Pending",
+  "sellerOrdersTabProcessing": "Processing",
+  "sellerOrdersTabShipped": "Shipped",
+  "sellerOrdersTabCompleted": "Completed",
+  "sellerOrdersEmpty": "No orders yet",
+  "sellerOrdersEmptyDesc": "Orders for your products will appear here",
+  "sellerOrdersLoadErr": "Could not load orders: {error}",
+  "@sellerOrdersLoadErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "sellerOrdersCategoryEmpty": "No orders in this category",
+  "sellerOrdersStatusUpdated": "Order status updated",
+  "sellerOrdersStatusError": "Error: {error}",
+  "@sellerOrdersStatusError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "sellerOrdersStatTotal": "Total",
+  "sellerOrdersStatPending": "Pending",
+  "sellerOrdersStatSales": "Sales",
+  "sellerOrdersStatRevenue": "Revenue",
+  "sellerOrdersPrepare": "Prepare",
+  "sellerOrdersShip": "Ship",
+  "sellerOrdersDelivered": "Delivered",
+  "sellerOrdersItemCount": "{count} items",
+  "@sellerOrdersItemCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "sellerOrdersItemQty": "{qty} pcs x ${price}",
+  "@sellerOrdersItemQty": {
+    "placeholders": {
+      "qty": {"type": "int"},
+      "price": {"type": "String"}
+    }
+  },
+
+  "petCardMating": "Mating",
+  "petCardAdoption": "Adoption",
+  "petCardVaccinated": "Vaccinated",
+  "petCardOwnerUnknown": "Unknown",
+
+  "apptCreateTitle": "Create Appointment",
+  "apptCreateSelectPet": "Select Pet",
+  "apptCreateDate": "Date",
+  "apptCreateTime": "Time",
+  "apptCreateReason": "Reason for Appointment",
+  "apptCreateNotes": "Notes (optional)",
+  "apptCreateBtn": "Create Appointment",
+  "apptCreateSuccess": "Appointment created!",
+  "apptCreateSelectDateBtn": "Select date",
+  "apptCreateNoPets": "You haven't added any pets yet",
+  "apptCreateNoSlots": "No available slots on this date",
+  "apptCreateValidation": "Please select pet, date and time",
+  "apptCreateSlotsError": "Could not get slots: {error}",
+  "@apptCreateSlotsError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "apptCreatePetsError": "Could not load pets: {error}",
+  "@apptCreatePetsError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "apptCreateError": "Error: {error}",
+  "@apptCreateError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "apptDetailTitle": "Appointment Detail",
+  "apptDetailDate": "Date and Time",
+  "apptDetailVet": "Veterinarian",
+  "apptDetailPet": "Pet",
+  "apptDetailReason": "Reason for Appointment",
+  "apptDetailNotes": "Notes",
+  "apptDetailVetNotes": "Vet Notes",
+  "apptDetailCancelBtn": "Cancel Appointment",
+  "apptDetailCancelTitle": "Cancel Appointment",
+  "apptDetailCancelContent": "Are you sure you want to cancel the appointment?",
+  "apptDetailCancelConfirm": "Cancel",
+  "apptDetailCancelBack": "Go Back",
+  "apptDetailCancelSuccess": "Appointment cancelled",
+  "apptDetailError": "Error: {error}",
+  "@apptDetailError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "vetRegisterTitle": "Register Clinic",
+  "vetRegisterClinicName": "Clinic Name *",
+  "vetRegisterAddress": "Address *",
+  "vetRegisterPhone": "Phone",
+  "vetRegisterEmail": "Email",
+  "vetRegisterDesc": "Description",
+  "vetRegisterLocationLabel": "Location: {lat}, {lng}",
+  "@vetRegisterLocationLabel": {
+    "placeholders": {
+      "lat": {"type": "String"},
+      "lng": {"type": "String"}
+    }
+  },
+  "vetRegisterLocationNone": "No location added",
+  "vetRegisterGetLocation": "Get Location",
+  "vetRegisterGettingLocation": "Getting...",
+  "vetRegisterSpecies": "Species Served",
+  "vetRegisterSaveBtn": "Save",
+  "vetRegisterSuccess": "Clinic registered and linked to your account!",
+  "vetRegisterClinicNameRequired": "Clinic name is required",
+  "vetRegisterAddressRequired": "Address is required",
+  "vetRegisterLocationError": "Could not get location: {error}",
+  "@vetRegisterLocationError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "vetRegisterLocationDenied": "Location permission denied. Please allow it in settings.",
+  "vetRegisterError": "Error: {error}",
+  "@vetRegisterError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "searchHint": "Search listings, stores or vets...",
+  "searchTypeHint": "Type what you want to search",
+  "searchTypeHintSub": "You can search listings, stores or vets",
+  "searchHistory": "Recent Searches",
+  "searchClearHistory": "Clear All",
+  "searchError": "Search error: {error}",
+  "@searchError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "searchNoResults": "No results found for \"{query}\"",
+  "@searchNoResults": {
+    "placeholders": {
+      "query": {"type": "String"}
+    }
+  },
+  "searchSectionListings": "Listings",
+  "searchSectionStores": "Stores",
+  "searchSectionVets": "Vets",
+  "searchStoreSubtitle": "Store",
+  "searchVetSubtitle": "Vet",
+
+  "aiAssistantTitle": "Pati Assistant",
+  "aiModeReset": "Reset",
+  "aiModeDiagnosis": "Diagnosis",
+  "aiModeGeneral": "General",
+  "aiSymptomLabel": "Select symptoms (multiple):",
+  "aiDiagnoseBtn": "Diagnose →",
+  "aiSymptomSelected": "Selected: {symptoms}",
+  "@aiSymptomSelected": {
+    "placeholders": {
+      "symptoms": {"type": "String"}
+    }
+  },
+  "aiWelcomeDiagnosis": "Select or type symptom → Get diagnosis",
+  "aiWelcomeGeneral": "What do you want to ask about your pet?",
+  "aiWelcomeDiagnosisSub": "Select the species and symptoms above,\nor type directly in the text box.",
+  "aiWelcomeGeneralSub": "Get short and practical answers\nabout care, nutrition, and training.",
+  "aiExampleLabel": "Example questions:",
+  "aiInputDiagnosisHint": "Add extra info or type directly...",
+  "aiInputGeneralHint": "Type your question...",
+  "aiErrorResponse": "Sorry, I can't respond right now. Please try again.",
+  "aiNoReply": "No reply received.",
+
+  "guideTitle": "Guide Pati",
+  "guideNewChat": "New chat",
+  "guideWelcome": "Hello! 👋",
+  "guideWelcomeSub": "What do you want to do?\nLet me help you the fastest way.",
+  "guideQuickOptions": "Quick options:",
+  "guideNavigateBtn": "Take me there →",
+  "guideInputHint": "What do you want to do?",
+  "guideConnError": "Connection error, please try again.",
+  "guideUnknown": "I didn't understand.",
+
+  "monthJan": "Jan",
+  "monthFeb": "Feb",
+  "monthMar": "Mar",
+  "monthApr": "Apr",
+  "monthMay": "May",
+  "monthJun": "Jun",
+  "monthJul": "Jul",
+  "monthAug": "Aug",
+  "monthSep": "Sep",
+  "monthOct": "Oct",
+  "monthNov": "Nov",
+  "monthDec": "Dec",
+
+  "sitterFindTitle": "Find a Sitter",
+  "sitterMyBookingsTooltip": "My Bookings",
+  "sitterServiceAll": "All",
+  "sitterServiceWalking": "Walking",
+  "sitterServiceHomeSitting": "Home Sitting",
+  "sitterServiceBoarding": "Boarding",
+  "sitterServiceDaycare": "Daycare",
+  "sitterServiceGrooming": "Grooming",
+  "sitterEmptyTitle": "No sitters found nearby",
+  "sitterEmptySubtitle": "Create the first sitter profile and serve other users!",
+  "sitterBecomeSitterBtn": "Become a Sitter",
+  "sitterEditProfile": "Edit Profile",
+  "sitterBasicInfo": "Basic Information",
+  "sitterDisplayName": "Display Name *",
+  "sitterDisplayNameRequired": "Name is required",
+  "sitterBio": "About / Introduction",
+  "sitterExperience": "Experience",
+  "sitterLocation": "Location",
+  "sitterUseLocation": "Use My Location",
+  "sitterLocationObtained": "Location Obtained ✓",
+  "sitterAddress": "Address / Neighborhood",
+  "sitterSpeciesTitle": "Which Animals Do You Work With?",
+  "sitterSpeciesDog": "Dog",
+  "sitterSpeciesCat": "Cat",
+  "sitterSpeciesBird": "Bird",
+  "sitterSpeciesRabbit": "Rabbit",
+  "sitterSpeciesOther": "Other",
+  "sitterServicesTitle": "Services You Offer",
+  "sitterServicesAdd": "Add",
+  "sitterServicesAllAdded": "All services added",
+  "sitterServiceType": "Service Type",
+  "sitterServiceWalkingLabel": "Walking",
+  "sitterServiceHomeSittingLabel": "Home Sitting",
+  "sitterServiceBoardingLabel": "Boarding",
+  "sitterServiceDaycareLabel": "Daycare",
+  "sitterServiceGroomingLabel": "Grooming/Care",
+  "sitterHourlyPrice": "Hourly Rate (₺)",
+  "sitterDailyPrice": "Daily Rate (₺)",
+  "sitterSpeciesRequired": "Select at least one animal type",
+  "sitterLocationPermRequired": "Location permission required",
+  "sitterLocationErr": "Could not get location: {error}",
+  "@sitterLocationErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "sitterProfileUpdated": "Profile updated!",
+  "sitterProfileCreated": "Sitter profile created!",
+  "sitterSubmitErr": "Error: {error}",
+  "@sitterSubmitErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "sitterCreateBtn": "Create Sitter Profile",
+  "sitterUpdateBtn": "Update Profile",
+
+  "bookingsTitle": "Bookings",
+  "bookingsTabMine": "My Bookings",
+  "bookingsTabIncoming": "Incoming Requests",
+  "bookingsEmptyTitle": "No bookings yet",
+  "bookingsEmptySubtitle": "Confirmed bookings will appear here.",
+  "bookingsOwnerLabel": "Owner",
+  "bookingsSitterLabel": "Sitter",
+  "bookingsAccept": "Accept",
+  "bookingsReject": "Reject",
+  "bookingsMarkCompleted": "Mark as Completed",
+  "bookingsReview": "Review",
+  "bookingsReviewDialogTitle": "Rate the Sitter",
+  "bookingsReviewHint": "Comment (optional)",
+  "bookingsReviewCancel": "Cancel",
+  "bookingsReviewSend": "Send",
+  "bookingsActionErr": "Error: {error}",
+  "@bookingsActionErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "adoptionAppsTitle": "Adoption Applications",
+  "adoptionAppsTabInbox": "Received Applications",
+  "adoptionAppsTabSent": "Sent",
+  "adoptionAppsInboxEmpty": "No incoming applications",
+  "adoptionAppsInboxEmptyDesc": "Applications for your adoption listings will appear here.",
+  "adoptionAppsSentEmpty": "No sent applications",
+  "adoptionAppsSentEmptyDesc": "Applications you sent to adoption listings will appear here.",
+  "adoptionAppsErrGeneric": "Error: {error}",
+  "@adoptionAppsErrGeneric": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "adoptionAppsAcceptTitle": "Accept Application",
+  "adoptionAppsRejectTitle": "Reject Application",
+  "adoptionAppsAcceptContent": "Are you sure you want to accept this application? A conversation will be started.",
+  "adoptionAppsRejectContent": "Are you sure you want to reject this application?",
+  "adoptionAppsCancel": "Cancel",
+  "adoptionAppsAcceptBtn": "Accept",
+  "adoptionAppsRejectBtn": "Reject",
+  "adoptionAppsAcceptedStarted": "Application accepted! Conversation started.",
+  "adoptionAppsAccepted": "Application accepted",
+  "adoptionAppsRejected": "Application rejected",
+  "adoptionAppsGoToChat": "Go to Chat",
+  "adoptionAppsApplicant": "Applicant: {name}",
+  "@adoptionAppsApplicant": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "adoptionAppsListing": "Listing",
+  "adoptionAppsStatusAccepted": "Accepted",
+  "adoptionAppsStatusRejected": "Rejected",
+  "adoptionAppsStatusCancelled": "Cancelled",
+  "adoptionAppsStatusPending": "Pending",
+  "adoptionAppsTimelineApplication": "Application",
+  "adoptionAppsTimelineReview": "Review",
+  "adoptionAppsTimelineApproval": "Approval",
+  "adoptionAppsTimelineCompleted": "Completed",
+  "adoptionAppsTimelineRejected": "Rejected",
+  "adoptionAppsTimelineCancelled": "Cancelled",
+  "adoptionAppsTimelineDecision": "Decision",
+
+  "adoptionApplyTitle": "Adoption Application",
+  "adoptionApplyInfoText": "Your application will be sent to the listing owner. If accepted, a conversation will be started.",
+  "adoptionApplyNoteLabel": "Application Note (optional)",
+  "adoptionApplyNoteHint": "Introduce yourself, explain why you want to adopt this animal...",
+  "adoptionApplyErrGeneric": "Error: {error}",
+  "@adoptionApplyErrGeneric": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "adoptionApplySuccessTitle": "Application Sent!",
+  "adoptionApplySuccessContent": "Your adoption application has been sent to the listing owner. You can track the result in My Applications.",
+  "adoptionApplySuccessOk": "OK",
+  "adoptionApplySending": "Sending...",
+  "adoptionApplySendBtn": "Send Application",
+
+  "lostFoundTitle2": "Lost & Found",
+  "lostFoundListView": "List View",
+  "lostFoundMapView": "Map View",
+  "lostFoundLostTab": "Lost",
+  "lostFoundFoundTab": "Found",
+  "lostFoundEmptyTitle": "No listings nearby",
+  "lostFoundEmptySubtitle": "Lost or found animal listings near you will appear here.",
+  "lostFoundCreateBtn": "Create Listing",
+
+  "eventsTitle2": "Events",
+  "eventsMyEventsTooltip": "My Events",
+  "eventsCreateBtn": "Create Event",
+  "eventsCatAll": "All",
+  "eventsCatPark": "Park",
+  "eventsCatAdoption": "Adopt",
+  "eventsCatTraining": "Training",
+  "eventsCatCompetition": "Race",
+  "eventsCatGrooming": "Care",
+  "eventsCatHealth": "Health",
+  "eventsEmptyTitle": "No Events Found",
+  "eventsEmptySubtitle": "No events in this area or category yet.",
+  "eventsLocationBannerText": "Location required for nearby events",
+  "eventsLocationBannerBtn": "Allow",
+
+  "myEventsTitle": "My Events",
+  "myEventsTabAttending": "Attending",
+  "myEventsTabOrganized": "Organizing",
+  "myEventsEmptyTitle": "No Events",
+  "myEventsEmptySubtitle": "You have no events in this category yet.",
+
+  "createPostTitle": "Create Post",
+  "createPostShareBtn": "Share",
+  "createPostPhotosLabel": "Photos",
+  "createPostAddBtn": "Add",
+  "createPostEmptyHint": "Tap to add photos",
+  "createPostHint": "What are you sharing? Tell us about your adorable pet...",
+  "createPostMaxImages": "You can add up to 4 photos",
+  "createPostValidation": "Please write something or add a photo",
+  "createPostErr": "Error: {error}",
+  "@createPostErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "connectTitle": "Discover",
+  "connectSocialFeed": "Social Feed",
+  "connectSocialFeedSub": "Follow pet owners",
+  "connectSearch": "Search",
+  "connectSearchSub": "Find pets, stores and vets",
+  "connectMapDiscover": "Discover on Map",
+  "connectMapDiscoverSub": "View nearby listings on the map",
+  "connectFavorites": "Favorites",
+  "connectFavoritesSub": "Saved listings",
+
+  "reviewAddTitle": "Write a Review",
+  "reviewEditTitle": "Edit Review",
+  "reviewProductLabel": "Product",
+  "reviewRatingLabel": "Your Rating *",
+  "reviewCommentLabel": "Your Comment (Optional)",
+  "reviewCommentHint": "Share your thoughts about the product...",
+  "reviewSubmitBtn": "Submit",
+  "reviewUpdateBtn": "Update",
+  "reviewRating1": "Very Bad",
+  "reviewRating2": "Bad",
+  "reviewRating3": "Average",
+  "reviewRating4": "Good",
+  "reviewRating5": "Excellent",
+  "reviewNoRatingErr": "Please select a rating",
+  "reviewUpdated": "Review updated",
+  "reviewAdded": "Review added",
+  "reviewErr": "Error: {error}",
+  "@reviewErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "reviewsSectionTitle": "Reviews",
+  "reviewsSectionEdit": "Edit",
+  "reviewsSectionAdd": "Write a Review",
+  "reviewsCount": "{count} reviews",
+  "@reviewsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "reviewsVerifiedBuyer": "Buyer",
+  "reviewsLoadErr": "Could not load reviews: {error}",
+  "@reviewsLoadErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "reviewsEmptyTitle": "No reviews yet",
+  "reviewsEmptySubtitle": "Be the first to review!",
+
+  "editProfileTitle": "Edit Profile",
+  "editProfilePhotoUpdated": "Profile photo updated!",
+  "editProfileNameLabel": "Full Name",
+  "editProfileCityLabel": "City",
+  "editProfileAboutLabel": "About Me",
+  "editProfileNameRequired": "Name cannot be empty",
+  "editProfileSaveBtn": "Save Changes",
+
+  "onboardingSkip": "Skip",
+  "onboardingNext": "Continue",
+  "onboardingStart": "Let's Get Started!",
+  "onboardingPage1Title": "Discover Your Pet Companion",
+  "onboardingPage1Subtitle": "Browse thousands of pet listings. Find the right friend for adoption or matching.",
+  "onboardingPage2Title": "Matching & Adoption",
+  "onboardingPage2Subtitle": "Match or adopt pets based on birth dates, breed and location filters.",
+  "onboardingPage3Title": "Health Tracking",
+  "onboardingPage3Subtitle": "Keep your friend's health under control with vaccination schedule, vet appointments and health journal.",
+  "onboardingPage4Title": "Store & Community",
+  "onboardingPage4Subtitle": "Buy pet products, hire sitters, join events and be part of the social community.",
+
+  "adminAppsTitle": "Seller Applications",
+  "adminAppsStatus": "Status: {status}",
+  "@adminAppsStatus": {
+    "placeholders": {
+      "status": {"type": "String"}
+    }
+  },
+  "adminAppsLoadErr": "Could not load applications.",
+
+  "productDetailOwnProduct": "This is your product",
+  "productDetailOwnProductErr": "You cannot add your own products to cart",
+  "productDetailOutOfStock": "This product is out of stock",
+  "productDetailMaxStock": "You can add maximum {stock} items",
+  "@productDetailMaxStock": {
+    "placeholders": {
+      "stock": {"type": "int"}
+    }
+  },
+  "productDetailAddedToCart": "{count} item(s) added to cart",
+  "@productDetailAddedToCart": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "productDetailGoToCart": "Go to Cart",
+  "productDetailAddErr": "Could not add to cart: {error}",
+  "@productDetailAddErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "productDetailShareSoon": "Share feature coming soon",
+  "productDetailAddingToCart": "Adding...",
+  "productDetailAddToCartBtn": "Add to Cart",
+  "productDetailNoTitle": "No product name",
+  "productDetailNoDesc": "No description",
+  "productDetailStock": "Stock: {count}",
+  "@productDetailStock": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "productDetailNotFound": "Product not found.",
+
+  "sellerApplyTitle": "Become a Seller",
+  "sellerApplyCompanyName": "Company Name",
+  "sellerApplyCompanyTitle": "Company Title",
+  "sellerApplyTaxNumber": "Tax Number",
+  "sellerApplyTaxOffice": "Tax Office",
+  "sellerApplyAddress": "Address",
+  "sellerApplyContact": "Contact",
+  "sellerApplyIban": "IBAN",
+  "sellerApplyRequired": "Required",
+  "sellerApplyKvkk": "I approve the KVKK text",
+  "sellerApplyContract": "I approve the seller agreement",
+  "sellerApplyApprovalsRequired": "Approvals are required",
+  "sellerApplySending": "Sending...",
+  "sellerApplySendBtn": "Submit Application",
+  "sellerApplyFailed": "Application could not be sent.",
+  "sellerApplyPending": "Your application is under review",
+
+  "productsPageTitle": "My Products",
+  "productsActive": "Active",
+  "productsPassive": "Inactive",
+  "productsLoadErr": "Could not load products.",
+  "productsStockStatus": "Stock: {stock} • {status}",
+  "@productsStockStatus": {
+    "placeholders": {
+      "stock": {"type": "int"},
+      "status": {"type": "String"}
+    }
+  },
+
+  "productAddTitle": "Add Product",
+  "productAddName": "Product Name",
+  "productAddRequired": "Required",
+  "productAddCategory": "Category",
+  "productAddNoCategoryFound": "No category found.",
+  "productAddCategoryLoading": "Loading categories...",
+  "productAddCategoryLoadErr": "Could not load categories: {error}",
+  "@productAddCategoryLoadErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "productAddCategorySelect": "Select category",
+  "productAddDescription": "Description",
+  "productAddPrice": "Price",
+  "productAddStock": "Stock",
+  "productAddSaving": "Saving...",
+  "productAddSaveBtn": "Save",
+
+  "productEditTitle": "Edit Product",
+  "productEditUpdating": "Updating...",
+  "productEditUpdateBtn": "Update",
+  "productEditFailed": "Update failed.",
+  "productEditActive": "Active",
+
+  "storeCategoryAll": "All",
+
+  "productCardAddedToCart": "{title} added to cart",
+  "@productCardAddedToCart": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "productCardAddErr": "Could not add to cart: {error}",
+  "@productCardAddErr": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "productCardNoTitle": "No product name",
+  "aiSpeciesDog": "Dog",
+  "aiSpeciesCat": "Cat",
+  "aiSpeciesBird": "Bird",
+  "aiSpeciesOther": "Other",
+  "aiSymptomLossOfAppetite": "Loss of appetite",
+  "aiSymptomFever": "Fever",
+  "aiSymptomDiarrhea": "Diarrhea",
+  "aiSymptomVomiting": "Vomiting",
+  "aiSymptomCough": "Cough",
+  "aiSymptomShortnessOfBreath": "Shortness of breath",
+  "aiSymptomLethargy": "Lethargy",
+  "aiSymptomBloodyStool": "Bloody stool",
+  "aiSymptomExcessiveItching": "Excessive itching",
+  "aiSymptomHairLoss": "Hair loss",
+  "aiSymptomLimping": "Limping",
+  "aiSymptomExcessiveThirst": "Excessive thirst",
+  "aiSymptomUnableToUrinate": "Unable to urinate",
+  "aiSymptomBloatedBelly": "Bloated belly",
+  "aiSymptomLossOfConsciousness": "Loss of consciousness",
+  "aiSymptomRunnyNose": "Runny nose",
+  "aiSymptomEyeDischarge": "Eye discharge",
+  "aiSymptomBreathingDifficulty": "Breathing difficulty",
+  "aiSymptomWeightLoss": "Weight loss",
+  "aiSymptomFeatherPlucking": "Feather plucking",
+  "aiSymptomBloodyUrine": "Bloody urine",
+  "aiSymptomJaundice": "Jaundice",
+  "aiSymptomSeizures": "Seizure / Tremors",
+  "aiSymptomFeatherLoss": "Feather loss",
+  "aiSymptomNotEating": "Not eating",
+  "aiSymptomPuffed": "Swollen / Puffy",
+  "aiSymptomUnableToStand": "Unable to stand",
+  "aiSymptomHavingSeizure": "Having seizures",
+  "aiSymptomBleeding": "Bleeding",
+  "aiSymptomScratch": "Scratching",
+  "aiSymptomPrefix": "{species}, symptoms: ",
+  "@aiSymptomPrefix": {"placeholders": {"species": {"type": "String"}}},
+  "aiGenSug1": "How much water should I give my dog?",
+  "aiGenSug2": "How often should cat litter be changed?",
+  "aiGenSug3": "How to train a puppy?",
+  "aiGenSug4": "Why does my cat cry at night?",
+  "aiGenSug5": "What to do after a dog bite?",
+  "guideSug1": "Browse adoption listings",
+  "guideSug2": "Find a veterinarian",
+  "guideSug3": "Find a match",
+  "guideSug4": "Show my cart",
+  "guideSug5": "Create lost pet listing",
+  "guideSug6": "Join events",
+  "eventLocationObtained": "Location Obtained ✓",
+  "eventUseMyLocation": "Use My Location",
+  "eventCreateTitle": "Create Event",
+  "eventCatParkMeetup": "Park Meetup",
+  "eventCatAdoptionDay": "Adoption Day",
+  "eventCatTraining": "Training Seminar",
+  "eventCatCompetition": "Race / Show",
+  "eventCatGrooming": "Grooming Day",
+  "eventCatHealth": "Health / Vaccination",
+  "eventCatOther": "Other",
+  "eventSpeciesAll": "All",
+  "eventSpeciesDog": "Dog",
+  "eventSpeciesCat": "Cat",
+  "eventSpeciesBird": "Bird",
+  "eventSpeciesRabbit": "Rabbit",
+  "eventSpeciesOther": "Other",
+  "eventErrLocationPerm": "Location permission required",
+  "eventErrMaxPhotos": "Maximum 5 photos can be added",
+  "eventErrEndBeforeStart": "End date cannot be before start date",
+  "eventCreated": "Event created!",
+  "eventPhotosLabel": "Photos (max 5)",
+  "eventDateTimeLabel": "Date and Time",
+  "eventStartLabel": "Start *",
+  "eventEndLabel": "End *",
+  "eventLocationLabel": "Location",
+  "eventCapacityLabel": "Capacity and Fee",
+  "eventFreeLabel": "Free Event",
+  "eventAnimalsLabel": "Animals Allowed",
+  "eventCreateBtn": "Create Event",
+  "eventErrLocationFail": "Could not get location: {error}",
+  "@eventErrLocationFail": {"placeholders": {"error": {"type": "String"}}},
+  "eventCreateErr": "Error: {error}",
+  "@eventCreateErr": {"placeholders": {"error": {"type": "String"}}},
+
+  "themeSelectTitle": "Choose Your Theme",
+  "themeSelectSub": "Pick the look that suits you best",
+  "themeSelectLight": "Light",
+  "themeSelectDark": "Dark",
+  "themeSelectConfirm": "Continue",
+  "themeSelectChangeHint": "You can change this anytime in Settings"
 }

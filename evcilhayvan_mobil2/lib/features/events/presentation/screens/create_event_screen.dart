@@ -10,6 +10,7 @@ import 'dart:io';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/event_repository.dart';
 
 class CreateEventScreen extends ConsumerStatefulWidget {
@@ -42,23 +43,23 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
   bool _locationLoading = false;
   bool _loading = false;
 
-  static const _categories = [
-    {'value': 'park_meetup', 'label': 'Park Bulusmasi'},
-    {'value': 'adoption_day', 'label': 'Sahiplendirme Gunu'},
-    {'value': 'training', 'label': 'Egitim Semineri'},
-    {'value': 'competition', 'label': 'Yaris / Gosterim'},
-    {'value': 'grooming', 'label': 'Bakim Gunu'},
-    {'value': 'health', 'label': 'Saglik / Asi'},
-    {'value': 'other', 'label': 'Diger'},
+  List<Map<String, String>> _getCategories(AppLocalizations l10n) => [
+    {'value': 'park_meetup', 'label': l10n.eventCatParkMeetup},
+    {'value': 'adoption_day', 'label': l10n.eventCatAdoptionDay},
+    {'value': 'training', 'label': l10n.eventCatTraining},
+    {'value': 'competition', 'label': l10n.eventCatCompetition},
+    {'value': 'grooming', 'label': l10n.eventCatGrooming},
+    {'value': 'health', 'label': l10n.eventCatHealth},
+    {'value': 'other', 'label': l10n.eventCatOther},
   ];
 
-  static const _speciesOptions = [
-    {'value': 'all', 'label': 'Tumu'},
-    {'value': 'dog', 'label': 'Kopek'},
-    {'value': 'cat', 'label': 'Kedi'},
-    {'value': 'bird', 'label': 'Kus'},
-    {'value': 'rabbit', 'label': 'Tavsan'},
-    {'value': 'other', 'label': 'Diger'},
+  List<Map<String, String>> _getSpeciesOptions(AppLocalizations l10n) => [
+    {'value': 'all', 'label': l10n.eventSpeciesAll},
+    {'value': 'dog', 'label': l10n.eventSpeciesDog},
+    {'value': 'cat', 'label': l10n.eventSpeciesCat},
+    {'value': 'bird', 'label': l10n.eventSpeciesBird},
+    {'value': 'rabbit', 'label': l10n.eventSpeciesRabbit},
+    {'value': 'other', 'label': l10n.eventSpeciesOther},
   ];
 
   @override
@@ -110,7 +111,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
       LocationPermission perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.denied) perm = await Geolocator.requestPermission();
       if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Konum izni gerekli')));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.eventErrLocationPerm)));
         setState(() => _locationLoading = false);
         return;
       }
@@ -118,13 +119,13 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
       setState(() { _lat = pos.latitude; _lng = pos.longitude; _locationLoading = false; });
     } catch (e) {
       setState(() => _locationLoading = false);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Konum alinamadi: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.eventErrLocationFail(e.toString()))));
     }
   }
 
   Future<void> _pickPhotos() async {
     if (_photos.length >= 5) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('En fazla 5 foto eklenebilir')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.eventErrMaxPhotos)));
       return;
     }
     final picker = ImagePicker();
@@ -159,7 +160,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_endDate.isBefore(_startDate)) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Bitis tarihi baslangic tarihinden once olamaz')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.eventErrEndBeforeStart)));
       return;
     }
 
@@ -202,12 +203,12 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Etkinlik olusturuldu!'), backgroundColor: Colors.green),
+          SnackBar(content: Text(AppLocalizations.of(context)!.eventCreated), backgroundColor: Colors.green),
         );
         context.pop();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.eventCreateErr(e.toString())), backgroundColor: Colors.red));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -218,10 +219,13 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final categories = _getCategories(l10n);
+    final speciesOptions = _getSpeciesOptions(l10n);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Etkinlik Olustur'),
+        title: Text(l10n.eventCreateTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -235,16 +239,16 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
               // Title
               TextFormField(
                 controller: _titleCtrl,
-                decoration: _deco('Etkinlik Adi *'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Baslik gerekli' : null,
+                decoration: _deco('Event Title *'),
+                validator: (v) => (v == null || v.trim().isEmpty) ? l10n.error : null,
               ),
               const SizedBox(height: 12),
 
               // Category
               DropdownButtonFormField<String>(
                 value: _category,
-                decoration: _deco('Kategori'),
-                items: _categories.map((c) => DropdownMenuItem(value: c['value'] as String, child: Text(c['label'] as String))).toList(),
+                decoration: _deco(l10n.addProductCategoryLabel),
+                items: categories.map((c) => DropdownMenuItem(value: c['value']!, child: Text(c['label']!))).toList(),
                 onChanged: (v) => setState(() => _category = v ?? _category),
               ),
               const SizedBox(height: 12),
@@ -252,14 +256,14 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
               // Description
               TextFormField(
                 controller: _descCtrl,
-                decoration: _deco('Aciklama *'),
+                decoration: _deco(l10n.addProductDescLabel),
                 maxLines: 4,
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Aciklama gerekli' : null,
+                validator: (v) => (v == null || v.trim().isEmpty) ? l10n.error : null,
               ),
               const SizedBox(height: 24),
 
               // Photos
-              Text('Fotograflar (max 5)', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+              Text(l10n.eventPhotosLabel, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               SizedBox(
                 height: 100,
@@ -294,11 +298,11 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                         child: Container(
                           width: 100, height: 100,
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
+                            color: Theme.of(context).colorScheme.surfaceVariant,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.shade400),
+                            border: Border.all(color: Theme.of(context).dividerColor),
                           ),
-                          child: const Icon(Icons.add_a_photo, color: Colors.grey, size: 32),
+                          child: Icon(Icons.add_a_photo, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 32),
                         ),
                       ),
                   ],
@@ -307,44 +311,44 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
               const SizedBox(height: 24),
 
               // Dates
-              Text('Tarih ve Saat', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+              Text(l10n.eventDateTimeLabel, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              _DateTile(label: 'Baslangic *', value: _formatDt(_startDate), onTap: () => _pickDate(true)),
+              _DateTile(label: l10n.eventStartLabel, value: _formatDt(_startDate), onTap: () => _pickDate(true)),
               const SizedBox(height: 8),
-              _DateTile(label: 'Bitis *', value: _formatDt(_endDate), onTap: () => _pickDate(false)),
+              _DateTile(label: l10n.eventEndLabel, value: _formatDt(_endDate), onTap: () => _pickDate(false)),
               const SizedBox(height: 24),
 
               // Location
-              Text('Konum', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+              Text(l10n.eventLocationLabel, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               ElevatedButton.icon(
                 onPressed: _locationLoading ? null : _getLocation,
                 icon: _locationLoading
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                     : const Icon(Icons.my_location),
-                label: Text(_lat != null ? 'Konum Alindi ✓' : 'Konumumu Kullan'),
+                label: Text(_lat != null ? l10n.eventLocationObtained : l10n.eventUseMyLocation),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _lat != null ? Colors.green : null,
                   foregroundColor: _lat != null ? Colors.white : null,
                 ),
               ),
               const SizedBox(height: 8),
-              TextFormField(controller: _venueCtrl, decoration: _deco('Mekan Adi')),
+              TextFormField(controller: _venueCtrl, decoration: _deco(l10n.apptDetailVet)),
               const SizedBox(height: 8),
-              TextFormField(controller: _addressCtrl, decoration: _deco('Adres'), maxLines: 2),
+              TextFormField(controller: _addressCtrl, decoration: _deco(l10n.sellerApplyAddress), maxLines: 2),
               const SizedBox(height: 24),
 
               // Capacity & Price
-              Text('Kapasite ve Ucret', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+              Text(l10n.eventCapacityLabel, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _maxAttendeesCtrl,
-                decoration: _deco('Maksimum Katilimci (bos = sinirsiz)'),
+                decoration: _deco('Max Attendees'),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 8),
               SwitchListTile(
-                title: const Text('Ucretsiz Etkinlik'),
+                title: Text(l10n.eventFreeLabel),
                 value: _isFree,
                 onChanged: (v) => setState(() => _isFree = v),
                 activeColor: AppPalette.primary,
@@ -354,19 +358,19 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _priceCtrl,
-                  decoration: _deco('Katilim Ucreti (TL)'),
+                  decoration: _deco('Participation Fee (₺)'),
                   keyboardType: TextInputType.number,
-                  validator: _isFree ? null : (v) => (v == null || v.trim().isEmpty) ? 'Fiyat gerekli' : null,
+                  validator: _isFree ? null : (v) => (v == null || v.trim().isEmpty) ? l10n.addProductPriceRequired : null,
                 ),
               ],
               const SizedBox(height: 24),
 
               // Species
-              Text('Katilabilecek Hayvanlar', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+              Text(l10n.eventAnimalsLabel, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
-                children: _speciesOptions.map((opt) {
+                children: speciesOptions.map((opt) {
                   final v = opt['value']!;
                   final selected = _speciesAllowed.contains(v);
                   return FilterChip(
@@ -391,9 +395,9 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
               const SizedBox(height: 24),
 
               // Tags + link
-              TextFormField(controller: _tagsCtrl, decoration: _deco('Etiketler (virgul ile ayirin)')),
+              TextFormField(controller: _tagsCtrl, decoration: _deco('Tags (comma separated)')),
               const SizedBox(height: 8),
-              TextFormField(controller: _linkCtrl, decoration: _deco('Harici Link (opsiyonel)')),
+              TextFormField(controller: _linkCtrl, decoration: _deco('External Link (optional)')),
               const SizedBox(height: 32),
 
               // Submit
@@ -407,7 +411,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                 ),
                 child: _loading
                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Etkinligi Olustur', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    : Text(l10n.eventCreateBtn, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
               const SizedBox(height: 40),
             ],
@@ -420,7 +424,6 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
   InputDecoration _deco(String label) => InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.white,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       );
 }
@@ -450,7 +453,7 @@ class _DateTile extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(label, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                 Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
               ],
             ),

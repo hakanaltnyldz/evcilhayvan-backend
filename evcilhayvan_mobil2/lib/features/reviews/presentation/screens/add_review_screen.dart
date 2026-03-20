@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/features/reviews/data/repositories/review_repository.dart';
 import 'package:evcilhayvan_mobil2/features/reviews/domain/models/review_model.dart';
 import 'package:evcilhayvan_mobil2/features/reviews/presentation/widgets/star_rating.dart';
@@ -49,9 +50,10 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
 
   Future<void> _submitReview() async {
     if (_rating == 0) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Lütfen bir puan seçin'),
+        SnackBar(
+          content: Text(l10n.reviewNoRatingErr),
           backgroundColor: Colors.orange,
         ),
       );
@@ -90,12 +92,13 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
       ref.invalidate(canReviewProvider);
 
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               widget.existingReview != null
-                  ? 'Yorum güncellendi'
-                  : 'Yorum eklendi',
+                  ? l10n.reviewUpdated
+                  : l10n.reviewAdded,
             ),
             backgroundColor: AppPalette.tertiary,
           ),
@@ -104,9 +107,10 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Hata: ${e.toString()}'),
+            content: Text(l10n.reviewErr(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -123,13 +127,11 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppPalette.storeSoftBlue.withOpacity(0.3),
       appBar: AppBar(
         title: Text(
-          widget.existingReview != null ? 'Yorumu Düzenle' : 'Yorum Yap',
+          widget.existingReview != null ? AppLocalizations.of(context)!.reviewEditTitle : AppLocalizations.of(context)!.reviewAddTitle,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        backgroundColor: Colors.white,
         elevation: 0,
       ),
       body: Form(
@@ -155,7 +157,7 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Ürün',
+                    AppLocalizations.of(context)!.reviewProductLabel,
                     style: theme.textTheme.labelLarge?.copyWith(
                       color: AppPalette.onSurfaceVariant,
                     ),
@@ -191,7 +193,7 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Puanınız *',
+                    AppLocalizations.of(context)!.reviewRatingLabel,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
@@ -243,7 +245,7 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Yorumunuz (Opsiyonel)',
+                    AppLocalizations.of(context)!.reviewCommentLabel,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
@@ -254,7 +256,7 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
                     maxLines: 5,
                     maxLength: 500,
                     decoration: InputDecoration(
-                      hintText: 'Ürün hakkındaki düşüncelerinizi paylaşın...',
+                      hintText: AppLocalizations.of(context)!.reviewCommentHint,
                       filled: true,
                       fillColor: AppPalette.storeSoftBlue,
                       border: OutlineInputBorder(
@@ -288,7 +290,7 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
                       ),
                     )
                   : Text(
-                      widget.existingReview != null ? 'Güncelle' : 'Gönder',
+                      widget.existingReview != null ? AppLocalizations.of(context)!.reviewUpdateBtn : AppLocalizations.of(context)!.reviewSubmitBtn,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
@@ -302,17 +304,18 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
   }
 
   String _getRatingText(int rating) {
+    final l10n = AppLocalizations.of(context)!;
     switch (rating) {
       case 1:
-        return 'Çok Kötü';
+        return l10n.reviewRating1;
       case 2:
-        return 'Kötü';
+        return l10n.reviewRating2;
       case 3:
-        return 'Orta';
+        return l10n.reviewRating3;
       case 4:
-        return 'İyi';
+        return l10n.reviewRating4;
       case 5:
-        return 'Mükemmel';
+        return l10n.reviewRating5;
       default:
         return '';
     }

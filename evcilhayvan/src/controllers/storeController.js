@@ -87,35 +87,22 @@ export async function getStoreProducts(req, res) {
 
 // Direct seller creation without admin approval
 export async function applySeller(req, res) {
-  console.log("[Store] applySeller called:", { body: req.body, user: req.user?.sub });
-
   const storeName = req.body?.storeName || req.body?.name;
   const { description, logoUrl } = req.body || {};
   if (!storeName) {
-    console.log("[Store] Error: No store name provided");
     return sendError(res, 400, "Mağaza adı gerekli", "validation_error");
   }
 
   const user = await User.findById(req.user.sub);
   if (!user) {
-    console.log("[Store] Error: User not found:", req.user?.sub);
     return sendError(res, 404, "Kullanıcı bulunamadı", "user_not_found");
   }
-
-  console.log("[Store] User found:", { id: user._id, role: user.role, isSeller: user.isSeller });
 
   // Önce mağaza var mı kontrol et
   const existingStore = await Store.findOne({ owner: user._id });
   if (existingStore) {
-    console.log("[Store] Error: User already has a store:", existingStore._id);
     const populated = await existingStore.populate(ownerSelect);
     return sendError(res, 400, "Zaten bir mağazanız var. Mağazanızı yönetmek için Satıcı Paneli'ne gidin.", "store_exists", populated);
-  }
-
-  // Kullanıcı seller rolünde ama mağazası yoksa - bu bir veri tutarsızlığı
-  // Bu durumda mağaza oluşturmasına izin ver
-  if (user.role === "seller" && !existingStore) {
-    console.log("[Store] User is seller but has no store - allowing store creation");
   }
 
   const store = await Store.create({

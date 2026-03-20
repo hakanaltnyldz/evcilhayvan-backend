@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/event_repository.dart';
 import '../../domain/models/pet_event_model.dart';
 import '../widgets/event_card.dart';
@@ -22,14 +23,14 @@ class _EventsHomeScreenState extends ConsumerState<EventsHomeScreen> {
   bool _locationLoading = false;
   String? _selectedCategory;
 
-  static const _categories = [
-    {'value': null, 'label': 'Tumu', 'icon': Icons.apps},
-    {'value': 'park_meetup', 'label': 'Park', 'icon': Icons.park},
-    {'value': 'adoption_day', 'label': 'Sahiplen', 'icon': Icons.volunteer_activism},
-    {'value': 'training', 'label': 'Egitim', 'icon': Icons.school},
-    {'value': 'competition', 'label': 'Yaris', 'icon': Icons.emoji_events},
-    {'value': 'grooming', 'label': 'Bakim', 'icon': Icons.content_cut},
-    {'value': 'health', 'label': 'Saglik', 'icon': Icons.local_hospital},
+  List<Map<String, Object?>> _getCategories(AppLocalizations l10n) => [
+    {'value': null, 'label': l10n.eventsCatAll, 'icon': Icons.apps},
+    {'value': 'park_meetup', 'label': l10n.eventsCatPark, 'icon': Icons.park},
+    {'value': 'adoption_day', 'label': l10n.eventsCatAdoption, 'icon': Icons.volunteer_activism},
+    {'value': 'training', 'label': l10n.eventsCatTraining, 'icon': Icons.school},
+    {'value': 'competition', 'label': l10n.eventsCatCompetition, 'icon': Icons.emoji_events},
+    {'value': 'grooming', 'label': l10n.eventsCatGrooming, 'icon': Icons.content_cut},
+    {'value': 'health', 'label': l10n.eventsCatHealth, 'icon': Icons.local_hospital},
   ];
 
   @override
@@ -56,18 +57,20 @@ class _EventsHomeScreenState extends ConsumerState<EventsHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final categories = _getCategories(l10n);
     final params = EventListParams(lat: _lat, lng: _lng, category: _selectedCategory);
     final eventsAsync = ref.watch(eventListProvider(params));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Etkinlikler'),
+        title: Text(l10n.eventsTitle2),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.calendar_today),
-            tooltip: 'Katildiklarim',
+            tooltip: l10n.eventsMyEventsTooltip,
             onPressed: () => context.push('/events/attending'),
           ),
         ],
@@ -75,7 +78,7 @@ class _EventsHomeScreenState extends ConsumerState<EventsHomeScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/events/create'),
         icon: const Icon(Icons.add),
-        label: const Text('Etkinlik Olustur'),
+        label: Text(l10n.eventsCreateBtn),
         backgroundColor: AppPalette.primary,
         foregroundColor: Colors.white,
       ),
@@ -93,9 +96,9 @@ class _EventsHomeScreenState extends ConsumerState<EventsHomeScreen> {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              itemCount: _categories.length,
+              itemCount: categories.length,
               itemBuilder: (context, i) {
-                final cat = _categories[i];
+                final cat = categories[i];
                 final catValue = cat['value'] as String?;
                 final selected = _selectedCategory == catValue;
                 return Padding(
@@ -132,10 +135,10 @@ class _EventsHomeScreenState extends ConsumerState<EventsHomeScreen> {
               ),
               data: (events) {
                 if (events.isEmpty) {
-                  return const EmptyState(
+                  return EmptyState(
                     icon: Icons.celebration_outlined,
-                    title: 'Etkinlik Bulunamadı',
-                    subtitle: 'Bu bölge veya kategoride henüz etkinlik yok.',
+                    title: l10n.eventsEmptyTitle,
+                    subtitle: l10n.eventsEmptySubtitle,
                   );
                 }
                 return RefreshIndicator(
@@ -172,10 +175,10 @@ class _LocationBanner extends StatelessWidget {
         children: [
           const Icon(Icons.location_off, color: Colors.amber, size: 18),
           const SizedBox(width: 8),
-          const Expanded(
-            child: Text('Yakin etkinlikler icin konum gerekli', style: TextStyle(fontSize: 13)),
+          Expanded(
+            child: Text(AppLocalizations.of(context)!.eventsLocationBannerText, style: const TextStyle(fontSize: 13)),
           ),
-          TextButton(onPressed: onRetry, child: const Text('Izin Ver')),
+          TextButton(onPressed: onRetry, child: Text(AppLocalizations.of(context)!.eventsLocationBannerBtn)),
         ],
       ),
     );

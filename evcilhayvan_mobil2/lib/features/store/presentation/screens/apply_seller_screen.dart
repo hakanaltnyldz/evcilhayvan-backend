@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class ApplySellerScreen extends ConsumerStatefulWidget {
   const ApplySellerScreen({super.key});
@@ -54,14 +55,14 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                 height: 4,
                 margin: const EdgeInsets.only(top: 12),
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: Theme.of(context).dividerColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Mağaza Logosu Seç',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Text(
+                AppLocalizations.of(context)!.applySellerLogoTitle,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
               ListTile(
@@ -73,7 +74,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                   ),
                   child: const Icon(Icons.photo_library, color: AppPalette.storePrimary),
                 ),
-                title: const Text('Galeriden Seç'),
+                title: Text(AppLocalizations.of(context)!.applySellerPickGallery),
                 onTap: () async {
                   Navigator.pop(context);
                   final picked = await _picker.pickImage(
@@ -96,7 +97,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                   ),
                   child: const Icon(Icons.camera_alt, color: AppPalette.storeSecondary),
                 ),
-                title: const Text('Kamerayı Aç'),
+                title: Text(AppLocalizations.of(context)!.applySellerPickCamera),
                 onTap: () async {
                   Navigator.pop(context);
                   final picked = await _picker.pickImage(
@@ -185,6 +186,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
   }
 
   void _showSuccessDialog(String storeName) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -202,15 +204,15 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
               child: const Icon(Icons.check_circle, color: Colors.green, size: 60),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Tebrikler!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Text(
+              l10n.applySellerSuccessTitle,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
-              '"$storeName" mağazanız başarıyla oluşturuldu!',
+              l10n.applySellerSuccessDesc(storeName),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[600]),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -227,7 +229,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Mağazama Git'),
+                child: Text(l10n.applySellerGoToStore),
               ),
             ),
           ],
@@ -245,7 +247,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
         return message;
       }
     }
-    return 'Bir hata oluştu, lütfen tekrar deneyin.';
+    return AppLocalizations.of(context)!.applySellerGenericError;
   }
 
   void _showTermsDialog() {
@@ -266,7 +268,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
               height: 4,
               margin: const EdgeInsets.only(top: 12),
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: Theme.of(context).dividerColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -283,9 +285,9 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                     child: const Icon(Icons.description, color: AppPalette.storePrimary),
                   ),
                   const SizedBox(width: 12),
-                  const Text(
-                    'Satıcı Sözleşmesi',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  Text(
+                    AppLocalizations.of(context)!.applySellerTermsDialogTitle,
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -297,46 +299,32 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildTermSection(
-                      '1. Genel Kurallar',
-                      'Satıcı olarak platformumuza katılarak aşağıdaki kurallara uymayı kabul etmiş sayılırsınız.',
-                    ),
-                    _buildTermSection(
-                      '2. Ürün Kalitesi',
-                      'Satışa sunduğunuz tüm ürünlerin kaliteli, orijinal ve açıklamalarla uyumlu olması gerekmektedir. Sahte veya yanıltıcı ürün satışı yasaktır.',
-                    ),
-                    _buildTermSection(
-                      '3. Fiyatlandırma',
-                      'Ürün fiyatları adil ve piyasa koşullarına uygun olmalıdır. Aşırı fiyatlandırma veya yanıltıcı indirimler yasaktır.',
-                    ),
-                    _buildTermSection(
-                      '4. Teslimat',
-                      'Siparişler en geç 3 iş günü içinde kargoya verilmelidir. Gecikme durumunda müşteriyi bilgilendirmelisiniz.',
-                    ),
-                    _buildTermSection(
-                      '5. İade ve İptal',
-                      'Müşterilerin 14 gün içinde iade hakkı bulunmaktadır. İade talepleri en geç 48 saat içinde yanıtlanmalıdır.',
-                    ),
-                    _buildTermSection(
-                      '6. Müşteri İletişimi',
-                      'Müşteri sorularına en geç 24 saat içinde yanıt verilmelidir. Kibar ve profesyonel iletişim esastır.',
-                    ),
-                    _buildTermSection(
-                      '7. Yasaklı Ürünler',
-                      'Yasadışı, tehlikeli, sağlığa zararlı veya hayvan refahına aykırı ürünlerin satışı kesinlikle yasaktır.',
-                    ),
-                    _buildTermSection(
-                      '8. Komisyon',
-                      'Platform, her satıştan %10 komisyon alır. Komisyon tutarı ödeme sırasında otomatik olarak düşülür.',
-                    ),
-                    _buildTermSection(
-                      '9. Hesap Askıya Alma',
-                      'Kurallara uymayan satıcıların hesapları uyarı yapılmadan askıya alınabilir.',
-                    ),
-                    _buildTermSection(
-                      '10. Kabul',
-                      'Bu sözleşmeyi kabul ederek tüm maddelere uymayı taahhüt etmiş olursunuz.',
-                    ),
+                    ...() {
+                      final isEn = Localizations.localeOf(context).languageCode == 'en';
+                      return isEn ? [
+                        _buildTermSection('1. General Rules', 'By joining our platform as a seller, you agree to comply with the following rules.'),
+                        _buildTermSection('2. Product Quality', 'All products you list must be quality, original and consistent with descriptions. Selling counterfeit products is prohibited.'),
+                        _buildTermSection('3. Pricing', 'Product prices must be fair and in line with market conditions. Excessive pricing or misleading discounts are prohibited.'),
+                        _buildTermSection('4. Delivery', 'Orders must be shipped within 3 business days. You must notify the customer in case of delay.'),
+                        _buildTermSection('5. Returns & Cancellations', 'Customers have the right to return within 14 days. Return requests must be responded to within 48 hours.'),
+                        _buildTermSection('6. Customer Communication', 'Customer questions must be answered within 24 hours. Polite and professional communication is essential.'),
+                        _buildTermSection('7. Prohibited Products', 'The sale of illegal, dangerous or animal welfare-violating products is strictly prohibited.'),
+                        _buildTermSection('8. Commission', 'The platform takes a 10% commission on each sale, automatically deducted at payment.'),
+                        _buildTermSection('9. Account Suspension', 'Sellers who do not comply with the rules may have their accounts suspended without warning.'),
+                        _buildTermSection('10. Acceptance', 'By accepting this agreement, you commit to complying with all terms.'),
+                      ] : [
+                        _buildTermSection('1. Genel Kurallar', 'Satıcı olarak platformumuza katılarak aşağıdaki kurallara uymayı kabul etmiş sayılırsınız.'),
+                        _buildTermSection('2. Ürün Kalitesi', 'Satışa sunduğunuz tüm ürünlerin kaliteli, orijinal ve açıklamalarla uyumlu olması gerekmektedir. Sahte veya yanıltıcı ürün satışı yasaktır.'),
+                        _buildTermSection('3. Fiyatlandırma', 'Ürün fiyatları adil ve piyasa koşullarına uygun olmalıdır. Aşırı fiyatlandırma veya yanıltıcı indirimler yasaktır.'),
+                        _buildTermSection('4. Teslimat', 'Siparişler en geç 3 iş günü içinde kargoya verilmelidir. Gecikme durumunda müşteriyi bilgilendirmelisiniz.'),
+                        _buildTermSection('5. İade ve İptal', 'Müşterilerin 14 gün içinde iade hakkı bulunmaktadır. İade talepleri en geç 48 saat içinde yanıtlanmalıdır.'),
+                        _buildTermSection('6. Müşteri İletişimi', 'Müşteri sorularına en geç 24 saat içinde yanıt verilmelidir. Kibar ve profesyonel iletişim esastır.'),
+                        _buildTermSection('7. Yasaklı Ürünler', 'Yasadışı, tehlikeli, sağlığa zararlı veya hayvan refahına aykırı ürünlerin satışı kesinlikle yasaktır.'),
+                        _buildTermSection('8. Komisyon', 'Platform, her satıştan %10 komisyon alır. Komisyon tutarı ödeme sırasında otomatik olarak düşülür.'),
+                        _buildTermSection('9. Hesap Askıya Alma', 'Kurallara uymayan satıcıların hesapları uyarı yapılmadan askıya alınabilir.'),
+                        _buildTermSection('10. Kabul', 'Bu sözleşmeyi kabul ederek tüm maddelere uymayı taahhüt etmiş olursunuz.'),
+                      ];
+                    }(),
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -358,9 +346,9 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Okudum ve Kabul Ediyorum',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  child: Text(
+                    AppLocalizations.of(context)!.applySellerTermsAcceptBtn,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -390,7 +378,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
             content,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[700],
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               height: 1.5,
             ),
           ),
@@ -401,9 +389,10 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mağaza Aç'),
+        title: Text(l10n.applySellerTitle),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -447,10 +436,10 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                   // Info Text
                   Center(
                     child: Text(
-                      'Mağazanız onaylandıktan sonra ürün eklemeye başlayabilirsiniz.',
+                      l10n.applySellerApprovalNote,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.grey[600],
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 13,
                       ),
                     ),
@@ -465,6 +454,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
   }
 
   Widget _buildProgressSteps() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -480,11 +470,11 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
       ),
       child: Row(
         children: [
-          _buildStep(1, 'Logo', _selectedLogo != null),
+          _buildStep(1, l10n.applySellerStepLogo, _selectedLogo != null),
           _buildStepLine(_selectedLogo != null),
-          _buildStep(2, 'Bilgiler', _nameController.text.isNotEmpty),
+          _buildStep(2, l10n.applySellerStepInfo, _nameController.text.isNotEmpty),
           _buildStepLine(_nameController.text.isNotEmpty && _acceptedTerms),
-          _buildStep(3, 'Sözleşme', _acceptedTerms),
+          _buildStep(3, l10n.applySellerStepContract, _acceptedTerms),
         ],
       ),
     );
@@ -498,7 +488,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: completed ? Colors.green : Colors.grey[300],
+              color: completed ? Colors.green : Theme.of(context).dividerColor,
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -507,7 +497,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                   : Text(
                       '$number',
                       style: TextStyle(
-                        color: completed ? Colors.white : Colors.grey[600],
+                        color: completed ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -518,7 +508,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: completed ? Colors.green : Colors.grey[600],
+              color: completed ? Colors.green : Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: completed ? FontWeight.bold : FontWeight.normal,
             ),
           ),
@@ -533,7 +523,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
         height: 3,
         margin: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
-          color: completed ? Colors.green : Colors.grey[300],
+          color: completed ? Colors.green : Theme.of(context).dividerColor,
           borderRadius: BorderRadius.circular(2),
         ),
       ),
@@ -541,6 +531,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
   }
 
   Widget _buildLogoSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -568,9 +559,9 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                 child: const Icon(Icons.image, color: Colors.white, size: 20),
               ),
               const SizedBox(width: 12),
-              const Text(
-                'Mağaza Logosu',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Text(
+                l10n.applySellerLogoSection,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -606,7 +597,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Logo Ekle',
+                            l10n.applySellerLogoAdd,
                             style: TextStyle(
                               color: AppPalette.storePrimary,
                               fontWeight: FontWeight.w600,
@@ -639,8 +630,8 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
           const SizedBox(height: 12),
           Center(
             child: Text(
-              'Kare formatta, minimum 200x200 piksel önerilir',
-              style: TextStyle(color: Colors.grey[500], fontSize: 12),
+              l10n.applySellerLogoHint,
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12),
             ),
           ),
         ],
@@ -649,6 +640,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
   }
 
   Widget _buildStoreInfoSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -676,9 +668,9 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                 child: const Icon(Icons.store, color: Colors.white, size: 20),
               ),
               const SizedBox(width: 12),
-              const Text(
-                'Mağaza Bilgileri',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Text(
+                l10n.applySellerInfoSection,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -687,21 +679,20 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
             controller: _nameController,
             onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
-              labelText: 'Mağaza Adı *',
-              hintText: 'Örn: Happy Pets Store',
+              labelText: l10n.applySellerNameLabel,
+              hintText: l10n.applySellerNameHint,
               prefixIcon: const Icon(Icons.storefront),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
               filled: true,
-              fillColor: Colors.grey[50],
             ),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Mağaza adı gerekli';
+                return l10n.applySellerNameRequired;
               }
               if (value.trim().length < 3) {
-                return 'En az 3 karakter olmalı';
+                return l10n.applySellerNameTooShort;
               }
               return null;
             },
@@ -711,8 +702,8 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
             controller: _descriptionController,
             maxLines: 4,
             decoration: InputDecoration(
-              labelText: 'Mağaza Açıklaması',
-              hintText: 'Mağazanızı tanıtın...',
+              labelText: l10n.applySellerDescLabel,
+              hintText: l10n.applySellerDescHint,
               alignLabelWithHint: true,
               prefixIcon: const Padding(
                 padding: EdgeInsets.only(bottom: 60),
@@ -722,7 +713,6 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               filled: true,
-              fillColor: Colors.grey[50],
             ),
           ),
         ],
@@ -731,6 +721,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
   }
 
   Widget _buildTermsSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -763,10 +754,10 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Satıcı Sözleşmesi',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  l10n.applySellerTermsTitle,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
               if (_acceptedTerms)
@@ -776,13 +767,13 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                     color: Colors.green.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle, color: Colors.green, size: 16),
-                      SizedBox(width: 4),
+                      const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                      const SizedBox(width: 4),
                       Text(
-                        'Kabul Edildi',
+                        l10n.applySellerTermsAccepted,
                         style: TextStyle(
                           color: Colors.green,
                           fontWeight: FontWeight.bold,
@@ -824,9 +815,9 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                     },
                     activeColor: Colors.green,
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Satıcı sözleşmesini okudum ve kabul ediyorum',
+                      l10n.applySellerTermsRead,
                       style: TextStyle(fontWeight: FontWeight.w500),
                     ),
                   ),
@@ -841,6 +832,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
   }
 
   Widget _buildSubmitButton() {
+    final l10n = AppLocalizations.of(context)!;
     final isReady = _nameController.text.trim().isNotEmpty && _acceptedTerms;
 
     return Container(
@@ -850,7 +842,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
         gradient: isReady
             ? const LinearGradient(colors: AppPalette.storeWarmGradient)
             : null,
-        color: isReady ? null : Colors.grey[300],
+        color: isReady ? null : Theme.of(context).dividerColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: isReady
             ? [
@@ -885,15 +877,15 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                 children: [
                   Icon(
                     Icons.rocket_launch,
-                    color: isReady ? Colors.white : Colors.grey[500],
+                    color: isReady ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Mağazamı Aç',
+                    l10n.applySellerOpenBtn,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: isReady ? Colors.white : Colors.grey[500],
+                      color: isReady ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],

@@ -1,6 +1,11 @@
 import path from "path";
 import "dotenv/config";
 
+if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'changeme')) {
+  console.error('[FATAL] JWT_SECRET must be set to a secure value in production. Exiting.');
+  process.exit(1);
+}
+
 const requiredVars = ["JWT_SECRET", "MONGO_URI"];
 const missing = requiredVars.filter((key) => !process.env[key]);
 

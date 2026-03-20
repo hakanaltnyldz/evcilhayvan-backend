@@ -1,0 +1,217 @@
+T.C.
+KONYA TEKNİK ÜNİVERSİTESİ BİLGİSAYAR MÜHENDİSLİĞİ
+BİLGİSAYAR MÜHENDİSLİĞİ UYGULAMASI – 1
+(BİTİRME PROJESİ-1) FİNAL RAPOR FORMU
+
+
+Öğrencinin Adı-Soyadı:	[ADI SOYADI]
+Numarası:		[NUMARA]
+Danışmanı Adı Soyadı:	[DANIŞMAN ADI]
+Sınav Tarihi:		[TARİH]
+Projenin Konusu:	Evcil Hayvan Sosyal Ağı ve E-Ticaret Mobil Uygulaması
+
+
+================================================================================
+			DÖNEM İÇİ YAPILAN ÇALIŞMALARIN ÖZETİ
+================================================================================
+
+Bu dönemde, evcil hayvan sahiplerinin hayvanlarını kayıt altına alabilecekleri, diğer hayvan sahipleriyle iletişim kurabilecekleri, hayvanlarını çiftleştirme veya sahiplendirme amacıyla eşleştirebilecekleri ve evcil hayvan ürünleri satın alabilecekleri kapsamlı bir mobil uygulama geliştirilmiştir.
+
+YAPILAN TEMEL ÇALIŞMALAR:
+
+1. Mobil Uygulama Geliştirme: Flutter framework kullanılarak Android ve iOS platformlarında çalışabilen cross-platform mobil uygulama geliştirilmiştir. Riverpod state management ve GoRouter navigasyon yapısı kullanılmıştır.
+
+2. Backend API Geliştirme: Node.js ve Express.js kullanılarak RESTful API mimarisi ile backend sunucu oluşturulmuştur. 17 farklı controller ve 21 route dosyası ile kapsamlı bir API yapısı kurulmuştur.
+
+3. Veritabanı Tasarımı: MongoDB NoSQL veritabanı kullanılarak 19 farklı veri modeli tasarlanmıştır. Mongoose ODM ile veritabanı işlemleri yönetilmektedir.
+
+4. Kimlik Doğrulama Sistemi: JWT (JSON Web Token) tabanlı güvenli kimlik doğrulama sistemi implement edilmiştir. Access token ve refresh token mekanizması kullanılmaktadır.
+
+5. Gerçek Zamanlı Mesajlaşma: Socket.IO kütüphanesi kullanılarak anlık mesajlaşma altyapısı kurulmuştur. Kullanıcılar arasında gerçek zamanlı iletişim sağlanmaktadır.
+
+6. E-Ticaret Modülü: Sepet yönetimi, sipariş oluşturma, ödeme işlemi ve sipariş takibi özellikleri geliştirilmiştir. Satıcı paneli ve ürün yönetim sistemi oluşturulmuştur.
+
+7. Eşleştirme Sistemi: Evcil hayvanların çiftleştirme ve sahiplendirme amaçlı eşleştirilmesi için swipe tabanlı eşleştirme algoritması geliştirilmiştir.
+
+8. Dosya Yükleme Sistemi: Multer kütüphanesi ile fotoğraf yükleme ve yönetim sistemi kurulmuştur.
+
+
+================================================================================
+		PROJEDE KULLANILAN MATERYAL VE METOTLAR
+================================================================================
+
+a) MATERYAL LİSTESİ:
+
+FRONTEND (MOBİL UYGULAMA):
+- Flutter SDK 3.x: Cross-platform mobil uygulama geliştirme framework'ü
+- Dart: Programlama dili
+- Riverpod: State management çözümü
+- GoRouter: Deklaratif navigasyon kütüphanesi
+- Dio: HTTP client kütüphanesi
+- Socket.IO Client: Gerçek zamanlı iletişim
+- SharedPreferences: Yerel veri depolama
+- Image Picker: Fotoğraf seçme ve çekme
+- Intl: Uluslararasılaştırma ve tarih formatı
+
+BACKEND:
+- Node.js v18+: JavaScript runtime ortamı
+- Express.js: Web application framework
+- MongoDB: NoSQL veritabanı
+- Mongoose: MongoDB ODM (Object Document Mapper)
+- Socket.IO: Gerçek zamanlı WebSocket iletişimi
+- JSON Web Token (JWT): Kimlik doğrulama
+- Bcrypt: Şifre hashleme
+- Nodemailer: E-posta gönderimi
+- Multer: Dosya yükleme middleware
+- Helmet: HTTP güvenlik başlıkları
+- CORS: Cross-Origin Resource Sharing
+
+GELİŞTİRME ARAÇLARI:
+- Visual Studio Code: Kod editörü
+- Android Studio: Android emülatör ve SDK
+- Postman: API test aracı
+- MongoDB Compass: Veritabanı yönetim aracı
+- Git/GitHub: Versiyon kontrol sistemi
+
+
+b) METODA İLİŞKİN AKIŞ ŞEMASI:
+
+[Bu bölüme akış şeması görseli eklenecektir]
+
+Uygulama Genel Akışı:
+1. Uygulama açılışında token kontrolü yapılır
+2. Token yoksa kullanıcı giriş ekranına yönlendirilir
+3. Giriş/kayıt işlemi sonrası JWT token oluşturulur
+4. Ana sayfada sahiplendirme ve çiftleştirme ilanları listelenir
+5. Kullanıcı hayvan ekleyebilir, eşleştirme yapabilir, mesajlaşabilir
+6. Mağaza modülünden alışveriş yapılabilir
+
+
+================================================================================
+		YAPILAN ÇALIŞMAYA AİT GENEL BİLGİLER
+================================================================================
+
+1. VERİTABANI TASARIMI (MongoDB)
+
+Projede 19 farklı veri modeli kullanılmaktadır:
+
+Model Adı		Açıklama
+-----------		---------
+User			Kullanıcı bilgileri, kimlik doğrulama
+Pet			Evcil hayvan profilleri
+Conversation		Mesaj konuşmaları
+Message			Mesaj içerikleri
+MatchRequest		Eşleştirme talepleri
+Interaction		Kullanıcı etkileşimleri (beğeni/geçme)
+Product			Mağaza ürünleri
+Store			Mağaza bilgileri
+Category		Ürün kategorileri
+CartItem		Sepet öğeleri
+Order			Siparişler
+Review			Ürün yorumları
+Coupon			İndirim kuponları
+SellerProfile		Satıcı profilleri
+SellerApplication	Satıcı başvuruları
+Address			Kullanıcı adresleri
+AdoptionApplication	Sahiplendirme başvuruları
+Favorite		Favoriler
+AuditLog		İşlem kayıtları
+
+
+2. API ENDPOINT YAPISI
+
+Modül			Endpoint		Açıklama
+------			--------		--------
+Auth			/api/auth/*		Giriş, kayıt, token yenileme
+Pets			/api/pets/*		Hayvan CRUD işlemleri
+Matching		/api/matching/*		Eşleştirme işlemleri
+Messages		/api/conversations/*	Mesajlaşma
+Store			/api/store/*		Mağaza işlemleri
+Orders			/api/orders/*		Sipariş yönetimi
+Favorites		/api/favorites/*	Favori işlemleri
+
+
+3. ARAYÜZ EKRANLARI
+
+KİMLİK DOĞRULAMA EKRANLARI:
+1. Giriş Ekranı - E-posta ve şifre ile kullanıcı girişi
+2. Kayıt Ekranı - Yeni kullanıcı kaydı
+3. Şifremi Unuttum - Şifre sıfırlama e-postası gönderimi
+4. E-posta Doğrulama - 6 haneli kod ile doğrulama
+
+ANA EKRANLAR:
+5. Ana Sayfa - Sahiplendirme ve çiftleştirme ilanları
+6. Profil Sayfası - Kullanıcı bilgileri ve hayvanları
+7. Ayarlar - Uygulama ve hesap ayarları
+
+EVCİL HAYVAN YÖNETİMİ:
+8. Hayvan Ekleme/Düzenleme - Detaylı hayvan profili oluşturma
+9. Hayvan Detay - İlan detay sayfası
+
+EŞLEŞTİRME SİSTEMİ:
+10. Eşleştirme Ekranı - Swipe tabanlı eşleştirme
+11. Eşleştirme Talepleri - Gelen ve giden talepler
+
+MESAJLAŞMA:
+12. Mesajlar Listesi - Aktif konuşmalar
+13. Sohbet Ekranı - Gerçek zamanlı mesajlaşma
+
+E-TİCARET:
+14. Mağaza Ana Sayfa - Ürün ve mağaza keşfi
+15. Mağaza Detay - Mağaza profili ve ürünleri
+16. Sepet - Alışveriş sepeti yönetimi
+17. Ödeme - Sipariş tamamlama
+18. Siparişlerim - Sipariş geçmişi ve takibi
+
+SATICI PANELİ:
+19. Satıcı Başvurusu - Mağaza açma formu
+20. Satıcı Dashboard - İstatistikler ve yönetim
+21. Ürün Yönetimi - Ürün ekleme/düzenleme/silme
+22. Satıcı Siparişleri - Gelen sipariş yönetimi
+
+DİĞER:
+23. Favoriler - Favori hayvan ve ürünler
+24. Değerlendirme - Ürün yorum ve puanlama
+
+
+[EK SAYFALAR - ARAYÜZ GÖRÜNTÜLERİ BURAYA EKLENECEK]
+
+
+================================================================================
+		DÖNEM SONU HEDEFLERİNİN DEĞERLENDİRİLMESİ
+================================================================================
+
+GERÇEKLEŞTİRİLEN HEDEFLER:			2. DÖNEM HEDEFLERİ:
+-----------------------------			-------------------
+1. Kullanıcı kayıt ve giriş sistemi		1. Yapay zeka destekli hayvan tanıma
+2. Evcil hayvan profil yönetimi			2. Bildirim sistemi (Push Notification)
+3. Eşleştirme (Mating) sistemi			3. Harita entegrasyonu
+4. Gerçek zamanlı mesajlaşma			4. Ödeme gateway entegrasyonu
+5. E-ticaret mağaza modülü			5. Admin panel geliştirme
+6. Sepet ve sipariş sistemi			6. Uygulama performans optimizasyonu
+7. Satıcı panel ve yönetimi			7. App Store ve Play Store yayını
+8. Favori sistemi				8. Kullanıcı geri bildirim sistemi
+
+
+================================================================================
+				KAYNAKLAR
+================================================================================
+
+1. Flutter Documentation - https://docs.flutter.dev/
+2. Dart Programming Language - https://dart.dev/guides
+3. Node.js Documentation - https://nodejs.org/docs/
+4. Express.js Guide - https://expressjs.com/
+5. MongoDB Manual - https://docs.mongodb.com/manual/
+6. Mongoose Documentation - https://mongoosejs.com/docs/
+7. Socket.IO Documentation - https://socket.io/docs/
+8. JWT Introduction - https://jwt.io/introduction
+9. Riverpod Documentation - https://riverpod.dev/docs/
+10. GoRouter Package - https://pub.dev/packages/go_router
+
+
+================================================================================
+
+ÖĞRENCİNİN					DANIŞMAN
+Adı ve Soyadı:					Adı ve Soyadı:
+İmzası:						İmzası:
+

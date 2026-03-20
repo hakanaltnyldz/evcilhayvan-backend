@@ -1,0 +1,72 @@
+b) METODA İLİŞKİN AKIŞ ŞEMASI:
+
+UYGULAMA GENEL AKIŞI:
+
+ADIM 1 - UYGULAMA BAŞLATMA
+Kullanıcı uygulamayı açtığında, sistem öncelikle yerel depolamada (SharedPreferences) kayıtlı bir JWT token olup olmadığını kontrol eder.
+
+ADIM 2 - KİMLİK DOĞRULAMA KONTROLÜ
+   - Token VARSA: Kullanıcı otomatik olarak ana sayfaya yönlendirilir.
+   - Token YOKSA: Kullanıcı giriş ekranına yönlendirilir.
+
+ADIM 3 - GİRİŞ/KAYIT İŞLEMİ
+Kullanıcı e-posta ve şifre ile giriş yapar veya yeni hesap oluşturur. Kayıt işleminde e-posta doğrulaması yapılır. Başarılı giriş sonrası sunucu JWT access token ve refresh token döndürür.
+
+ADIM 4 - ANA SAYFA
+Kullanıcı ana sayfada sahiplendirme ve çiftleştirme ilanlarını görüntüler. Alt navigasyon çubuğundan diğer modüllere erişim sağlanır.
+
+ADIM 5 - MODÜL SEÇİMİ
+Kullanıcı aşağıdaki modüllerden birine yönelebilir:
+
+   A) EVCİL HAYVAN YÖNETİMİ
+      - Yeni hayvan profili oluşturma
+      - Mevcut hayvan bilgilerini düzenleme
+      - İlan oluşturma (sahiplendirme/çiftleştirme)
+
+   B) EŞLEŞTİRME SİSTEMİ
+      - Swipe ile hayvan kartlarını beğenme/geçme
+      - Karşılıklı beğeni durumunda eşleşme oluşumu
+      - Eşleşme taleplerini görüntüleme ve yanıtlama
+
+   C) MESAJLAŞMA
+      - Eşleşen kullanıcılarla gerçek zamanlı sohbet
+      - Socket.IO ile anlık mesaj alışverişi
+
+   D) MAĞAZA (E-TİCARET)
+      - Ürün ve mağaza keşfi
+      - Sepete ürün ekleme
+      - Sipariş oluşturma ve ödeme
+      - Sipariş takibi
+
+   E) PROFİL VE AYARLAR
+      - Kullanıcı bilgilerini düzenleme
+      - Uygulama ayarlarını yönetme
+      - Çıkış yapma
+
+ADIM 6 - API İLETİŞİMİ
+Tüm işlemler RESTful API üzerinden backend sunucusuyla iletişim kurularak gerçekleştirilir. Her istekte JWT token ile kimlik doğrulaması yapılır.
+
+ADIM 7 - VERİTABANI İŞLEMLERİ
+Backend sunucusu gelen istekleri işler ve MongoDB veritabanında gerekli CRUD (Create, Read, Update, Delete) işlemlerini gerçekleştirir.
+
+
+E-TİCARET MODÜLÜ AKIŞI:
+
+1. Kullanıcı mağaza ana sayfasını açar
+2. Ürünleri listeler ve inceler
+3. Beğendiği ürünü sepete ekler
+4. Sepeti görüntüler ve onaylar
+5. Teslimat adresini seçer/ekler
+6. Ödeme yöntemini seçer
+7. Siparişi tamamlar
+8. Sipariş durumunu takip eder
+
+
+EŞLEŞTİRME MODÜLÜ AKIŞI:
+
+1. Kullanıcı eşleştirme ekranını açar
+2. Sistem uygun hayvan kartlarını getirir
+3. Kullanıcı kartı sağa kaydırır (beğeni) veya sola kaydırır (geçme)
+4. Beğeni durumunda karşı tarafa bildirim gider
+5. Karşı taraf da beğenirse eşleşme oluşur
+6. Eşleşen kullanıcılar mesajlaşmaya başlayabilir

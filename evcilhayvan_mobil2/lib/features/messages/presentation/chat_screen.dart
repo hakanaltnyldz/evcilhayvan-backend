@@ -1520,7 +1520,7 @@ class _MessageBubble extends StatelessWidget {
                                         child: Container(
                                           padding: const EdgeInsets.all(10),
                                           decoration: BoxDecoration(
-                                            color: Colors.grey.shade100,
+                                            color: Theme.of(context).colorScheme.surfaceVariant,
                                             shape: BoxShape.circle,
                                           ),
                                           child: Text(e, style: const TextStyle(fontSize: 24)),
@@ -1659,10 +1659,10 @@ class _MessageBubble extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: iReacted ? const Color(0xFF6C63FF).withOpacity(0.15) : Colors.grey.shade100,
+                color: iReacted ? const Color(0xFF6C63FF).withOpacity(0.15) : Theme.of(context).colorScheme.surfaceVariant,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: iReacted ? const Color(0xFF6C63FF) : Colors.grey.shade300,
+                  color: iReacted ? const Color(0xFF6C63FF) : Theme.of(context).dividerColor,
                   width: 1,
                 ),
               ),

@@ -203,9 +203,9 @@ class _NearbyAdsScreenState extends ConsumerState<NearbyAdsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.location_off, size: 48, color: Colors.grey),
+              Icon(Icons.location_off, size: 48, color: Theme.of(context).colorScheme.onSurfaceVariant),
               const SizedBox(height: 12),
-              Text(state.error!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+              Text(state.error!, textAlign: TextAlign.center, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: _fetchLocation,
@@ -241,9 +241,9 @@ class _NearbyAdsScreenState extends ConsumerState<NearbyAdsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.pets, size: 48, color: Colors.grey),
+            Icon(Icons.pets, size: 48, color: Theme.of(context).colorScheme.onSurfaceVariant),
             const SizedBox(height: 12),
-            Text(l10n.nearbyNoResults, style: const TextStyle(color: Colors.grey)),
+            Text(l10n.nearbyNoResults, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => ref.read(nearbyAdsProvider.notifier)
@@ -272,7 +272,7 @@ class _NearbyAdsScreenState extends ConsumerState<NearbyAdsScreen> {
             if (!state.hasMore) {
               return Padding(
                 padding: const EdgeInsets.all(16),
-                child: Center(child: Text(l10n.nearbyShown(state.items.length), style: const TextStyle(color: Colors.grey))),
+                child: Center(child: Text(l10n.nearbyShown(state.items.length), style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant))),
               );
             }
             return const SizedBox.shrink();
@@ -343,7 +343,7 @@ class _FilterSheetState extends State<_FilterSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Center(
-            child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+            child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Theme.of(context).dividerColor, borderRadius: BorderRadius.circular(2))),
           ),
           const SizedBox(height: 16),
           Row(

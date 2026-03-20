@@ -3,6 +3,7 @@ import { authRequired } from "../middlewares/auth.js";
 import {
   getFeed,
   createPost,
+  updatePost,
   deletePost,
   toggleLike,
   addComment,
@@ -14,6 +15,7 @@ const router = Router();
 // Social feed
 router.get("/posts", getFeed);
 router.post("/posts", authRequired, createPost);
+router.put("/posts/:id", authRequired, updatePost);
 router.delete("/posts/:id", authRequired, deletePost);
 router.post("/posts/:id/like", authRequired, toggleLike);
 router.post("/posts/:id/comment", authRequired, addComment);
