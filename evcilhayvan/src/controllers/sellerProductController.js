@@ -9,7 +9,7 @@ export async function createSellerProduct(req, res) {
     const sellerId = req.user?.sub;
     if (!sellerId) return sendError(res, 401, "Kimlik dogrulama gerekli", "auth_required");
 
-    const { name, description, price, stock, images, category, isActive } = req.body || {};
+    const { name, description, price, stock, images, category, isActive, variants } = req.body || {};
     if (!name || price === undefined || price === null) {
       return sendError(res, 400, "Isim ve fiyat zorunludur", "validation_error");
     }
@@ -19,6 +19,22 @@ export async function createSellerProduct(req, res) {
     if (!store) {
       return sendError(res, 400, "Önce mağaza oluşturmalısınız", "store_required");
     }
+
+    // Varyant doğrulama
+    const cleanVariants = Array.isArray(variants)
+      ? variants
+          .filter(v => v.name && Array.isArray(v.options) && v.options.length > 0)
+          .map(v => ({
+            name: String(v.name).trim(),
+            options: v.options
+              .filter(o => o.label)
+              .map(o => ({
+                label: String(o.label).trim(),
+                stock: Number(o.stock) || 0,
+                priceDiff: Number(o.priceDiff) || 0,
+              })),
+          }))
+      : [];
 
     const product = await Product.create({
       name,
@@ -32,6 +48,7 @@ export async function createSellerProduct(req, res) {
       isActive: typeof isActive === "boolean" ? isActive : true,
       seller: sellerId,
       store: store._id,
+      variants: cleanVariants,
     });
 
     await recordAudit("product.create", {
@@ -62,10 +79,33 @@ export async function updateSellerProduct(req, res) {
   try {
     const sellerId = req.user?.sub;
     const { id } = req.params;
-    const updates = { ...req.body };
+    const { name, description, price, stock, images, category, isActive, variants } = req.body || {};
 
-    if (updates.name && !updates.title) updates.title = updates.name;
-    if (updates.images && !updates.photos) updates.photos = updates.images;
+    const updates = {};
+    if (name !== undefined) { updates.name = name; updates.title = name; }
+    if (description !== undefined) updates.description = description;
+    if (price !== undefined) updates.price = Number(price);
+    if (stock !== undefined) updates.stock = Number(stock) || 0;
+    if (images !== undefined) { updates.images = images; updates.photos = images; }
+    if (category !== undefined) updates.category = category;
+    if (isActive !== undefined) updates.isActive = isActive;
+
+    if (variants !== undefined) {
+      updates.variants = Array.isArray(variants)
+        ? variants
+            .filter(v => v.name && Array.isArray(v.options) && v.options.length > 0)
+            .map(v => ({
+              name: String(v.name).trim(),
+              options: v.options
+                .filter(o => o.label)
+                .map(o => ({
+                  label: String(o.label).trim(),
+                  stock: Number(o.stock) || 0,
+                  priceDiff: Number(o.priceDiff) || 0,
+                })),
+            }))
+        : [];
+    }
 
     const product = await Product.findOneAndUpdate({ _id: id, seller: sellerId }, updates, { new: true });
     if (!product) return sendError(res, 404, "Urun bulunamadi", "product_not_found");
@@ -109,7 +149,29 @@ export async function createSellerProductWithImages(req, res) {
     const sellerId = req.user?.sub;
     if (!sellerId) return sendError(res, 401, "Kimlik dogrulama gerekli", "auth_required");
 
-    const { name, description, price, stock, category, isActive } = req.body || {};
+    const { name, description, price, stock, category, isActive, variants: variantsRaw } = req.body || {};
+
+    // Variants may come as JSON string from multipart form
+    let cleanVariants = [];
+    if (variantsRaw) {
+      try {
+        const parsed = typeof variantsRaw === "string" ? JSON.parse(variantsRaw) : variantsRaw;
+        if (Array.isArray(parsed)) {
+          cleanVariants = parsed
+            .filter(v => v.name && Array.isArray(v.options) && v.options.length > 0)
+            .map(v => ({
+              name: String(v.name).trim(),
+              options: v.options
+                .filter(o => o.label)
+                .map(o => ({
+                  label: String(o.label).trim(),
+                  stock: Number(o.stock) || 0,
+                  priceDiff: Number(o.priceDiff) || 0,
+                })),
+            }));
+        }
+      } catch { /* ignore invalid JSON */ }
+    }
     if (!name || price === undefined || price === null) {
       return sendError(res, 400, "Isim ve fiyat zorunludur", "validation_error");
     }
@@ -136,6 +198,7 @@ export async function createSellerProductWithImages(req, res) {
       isActive: isActive === "true" || isActive === true || isActive === undefined,
       seller: sellerId,
       store: store._id,
+      variants: cleanVariants,
     });
 
     await recordAudit("product.create", {

@@ -229,6 +229,7 @@ class StoreRepository {
     List<XFile>? images,
     int? stock,
     String? categoryId,
+    List<Map<String, dynamic>>? variants,
   }) {
     return _guard(() async {
       final formData = FormData.fromMap({
@@ -237,6 +238,8 @@ class StoreRepository {
         if (description != null) 'description': description,
         if (stock != null) 'stock': stock,
         if (categoryId != null) 'category': categoryId,
+        if (variants != null && variants.isNotEmpty)
+          'variants': _encodeVariants(variants),
       });
 
       // Resimleri ekle
@@ -262,6 +265,9 @@ class StoreRepository {
       return product;
     });
   }
+
+  static String _encodeVariants(List<Map<String, dynamic>> variants) =>
+      jsonEncode(variants);
 
   // Mevcut ürüne fotoğraf ekle
   Future<ProductModel> uploadProductImages(String productId, List<XFile> images) {

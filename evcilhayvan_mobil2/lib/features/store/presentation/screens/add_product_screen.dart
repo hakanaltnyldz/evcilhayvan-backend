@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:evcilhayvan_mobil2/features/store/domain/models/product_model.dart' show ProductVariant, VariantOption;
+
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
@@ -12,6 +14,30 @@ import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/product_model.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/category_model.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
+
+class _OptionDraft {
+  final TextEditingController labelCtrl = TextEditingController();
+  final TextEditingController stockCtrl = TextEditingController(text: '0');
+  final TextEditingController priceDiffCtrl = TextEditingController(text: '0');
+
+  void dispose() {
+    labelCtrl.dispose();
+    stockCtrl.dispose();
+    priceDiffCtrl.dispose();
+  }
+}
+
+class _VariantDraft {
+  final TextEditingController nameCtrl = TextEditingController();
+  final List<_OptionDraft> options = [_OptionDraft()];
+
+  void dispose() {
+    nameCtrl.dispose();
+    for (final o in options) {
+      o.dispose();
+    }
+  }
+}
 
 class AddProductScreen extends ConsumerStatefulWidget {
   const AddProductScreen({super.key, this.product});
@@ -38,6 +64,9 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   final List<XFile> _selectedImages = [];
   static const int _maxImages = 5;
 
+  // Variant editor
+  final List<_VariantDraft> _variants = [];
+
   bool get _isEditMode => widget.product != null;
 
   @override
@@ -51,6 +80,19 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
       _stockController.text = product.stock.toString();
       _selectedCategoryId = product.categoryId;
       _isActive = product.isActive;
+      for (final v in product.variants) {
+        final draft = _VariantDraft();
+        draft.nameCtrl.text = v.name;
+        draft.options.clear();
+        for (final opt in v.options) {
+          final o = _OptionDraft();
+          o.labelCtrl.text = opt.label;
+          o.stockCtrl.text = opt.stock.toString();
+          o.priceDiffCtrl.text = opt.priceDiff.toStringAsFixed(0);
+          draft.options.add(o);
+        }
+        _variants.add(draft);
+      }
     }
   }
 
@@ -185,6 +227,9 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     _descController.dispose();
     _priceController.dispose();
     _stockController.dispose();
+    for (final v in _variants) {
+      v.dispose();
+    }
     super.dispose();
   }
 
@@ -208,6 +253,21 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
       final price = double.parse(_priceController.text.trim());
       final description = _descController.text.trim().isNotEmpty ? _descController.text.trim() : null;
 
+      final variantsPayload = _variants
+          .where((v) => v.nameCtrl.text.trim().isNotEmpty && v.options.isNotEmpty)
+          .map((v) => {
+                'name': v.nameCtrl.text.trim(),
+                'options': v.options
+                    .where((o) => o.labelCtrl.text.trim().isNotEmpty)
+                    .map((o) => {
+                          'label': o.labelCtrl.text.trim(),
+                          'stock': int.tryParse(o.stockCtrl.text) ?? 0,
+                          'priceDiff': double.tryParse(o.priceDiffCtrl.text) ?? 0,
+                        })
+                    .toList(),
+              })
+          .toList();
+
       if (_isEditMode) {
         // Edit modda mevcut ürünü güncelle
         await repo.updateProduct(
@@ -220,6 +280,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
             'stock': stock ?? 0,
             'category': _selectedCategoryId,
             'isActive': _isActive,
+            'variants': variantsPayload,
           },
         );
         // Yeni resimler varsa yükle
@@ -235,6 +296,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
           images: _selectedImages.isNotEmpty ? _selectedImages : null,
           stock: stock,
           categoryId: _selectedCategoryId,
+          variants: variantsPayload.isNotEmpty ? variantsPayload : null,
         );
       }
 
@@ -609,6 +671,31 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                           ),
                         if (_isEditMode) const SizedBox(height: 12),
                         if (_error != null) _ErrorChip(message: _error!),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Varyant Editörü
+                  _VariantEditorSection(
+                    variants: _variants,
+                    onChanged: () => setState(() {}),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: context.cardColor,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppPalette.storePrimary.withOpacity(0.08),
+                          blurRadius: 18,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
                         const SizedBox(height: 6),
                         SizedBox(
                           width: double.infinity,
@@ -733,6 +820,232 @@ class _FieldSkeleton extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
       ),
+    );
+  }
+}
+
+class _VariantEditorSection extends StatelessWidget {
+  const _VariantEditorSection({
+    required this.variants,
+    required this.onChanged,
+  });
+
+  final List<_VariantDraft> variants;
+  final VoidCallback onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.cardColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppPalette.storePrimary.withOpacity(0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: AppPalette.storeWarmGradient),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.tune, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Varyantlar',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      'Beden, renk, boyut gibi seçenekler',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () {
+                  variants.add(_VariantDraft());
+                  onChanged();
+                },
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Ekle'),
+              ),
+            ],
+          ),
+          if (variants.isNotEmpty) const SizedBox(height: 12),
+          ...variants.asMap().entries.map((vEntry) {
+            final vi = vEntry.key;
+            final v = vEntry.value;
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppPalette.storeSoftBlue,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppPalette.storePrimary.withOpacity(0.15)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: v.nameCtrl,
+                          onChanged: (_) => onChanged(),
+                          decoration: InputDecoration(
+                            hintText: 'Varyant adı (ör: Boyut, Renk)',
+                            hintStyle: const TextStyle(fontSize: 13),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            filled: true,
+                            fillColor: context.cardColor,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10,
+                            ),
+                            isDense: true,
+                          ),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: () {
+                          v.dispose();
+                          variants.removeAt(vi);
+                          onChanged();
+                        },
+                        icon: const Icon(Icons.delete_outline, color: Colors.red, size: 22),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ...v.options.asMap().entries.map((oEntry) {
+                    final oi = oEntry.key;
+                    final o = oEntry.value;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: _SmallField(
+                              controller: o.labelCtrl,
+                              hint: 'Etiket (ör: S, Kırmızı)',
+                              onChanged: (_) => onChanged(),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            flex: 2,
+                            child: _SmallField(
+                              controller: o.stockCtrl,
+                              hint: 'Stok',
+                              keyboardType: TextInputType.number,
+                              prefixText: '📦 ',
+                              onChanged: (_) => onChanged(),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            flex: 2,
+                            child: _SmallField(
+                              controller: o.priceDiffCtrl,
+                              hint: '±Fiyat',
+                              keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+                              prefixText: '₺ ',
+                              onChanged: (_) => onChanged(),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          if (v.options.length > 1)
+                            GestureDetector(
+                              onTap: () {
+                                o.dispose();
+                                v.options.removeAt(oi);
+                                onChanged();
+                              },
+                              child: const Icon(Icons.remove_circle_outline,
+                                  color: Colors.red, size: 20),
+                            )
+                          else
+                            const SizedBox(width: 20),
+                        ],
+                      ),
+                    );
+                  }),
+                  TextButton.icon(
+                    onPressed: () {
+                      v.options.add(_OptionDraft());
+                      onChanged();
+                    },
+                    icon: const Icon(Icons.add, size: 16),
+                    label: const Text('Seçenek Ekle', style: TextStyle(fontSize: 13)),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      minimumSize: Size.zero,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _SmallField extends StatelessWidget {
+  const _SmallField({
+    required this.controller,
+    required this.hint,
+    this.keyboardType,
+    this.prefixText,
+    this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final String hint;
+  final TextInputType? keyboardType;
+  final String? prefixText;
+  final ValueChanged<String>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        hintText: hint,
+        prefixText: prefixText,
+        hintStyle: const TextStyle(fontSize: 11),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        filled: true,
+        fillColor: context.cardColor,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        isDense: true,
+      ),
+      style: const TextStyle(fontSize: 13),
     );
   }
 }

@@ -17,6 +17,22 @@ const ProductSchema = new mongoose.Schema(
     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
     averageRating: { type: Number, default: 0, min: 0, max: 5 },
     reviewCount: { type: Number, default: 0, min: 0 },
+    // Ürün varyantları: [{ name: "Boyut", options: [{ label: "2kg", stock: 10, priceDiff: 0 }] }]
+    variants: {
+      type: [
+        {
+          name: { type: String, required: true, trim: true }, // e.g. "Boyut", "Renk"
+          options: [
+            {
+              label: { type: String, required: true, trim: true }, // e.g. "2kg", "Kırmızı"
+              stock: { type: Number, default: 0, min: 0 },
+              priceDiff: { type: Number, default: 0 }, // fiyat farkı (+ ya da -)
+            },
+          ],
+        },
+      ],
+      default: [],
+    },
   },
   {
     timestamps: true,

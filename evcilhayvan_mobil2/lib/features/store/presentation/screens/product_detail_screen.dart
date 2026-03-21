@@ -38,6 +38,37 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   int _page = 0;
   bool _adding = false;
   int _quantity = 1;
+  final Map<String, String> _selectedVariants = {}; // variantName -> selectedLabel
+
+  int _effectiveStock(ProductModel product) {
+    if (product.variants.isEmpty) return product.stock;
+    // Find the minimum stock across selected variant options
+    int minStock = product.stock;
+    for (final variant in product.variants) {
+      final selected = _selectedVariants[variant.name];
+      if (selected == null) continue;
+      final opt = variant.options.where((o) => o.label == selected).firstOrNull;
+      if (opt != null && opt.stock < minStock) minStock = opt.stock;
+    }
+    return minStock;
+  }
+
+  double _effectivePrice(ProductModel product) {
+    if (product.variants.isEmpty) return product.price;
+    double diff = 0;
+    for (final variant in product.variants) {
+      final selected = _selectedVariants[variant.name];
+      if (selected == null) continue;
+      final opt = variant.options.where((o) => o.label == selected).firstOrNull;
+      if (opt != null) diff += opt.priceDiff;
+    }
+    return product.price + diff;
+  }
+
+  bool _allVariantsSelected(ProductModel product) {
+    if (product.variants.isEmpty) return true;
+    return product.variants.every((v) => _selectedVariants.containsKey(v.name));
+  }
 
   @override
   void initState() {
@@ -69,7 +100,18 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
       return;
     }
 
-    if (product.stock <= 0) {
+    if (!_allVariantsSelected(product)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lütfen tüm seçenekleri belirleyin'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final effStock = _effectiveStock(product);
+    if (effStock <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.productDetailOutOfStock),
@@ -79,10 +121,10 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
       return;
     }
 
-    if (_quantity > product.stock) {
+    if (_quantity > effStock) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(l10n.productDetailMaxStock(product.stock)),
+          content: Text(l10n.productDetailMaxStock(effStock)),
           backgroundColor: Colors.orange,
         ),
       );
@@ -200,7 +242,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            '₺${product.price.toStringAsFixed(2)}',
+                            '₺${_effectivePrice(product).toStringAsFixed(2)}',
                             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                   fontWeight: FontWeight.w900,
                                   color: AppPalette.storePrimary,
@@ -212,11 +254,20 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                             runSpacing: 8,
                             children: [
                               _Chip(
-                                label: l10n.productDetailStock(product.stock),
+                                label: l10n.productDetailStock(_effectiveStock(product)),
                                 icon: Icons.inventory_2_outlined,
                               ),
                             ],
                           ),
+                          if (product.variants.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            _VariantSelector(
+                              variants: product.variants,
+                              selected: _selectedVariants,
+                              onSelect: (variantName, label) =>
+                                  setState(() => _selectedVariants[variantName] = label),
+                            ),
+                          ],
                           const SizedBox(height: 14),
                           Text(
                             displayDescription,
@@ -355,7 +406,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                   ),
                                 ),
                                 IconButton(
-                                  onPressed: _quantity < product.stock
+                                  onPressed: _quantity < _effectiveStock(product)
                                       ? () => setState(() => _quantity++)
                                       : null,
                                   icon: const Icon(Icons.add, size: 20),
@@ -368,7 +419,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: _adding || product.stock <= 0
+                              onPressed: _adding || _effectiveStock(product) <= 0
                                   ? null
                                   : () => _addToCart(product),
                               icon: const Icon(Icons.shopping_bag_outlined),
@@ -633,4 +684,124 @@ class _DetailSkeleton extends StatelessWidget {
 String _resolveImageUrl(String path) {
   if (path.startsWith('http')) return path;
   return '$apiBaseUrl$path';
+}
+
+class _VariantSelector extends StatelessWidget {
+  const _VariantSelector({
+    required this.variants,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  final List<ProductVariant> variants;
+  final Map<String, String> selected;
+  final void Function(String variantName, String label) onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: variants.map((variant) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    variant.name,
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                  ),
+                  if (selected[variant.name] != null) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      selected[variant.name]!,
+                      style: TextStyle(
+                        color: AppPalette.storePrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: variant.options.map((opt) {
+                  final isSelected = selected[variant.name] == opt.label;
+                  final outOfStock = opt.stock == 0;
+                  return GestureDetector(
+                    onTap: outOfStock ? null : () => onSelect(variant.name, opt.label),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppPalette.storePrimary
+                            : outOfStock
+                                ? Colors.grey.shade100
+                                : AppPalette.storeSoftBlue,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppPalette.storePrimary
+                              : outOfStock
+                                  ? Colors.grey.shade300
+                                  : AppPalette.storePrimary.withOpacity(0.25),
+                          width: isSelected ? 2 : 1,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            opt.label,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                              color: isSelected
+                                  ? Colors.white
+                                  : outOfStock
+                                      ? Colors.grey
+                                      : AppPalette.onBackground,
+                              decoration: outOfStock ? TextDecoration.lineThrough : null,
+                            ),
+                          ),
+                          if (opt.priceDiff != 0)
+                            Text(
+                              opt.priceDiff > 0
+                                  ? '+₺${opt.priceDiff.toStringAsFixed(0)}'
+                                  : '-₺${opt.priceDiff.abs().toStringAsFixed(0)}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isSelected
+                                    ? Colors.white70
+                                    : AppPalette.storePrimary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          if (outOfStock)
+                            Text(
+                              'Tükendi',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.red.shade400,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
 }
