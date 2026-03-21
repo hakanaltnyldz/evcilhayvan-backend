@@ -47,6 +47,7 @@ import blockReportRoutes from "./src/routes/blockReportRoutes.js";
 import healthRoutes from "./src/routes/healthRoutes.js";
 import aiRoutes from "./src/routes/aiRoutes.js";
 import adminRoutes from "./src/routes/adminRoutes.js";
+import supportRoutes from "./src/routes/supportRoutes.js";
 import { startVaccinationReminderJob } from "./src/services/vaccinationReminderService.js";
 import { seedVaccinationSchedules } from "./src/services/vaccinationSeedService.js";
 import { startBirthdayReminderJob } from "./src/services/birthdayReminderService.js";
@@ -211,6 +212,7 @@ app.use("/api/users", blockReportRoutes);
 app.use("/api/health", healthRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/support", supportRoutes);
 
 // Error handler (keep last)
 app.use(errorHandler);

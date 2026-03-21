@@ -10,13 +10,14 @@ export default function Users() {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [banning, setBanning] = useState(null)
+  const [changingRole, setChangingRole] = useState(null)
 
   useEffect(() => {
     setLoading(true)
     api.get('/admin/users', { params: { page, q: search } })
       .then((res) => {
-        setUsers(res.data?.data?.users || [])
-        setTotal(res.data?.data?.total || 0)
+        setUsers(res.data?.users || [])
+        setTotal(res.data?.total || 0)
       })
       .finally(() => setLoading(false))
   }, [page, search])
@@ -25,7 +26,7 @@ export default function Users() {
     setBanning(user._id)
     try {
       const res = await api.patch(`/admin/users/${user._id}/ban`)
-      const updated = res.data?.data?.user
+      const updated = res.data?.user
       setUsers((prev) =>
         prev.map((u) => (u._id === user._id ? { ...u, role: updated.role } : u))
       )
@@ -33,6 +34,19 @@ export default function Users() {
       alert(err.response?.data?.message || 'İşlem başarısız')
     } finally {
       setBanning(null)
+    }
+  }
+
+  async function changeRole(user, role) {
+    setChangingRole(user._id)
+    try {
+      const res = await api.patch(`/admin/users/${user._id}/role`, { role })
+      const updated = res.data?.user
+      setUsers((prev) => prev.map((u) => u._id === user._id ? { ...u, role: updated.role } : u))
+    } catch (err) {
+      alert(err.response?.data?.message || 'İşlem başarısız')
+    } finally {
+      setChangingRole(null)
     }
   }
 
@@ -57,21 +71,34 @@ export default function Users() {
     { key: 'createdAt', label: 'Kayıt', render: (u) =>
       u.createdAt ? new Date(u.createdAt).toLocaleDateString('tr-TR') : '—'
     },
-    { key: 'actions', label: '', render: (u) =>
-      u.role !== 'admin' ? (
-        <button
-          onClick={() => toggleBan(u)}
-          disabled={banning === u._id}
-          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
-            u.role === 'banned'
-              ? 'bg-green-100 text-green-700 hover:bg-green-200'
-              : 'bg-red-100 text-red-700 hover:bg-red-200'
-          }`}
+    { key: 'actions', label: '', render: (u) => (
+      <div className="flex items-center gap-2">
+        {u.role !== 'admin' && (
+          <button
+            onClick={() => toggleBan(u)}
+            disabled={banning === u._id}
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+              u.role === 'banned'
+                ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                : 'bg-red-100 text-red-700 hover:bg-red-200'
+            }`}
+          >
+            {banning === u._id ? '...' : u.role === 'banned' ? 'Ban Kaldır' : 'Banla'}
+          </button>
+        )}
+        <select
+          value={u.role === 'banned' ? 'user' : u.role}
+          disabled={changingRole === u._id}
+          onChange={(e) => changeRole(u, e.target.value)}
+          className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300 disabled:opacity-50"
         >
-          {banning === u._id ? '...' : u.role === 'banned' ? 'Ban Kaldır' : 'Banla'}
-        </button>
-      ) : null
-    },
+          <option value="user">user</option>
+          <option value="seller">seller</option>
+          <option value="vet">vet</option>
+          <option value="admin">admin</option>
+        </select>
+      </div>
+    )},
   ]
 
   const totalPages = Math.ceil(total / 20)

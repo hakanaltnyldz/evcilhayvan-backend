@@ -63,6 +63,11 @@ const couponSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    // Sadece ilk siparişini veren kullanıcılara özel
+    firstOrderOnly: {
+      type: Boolean,
+      default: false,
+    },
     // Only for seller-specific coupons
     seller: {
       type: Schema.Types.ObjectId,

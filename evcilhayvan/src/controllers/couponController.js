@@ -267,60 +267,71 @@ export const deleteCoupon = async (req, res) => {
   }
 };
 
-// Validate a coupon code (for customers)
+// Validate a coupon code (for customers — auth required to enforce per-user limits)
 export const validateCoupon = async (req, res) => {
   try {
     const { code } = req.params;
     const { amount, storeId } = req.query;
+    const userId = req.user?._id || req.user?.id || req.user?.sub;
 
     if (!amount) {
-      return res.status(400).json({
-        success: false,
-        message: 'Tutar belirtilmelidir',
-      });
+      return res.status(400).json({ success: false, message: 'Tutar belirtilmelidir' });
     }
 
-    // Find active coupon
-    const coupon = await Coupon.findOne({
-      code: code.toUpperCase(),
-      isActive: true,
-    });
-
+    const coupon = await Coupon.findOne({ code: code.toUpperCase(), isActive: true });
     if (!coupon) {
-      return res.status(404).json({
-        success: false,
-        message: 'Kupon bulunamadı',
-      });
+      return res.status(404).json({ success: false, message: 'Kupon bulunamadı veya aktif değil' });
     }
 
-    // Check store restriction
+    // Mağaza kısıtlaması
     if (coupon.store && storeId && coupon.store.toString() !== storeId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Bu kupon bu mağaza için geçerli değil',
-      });
+      return res.status(400).json({ success: false, message: 'Bu kupon bu mağaza için geçerli değil' });
     }
 
-    // Validate coupon
-    const validation = coupon.isValid();
-    if (!validation.valid) {
-      return res.status(400).json({
-        success: false,
-        message: validation.reason,
-      });
+    // Tarih / limit doğrulama
+    const validity = coupon.isValid();
+    if (!validity.valid) {
+      return res.status(400).json({ success: false, message: validity.reason });
     }
 
-    // Calculate discount
+    // Kişi başı limit kontrolü (index sayesinde O(log n))
+    if (userId && coupon.perUserLimit) {
+      const { default: CouponUsage } = await import('../models/CouponUsage.js');
+      const userUsageCount = await CouponUsage.countDocuments({ couponId: coupon._id, userId });
+      if (userUsageCount >= coupon.perUserLimit) {
+        return res.status(400).json({
+          success: false,
+          message: `Bu kuponu en fazla ${coupon.perUserLimit} kez kullanabilirsiniz (kalan: 0)`,
+        });
+      }
+    }
+
+    // İlk sipariş kuponu kontrolü
+    if (coupon.firstOrderOnly && userId) {
+      const { default: Order } = await import('../models/Order.js');
+      const pastPaidOrders = await Order.countDocuments({ user: userId, paymentStatus: 'paid' });
+      if (pastPaidOrders > 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Bu kupon sadece ilk sipariş için geçerlidir',
+        });
+      }
+    }
+
     const calculation = coupon.calculateDiscount(parseFloat(amount));
-
     if (calculation.error) {
-      return res.status(400).json({
-        success: false,
-        message: calculation.error,
-      });
+      return res.status(400).json({ success: false, message: calculation.error });
     }
 
-    res.json({
+    // Kişi başı kalan kullanım sayısı
+    let remainingUses = null;
+    if (userId && coupon.perUserLimit) {
+      const { default: CouponUsage } = await import('../models/CouponUsage.js');
+      const used = await CouponUsage.countDocuments({ couponId: coupon._id, userId });
+      remainingUses = coupon.perUserLimit - used;
+    }
+
+    return res.json({
       success: true,
       valid: true,
       coupon: {
@@ -328,17 +339,15 @@ export const validateCoupon = async (req, res) => {
         description: coupon.description,
         discountType: coupon.discountType,
         discountValue: coupon.discountValue,
+        firstOrderOnly: coupon.firstOrderOnly,
       },
       discount: calculation.discount,
       finalAmount: calculation.finalAmount,
+      remainingUses,
     });
   } catch (error) {
     console.error('Validate coupon error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Kupon doğrulanırken hata oluştu',
-      error: error.message,
-    });
+    return res.status(500).json({ success: false, message: 'Kupon doğrulanırken hata oluştu' });
   }
 };
 

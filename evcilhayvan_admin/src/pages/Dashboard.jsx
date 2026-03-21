@@ -9,7 +9,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     api.get('/admin/stats')
-      .then((res) => setStats(res.data?.data?.stats))
+      .then((res) => setStats(res.data?.stats))
       .catch((err) => setError(err.response?.data?.message || 'İstatistikler alınamadı'))
       .finally(() => setLoading(false))
   }, [])
@@ -34,6 +34,8 @@ export default function Dashboard() {
         <StatCard title="Aktif İlan" value={stats?.activePets} icon="✅" color="blue" />
         <StatCard title="Toplam Sipariş" value={stats?.totalOrders} icon="🛒" color="orange" />
         <StatCard title="Bekleyen Şikayet" value={stats?.pendingReports} icon="⚠️" color="red" />
+        <StatCard title="Aktif Kupon" value={stats?.totalActiveCoupons} icon="🎟️" color="purple" />
+        <StatCard title="Açık Destek" value={stats?.openSupportTickets} icon="🎫" color="yellow" />
       </div>
     </div>
   )

@@ -112,6 +112,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     subtitle: Text(l10n.settingsMyFavoritesSub),
                     onTap: () => context.pushNamed('favorites'),
                   ),
+                  ListTile(
+                    leading: const Icon(Icons.local_offer_outlined),
+                    title: const Text('Kuponlarım'),
+                    subtitle: const Text('İndirim kuponlarınızı görüntüleyin'),
+                    onTap: () => context.pushNamed('my-coupons'),
+                  ),
                 ],
               ),
               if (user?.role == 'seller') ...[
@@ -137,6 +143,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       title: Text(l10n.settingsManageProducts),
                       subtitle: Text(l10n.settingsManageProductsSub),
                       onTap: () => context.pushNamed('product-management'),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.discount_outlined),
+                      title: const Text('Kupon Yönetimi'),
+                      subtitle: const Text('Mağazanız için kupon oluşturun'),
+                      onTap: () => context.pushNamed('seller-coupons'),
                     ),
                   ],
                 ),
@@ -280,6 +292,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     leading: const Icon(Icons.privacy_tip_outlined),
                     title: Text(l10n.settingsPrivacy),
                     onTap: () => context.pushNamed('privacy-policy'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.report_outlined),
+                    title: const Text('Şikayet Bildir'),
+                    subtitle: const Text('Sorun veya şikayetinizi iletin'),
+                    onTap: () => context.pushNamed('complaint'),
                   ),
                 ],
               ),

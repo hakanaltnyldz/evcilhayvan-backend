@@ -14,8 +14,8 @@ export default function Reports() {
     setLoading(true)
     api.get('/admin/reports', { params: { page, status } })
       .then((res) => {
-        setReports(res.data?.data?.reports || [])
-        setTotal(res.data?.data?.total || 0)
+        setReports(res.data?.reports || [])
+        setTotal(res.data?.total || 0)
       })
       .finally(() => setLoading(false))
   }, [page, status])
@@ -24,7 +24,7 @@ export default function Reports() {
     setResolving(report._id)
     try {
       const res = await api.patch(`/admin/reports/${report._id}/resolve`, { action })
-      const updated = res.data?.data?.report
+      const updated = res.data?.report
       setReports((prev) =>
         prev.map((r) => (r._id === report._id ? { ...r, status: updated.status } : r))
       )

@@ -166,6 +166,36 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
+                        // Coupon promo banner
+                        GestureDetector(
+                          onTap: () => context.pushNamed('my-coupons'),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF6C63FF), Color(0xFF9C59FF)],
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.local_offer, color: Colors.white, size: 18),
+                                const SizedBox(width: 10),
+                                const Text(
+                                  'Kuponlarım & Fırsatlar',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const Spacer(),
+                                const Icon(Icons.chevron_right, color: Colors.white, size: 18),
+                              ],
+                            ),
+                          ),
+                        ),
                         if (user == null || user.role != 'seller')
                           _SellerCTA(onTap: () {
                             if (user == null) {

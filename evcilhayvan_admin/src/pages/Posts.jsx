@@ -13,8 +13,8 @@ export default function Posts() {
     setLoading(true)
     api.get('/admin/posts', { params: { page } })
       .then((res) => {
-        setPosts(res.data?.data?.posts || [])
-        setTotal(res.data?.data?.total || 0)
+        setPosts(res.data?.posts || [])
+        setTotal(res.data?.total || 0)
       })
       .finally(() => setLoading(false))
   }, [page])
@@ -23,7 +23,7 @@ export default function Posts() {
     setToggling(post._id)
     try {
       const res = await api.patch(`/admin/posts/${post._id}/hide`)
-      const updated = res.data?.data?.post
+      const updated = res.data?.post
       setPosts((prev) =>
         prev.map((p) => (p._id === post._id ? { ...p, isActive: updated.isActive } : p))
       )

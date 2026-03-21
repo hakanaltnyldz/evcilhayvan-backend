@@ -93,6 +93,9 @@ import '../features/auth/presentation/screens/privacy_policy_screen.dart';
 import '../features/auth/presentation/screens/theme_selection_screen.dart';
 import '../features/pets/presentation/screens/nearby_ads_screen.dart';
 import '../core/providers/theme_provider.dart';
+import '../features/store/presentation/screens/my_coupons_screen.dart';
+import '../features/store/presentation/screens/seller_coupons_screen.dart';
+import '../features/support/presentation/screens/complaint_screen.dart';
 
 // Auth gerektirmeyen sayfalar
 const _publicRoutes = {
@@ -697,6 +700,25 @@ final routerProvider = Provider<GoRouter>((ref) {
       path: '/privacy-policy',
       name: 'privacy-policy',
       pageBuilder: (context, state) => _buildPage(state, const PrivacyPolicyScreen()),
+    ),
+
+    // Kuponlarım
+    GoRoute(
+      path: '/my-coupons',
+      name: 'my-coupons',
+      pageBuilder: (context, state) => _buildPage(state, const MyCouponsScreen()),
+    ),
+    // Satıcı kupon yönetimi
+    GoRoute(
+      path: '/seller/coupons',
+      name: 'seller-coupons',
+      pageBuilder: (context, state) => _buildPage(state, const SellerCouponsScreen()),
+    ),
+    // Şikayet ekranı
+    GoRoute(
+      path: '/complaint',
+      name: 'complaint',
+      pageBuilder: (context, state) => _buildPage(state, const ComplaintScreen()),
     ),
   ],
   );

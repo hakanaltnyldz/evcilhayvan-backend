@@ -510,6 +510,7 @@ class _MainShellState extends ConsumerState<MainShell> {
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           child: Container(
+            clipBehavior: Clip.none,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -747,19 +748,26 @@ class _PillNavItemWidget extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 280),
         curve: Curves.easeInOut,
-        padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 14 : 8,
-          vertical: 8,
-        ),
+        transform: Matrix4.translationValues(0, isSelected ? -10.0 : 0.0, 0),
+        transformAlignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withOpacity(0.12) : Colors.transparent,
-          borderRadius: BorderRadius.circular(24),
+          color: isSelected ? primaryColor.withOpacity(0.13) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: primaryColor.withOpacity(0.22),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [],
         ),
-        child: Row(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Icon with scale animation
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
@@ -774,19 +782,20 @@ class _PillNavItemWidget extends StatelessWidget {
                       size: 22,
                     ),
             ),
-            // Label slides in when selected
             AnimatedSize(
-              duration: const Duration(milliseconds: 260),
+              duration: const Duration(milliseconds: 240),
               curve: Curves.easeInOut,
               child: isSelected
                   ? Padding(
-                      padding: const EdgeInsets.only(left: 6),
+                      padding: const EdgeInsets.only(top: 3),
                       child: Text(
                         item.label,
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: primaryColor,
                           fontWeight: FontWeight.w700,
+                          fontSize: 9,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     )
                   : const SizedBox.shrink(),
@@ -796,9 +805,9 @@ class _PillNavItemWidget extends StatelessWidget {
       )
           .animate(key: ValueKey(isSelected))
           .scale(
-            begin: isSelected ? const Offset(0.9, 0.9) : const Offset(1.0, 1.0),
+            begin: isSelected ? const Offset(0.88, 0.88) : const Offset(1.0, 1.0),
             end: const Offset(1.0, 1.0),
-            duration: const Duration(milliseconds: 200),
+            duration: const Duration(milliseconds: 220),
             curve: Curves.easeOut,
           ),
     );

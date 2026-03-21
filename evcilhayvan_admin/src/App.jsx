@@ -7,6 +7,8 @@ import Pets from './pages/Pets.jsx'
 import Reports from './pages/Reports.jsx'
 import Orders from './pages/Orders.jsx'
 import Posts from './pages/Posts.jsx'
+import Coupons from './pages/Coupons.jsx'
+import Support from './pages/Support.jsx'
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('admin_token')
@@ -32,6 +34,8 @@ export default function App() {
           <Route path="reports" element={<Reports />} />
           <Route path="orders" element={<Orders />} />
           <Route path="posts" element={<Posts />} />
+          <Route path="coupons" element={<Coupons />} />
+          <Route path="support" element={<Support />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

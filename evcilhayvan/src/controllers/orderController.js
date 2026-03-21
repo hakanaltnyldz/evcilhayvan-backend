@@ -1,5 +1,7 @@
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
+import Coupon from "../models/Coupon.js";
+import CouponUsage from "../models/CouponUsage.js";
 import { sendError, sendOk } from "../utils/apiResponse.js";
 import { recordAudit } from "../utils/audit.js";
 
@@ -9,7 +11,7 @@ export async function createOrder(req, res) {
     const userId = req.user?.sub;
     if (!userId) return sendError(res, 401, "Kimlik dogrulama gerekli", "auth_required");
 
-    const { items, shippingAddress, paymentMethod, notes } = req.body || {};
+    const { items, shippingAddress, paymentMethod, notes, couponCode } = req.body || {};
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return sendError(res, 400, "Siparis öğeleri gereklidir", "validation_error");
@@ -84,17 +86,70 @@ export async function createOrder(req, res) {
       }
     }
 
+    // ── Kupon uygulama ──────────────────────────────────────────────────────
+    const originalAmount = totalAmount;
+    let discountAmount = 0;
+    let appliedCoupon = null;
+
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
+      if (coupon) {
+        const validity = coupon.isValid();
+        if (validity.valid) {
+          // Kişi başı limit: bileşik index ile O(log n) sorgu
+          const userUsageCount = await CouponUsage.countDocuments({ couponId: coupon._id, userId });
+          const belowPerUserLimit = userUsageCount < (coupon.perUserLimit || 1);
+
+          // İlk sipariş kontrolü: sadece ücretli sipariş var mı bak
+          let passesFirstOrderCheck = true;
+          if (coupon.firstOrderOnly) {
+            const paidOrders = await Order.countDocuments({ user: userId, paymentStatus: 'paid' });
+            passesFirstOrderCheck = paidOrders === 0;
+          }
+
+          if (belowPerUserLimit && passesFirstOrderCheck) {
+            const calc = coupon.calculateDiscount(originalAmount);
+            if (!calc.error) {
+              discountAmount = calc.discount;
+              appliedCoupon = coupon;
+            }
+          }
+        }
+      }
+    }
+
+    const finalAmount = originalAmount - discountAmount;
+
     // Siparişi oluştur
     const order = await Order.create({
       user: userId,
       items: orderItems,
-      totalAmount,
+      totalAmount: finalAmount,
+      originalAmount,
+      discountAmount,
+      couponCode: appliedCoupon ? appliedCoupon.code : undefined,
       shippingAddress: shippingAddress || {},
       paymentMethod: paymentMethod || "credit_card",
       notes,
       status: "pending",
       paymentStatus: "pending",
+      statusHistory: [{ status: "pending", note: "Sipariş oluşturuldu", updatedAt: new Date() }],
     });
+
+    // Kupon kullanımını atomik olarak kaydet (fire-and-forget, siparişi bloke etme)
+    if (appliedCoupon) {
+      Promise.all([
+        CouponUsage.create({
+          couponId: appliedCoupon._id,
+          userId,
+          orderId: order._id,
+          discountAmount,
+          originalAmount,
+          finalAmount,
+        }),
+        Coupon.findByIdAndUpdate(appliedCoupon._id, { $inc: { usageCount: 1 } }),
+      ]).catch((err) => console.error("[createOrder] coupon usage record error (non-critical):", err.message));
+    }
 
     // Audit log
     try {

@@ -14,8 +14,8 @@ export default function Pets() {
     setLoading(true)
     api.get('/admin/pets', { params: { page, type: type === 'all' ? undefined : type } })
       .then((res) => {
-        setPets(res.data?.data?.pets || [])
-        setTotal(res.data?.data?.total || 0)
+        setPets(res.data?.pets || [])
+        setTotal(res.data?.total || 0)
       })
       .finally(() => setLoading(false))
   }, [page, type])
@@ -24,7 +24,7 @@ export default function Pets() {
     setToggling(pet._id)
     try {
       const res = await api.patch(`/admin/pets/${pet._id}/toggle`)
-      const updated = res.data?.data?.pet
+      const updated = res.data?.pet
       setPets((prev) =>
         prev.map((p) => (p._id === pet._id ? { ...p, isActive: updated.isActive } : p))
       )

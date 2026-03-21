@@ -9,6 +9,10 @@ import Pet from "../models/Pet.js";
 import Order from "../models/Order.js";
 import Post from "../models/Post.js";
 import UserReport from "../models/UserReport.js";
+import Coupon from "../models/Coupon.js";
+import CouponUsage from "../models/CouponUsage.js";
+import SupportTicket from "../models/SupportTicket.js";
+import { sendPush } from "../utils/fcm.js";
 
 const router = Router();
 
@@ -18,6 +22,7 @@ router.use(authRequired(["admin"]));
 // GET /api/admin/stats
 router.get("/stats", async (req, res) => {
   try {
+    const now = new Date();
     const [
       totalUsers,
       newUsersThisMonth,
@@ -25,6 +30,8 @@ router.get("/stats", async (req, res) => {
       activePets,
       totalOrders,
       pendingReports,
+      totalActiveCoupons,
+      openSupportTickets,
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({
@@ -34,6 +41,8 @@ router.get("/stats", async (req, res) => {
       Pet.countDocuments({ isActive: true }),
       Order.countDocuments().catch(() => 0),
       UserReport.countDocuments({ status: "pending" }),
+      Coupon.countDocuments({ isActive: true, validUntil: { $gte: now } }).catch(() => 0),
+      SupportTicket.countDocuments({ status: "open" }).catch(() => 0),
     ]);
 
     return sendOk(res, 200, {
@@ -44,6 +53,8 @@ router.get("/stats", async (req, res) => {
         activePets,
         totalOrders,
         pendingReports,
+        totalActiveCoupons,
+        openSupportTickets,
       },
     });
   } catch (err) {
@@ -217,7 +228,7 @@ router.get("/orders", async (req, res) => {
     const [orders, total] = await Promise.all([
       Order.find(filter)
         .populate("user", "name email")
-        .select("user totalAmount status paymentStatus items createdAt")
+        .select("user totalAmount status paymentStatus items trackingNumber carrier estimatedDelivery createdAt")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
@@ -274,5 +285,220 @@ router.patch(
     }
   }
 );
+
+// PATCH /api/admin/users/:id/role
+router.patch("/users/:id/role", async (req, res) => {
+  try {
+    const { role } = req.body;
+    const allowed = ["user", "admin", "seller", "vet"];
+    if (!allowed.includes(role)) return sendError(res, 400, "Geçersiz rol.");
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { role },
+      { new: true, select: "name email role" }
+    );
+    if (!user) return sendError(res, 404, "Kullanıcı bulunamadı.");
+    return sendOk(res, 200, { user });
+  } catch (err) {
+    return sendError(res, 500, "İşlem başarısız", "internal_error", err.message);
+  }
+});
+
+// PATCH /api/admin/orders/:id/tracking
+router.patch("/orders/:id/tracking", async (req, res) => {
+  try {
+    const { trackingNumber, carrier, estimatedDelivery } = req.body;
+    const order = await Order.findById(req.params.id).populate("user", "_id");
+    if (!order) return sendError(res, 404, "Sipariş bulunamadı.");
+
+    const prevStatus = order.status;
+    if (trackingNumber !== undefined) order.trackingNumber = trackingNumber;
+    if (carrier !== undefined) order.carrier = carrier;
+    if (estimatedDelivery !== undefined) order.estimatedDelivery = estimatedDelivery ? new Date(estimatedDelivery) : undefined;
+
+    // Kargo bilgisi girilince processing → shipped otomatik geçiş
+    if (trackingNumber && order.status === "processing") order.status = "shipped";
+
+    // Durum geçmişine kayıt
+    if (order.status !== prevStatus || trackingNumber) {
+      order.statusHistory = order.statusHistory || [];
+      order.statusHistory.push({
+        status: order.status,
+        note: trackingNumber
+          ? `${carrier || 'Kargo'} - Takip No: ${trackingNumber}`
+          : `Durum güncellendi: ${order.status}`,
+        updatedAt: new Date(),
+      });
+    }
+
+    await order.save();
+
+    // Müşteriye anlık bildirim — fire-and-forget (yanıtı bloke etme)
+    if (order.user?._id && trackingNumber) {
+      sendPush(order.user._id, {
+        title: "Siparişiniz Kargoya Verildi",
+        body: `${carrier || "Kargo"} - Takip No: ${trackingNumber}`,
+        data: { type: "order_shipped", orderId: order._id.toString() },
+      }).catch(() => {});
+    }
+
+    return sendOk(res, 200, { order });
+  } catch (err) {
+    return sendError(res, 500, "İşlem başarısız", "internal_error", err.message);
+  }
+});
+
+// GET /api/admin/coupons?page=1&status=active|expired|all
+router.get("/coupons", async (req, res) => {
+  try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = 20;
+    const filter = {};
+    if (req.query.status === "active") filter.isActive = true;
+    if (req.query.status === "expired") filter.validUntil = { $lt: new Date() };
+    const [coupons, total] = await Promise.all([
+      Coupon.find(filter)
+        .populate("seller", "name email")
+        .populate("store", "name")
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      Coupon.countDocuments(filter),
+    ]);
+    return sendOk(res, 200, { coupons, total, page });
+  } catch (err) {
+    return sendError(res, 500, "Kuponlar alınamadı", "internal_error", err.message);
+  }
+});
+
+// POST /api/admin/coupons
+router.post("/coupons", async (req, res) => {
+  try {
+    const {
+      code, description, discountType, discountValue,
+      minPurchaseAmount, maxDiscountAmount, validFrom, validUntil,
+      usageLimit, perUserLimit,
+    } = req.body;
+    if (!code || !discountType || !discountValue || !validFrom || !validUntil)
+      return sendError(res, 400, "Zorunlu alanlar eksik.");
+    const coupon = await Coupon.create({
+      code: code.toUpperCase(),
+      description,
+      discountType,
+      discountValue: Number(discountValue),
+      minPurchaseAmount: minPurchaseAmount ? Number(minPurchaseAmount) : 0,
+      maxDiscountAmount: maxDiscountAmount ? Number(maxDiscountAmount) : undefined,
+      validFrom: new Date(validFrom),
+      validUntil: new Date(validUntil),
+      usageLimit: usageLimit ? Number(usageLimit) : undefined,
+      perUserLimit: perUserLimit ? Number(perUserLimit) : 1,
+    });
+    return sendOk(res, 201, { coupon });
+  } catch (err) {
+    if (err.code === 11000) return sendError(res, 409, "Bu kupon kodu zaten kullanılıyor.");
+    return sendError(res, 500, "Kupon oluşturulamadı", "internal_error", err.message);
+  }
+});
+
+// PATCH /api/admin/coupons/:id/toggle
+router.patch("/coupons/:id/toggle", async (req, res) => {
+  try {
+    const coupon = await Coupon.findById(req.params.id);
+    if (!coupon) return sendError(res, 404, "Kupon bulunamadı.");
+    coupon.isActive = !coupon.isActive;
+    await coupon.save();
+    return sendOk(res, 200, { coupon });
+  } catch (err) {
+    return sendError(res, 500, "İşlem başarısız", "internal_error", err.message);
+  }
+});
+
+// DELETE /api/admin/coupons/:id
+router.delete("/coupons/:id", async (req, res) => {
+  try {
+    const coupon = await Coupon.findByIdAndDelete(req.params.id);
+    if (!coupon) return sendError(res, 404, "Kupon bulunamadı.");
+    return sendOk(res, 200, { message: "Kupon silindi." });
+  } catch (err) {
+    return sendError(res, 500, "İşlem başarısız", "internal_error", err.message);
+  }
+});
+
+// GET /api/admin/support?page=1&status=open|reviewing|closed
+router.get("/support", async (req, res) => {
+  try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = 20;
+    const filter = {};
+    if (["open", "reviewing", "closed"].includes(req.query.status)) filter.status = req.query.status;
+    const [tickets, total] = await Promise.all([
+      SupportTicket.find(filter)
+        .populate("userId", "name email avatarUrl")
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      SupportTicket.countDocuments(filter),
+    ]);
+    return sendOk(res, 200, { tickets, total, page });
+  } catch (err) {
+    return sendError(res, 500, "Destek ticketları alınamadı.", "internal_error", err.message);
+  }
+});
+
+// PATCH /api/admin/support/:id
+router.patch("/support/:id", async (req, res) => {
+  try {
+    const { status, adminNote } = req.body;
+    const allowed = ["open", "reviewing", "closed"];
+    if (status && !allowed.includes(status)) return sendError(res, 400, "Geçersiz durum.");
+    const ticket = await SupportTicket.findById(req.params.id);
+    if (!ticket) return sendError(res, 404, "Ticket bulunamadı.");
+    if (status) ticket.status = status;
+    if (adminNote !== undefined) ticket.adminNote = adminNote;
+    await ticket.save();
+    return sendOk(res, 200, { ticket });
+  } catch (err) {
+    return sendError(res, 500, "İşlem başarısız.", "internal_error", err.message);
+  }
+});
+
+// GET /api/admin/coupons/:id/usage?page=1
+// Bir kuponu kim, ne zaman, hangi sipariş üzerinden kullandı?
+router.get("/coupons/:id/usage", async (req, res) => {
+  try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = 20;
+    const couponId = req.params.id;
+
+    const [usages, total, coupon] = await Promise.all([
+      CouponUsage.find({ couponId })
+        .populate("userId", "name email avatarUrl")
+        .populate("orderId", "totalAmount originalAmount status createdAt")
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      CouponUsage.countDocuments({ couponId }),
+      Coupon.findById(couponId).select("code discountType discountValue usageCount usageLimit"),
+    ]);
+
+    if (!coupon) return sendError(res, 404, "Kupon bulunamadı.");
+
+    // Toplam kazandırılan indirim tutarı
+    const totalDiscount = await CouponUsage.aggregate([
+      { $match: { couponId: coupon._id } },
+      { $group: { _id: null, total: { $sum: "$discountAmount" } } },
+    ]);
+
+    return sendOk(res, 200, {
+      coupon,
+      usages,
+      total,
+      page,
+      totalDiscountGiven: totalDiscount[0]?.total ?? 0,
+    });
+  } catch (err) {
+    return sendError(res, 500, "Kullanım geçmişi alınamadı", "internal_error", err.message);
+  }
+});
 
 export default router;

@@ -4,8 +4,8 @@ import Pet from "../models/Pet.js";
 // Yardımcı: Pet sahibi mi?
 async function assertOwner(petId, userId, res) {
   const pet = await Pet.findById(petId).select("ownerId");
-  if (!pet) { res.sendError("Pet bulunamadı.", 404); return false; }
-  if (String(pet.ownerId) !== String(userId)) { res.sendError("Yetki yok.", 403); return false; }
+  if (!pet) { res.sendError(404, "Pet bulunamadı."); return false; }
+  if (String(pet.ownerId) !== String(userId)) { res.sendError(403, "Yetki yok."); return false; }
   return true;
 }
 
@@ -45,9 +45,9 @@ export const addRecord = async (req, res) => {
 
     const validTypes = ["weight", "medication", "vet_visit", "note"];
     if (!type || !validTypes.includes(type)) {
-      return res.sendError("Geçerli bir kayıt tipi seçin.", 400);
+      return res.sendError(400, "Geçerli bir kayıt tipi seçin.");
     }
-    if (!date) return res.sendError("Tarih zorunludur.", 400);
+    if (!date) return res.sendError(400, "Tarih zorunludur.");
 
     const record = await HealthRecord.create({
       petId,
@@ -73,8 +73,8 @@ export const addRecord = async (req, res) => {
 export const updateRecord = async (req, res) => {
   try {
     const record = await HealthRecord.findById(req.params.id);
-    if (!record) return res.sendError("Kayıt bulunamadı.", 404);
-    if (String(record.ownerId) !== String(req.user.id)) return res.sendError("Yetki yok.", 403);
+    if (!record) return res.sendError(404, "Kayıt bulunamadı.");
+    if (String(record.ownerId) !== String(req.user.id)) return res.sendError(403, "Yetki yok.");
 
     const allowed = ["date", "weightKg", "medicationName", "dosage",
                      "frequency", "vetName", "diagnosis", "notes"];
@@ -92,8 +92,8 @@ export const updateRecord = async (req, res) => {
 export const deleteRecord = async (req, res) => {
   try {
     const record = await HealthRecord.findById(req.params.id);
-    if (!record) return res.sendError("Kayıt bulunamadı.", 404);
-    if (String(record.ownerId) !== String(req.user.id)) return res.sendError("Yetki yok.", 403);
+    if (!record) return res.sendError(404, "Kayıt bulunamadı.");
+    if (String(record.ownerId) !== String(req.user.id)) return res.sendError(403, "Yetki yok.");
     await record.deleteOne();
     res.sendOk({ message: "Kayıt silindi." });
   } catch (err) {

@@ -61,6 +61,24 @@ const orderSchema = new Schema(
       default: 'pending',
     },
     notes: String,
+    // Kupon alanları
+    couponCode: { type: String, uppercase: true, trim: true },
+    originalAmount: { type: Number, min: 0 },  // iskonto öncesi tutar
+    discountAmount: { type: Number, default: 0, min: 0 },
+    // Durum geçmiş kaydı (max ~10 giriş/sipariş, hafif)
+    statusHistory: [
+      {
+        status: String,
+        note: String,
+        updatedAt: { type: Date, default: Date.now },
+      },
+    ],
+    trackingNumber: { type: String, trim: true },
+    carrier: {
+      type: String,
+      enum: ['Yurtiçi', 'MNG', 'Aras', 'PTT', 'Sürat', 'UPS', 'DHL', 'Diğer'],
+    },
+    estimatedDelivery: { type: Date },
   },
   {
     timestamps: true,

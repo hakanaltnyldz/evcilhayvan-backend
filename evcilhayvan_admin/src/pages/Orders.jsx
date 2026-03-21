@@ -2,6 +2,16 @@ import { useEffect, useState } from 'react'
 import api from '../api.js'
 import Table from '../components/Table.jsx'
 
+const TRACKING_URLS = {
+  'Yurtiçi': (no) => `https://www.yurticikargo.com/tr/online-islemler/gonderi-sorgula?code=${no}`,
+  'MNG':     (no) => `https://www.mngkargo.com.tr/gonderi-sorgula?trackingNo=${no}`,
+  'Aras':    (no) => `https://www.araskargo.com.tr/kargo-takip?trackingNo=${no}`,
+  'PTT':     (no) => `https://gonderitakip.ptt.gov.tr/Track/Verify?q=${no}`,
+  'Sürat':   (no) => `https://www.suratkargo.com.tr/KargoTakip?TakipNo=${no}`,
+  'UPS':     (no) => `https://www.ups.com/track?tracknum=${no}`,
+  'DHL':     (no) => `https://www.dhl.com/tr-tr/home/tracking.html?tracking-id=${no}`,
+}
+
 const STATUS_LABELS = {
   pending: 'Bekliyor',
   processing: 'Hazırlanıyor',
@@ -31,6 +41,31 @@ export default function Orders() {
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState('all')
   const [loading, setLoading] = useState(true)
+  const [trackingModal, setTrackingModal] = useState(null)
+  const [trackingForm, setTrackingForm] = useState({ carrier: 'Yurtiçi', trackingNumber: '', estimatedDelivery: '' })
+  const [savingTracking, setSavingTracking] = useState(false)
+
+  function openTrackingModal(order) {
+    setTrackingModal(order)
+    setTrackingForm({
+      carrier: order.carrier || 'Yurtiçi',
+      trackingNumber: order.trackingNumber || '',
+      estimatedDelivery: order.estimatedDelivery ? order.estimatedDelivery.substring(0, 10) : '',
+    })
+  }
+
+  async function saveTracking() {
+    setSavingTracking(true)
+    try {
+      const res = await api.patch(`/admin/orders/${trackingModal._id}/tracking`, trackingForm)
+      setOrders((prev) => prev.map((o) => o._id === trackingModal._id ? res.data.order : o))
+      setTrackingModal(null)
+    } catch (err) {
+      alert(err.response?.data?.message || 'İşlem başarısız')
+    } finally {
+      setSavingTracking(false)
+    }
+  }
 
   useEffect(() => {
     setLoading(true)
@@ -38,8 +73,8 @@ export default function Orders() {
     if (status !== 'all') params.status = status
     api.get('/admin/orders', { params })
       .then((res) => {
-        setOrders(res.data?.data?.orders || [])
-        setTotal(res.data?.data?.total || 0)
+        setOrders(res.data?.orders || [])
+        setTotal(res.data?.total || 0)
       })
       .finally(() => setLoading(false))
   }, [page, status])
@@ -86,6 +121,49 @@ export default function Orders() {
       label: 'Tarih',
       render: (r) =>
         r.createdAt ? new Date(r.createdAt).toLocaleDateString('tr-TR') : '—',
+    },
+    {
+      key: 'tracking',
+      label: 'Kargo',
+      render: (r) => {
+        if (!r.trackingNumber) return <span className="text-gray-300 text-xs">—</span>
+        const urlFn = TRACKING_URLS[r.carrier]
+        const url = urlFn ? urlFn(r.trackingNumber) : null
+        return (
+          <div className="text-xs">
+            <div className="font-semibold text-gray-700">{r.carrier}</div>
+            {url ? (
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 hover:text-indigo-800 font-mono underline"
+              >
+                {r.trackingNumber}
+              </a>
+            ) : (
+              <div className="text-gray-400 font-mono">{r.trackingNumber}</div>
+            )}
+            {r.estimatedDelivery && (
+              <div className="text-gray-400 mt-0.5">
+                Tahmini: {new Date(r.estimatedDelivery).toLocaleDateString('tr-TR')}
+              </div>
+            )}
+          </div>
+        )
+      },
+    },
+    {
+      key: 'cargoAction',
+      label: '',
+      render: (r) => (
+        <button
+          onClick={() => openTrackingModal(r)}
+          className="px-2 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors whitespace-nowrap"
+        >
+          {r.trackingNumber ? 'Güncelle' : 'Kargo Ekle'}
+        </button>
+      ),
     },
   ]
 
@@ -143,6 +221,62 @@ export default function Orders() {
           >
             Sonraki →
           </button>
+        </div>
+      )}
+
+      {trackingModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-96 shadow-xl">
+            <h2 className="font-bold text-lg mb-1">Kargo Bilgisi</h2>
+            <p className="text-xs text-gray-500 mb-4">Sipariş #{trackingModal._id?.slice(-6)}</p>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-gray-600 mb-1 block">Kargo Firması</label>
+                <select
+                  value={trackingForm.carrier}
+                  onChange={(e) => setTrackingForm({ ...trackingForm, carrier: e.target.value })}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                >
+                  {['Yurtiçi', 'MNG', 'Aras', 'PTT', 'Sürat', 'UPS', 'DHL', 'Diğer'].map((c) => (
+                    <option key={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 mb-1 block">Takip Numarası</label>
+                <input
+                  placeholder="Örn: 1234567890"
+                  value={trackingForm.trackingNumber}
+                  onChange={(e) => setTrackingForm({ ...trackingForm, trackingNumber: e.target.value })}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600 mb-1 block">Tahmini Teslim Tarihi</label>
+                <input
+                  type="date"
+                  value={trackingForm.estimatedDelivery}
+                  onChange={(e) => setTrackingForm({ ...trackingForm, estimatedDelivery: e.target.value })}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-5">
+              <button
+                onClick={() => setTrackingModal(null)}
+                className="flex-1 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50"
+              >
+                İptal
+              </button>
+              <button
+                onClick={saveTracking}
+                disabled={savingTracking}
+                className="flex-1 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50"
+              >
+                {savingTracking ? 'Kaydediliyor...' : 'Kaydet'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
