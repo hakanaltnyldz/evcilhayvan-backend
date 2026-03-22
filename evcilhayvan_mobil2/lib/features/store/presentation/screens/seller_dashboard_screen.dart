@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:evcilhayvan_mobil2/core/http.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
@@ -733,6 +734,120 @@ class _QuickActionsCard extends ConsumerStatefulWidget {
 class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
   bool _isSeeding = false;
 
+  Future<void> _showEditStoreSheet() async {
+    final storeAsync = ref.read(myStoreProvider);
+    final store = storeAsync.valueOrNull;
+
+    final nameCtrl = TextEditingController(text: store?.name ?? '');
+    final descCtrl = TextEditingController(text: store?.description ?? '');
+    final phoneCtrl = TextEditingController(text: store?.phone ?? '');
+    final websiteCtrl = TextEditingController(text: store?.website ?? '');
+    final instagramCtrl = TextEditingController(text: store?.instagram ?? '');
+    final twitterCtrl = TextEditingController(text: store?.twitter ?? '');
+    final facebookCtrl = TextEditingController(text: store?.facebook ?? '');
+    final workingHoursCtrl = TextEditingController(text: store?.workingHours ?? '');
+    bool saving = false;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20, right: 20, top: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Text('Mağaza Profilini Düzenle',
+                            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _EditField(ctrl: nameCtrl, label: 'Mağaza Adı'),
+                    _EditField(ctrl: descCtrl, label: 'Açıklama', maxLines: 3),
+                    _EditField(ctrl: phoneCtrl, label: 'Telefon'),
+                    _EditField(ctrl: websiteCtrl, label: 'Web Sitesi'),
+                    _EditField(ctrl: instagramCtrl, label: 'Instagram (kullanıcı adı)'),
+                    _EditField(ctrl: twitterCtrl, label: 'Twitter/X (kullanıcı adı)'),
+                    _EditField(ctrl: facebookCtrl, label: 'Facebook (kullanıcı adı)'),
+                    _EditField(ctrl: workingHoursCtrl, label: 'Çalışma Saatleri (örn: Pzt-Cum 09:00-18:00)'),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: saving
+                            ? null
+                            : () async {
+                                setSheetState(() => saving = true);
+                                try {
+                                  await ApiClient().dio.patch('/api/store/me/profile', data: {
+                                    'name': nameCtrl.text.trim(),
+                                    'description': descCtrl.text.trim(),
+                                    'phone': phoneCtrl.text.trim(),
+                                    'website': websiteCtrl.text.trim(),
+                                    'instagram': instagramCtrl.text.trim(),
+                                    'twitter': twitterCtrl.text.trim(),
+                                    'facebook': facebookCtrl.text.trim(),
+                                    'workingHours': workingHoursCtrl.text.trim(),
+                                  });
+                                  ref.invalidate(myStoreProvider);
+                                  if (ctx.mounted) Navigator.pop(ctx);
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Mağaza profili güncellendi'),
+                                          backgroundColor: Colors.green),
+                                    );
+                                  }
+                                } catch (e) {
+                                  setSheetState(() => saving = false);
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Güncelleme başarısız: $e'),
+                                          backgroundColor: Colors.red),
+                                    );
+                                  }
+                                }
+                              },
+                        child: saving
+                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Text('Kaydet'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+    nameCtrl.dispose();
+    descCtrl.dispose();
+    phoneCtrl.dispose();
+    websiteCtrl.dispose();
+    instagramCtrl.dispose();
+    twitterCtrl.dispose();
+    facebookCtrl.dispose();
+    workingHoursCtrl.dispose();
+  }
+
   Future<void> _handleSeedDemoProducts() async {
     if (_isSeeding) return;
 
@@ -858,12 +973,43 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
           ),
           const SizedBox(height: 12),
           _QuickActionButton(
+            icon: Icons.edit_outlined,
+            label: 'Mağaza Profilini Düzenle',
+            color: Colors.teal,
+            onTap: _showEditStoreSheet,
+          ),
+          const SizedBox(height: 12),
+          _QuickActionButton(
             icon: _isSeeding ? Icons.hourglass_empty : Icons.rocket_launch_outlined,
             label: _isSeeding ? l10n.sellerDemoProductsLoading : l10n.sellerDemoProducts,
             color: Colors.purple,
             onTap: _isSeeding ? () {} : _handleSeedDemoProducts,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _EditField extends StatelessWidget {
+  final TextEditingController ctrl;
+  final String label;
+  final int maxLines;
+
+  const _EditField({required this.ctrl, required this.label, this.maxLines = 1});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextField(
+        controller: ctrl,
+        maxLines: maxLines,
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+          isDense: true,
+        ),
       ),
     );
   }

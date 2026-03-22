@@ -9,6 +9,7 @@ import Orders from './pages/Orders.jsx'
 import Posts from './pages/Posts.jsx'
 import Coupons from './pages/Coupons.jsx'
 import Support from './pages/Support.jsx'
+import Sitters from './pages/Sitters.jsx'
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('admin_token')
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="posts" element={<Posts />} />
           <Route path="coupons" element={<Coupons />} />
           <Route path="support" element={<Support />} />
+          <Route path="sitters" element={<Sitters />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

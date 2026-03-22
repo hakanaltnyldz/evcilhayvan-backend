@@ -21,6 +21,17 @@ const UserSchema = new mongoose.Schema(
     blockedUsers: { type: [mongoose.Schema.Types.ObjectId], ref: "User", default: [], select: false },
     refreshToken: { type: String, select: false },
     refreshTokenExpires: { type: Date, select: false },
+    notificationPreferences: {
+      messages:        { type: Boolean, default: true },
+      matches:         { type: Boolean, default: true },
+      adoptions:       { type: Boolean, default: true },
+      vaccinations:    { type: Boolean, default: true },
+      orderUpdates:    { type: Boolean, default: true },
+      sitterBookings:  { type: Boolean, default: true },
+      lostFoundNearby: { type: Boolean, default: true },
+      events:          { type: Boolean, default: true },
+      birthdays:       { type: Boolean, default: true },
+    },
   },
   {
     timestamps: true,

@@ -15,13 +15,20 @@ final vetReviewsProvider =
   return ref.read(veterinaryRepositoryProvider).getVetReviews(vetId);
 });
 
-class VetDetailScreen extends ConsumerWidget {
+class VetDetailScreen extends ConsumerStatefulWidget {
   final String vetId;
   const VetDetailScreen({super.key, required this.vetId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final vetAsync = ref.watch(vetDetailProvider(vetId));
+  ConsumerState<VetDetailScreen> createState() => _VetDetailScreenState();
+}
+
+class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
+  int _photoIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final vetAsync = ref.watch(vetDetailProvider(widget.vetId));
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
@@ -30,20 +37,52 @@ class VetDetailScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('${l10n.error}: $e')),
         data: (vet) {
-          final photoUrl = vet.photos.isNotEmpty
-              ? (vet.photos.first.startsWith('http') ? vet.photos.first : '$apiBaseUrl${vet.photos.first}')
-              : null;
+          final photos = vet.photos.map((p) => p.startsWith('http') ? p : '$apiBaseUrl$p').toList();
 
           return CustomScrollView(
             slivers: [
               SliverAppBar(
-                expandedHeight: 250,
+                expandedHeight: 260,
                 pinned: true,
                 flexibleSpace: FlexibleSpaceBar(
                   title: Text(vet.name, style: const TextStyle(shadows: [Shadow(blurRadius: 8, color: Colors.black54)])),
-                  background: photoUrl != null
-                      ? Image.network(photoUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _heroPlaceholder())
-                      : _heroPlaceholder(),
+                  background: photos.isEmpty
+                      ? _heroPlaceholder()
+                      : Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            PageView.builder(
+                              itemCount: photos.length,
+                              onPageChanged: (i) => setState(() => _photoIndex = i),
+                              itemBuilder: (_, i) => Image.network(
+                                photos[i],
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => _heroPlaceholder(),
+                              ),
+                            ),
+                            if (photos.length > 1)
+                              Positioned(
+                                bottom: 44,
+                                left: 0,
+                                right: 0,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(photos.length, (i) {
+                                    return AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      width: _photoIndex == i ? 22 : 8,
+                                      height: 8,
+                                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                                      decoration: BoxDecoration(
+                                        color: _photoIndex == i ? Colors.white : Colors.white54,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                    );
+                                  }),
+                                ),
+                              ),
+                          ],
+                        ),
                 ),
               ),
               SliverToBoxAdapter(
@@ -166,7 +205,7 @@ class VetDetailScreen extends ConsumerWidget {
 
               // ── Değerlendirmeler ──
               SliverToBoxAdapter(
-                child: _VetReviewsSection(vetId: vetId),
+                child: _VetReviewsSection(vetId: widget.vetId),
               ),
             ],
           );

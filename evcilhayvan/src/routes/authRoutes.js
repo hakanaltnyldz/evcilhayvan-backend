@@ -109,4 +109,35 @@ router.get("/users/:userId", authRequired(), getUserPublicProfile);
 router.post("/fcm-token", authRequired(), registerFcmToken);
 router.delete("/fcm-token", authRequired(), unregisterFcmToken);
 
+// === BİLDİRİM TERCİHLERİ ===
+router.get("/me/notification-preferences", authRequired(), async (req, res) => {
+  try {
+    const { sendOk, sendError } = await import("../utils/apiResponse.js");
+    const User = (await import("../models/User.js")).default;
+    const user = await User.findById(req.user.sub, "notificationPreferences");
+    if (!user) return sendError(res, 404, "Kullanici bulunamadi");
+    return sendOk(res, 200, { preferences: user.notificationPreferences ?? {} });
+  } catch (err) {
+    const { sendError } = await import("../utils/apiResponse.js");
+    return sendError(res, 500, "Hata", "internal_error", err.message);
+  }
+});
+
+router.patch("/me/notification-preferences", authRequired(), async (req, res) => {
+  try {
+    const { sendOk, sendError } = await import("../utils/apiResponse.js");
+    const User = (await import("../models/User.js")).default;
+    const allowed = ["messages","matches","adoptions","vaccinations","orderUpdates","sitterBookings","lostFoundNearby","events","birthdays"];
+    const update = {};
+    for (const key of allowed) {
+      if (typeof req.body[key] === "boolean") update[`notificationPreferences.${key}`] = req.body[key];
+    }
+    await User.findByIdAndUpdate(req.user.sub, { $set: update });
+    return sendOk(res, 200, { message: "Güncellendi" });
+  } catch (err) {
+    const { sendError } = await import("../utils/apiResponse.js");
+    return sendError(res, 500, "Hata", "internal_error", err.message);
+  }
+});
+
 export default router;

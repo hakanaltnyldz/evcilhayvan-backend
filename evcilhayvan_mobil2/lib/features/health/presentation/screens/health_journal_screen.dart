@@ -1,9 +1,11 @@
 // lib/features/health/presentation/screens/health_journal_screen.dart
+import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:evcilhayvan_mobil2/features/health/data/repositories/health_repository.dart';
 import 'package:evcilhayvan_mobil2/features/health/domain/models/health_record_model.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
@@ -339,14 +341,81 @@ class _RecordCard extends StatelessWidget {
 
 // ── Weight Chart ───────────────────────────────────────────────────────────
 
-class _WeightChartSection extends ConsumerWidget {
+class _WeightChartSection extends ConsumerStatefulWidget {
   final String petId;
   const _WeightChartSection({required this.petId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_WeightChartSection> createState() => _WeightChartSectionState();
+}
+
+class _WeightChartSectionState extends ConsumerState<_WeightChartSection> {
+  double? _goalWeight;
+  static const _chartColor = Color(0xFF2BB673);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadGoalWeight();
+  }
+
+  Future<void> _loadGoalWeight() async {
+    final prefs = await SharedPreferences.getInstance();
+    final val = prefs.getDouble('goal_weight_${widget.petId}');
+    if (mounted) setState(() => _goalWeight = val);
+  }
+
+  Future<void> _editGoalWeight(List<FlSpot> spots) async {
+    final ctrl = TextEditingController(
+      text: _goalWeight != null ? _goalWeight!.toStringAsFixed(1) : '',
+    );
+    final result = await showDialog<double?>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Hedef Ağırlık'),
+        content: TextField(
+          controller: ctrl,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            labelText: 'Hedef ağırlık (kg)',
+            suffixText: 'kg',
+            border: OutlineInputBorder(),
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          if (_goalWeight != null)
+            TextButton(
+              onPressed: () => Navigator.pop(context, -1),
+              child: const Text('Kaldır', style: TextStyle(color: Colors.red)),
+            ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('İptal')),
+          FilledButton(
+            onPressed: () {
+              final v = double.tryParse(ctrl.text.replaceAll(',', '.'));
+              Navigator.pop(context, v);
+            },
+            child: const Text('Kaydet'),
+          ),
+        ],
+      ),
+    );
+    ctrl.dispose();
+    if (result == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    if (result < 0) {
+      await prefs.remove('goal_weight_${widget.petId}');
+      setState(() => _goalWeight = null);
+    } else {
+      await prefs.setDouble('goal_weight_${widget.petId}', result);
+      setState(() => _goalWeight = result);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final chartAsync = ref.watch(weightChartProvider(petId));
+    final chartAsync = ref.watch(weightChartProvider(widget.petId));
     return chartAsync.when(
       loading: () => const SizedBox(
         height: 160,
@@ -371,7 +440,7 @@ class _WeightChartSection extends ConsumerWidget {
               ),
             ),
             TextButton(
-              onPressed: () => ref.invalidate(weightChartProvider(petId)),
+              onPressed: () => ref.invalidate(weightChartProvider(widget.petId)),
               child: Text(l10n.healthRefresh),
             ),
           ],
@@ -382,34 +451,29 @@ class _WeightChartSection extends ConsumerWidget {
           margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
           decoration: BoxDecoration(
-            color: const Color(0xFF2BB673).withOpacity(0.06),
+            color: _chartColor.withOpacity(0.06),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF2BB673).withOpacity(0.2)),
+            border: Border.all(color: _chartColor.withOpacity(0.2)),
           ),
           child: Row(
             children: [
-              Icon(Icons.show_chart, color: const Color(0xFF2BB673).withOpacity(0.5), size: 32),
+              Icon(Icons.show_chart, color: _chartColor.withOpacity(0.5), size: 32),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    l10n.healthWeightChart,
+                  Text(l10n.healthWeightChart,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: const Color(0xFF2BB673),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                      color: _chartColor, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 2),
-                  Text(
-                    l10n.healthWeightChartMin,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  Text(l10n.healthWeightChartMin,
+                    style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
             ],
           ),
         );
+
         final spots = <FlSpot>[];
         final labels = <String>[];
         for (int i = 0; i < data.length; i++) {
@@ -417,101 +481,198 @@ class _WeightChartSection extends ConsumerWidget {
           spots.add(FlSpot(i.toDouble(), w));
           labels.add(data[i]['date']?.toString().substring(0, 7) ?? '');
         }
-        final minY = spots.map((s) => s.y).reduce((a, b) => a < b ? a : b) - 0.5;
-        final maxY = spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) + 0.5;
-        return Container(
-          height: 180,
-          margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-          padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF2BB673).withOpacity(0.08),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF2BB673).withOpacity(0.2)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 8, bottom: 4),
-                child: Text(
-                  l10n.healthWeightChart,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: const Color(0xFF2BB673),
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
+        final weights = spots.map((s) => s.y).toList();
+        final minW = weights.reduce(math.min);
+        final maxW = weights.reduce(math.max);
+        final avg = weights.reduce((a, b) => a + b) / weights.length;
+        final trend = weights.length >= 2
+            ? (weights.last > weights[weights.length - 2]
+                ? '↑'
+                : weights.last < weights[weights.length - 2]
+                    ? '↓'
+                    : '→')
+            : '→';
+
+        final allValues = [...weights];
+        if (_goalWeight != null) allValues.add(_goalWeight!);
+        final minY = allValues.reduce(math.min) - 1;
+        final maxY = allValues.reduce(math.max) + 1;
+
+        return Column(
+          children: [
+            // Stats row
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: _chartColor.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: _chartColor.withOpacity(0.2)),
               ),
-              Expanded(
-                child: LineChart(
-                  LineChartData(
-                    minY: minY,
-                    maxY: maxY,
-                    gridData: FlGridData(
-                      show: true,
-                      drawVerticalLine: false,
-                      horizontalInterval: (maxY - minY) / 4,
-                      getDrawingHorizontalLine: (_) => const FlLine(
-                        color: Color(0x202BB673),
-                        strokeWidth: 1,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _StatChip('Ort.', '${avg.toStringAsFixed(1)} kg'),
+                  _StatChip('Min', '${minW.toStringAsFixed(1)} kg'),
+                  _StatChip('Maks', '${maxW.toStringAsFixed(1)} kg'),
+                  _StatChip('Trend', trend),
+                ],
+              ),
+            ),
+
+            // Chart
+            Container(
+              height: 200,
+              margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+              padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
+              decoration: BoxDecoration(
+                color: _chartColor.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: _chartColor.withOpacity(0.2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Text(l10n.healthWeightChart,
+                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            color: _chartColor, fontWeight: FontWeight.w700)),
                       ),
-                    ),
-                    borderData: FlBorderData(show: false),
-                    titlesData: FlTitlesData(
-                      leftTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          reservedSize: 36,
-                          getTitlesWidget: (v, _) => Text(
-                            '${v.toStringAsFixed(1)}',
-                            style: const TextStyle(fontSize: 10),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () => _editGoalWeight(spots),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Row(
+                            children: [
+                              Icon(Icons.flag_outlined, size: 14, color: _goalWeight != null ? Colors.red : Colors.grey),
+                              const SizedBox(width: 2),
+                              Text(
+                                _goalWeight != null ? '${_goalWeight!.toStringAsFixed(1)} kg hedef' : 'Hedef ekle',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: _goalWeight != null ? Colors.red : Colors.grey,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ),
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          interval: (spots.length / 4).ceilToDouble().clamp(1, 999),
-                          getTitlesWidget: (v, _) {
-                            final i = v.toInt();
-                            if (i < 0 || i >= labels.length) return const SizedBox.shrink();
-                            return Text(
-                              labels[i].length >= 7 ? labels[i].substring(5) : labels[i],
-                              style: const TextStyle(fontSize: 9),
-                            );
-                          },
-                        ),
-                      ),
-                      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    ),
-                    lineBarsData: [
-                      LineChartBarData(
-                        spots: spots,
-                        isCurved: true,
-                        color: const Color(0xFF2BB673),
-                        barWidth: 2.5,
-                        dotData: FlDotData(
-                          show: true,
-                          getDotPainter: (_, __, ___, ____) => FlDotCirclePainter(
-                            radius: 3,
-                            color: const Color(0xFF2BB673),
-                            strokeWidth: 1.5,
-                            strokeColor: Colors.white,
-                          ),
-                        ),
-                        belowBarData: BarAreaData(
-                          show: true,
-                          color: const Color(0xFF2BB673).withOpacity(0.1),
                         ),
                       ),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 4),
+                  Expanded(
+                    child: LineChart(
+                      LineChartData(
+                        minY: minY,
+                        maxY: maxY,
+                        gridData: FlGridData(
+                          show: true,
+                          drawVerticalLine: false,
+                          horizontalInterval: (maxY - minY) / 4,
+                          getDrawingHorizontalLine: (_) => const FlLine(
+                            color: Color(0x202BB673),
+                            strokeWidth: 1,
+                          ),
+                        ),
+                        borderData: FlBorderData(show: false),
+                        extraLinesData: _goalWeight != null
+                            ? ExtraLinesData(horizontalLines: [
+                                HorizontalLine(
+                                  y: _goalWeight!,
+                                  color: Colors.red.withOpacity(0.6),
+                                  strokeWidth: 1.5,
+                                  dashArray: [6, 4],
+                                  label: HorizontalLineLabel(
+                                    show: true,
+                                    alignment: Alignment.topRight,
+                                    padding: const EdgeInsets.only(right: 4, bottom: 2),
+                                    style: const TextStyle(fontSize: 10, color: Colors.red),
+                                    labelResolver: (_) => 'Hedef',
+                                  ),
+                                ),
+                              ])
+                            : null,
+                        titlesData: FlTitlesData(
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 36,
+                              getTitlesWidget: (v, _) => Text(
+                                v.toStringAsFixed(1),
+                                style: const TextStyle(fontSize: 10),
+                              ),
+                            ),
+                          ),
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              interval: (spots.length / 4).ceilToDouble().clamp(1, 999),
+                              getTitlesWidget: (v, _) {
+                                final i = v.toInt();
+                                if (i < 0 || i >= labels.length) return const SizedBox.shrink();
+                                return Text(
+                                  labels[i].length >= 7 ? labels[i].substring(5) : labels[i],
+                                  style: const TextStyle(fontSize: 9),
+                                );
+                              },
+                            ),
+                          ),
+                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        ),
+                        lineBarsData: [
+                          LineChartBarData(
+                            spots: spots,
+                            isCurved: true,
+                            color: _chartColor,
+                            barWidth: 2.5,
+                            dotData: FlDotData(
+                              show: true,
+                              getDotPainter: (spot, _, __, index) => FlDotCirclePainter(
+                                radius: index == spots.length - 1 ? 5 : 3,
+                                color: _chartColor,
+                                strokeWidth: 1.5,
+                                strokeColor: Colors.white,
+                              ),
+                            ),
+                            belowBarData: BarAreaData(
+                              show: true,
+                              color: _chartColor.withOpacity(0.1),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  final String label;
+  final String value;
+  const _StatChip(this.label, this.value);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(value,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2BB673))),
+        Text(label,
+          style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
+      ],
     );
   }
 }

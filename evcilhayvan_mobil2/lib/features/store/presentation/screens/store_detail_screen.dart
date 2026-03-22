@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
@@ -299,125 +300,242 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final logoUrl = _resolveMediaUrl(store.logoUrl);
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        gradient: const LinearGradient(
-          colors: _storeDetailGradient,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppPalette.storePrimary.withOpacity(0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 12),
+    final bannerUrl = _resolveMediaUrl(store.bannerUrl);
+    final hasContact = store.phone != null || store.website != null ||
+        store.instagram != null || store.twitter != null ||
+        store.facebook != null || store.workingHours != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Banner image
+        if (bannerUrl != null)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: Image.network(
+              bannerUrl,
+              height: 160,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            ),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+        if (bannerUrl != null) const SizedBox(height: 12),
+
+        // Gradient card
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            gradient: const LinearGradient(
+              colors: _storeDetailGradient,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppPalette.storePrimary.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: logoUrl != null
-                    ? Image.network(
-                        logoUrl,
-                        width: 82,
-                        height: 82,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _LogoFallback(name: store.name),
-                      )
-                    : _LogoFallback(name: store.name),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      store.name,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                      ),
-                    ),
-                    if ((store.description ?? '').isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Text(
-                          store.description!,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: Colors.white.withOpacity(0.92),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: logoUrl != null
+                        ? Image.network(
+                            logoUrl,
+                            width: 82,
+                            height: 82,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _LogoFallback(name: store.name),
+                          )
+                        : _LogoFallback(name: store.name),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          store.name,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
                           ),
                         ),
-                      ),
-                    if (store.owner != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.storefront, color: Colors.white, size: 18),
-                            const SizedBox(width: 6),
-                            Text(
-                              store.owner!.name,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
+                        if ((store.description ?? '').isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              store.description!,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: Colors.white.withOpacity(0.92),
                               ),
                             ),
-                            if ((store.owner!.city ?? '').isNotEmpty) ...[
-                              const SizedBox(width: 8),
-                              const Icon(Icons.location_on_outlined, color: Colors.white, size: 16),
-                              Text(
-                                store.owner!.city!,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ],
-                          ],
-                        ),
-                      )
-                  ],
-                ),
-              )
+                          ),
+                        if (store.owner != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.storefront, color: Colors.white, size: 18),
+                                const SizedBox(width: 6),
+                                Text(
+                                  store.owner!.name,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                if ((store.owner!.city ?? '').isNotEmpty) ...[
+                                  const SizedBox(width: 8),
+                                  const Icon(Icons.location_on_outlined, color: Colors.white, size: 16),
+                                  Text(
+                                    store.owner!.city!,
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: isOwner
+                        ? () => context.pushNamed('store-add-product')
+                        : (_isLoading ? null : _toggleFavorite),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isFavorite ? Colors.red.shade50 : Theme.of(context).colorScheme.surface,
+                      foregroundColor: _isFavorite ? Colors.red : Theme.of(context).colorScheme.onSurface,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    icon: _isLoading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Icon(isOwner ? Icons.add : (_isFavorite ? Icons.favorite : Icons.favorite_border)),
+                    label: Text(isOwner ? l10n.storeDetailAddProduct : (_isFavorite ? l10n.storeDetailFavorited : l10n.storeDetailAddToFavorites)),
+                  ),
+                  const SizedBox(width: 10),
+                  OutlinedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.share_outlined, size: 18),
+                    label: Text(l10n.storeDetailShare),
+                  ),
+                ],
+              ),
             ],
           ),
+        ),
+
+        // Contact + social info card
+        if (hasContact) ...[
           const SizedBox(height: 12),
-          Row(
-            children: [
-              ElevatedButton.icon(
-                onPressed: isOwner
-                    ? () => context.pushNamed('store-add-product')
-                    : (_isLoading ? null : _toggleFavorite),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _isFavorite ? Colors.red.shade50 : Theme.of(context).colorScheme.surface,
-                  foregroundColor: _isFavorite ? Colors.red : Theme.of(context).colorScheme.onSurface,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                icon: _isLoading
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Icon(isOwner ? Icons.add : (_isFavorite ? Icons.favorite : Icons.favorite_border)),
-                label: Text(isOwner ? l10n.storeDetailAddProduct : (_isFavorite ? l10n.storeDetailFavorited : l10n.storeDetailAddToFavorites)),
-              ),
-              const SizedBox(width: 10),
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.share_outlined, size: 18),
-                label: Text(l10n.storeDetailShare),
-              ),
-            ],
-          )
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: theme.cardColor,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (store.workingHours != null)
+                  _ContactRow(Icons.access_time_outlined, store.workingHours!, theme),
+                if (store.phone != null)
+                  _ContactRow(Icons.phone_outlined, store.phone!, theme,
+                      onTap: () => _launchUrl('tel:${store.phone}')),
+                if (store.website != null)
+                  _ContactRow(Icons.language_outlined, store.website!, theme,
+                      onTap: () => _launchUrl(store.website!)),
+                if (store.instagram != null || store.twitter != null || store.facebook != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Row(
+                      children: [
+                        if (store.instagram != null)
+                          IconButton(
+                            icon: const Icon(Icons.camera_alt_outlined),
+                            tooltip: 'Instagram',
+                            onPressed: () => _launchUrl('https://instagram.com/${store.instagram}'),
+                          ),
+                        if (store.twitter != null)
+                          IconButton(
+                            icon: const Icon(Icons.alternate_email),
+                            tooltip: 'Twitter/X',
+                            onPressed: () => _launchUrl('https://twitter.com/${store.twitter}'),
+                          ),
+                        if (store.facebook != null)
+                          IconButton(
+                            icon: const Icon(Icons.facebook),
+                            tooltip: 'Facebook',
+                            onPressed: () => _launchUrl('https://facebook.com/${store.facebook}'),
+                          ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ],
+      ],
+    );
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+}
+
+class _ContactRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final ThemeData theme;
+  final VoidCallback? onTap;
+
+  const _ContactRow(this.icon, this.text, this.theme, {this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: AppPalette.storePrimary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                text,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: onTap != null ? AppPalette.storePrimary : null,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

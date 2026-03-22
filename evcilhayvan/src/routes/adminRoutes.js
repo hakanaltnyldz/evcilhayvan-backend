@@ -12,6 +12,7 @@ import UserReport from "../models/UserReport.js";
 import Coupon from "../models/Coupon.js";
 import CouponUsage from "../models/CouponUsage.js";
 import SupportTicket from "../models/SupportTicket.js";
+import PetSitter from "../models/PetSitter.js";
 import { sendPush } from "../utils/fcm.js";
 
 const router = Router();
@@ -498,6 +499,47 @@ router.get("/coupons/:id/usage", async (req, res) => {
     });
   } catch (err) {
     return sendError(res, 500, "Kullanım geçmişi alınamadı", "internal_error", err.message);
+  }
+});
+
+// === BAKICI YÖNETİMİ ===
+
+// GET /api/admin/pet-sitters?page=1&verified=all|true|false
+router.get("/pet-sitters", async (req, res) => {
+  try {
+    const { page = 1, verified = "all" } = req.query;
+    const filter = {};
+    if (verified === "true") filter.isVerified = true;
+    if (verified === "false") filter.isVerified = false;
+    const limit = 20;
+    const skip = (Number(page) - 1) * limit;
+    const [sitters, total] = await Promise.all([
+      PetSitter.find(filter)
+        .populate("userId", "name email avatarUrl")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      PetSitter.countDocuments(filter),
+    ]);
+    return sendOk(res, 200, { sitters, total, page: Number(page) });
+  } catch (err) {
+    return sendError(res, 500, "Bakicilar alinamadi", "internal_error", err.message);
+  }
+});
+
+// PATCH /api/admin/pet-sitters/:id/verify
+router.patch("/pet-sitters/:id/verify", async (req, res) => {
+  try {
+    const { isVerified } = req.body;
+    const sitter = await PetSitter.findByIdAndUpdate(
+      req.params.id,
+      { isVerified: Boolean(isVerified) },
+      { new: true }
+    ).populate("userId", "name email");
+    if (!sitter) return sendError(res, 404, "Bakici bulunamadi", "not_found");
+    return sendOk(res, 200, { sitter });
+  } catch (err) {
+    return sendError(res, 500, "Guncellenemedi", "internal_error", err.message);
   }
 });
 

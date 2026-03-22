@@ -9,6 +9,7 @@ const navItems = [
   { to: '/posts', label: 'Gönderiler', icon: '📝' },
   { to: '/coupons', label: 'Kuponlar', icon: '🎟️' },
   { to: '/support', label: 'Destek', icon: '🎫' },
+  { to: '/sitters', label: 'Bakıcılar', icon: '🐕' },
 ]
 
 export default function Layout() {

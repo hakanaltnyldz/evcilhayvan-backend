@@ -118,6 +118,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     subtitle: const Text('İndirim kuponlarınızı görüntüleyin'),
                     onTap: () => context.pushNamed('my-coupons'),
                   ),
+                  ListTile(
+                    leading: const Icon(Icons.location_on_outlined),
+                    title: const Text('Adreslerim'),
+                    subtitle: const Text('Kayıtlı adreslerinizi yönetin'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.pushNamed('my-addresses'),
+                  ),
                 ],
               ),
               if (user?.role == 'seller') ...[
@@ -158,41 +165,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: l10n.settingsSectionNotif,
                 subtitle: l10n.settingsSectionNotifSub,
                 children: [
-                  SwitchListTile.adaptive(
-                    value: _notificationsEnabled,
-                    title: Text(l10n.settingsNotifChat),
-                    subtitle: Text(l10n.settingsNotifChatSub),
-                    onChanged: (value) {
-                      _updatePreference(
-                        _notificationsKey,
-                        value,
-                        () => _notificationsEnabled = value,
-                      );
-                    },
-                  ),
-                  SwitchListTile.adaptive(
-                    value: _matchAlertsEnabled,
-                    title: Text(l10n.settingsNotifMatch),
-                    subtitle: Text(l10n.settingsNotifMatchSub),
-                    onChanged: (value) {
-                      _updatePreference(
-                        _matchAlertsKey,
-                        value,
-                        () => _matchAlertsEnabled = value,
-                      );
-                    },
-                  ),
-                  SwitchListTile.adaptive(
-                    value: _autoStartChat,
-                    title: Text(l10n.settingsAutoChat),
-                    subtitle: Text(l10n.settingsAutoChatSub),
-                    onChanged: (value) {
-                      _updatePreference(
-                        _autoStartChatKey,
-                        value,
-                        () => _autoStartChat = value,
-                      );
-                    },
+                  ListTile(
+                    leading: const Icon(Icons.notifications_outlined),
+                    title: const Text('Bildirim Tercihleri'),
+                    subtitle: const Text('Hangi bildirimleri alacağını seç'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.pushNamed('notification-preferences'),
                   ),
                 ],
               ),

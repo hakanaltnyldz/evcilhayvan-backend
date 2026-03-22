@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
+import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/features/pets/data/repositories/pets_repository.dart';
 
 class MapDiscoverScreen extends ConsumerStatefulWidget {
@@ -25,6 +26,9 @@ class _MapDiscoverScreenState extends ConsumerState<MapDiscoverScreen> {
     {'key': 'all', 'label': 'Tumu', 'icon': Icons.map_outlined},
     {'key': 'adoption', 'label': 'Sahiplendirme', 'icon': Icons.pets},
     {'key': 'mating', 'label': 'Eslestirme', 'icon': Icons.favorite_outline},
+    {'key': 'vet', 'label': 'Veteriner', 'icon': Icons.local_hospital_outlined},
+    {'key': 'sitter', 'label': 'Bakici', 'icon': Icons.home_outlined},
+    {'key': 'lost', 'label': 'Kayip/Bulunan', 'icon': Icons.search_outlined},
   ];
 
   @override
@@ -52,11 +56,6 @@ class _MapDiscoverScreenState extends ConsumerState<MapDiscoverScreen> {
 
   Future<void> _loadMarkers() async {
     try {
-      final repo = ref.read(petsRepositoryProvider);
-      final pets = await repo.getPets(
-        advertType: _selectedFilter == 'all' ? null : _selectedFilter,
-      );
-
       final markers = <Marker>{};
 
       // My location marker
@@ -67,24 +66,43 @@ class _MapDiscoverScreenState extends ConsumerState<MapDiscoverScreen> {
         infoWindow: const InfoWindow(title: 'Buradasin'),
       ));
 
-      for (final pet in pets) {
-        if (pet.latitude == null || pet.longitude == null) continue;
-        if (pet.latitude == 0 && pet.longitude == 0) continue;
+      final showPets = _selectedFilter == 'all' ||
+          _selectedFilter == 'adoption' ||
+          _selectedFilter == 'mating';
+      if (showPets) {
+        final repo = ref.read(petsRepositoryProvider);
+        final petFilter = (_selectedFilter == 'adoption' || _selectedFilter == 'mating')
+            ? _selectedFilter
+            : null;
+        final pets = await repo.getPets(advertType: petFilter);
+        for (final pet in pets) {
+          if (pet.latitude == null || pet.longitude == null) continue;
+          if (pet.latitude == 0 && pet.longitude == 0) continue;
+          final isMating = pet.advertType == 'mating';
+          final petId = pet.id;
+          markers.add(Marker(
+            markerId: MarkerId(petId),
+            position: LatLng(pet.latitude!, pet.longitude!),
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              isMating ? BitmapDescriptor.hueMagenta : BitmapDescriptor.hueOrange,
+            ),
+            infoWindow: InfoWindow(
+              title: '${pet.name} (${pet.species})',
+              snippet: isMating ? 'Eslestirme → Detay icin dokun' : 'Sahiplendirme → Detay icin dokun',
+              onTap: () => context.pushNamed('pet-detail', pathParameters: {'id': petId}),
+            ),
+          ));
+        }
+      }
 
-        final isMating = pet.advertType == 'mating';
-        final petId = pet.id;
-        markers.add(Marker(
-          markerId: MarkerId(petId),
-          position: LatLng(pet.latitude!, pet.longitude!),
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-            isMating ? BitmapDescriptor.hueMagenta : BitmapDescriptor.hueOrange,
-          ),
-          infoWindow: InfoWindow(
-            title: '${pet.name} (${pet.species})',
-            snippet: isMating ? 'Eslestirme Ilani → Detay icin dokun' : 'Sahiplendirme Ilani → Detay icin dokun',
-            onTap: () => context.pushNamed('pet-detail', pathParameters: {'id': petId}),
-          ),
-        ));
+      if (_selectedFilter == 'all' || _selectedFilter == 'vet') {
+        await _addVetMarkers(markers);
+      }
+      if (_selectedFilter == 'all' || _selectedFilter == 'sitter') {
+        await _addSitterMarkers(markers);
+      }
+      if (_selectedFilter == 'all' || _selectedFilter == 'lost') {
+        await _addLostFoundMarkers(markers);
       }
 
       setState(() => _markers = markers);
@@ -95,6 +113,90 @@ class _MapDiscoverScreenState extends ConsumerState<MapDiscoverScreen> {
         );
       }
     }
+  }
+
+  Future<void> _addVetMarkers(Set<Marker> markers) async {
+    try {
+      final res = await ApiClient().dio.get('/api/veterinaries', queryParameters: {
+        'lat': _center.latitude,
+        'lng': _center.longitude,
+        'radiusKm': 15,
+      });
+      final vets = (res.data['data']['vets'] as List? ?? []);
+      for (final v in vets) {
+        final lat = (v['location']?['coordinates'] as List?)?.elementAtOrNull(1);
+        final lng = (v['location']?['coordinates'] as List?)?.elementAtOrNull(0);
+        if (lat == null || lng == null) continue;
+        final id = v['_id']?.toString() ?? '';
+        final name = v['name']?.toString() ?? 'Veteriner';
+        markers.add(Marker(
+          markerId: MarkerId('vet_$id'),
+          position: LatLng((lat as num).toDouble(), (lng as num).toDouble()),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+          infoWindow: InfoWindow(
+            title: name,
+            snippet: 'Veteriner → Detay icin dokun',
+            onTap: () => context.pushNamed('vet-detail', pathParameters: {'id': id}),
+          ),
+        ));
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _addSitterMarkers(Set<Marker> markers) async {
+    try {
+      final res = await ApiClient().dio.get('/api/pet-sitters', queryParameters: {
+        'lat': _center.latitude,
+        'lng': _center.longitude,
+        'radiusKm': 15,
+      });
+      final sitters = (res.data['data']['sitters'] as List? ?? []);
+      for (final s in sitters) {
+        final lat = (s['location']?['coordinates'] as List?)?.elementAtOrNull(1);
+        final lng = (s['location']?['coordinates'] as List?)?.elementAtOrNull(0);
+        if (lat == null || lng == null) continue;
+        final id = s['_id']?.toString() ?? '';
+        final name = s['displayName']?.toString() ?? 'Bakici';
+        markers.add(Marker(
+          markerId: MarkerId('sitter_$id'),
+          position: LatLng((lat as num).toDouble(), (lng as num).toDouble()),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan),
+          infoWindow: InfoWindow(
+            title: name,
+            snippet: 'Bakici → Detay icin dokun',
+            onTap: () => context.pushNamed('sitters'),
+          ),
+        ));
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _addLostFoundMarkers(Set<Marker> markers) async {
+    try {
+      final res = await ApiClient().dio.get('/api/lost-found', queryParameters: {
+        'lat': _center.latitude,
+        'lng': _center.longitude,
+      });
+      final reports = (res.data['data']['reports'] as List? ?? []);
+      for (final r in reports) {
+        final lat = (r['location']?['coordinates'] as List?)?.elementAtOrNull(1);
+        final lng = (r['location']?['coordinates'] as List?)?.elementAtOrNull(0);
+        if (lat == null || lng == null) continue;
+        final id = r['_id']?.toString() ?? '';
+        final name = r['petName']?.toString() ?? 'Kayip Hayvan';
+        final status = r['status']?.toString() ?? 'lost';
+        markers.add(Marker(
+          markerId: MarkerId('lost_$id'),
+          position: LatLng((lat as num).toDouble(), (lng as num).toDouble()),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          infoWindow: InfoWindow(
+            title: name,
+            snippet: status == 'found' ? 'Bulunan → Detay icin dokun' : 'Kayip → Detay icin dokun',
+            onTap: () => context.pushNamed('lost-found'),
+          ),
+        ));
+      }
+    } catch (_) {}
   }
 
   @override

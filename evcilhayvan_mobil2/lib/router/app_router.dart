@@ -57,6 +57,8 @@ import '../features/adoption/presentation/screens/adoption_applications_screen.d
 
 // Bildirim ekranlari
 import '../features/notifications/presentation/screens/notifications_screen.dart';
+import '../features/notifications/presentation/screens/notification_preferences_screen.dart';
+import '../features/store/presentation/screens/my_addresses_screen.dart';
 
 // Kayip & Bulunan ekranlari
 import '../features/lost_found/presentation/screens/lost_found_home_screen.dart';
@@ -719,6 +721,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       path: '/complaint',
       name: 'complaint',
       pageBuilder: (context, state) => _buildPage(state, const ComplaintScreen()),
+    ),
+    // Adreslerim
+    GoRoute(
+      path: '/my-addresses',
+      name: 'my-addresses',
+      pageBuilder: (context, state) => _buildPage(state, const MyAddressesScreen()),
+    ),
+    // Bildirim Tercihleri
+    GoRoute(
+      path: '/notification-preferences',
+      name: 'notification-preferences',
+      pageBuilder: (context, state) => _buildPage(state, const NotificationPreferencesScreen()),
     ),
   ],
   );
