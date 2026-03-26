@@ -94,6 +94,7 @@ class _MainShellState extends ConsumerState<MainShell> {
       socketService.offEvent('adoption:new_application');
       socketService.offEvent('adoption:accepted');
       socketService.offEvent('lostfound:new');
+      socketService.offEvent('order:status_update');
       socketService.offEvent('advert:expiry_warning');
       socketService.offEvent('sitter:new_booking');
       socketService.offEvent('sitter:booking_update');
@@ -232,7 +233,7 @@ class _MainShellState extends ConsumerState<MainShell> {
           id: 'vac_${d['recordId'] ?? DateTime.now().millisecondsSinceEpoch}',
           type: NotificationType.vaccinationReminder,
           title: 'Asi Hatirlatmasi',
-          body: '${d['petName']} icin ${d['vaccineName']} asisi ${d['daysUntilDue']} gun icinde yapilmali.',
+          body: '${d['petName']?.toString() ?? 'Bilinmeyen'} icin ${d['vaccineName']?.toString() ?? 'bilinmeyen'} asisi ${d['daysUntilDue']?.toString() ?? '?'} gun icinde yapilmali.',
           data: {'petId': d['petId']?.toString()},
           createdAt: DateTime.now(),
         ));
@@ -386,6 +387,41 @@ class _MainShellState extends ConsumerState<MainShell> {
           data: {'reportId': d['id']?.toString()},
           createdAt: DateTime.now(),
         ));
+      } catch (_) {}
+    });
+
+    // Sipariş durumu güncellendiğinde
+    socketService.onEvent('order:status_update', (data) {
+      if (!mounted) return;
+      try {
+        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
+        final status = d['status']?.toString() ?? '';
+        final statusLabel = {
+          'processing': 'Hazırlanıyor',
+          'shipped': 'Kargoya Verildi',
+          'delivered': 'Teslim Edildi',
+          'cancelled': 'İptal Edildi',
+        }[status] ?? status;
+        notifier.addNotification(AppNotification(
+          id: 'order_${d['orderId'] ?? DateTime.now().millisecondsSinceEpoch}',
+          type: NotificationType.general,
+          title: 'Sipariş Güncellendi',
+          body: 'Siparişiniz: $statusLabel',
+          data: {'orderId': d['orderId']?.toString()},
+          createdAt: DateTime.now(),
+        ));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('📦 Siparişiniz güncellendi: $statusLabel'),
+              action: SnackBarAction(
+                label: 'Görüntüle',
+                onPressed: () => context.push('/store/orders'),
+              ),
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
       } catch (_) {}
     });
 

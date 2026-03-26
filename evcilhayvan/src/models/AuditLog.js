@@ -21,4 +21,8 @@ const AuditLogSchema = new mongoose.Schema(
   }
 );
 
+AuditLogSchema.index({ action: 1, createdAt: -1 });  // Aksiyon bazlı sorgular
+AuditLogSchema.index({ user: 1, createdAt: -1 });    // Kullanıcı bazlı sorgular
+AuditLogSchema.index({ entityType: 1, entityId: 1 }); // Entity bazlı sorgular
+
 export default mongoose.model("AuditLog", AuditLogSchema);

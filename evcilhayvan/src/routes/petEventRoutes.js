@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 import { authRequired } from "../middlewares/auth.js";
 import {
   createEvent, listEvents, getEvent, updateEvent, cancelEvent,
@@ -25,10 +25,10 @@ router.post(
 router.get("/me/attending", authRequired(), myAttendingEvents);
 router.get("/me/organized", authRequired(), myOrganizedEvents);
 router.get("/", listEvents);
-router.get("/:id", getEvent);
-router.put("/:id", authRequired(), updateEvent);
-router.patch("/:id/cancel", authRequired(), cancelEvent);
-router.post("/:id/attend", authRequired(), attendEvent);
-router.get("/:id/attendance", authRequired(), myAttendance);
+router.get("/:id", [param("id").isMongoId()], getEvent);
+router.put("/:id", authRequired(), [param("id").isMongoId()], updateEvent);
+router.patch("/:id/cancel", authRequired(), [param("id").isMongoId()], cancelEvent);
+router.post("/:id/attend", authRequired(), [param("id").isMongoId()], attendEvent);
+router.get("/:id/attendance", authRequired(), [param("id").isMongoId()], myAttendance);
 
 export default router;

@@ -112,6 +112,15 @@ const _publicRoutes = {
   '/theme-selection',
 };
 
+/// MongoDB ObjectId format doğrulama (24 hex karakter).
+bool _isValidObjectId(String id) =>
+    RegExp(r'^[a-f\d]{24}$', caseSensitive: false).hasMatch(id);
+
+Page<void> _notFoundPage(GoRouterState state) => _buildPage(
+      state,
+      const Scaffold(body: Center(child: Text('Sayfa bulunamadı'))),
+    );
+
 /// Tüm push rotalarında tutarlı fade + hafif slideY geçiş animasyonu.
 Page<void> _buildPage(GoRouterState state, Widget child) {
   return CustomTransitionPage<void>(
@@ -334,6 +343,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       name: 'pet-detail',
       pageBuilder: (context, state) {
         final String petId = state.pathParameters['id']!;
+        if (!_isValidObjectId(petId)) return _notFoundPage(state);
         return _buildPage(state, PetDetailScreen(petId: petId));
       },
     ),
@@ -354,15 +364,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       name: 'chat',
       pageBuilder: (context, state) {
         final String convId = state.pathParameters['conversationId']!;
+        if (!_isValidObjectId(convId)) return _notFoundPage(state);
         String receiverName = 'Kullanıcı';
         String? avatarUrl;
 
         final extra = state.extra;
         if (extra is Map<String, dynamic>) {
-          receiverName = extra['name'] as String? ?? receiverName;
+          final name = extra['name'] as String? ?? receiverName;
+          receiverName = name.length > 50 ? name.substring(0, 50) : name;
           avatarUrl = extra['avatar'] as String?;
         } else if (extra is String) {
-          receiverName = extra;
+          receiverName = extra.length > 50 ? extra.substring(0, 50) : extra;
         }
 
         return _buildPage(state, ChatScreen(
@@ -693,6 +705,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       name: 'user-profile',
       pageBuilder: (context, state) {
         final userId = state.pathParameters['userId']!;
+        if (!_isValidObjectId(userId)) return _notFoundPage(state);
         return _buildPage(state, UserProfileScreen(userId: userId));
       },
     ),

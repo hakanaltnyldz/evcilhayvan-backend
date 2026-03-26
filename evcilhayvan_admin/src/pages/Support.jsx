@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api from '../api.js'
+import toast from 'react-hot-toast'
 
 const STATUS_LABELS = {
   open: { label: 'Açık', cls: 'bg-red-100 text-red-700' },
@@ -63,7 +64,7 @@ export default function Support() {
       closeModal()
       fetchTickets(page, statusFilter)
     } catch (err) {
-      alert(err.response?.data?.message || 'Güncelleme başarısız')
+      toast.error(err.response?.data?.message || 'Güncelleme başarısız')
     } finally {
       setSaving(false)
     }

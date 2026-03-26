@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import Layout from './components/Layout.jsx'
 import Login from './pages/Login.jsx'
 import Dashboard from './pages/Dashboard.jsx'
@@ -12,13 +13,14 @@ import Support from './pages/Support.jsx'
 import Sitters from './pages/Sitters.jsx'
 
 function PrivateRoute({ children }) {
-  const token = localStorage.getItem('admin_token')
+  const token = sessionStorage.getItem('admin_token')
   return token ? children : <Navigate to="/login" replace />
 }
 
 export default function App() {
   return (
     <BrowserRouter>
+      <Toaster position="top-right" toastOptions={{ duration: 3500, style: { fontSize: '14px' } }} />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route

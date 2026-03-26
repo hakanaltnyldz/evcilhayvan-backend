@@ -22,6 +22,7 @@ import 'package:evcilhayvan_mobil2/features/messages/domain/models/message_model
 import 'package:evcilhayvan_mobil2/features/messages/domain/models/conservation_model.dart';
 import 'package:evcilhayvan_mobil2/features/pets/domain/models/pet_model.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
+import 'package:evcilhayvan_mobil2/core/constants.dart';
 import 'package:evcilhayvan_mobil2/features/social/data/repositories/post_repository.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/block_report_sheet.dart';
 
@@ -320,7 +321,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         source: source,
         maxWidth: 1024,
         maxHeight: 1024,
-        imageQuality: 85,
+        imageQuality: kImageQualityHigh,
       );
 
       if (image == null) return;
@@ -1320,7 +1321,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                         ),
                                       )
                                     : const _EmptyChatState()
-                                : ListView.builder(
+                                : RefreshIndicator(
+                                    onRefresh: _fetchMessages,
+                                    child: ListView.builder(
                                     controller: _scrollController,
                                     physics: const BouncingScrollPhysics(),
                                     padding:
@@ -1360,6 +1363,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                             curve: Curves.easeOut,
                                           );
                                     },
+                                  ),
                                   ),
                   ),
                 ),

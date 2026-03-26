@@ -10,6 +10,7 @@ import 'package:evcilhayvan_mobil2/features/store/domain/models/product_model.da
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
+import 'package:evcilhayvan_mobil2/core/constants.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/product_model.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/category_model.dart';
@@ -104,7 +105,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     }
     final remaining = _maxImages - _selectedImages.length;
     final picked = await _picker.pickMultiImage(
-      imageQuality: 80,
+      imageQuality: kImageQualityMedium,
       maxWidth: 1200,
       maxHeight: 1200,
     );
@@ -123,7 +124,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     }
     final picked = await _picker.pickImage(
       source: ImageSource.camera,
-      imageQuality: 80,
+      imageQuality: kImageQualityMedium,
       maxWidth: 1200,
       maxHeight: 1200,
     );

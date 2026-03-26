@@ -84,7 +84,7 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
   Future<void> _loadPreferences() async {
     try {
       final res = await ApiClient().dio.get('/api/auth/me/notification-preferences');
-      final data = res.data['data']['preferences'] as Map<String, dynamic>? ?? {};
+      final data = res.data['preferences'] as Map<String, dynamic>? ?? {};
       setState(() {
         for (final key in _prefs.keys) {
           if (data[key] is bool) _prefs[key] = data[key] as bool;

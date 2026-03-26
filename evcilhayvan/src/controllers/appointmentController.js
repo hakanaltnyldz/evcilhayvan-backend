@@ -1,3 +1,4 @@
+import { validationResult } from "express-validator";
 import mongoose from "mongoose";
 import Appointment from "../models/Appointment.js";
 import Veterinary from "../models/Veterinary.js";
@@ -29,6 +30,21 @@ export async function createAppointment(req, res) {
     const appointmentDate = new Date(date);
     if (appointmentDate <= new Date()) {
       return sendError(res, 400, "Randevu tarihi gelecekte olmali", "validation_error");
+    }
+
+    // Calisma saati kontrolu
+    const jsDay = appointmentDate.getDay();
+    const dayIndex = jsDay === 0 ? 6 : jsDay - 1;
+    const wh = vet.workingHours?.find((h) => h.day === dayIndex);
+    if (!wh || wh.isClosed || !wh.open || !wh.close) {
+      return sendError(res, 400, "Veteriner bu gun kapali", "vet_closed");
+    }
+    const [openH, openM] = wh.open.split(":").map(Number);
+    const [closeH, closeM] = wh.close.split(":").map(Number);
+    const apptMinutes = appointmentDate.getHours() * 60 + appointmentDate.getMinutes();
+    const slotMin = vet.appointmentSlotMinutes || 30;
+    if (apptMinutes < openH * 60 + openM || apptMinutes + slotMin > closeH * 60 + closeM) {
+      return sendError(res, 400, "Randevu calisma saatleri disinda", "outside_working_hours");
     }
 
     // Slot cakisma kontrolu
@@ -69,6 +85,9 @@ export async function createAppointment(req, res) {
 
     return sendOk(res, 201, { appointment: populated });
   } catch (err) {
+    if (err.code === 11000) {
+      return sendError(res, 409, "Bu saat dilimi dolu", "slot_conflict");
+    }
     console.error("[createAppointment]", err);
     return sendError(res, 500, "Randevu olusturulamadi", "internal_error", err.message);
   }
@@ -111,6 +130,8 @@ export async function getMyAppointments(req, res) {
 // GET /api/appointments/:id
 export async function getAppointment(req, res) {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
     const userId = req.user.sub;
     const { id } = req.params;
 
@@ -132,6 +153,8 @@ export async function getAppointment(req, res) {
 // PATCH /api/appointments/:id/status
 export async function updateAppointmentStatus(req, res) {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
     const userId = req.user.sub;
     const { id } = req.params;
     const { status, cancelReason } = req.body;
@@ -150,6 +173,11 @@ export async function updateAppointmentStatus(req, res) {
     // Kullanici sadece kendi randevusunu iptal edebilir
     if (String(appointment.userId) !== String(userId) && req.user.role !== "admin") {
       return sendError(res, 403, "Bu randevuyu guncelleme yetkiniz yok", "forbidden");
+    }
+
+    // Kullanici yalnizca iptal edebilir; diger durumlar admin yetkisi ister
+    if (req.user.role !== "admin" && status !== "cancelled") {
+      return sendError(res, 403, "Sadece admin bu durumu ayarlayabilir", "forbidden");
     }
 
     if (appointment.status === "cancelled") {

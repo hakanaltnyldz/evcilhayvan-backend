@@ -1,5 +1,7 @@
+import { validationResult } from "express-validator";
 import SitterBooking from "../models/SitterBooking.js";
 import PetSitter from "../models/PetSitter.js";
+import Pet from "../models/Pet.js";
 import { sendOk, sendError } from "../utils/apiResponse.js";
 import { recordAudit } from "../utils/audit.js";
 import { sendPush } from "../utils/fcm.js";
@@ -23,21 +25,35 @@ export async function createBooking(req, res) {
     }
 
     const sitter = await PetSitter.findById(sitterId);
-    if (!sitter) return sendError(res, 404, "Bakici bulunamadi", "not_found");
+    if (!sitter || !sitter.isActive) return sendError(res, 404, "Bakici bulunamadi", "not_found");
     if (!sitter.availability) return sendError(res, 400, "Bakici simdilik musait degil", "not_available");
+
+    // Pet sahiplik kontrolu
+    const pet = await Pet.findOne({ _id: petId, ownerId: petOwnerId });
+    if (!pet) return sendError(res, 404, "Pet bulunamadi veya size ait degil", "pet_not_found");
 
     // Fiyat hesapla
     const serviceInfo = sitter.services.find(s => s.type === serviceType);
+    if (!serviceInfo) return sendError(res, 400, "Bakici bu hizmeti sunmuyor", "service_not_offered");
+
     const start = new Date(startDate);
     const end = new Date(endDate);
+    if (end <= start) return sendError(res, 400, "Bitis tarihi baslangictan once olamaz", "invalid_dates");
+
     const hours = Math.ceil((end - start) / (1000 * 60 * 60));
     const days = Math.ceil(hours / 24);
-    let totalPrice = 0;
-    if (serviceInfo) {
-      totalPrice = days >= 1 && serviceInfo.pricePerDay > 0
-        ? days * serviceInfo.pricePerDay
-        : hours * serviceInfo.pricePerHour;
-    }
+    const totalPrice = days >= 1 && serviceInfo.pricePerDay > 0
+      ? days * serviceInfo.pricePerDay
+      : hours * serviceInfo.pricePerHour;
+
+    // Tarih cakisma kontrolu
+    const overlap = await SitterBooking.findOne({
+      sitterId,
+      status: { $in: ["pending", "accepted"] },
+      startDate: { $lt: end },
+      endDate: { $gt: start },
+    });
+    if (overlap) return sendError(res, 409, "Bu tarihler icin bakici musait degil", "date_conflict");
 
     const booking = await SitterBooking.create({
       petOwnerId,
@@ -116,6 +132,8 @@ export async function incomingBookings(req, res) {
 // GET /:id - Detay
 export async function getBooking(req, res) {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
     const userId = req.user.sub;
     const booking = await SitterBooking.findById(req.params.id)
       .populate("petOwnerId", "name avatarUrl")
@@ -138,6 +156,8 @@ export async function getBooking(req, res) {
 // PATCH /:id/status - Durum guncelle
 export async function updateBookingStatus(req, res) {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
     const userId = req.user.sub;
     const { status, review } = req.body;
 
@@ -150,6 +170,18 @@ export async function updateBookingStatus(req, res) {
 
     const isOwner = String(booking.petOwnerId) === userId;
     const isSitter = String(booking.sitterUserId) === userId;
+
+    // Durum gecis matrisi
+    const validTransitions = {
+      pending:   ["accepted", "rejected", "cancelled"],
+      accepted:  ["cancelled", "completed"],
+      rejected:  [],
+      cancelled: [],
+      completed: [],
+    };
+    if (!validTransitions[booking.status]?.includes(status)) {
+      return sendError(res, 400, `${booking.status} durumundan ${status} durumuna gecilemez`, "invalid_transition");
+    }
 
     // Yetki kontrolu
     if (["accepted", "rejected"].includes(status) && !isSitter) {

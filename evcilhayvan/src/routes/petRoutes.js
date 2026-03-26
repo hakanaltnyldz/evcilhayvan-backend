@@ -26,9 +26,22 @@ const _storage = multer.diskStorage({
   },
 });
 
-const mediaUpload = multer({
+const imageUpload = multer({
   storage: _storage,
-  limits: { fileSize: 20 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Sadece resim dosyaları yüklenebilir"));
+  },
+});
+
+const videoUpload = multer({
+  storage: _storage,
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("video/")) cb(null, true);
+    else cb(new Error("Sadece video dosyaları yüklenebilir"));
+  },
 });
 
 // Public
@@ -46,10 +59,26 @@ router.post(
     body("species").isIn(["dog", "cat", "bird", "fish", "rodent", "other"]).withMessage("Gecersiz tur"),
     body("ageMonths").optional().isInt({ min: 0 }),
     body("advertType").optional().isIn(["adoption", "mating"]),
-    body("location.coordinates").optional().isArray({ min: 2, max: 2 }),
+    body("location.coordinates").optional().isArray({ min: 2, max: 2 }).custom((coords) => {
+      if (!Array.isArray(coords)) return true;
+      const [lng, lat] = coords.map(Number);
+      if (isNaN(lng) || isNaN(lat)) throw new Error("Koordinatlar sayı olmalı");
+      if (lng < -180 || lng > 180) throw new Error("Boylam -180 ile 180 arasında olmalı");
+      if (lat < -90 || lat > 90) throw new Error("Enlem -90 ile 90 arasında olmalı");
+      return true;
+    }),
   ],
   createPet
 );
+
+const locationCoordsValidator = body("location.coordinates").optional().isArray({ min: 2, max: 2 }).custom((coords) => {
+  if (!Array.isArray(coords)) return true;
+  const [lng, lat] = coords.map(Number);
+  if (isNaN(lng) || isNaN(lat)) throw new Error("Koordinatlar sayı olmalı");
+  if (lng < -180 || lng > 180) throw new Error("Boylam -180 ile 180 arasında olmalı");
+  if (lat < -90 || lat > 90) throw new Error("Enlem -90 ile 90 arasında olmalı");
+  return true;
+});
 
 router.put(
   "/:id",
@@ -59,6 +88,7 @@ router.put(
     body("species").optional().isIn(["dog", "cat", "bird", "fish", "rodent", "other"]),
     body("ageMonths").optional().isInt({ min: 0 }),
     body("advertType").optional().isIn(["adoption", "mating"]),
+    locationCoordsValidator,
   ],
   updatePet
 );
@@ -71,6 +101,7 @@ router.patch(
     body("species").optional().isIn(["dog", "cat", "bird", "fish", "rodent", "other"]),
     body("ageMonths").optional().isInt({ min: 0 }),
     body("advertType").optional().isIn(["adoption", "mating"]),
+    locationCoordsValidator,
   ],
   updatePet
 );
@@ -81,7 +112,7 @@ router.post(
   "/:id/images",
   authRequired(),
   [param("id").isMongoId()],
-  mediaUpload.single("image"),
+  imageUpload.single("image"),
   uploadPetImage
 );
 
@@ -89,7 +120,7 @@ router.post(
   "/:id/videos",
   authRequired(),
   [param("id").isMongoId()],
-  mediaUpload.single("video"),
+  videoUpload.single("video"),
   uploadPetVideo
 );
 

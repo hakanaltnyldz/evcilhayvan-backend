@@ -36,7 +36,14 @@ const storage = multer.diskStorage({
     cb(null, "avatar-" + unique + ext);
   },
 });
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Sadece resim dosyaları yüklenebilir"));
+  },
+});
 /* ------------------------------------------- */
 
 // === KAYIT / GIRIS / SIFIRLAMA ===

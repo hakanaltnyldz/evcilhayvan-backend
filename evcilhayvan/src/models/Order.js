@@ -22,6 +22,8 @@ const orderItemSchema = new Schema({
   },
   name: String,
   image: String,
+  variantName: { type: String, default: null },
+  variantLabel: { type: String, default: null },
 });
 
 const orderSchema = new Schema(
@@ -88,8 +90,11 @@ const orderSchema = new Schema(
 // Index for user queries
 orderSchema.index({ user: 1, createdAt: -1 });
 
-// Index for status queries
-orderSchema.index({ status: 1 });
+// Index for user+status compound queries
+orderSchema.index({ user: 1, status: 1 });
+
+// Index for admin/status queries sorted by date
+orderSchema.index({ status: 1, createdAt: -1 });
 
 // Method to check if user purchased a specific product
 orderSchema.statics.hasPurchased = async function (userId, productId) {

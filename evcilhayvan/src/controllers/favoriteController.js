@@ -4,67 +4,63 @@ import Favorite from '../models/Favorite.js';
 import Pet from '../models/Pet.js';
 import Product from '../models/Product.js';
 import Store from '../models/Store.js';
+import { sendOk, sendError } from '../utils/apiResponse.js';
+
+// Yardımcı: favori listesini N+1 olmadan popüle et ($lookup ile)
+async function populateFavoriteItems(favorites) {
+  // Tip bazında grupla
+  const petIds = [];
+  const productIds = [];
+  const storeIds = [];
+
+  for (const fav of favorites) {
+    if (fav.itemType === 'pet') petIds.push(fav.itemId);
+    else if (fav.itemType === 'product') productIds.push(fav.itemId);
+    else if (fav.itemType === 'store') storeIds.push(fav.itemId);
+  }
+
+  // Tek sorguda her tipi çek
+  const [pets, products, stores] = await Promise.all([
+    petIds.length ? Pet.find({ _id: { $in: petIds } }).lean() : [],
+    productIds.length ? Product.find({ _id: { $in: productIds } }).populate('store', 'name logoUrl description').populate('category', 'name').lean() : [],
+    storeIds.length ? Store.find({ _id: { $in: storeIds } }).lean() : [],
+  ]);
+
+  // Hızlı arama için map oluştur
+  const petMap = Object.fromEntries(pets.map(p => [String(p._id), p]));
+  const productMap = Object.fromEntries(products.map(p => [String(p._id), p]));
+  const storeMap = Object.fromEntries(stores.map(s => [String(s._id), s]));
+
+  return favorites
+    .map(fav => {
+      let item = null;
+      if (fav.itemType === 'pet') item = petMap[String(fav.itemId)] || null;
+      else if (fav.itemType === 'product') item = productMap[String(fav.itemId)] || null;
+      else if (fav.itemType === 'store') item = storeMap[String(fav.itemId)] || null;
+      if (!item) return null; // Silinmiş öğe
+      return { _id: fav._id, itemType: fav.itemType, item, createdAt: fav.createdAt };
+    })
+    .filter(Boolean);
+}
 
 // Get all favorites for the current user
 export const getFavorites = async (req, res) => {
   try {
-    const { type } = req.query; // Optional filter by type (pet, product, store)
-    const userId = req.user._id;
+    const { type } = req.query;
+    const userId = req.user.sub || req.user._id;
 
     const filter = { user: userId };
     if (type && ['pet', 'product', 'store'].includes(type)) {
       filter.itemType = type;
     }
 
-    // Get favorites without population first
     const favorites = await Favorite.find(filter).sort({ createdAt: -1 }).lean();
+    const formatted = await populateFavoriteItems(favorites);
 
-    // Manually populate each item based on itemType
-    const formattedFavorites = await Promise.all(
-      favorites.map(async (fav) => {
-        let item = null;
-        try {
-          if (fav.itemType === 'pet') {
-            item = await Pet.findById(fav.itemId)
-              .populate('owner', 'name email profilePicture')
-              .lean();
-          } else if (fav.itemType === 'product') {
-            item = await Product.findById(fav.itemId)
-              .populate('store', 'name logoUrl description')
-              .populate('category', 'name')
-              .lean();
-          } else if (fav.itemType === 'store') {
-            item = await Store.findById(fav.itemId)
-              .populate('owner', 'name email profilePicture')
-              .lean();
-          }
-        } catch (err) {
-          console.error(`Error populating favorite ${fav._id}:`, err.message);
-        }
-
-        return {
-          _id: fav._id,
-          itemType: fav.itemType,
-          item: item,
-          createdAt: fav.createdAt,
-        };
-      })
-    );
-
-    // Filter out favorites where item is null (deleted items)
-    const validFavorites = formattedFavorites.filter(fav => fav.item !== null);
-
-    res.json({
-      success: true,
-      favorites: validFavorites,
-    });
+    return sendOk(res, 200, { favorites: formatted });
   } catch (error) {
     console.error('Get favorites error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Favoriler yüklenirken hata oluştu',
-      error: error.message,
-    });
+    return sendError(res, 500, 'Favoriler yüklenirken hata oluştu', 'internal_error', error.message);
   }
 };
 
@@ -72,55 +68,34 @@ export const getFavorites = async (req, res) => {
 export const addFavorite = async (req, res) => {
   try {
     const { itemType, itemId } = req.body;
-    const userId = req.user._id;
+    const userId = req.user.sub || req.user._id;
 
-    // Validate itemType
     if (!['pet', 'product', 'store'].includes(itemType)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Geçersiz favori tipi',
-      });
+      return sendError(res, 400, 'Geçersiz favori tipi', 'validation_error');
+    }
+
+    if (!itemId) {
+      return sendError(res, 400, 'itemId gerekli', 'validation_error');
     }
 
     // Verify item exists
     let itemExists = false;
-    if (itemType === 'pet') {
-      itemExists = await Pet.exists({ _id: itemId });
-    } else if (itemType === 'product') {
-      itemExists = await Product.exists({ _id: itemId });
-    } else if (itemType === 'store') {
-      itemExists = await Store.exists({ _id: itemId });
-    }
+    if (itemType === 'pet') itemExists = !!(await Pet.exists({ _id: itemId }));
+    else if (itemType === 'product') itemExists = !!(await Product.exists({ _id: itemId }));
+    else if (itemType === 'store') itemExists = !!(await Store.exists({ _id: itemId }));
 
     if (!itemExists) {
-      return res.status(404).json({
-        success: false,
-        message: 'Öğe bulunamadı',
-      });
+      return sendError(res, 404, 'Öğe bulunamadı', 'not_found');
     }
 
     // Check if already favorited
-    const existingFavorite = await Favorite.findOne({
-      user: userId,
-      itemType,
-      itemId,
-    });
-
+    const existingFavorite = await Favorite.findOne({ user: userId, itemType, itemId });
     if (existingFavorite) {
-      return res.status(400).json({
-        success: false,
-        message: 'Bu öğe zaten favorilerde',
-      });
+      return sendError(res, 400, 'Bu öğe zaten favorilerde', 'already_favorited');
     }
 
-    // Map itemType to model name for refPath
-    const itemTypeToModel = {
-      pet: 'Pet',
-      product: 'Product',
-      store: 'Store',
-    };
+    const itemTypeToModel = { pet: 'Pet', product: 'Product', store: 'Store' };
 
-    // Create favorite
     const favorite = await Favorite.create({
       user: userId,
       itemType,
@@ -128,40 +103,19 @@ export const addFavorite = async (req, res) => {
       itemId,
     });
 
-    // Manually populate based on itemType
+    // Populate item
     let item = null;
-    if (itemType === 'pet') {
-      item = await Pet.findById(itemId)
-        .populate('owner', 'name email profilePicture')
-        .lean();
-    } else if (itemType === 'product') {
-      item = await Product.findById(itemId)
-        .populate('store', 'name logoUrl description')
-        .populate('category', 'name')
-        .lean();
-    } else if (itemType === 'store') {
-      item = await Store.findById(itemId)
-        .populate('owner', 'name email profilePicture')
-        .lean();
-    }
+    if (itemType === 'pet') item = await Pet.findById(itemId).lean();
+    else if (itemType === 'product') item = await Product.findById(itemId).populate('store', 'name logoUrl description').populate('category', 'name').lean();
+    else if (itemType === 'store') item = await Store.findById(itemId).lean();
 
-    res.status(201).json({
-      success: true,
+    return sendOk(res, 201, {
       message: 'Favorilere eklendi',
-      favorite: {
-        _id: favorite._id,
-        itemType: favorite.itemType,
-        item: item,
-        createdAt: favorite.createdAt,
-      },
+      favorite: { _id: favorite._id, itemType: favorite.itemType, item, createdAt: favorite.createdAt },
     });
   } catch (error) {
     console.error('Add favorite error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Favorilere eklenirken hata oluştu',
-      error: error.message,
-    });
+    return sendError(res, 500, 'Favorilere eklenirken hata oluştu', 'internal_error', error.message);
   }
 };
 
@@ -169,32 +123,17 @@ export const addFavorite = async (req, res) => {
 export const removeFavorite = async (req, res) => {
   try {
     const { itemType, itemId } = req.body;
-    const userId = req.user._id;
+    const userId = req.user.sub || req.user._id;
 
-    const favorite = await Favorite.findOneAndDelete({
-      user: userId,
-      itemType,
-      itemId,
-    });
-
+    const favorite = await Favorite.findOneAndDelete({ user: userId, itemType, itemId });
     if (!favorite) {
-      return res.status(404).json({
-        success: false,
-        message: 'Favori bulunamadı',
-      });
+      return sendError(res, 404, 'Favori bulunamadı', 'not_found');
     }
 
-    res.json({
-      success: true,
-      message: 'Favorilerden kaldırıldı',
-    });
+    return sendOk(res, 200, { message: 'Favorilerden kaldırıldı' });
   } catch (error) {
     console.error('Remove favorite error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Favorilerden kaldırılırken hata oluştu',
-      error: error.message,
-    });
+    return sendError(res, 500, 'Favorilerden kaldırılırken hata oluştu', 'internal_error', error.message);
   }
 };
 
@@ -202,32 +141,20 @@ export const removeFavorite = async (req, res) => {
 export const checkFavorite = async (req, res) => {
   try {
     const { itemType, itemId } = req.query;
-    const userId = req.user._id;
+    const userId = req.user.sub || req.user._id;
 
-    const favorite = await Favorite.findOne({
-      user: userId,
-      itemType,
-      itemId,
-    });
-
-    res.json({
-      success: true,
-      isFavorite: !!favorite,
-    });
+    const favorite = await Favorite.findOne({ user: userId, itemType, itemId });
+    return sendOk(res, 200, { isFavorite: !!favorite });
   } catch (error) {
     console.error('Check favorite error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Favori kontrolü yapılırken hata oluştu',
-      error: error.message,
-    });
+    return sendError(res, 500, 'Favori kontrolü yapılırken hata oluştu', 'internal_error', error.message);
   }
 };
 
 // Get favorites count by type
 export const getFavoritesCount = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user.sub || req.user._id;
 
     const [petCount, productCount, storeCount] = await Promise.all([
       Favorite.countDocuments({ user: userId, itemType: 'pet' }),
@@ -235,8 +162,7 @@ export const getFavoritesCount = async (req, res) => {
       Favorite.countDocuments({ user: userId, itemType: 'store' }),
     ]);
 
-    res.json({
-      success: true,
+    return sendOk(res, 200, {
       counts: {
         pet: petCount,
         product: productCount,
@@ -246,10 +172,6 @@ export const getFavoritesCount = async (req, res) => {
     });
   } catch (error) {
     console.error('Get favorites count error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Favori sayısı alınırken hata oluştu',
-      error: error.message,
-    });
+    return sendError(res, 500, 'Favori sayısı alınırken hata oluştu', 'internal_error', error.message);
   }
 };

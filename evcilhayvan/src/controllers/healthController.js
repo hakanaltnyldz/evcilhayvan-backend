@@ -1,19 +1,25 @@
+import { validationResult } from "express-validator";
 import HealthRecord from "../models/HealthRecord.js";
 import Pet from "../models/Pet.js";
+import { sendError, sendOk } from "../utils/apiResponse.js";
 
 // Yardımcı: Pet sahibi mi?
-async function assertOwner(petId, userId, res) {
+async function assertOwner(petId, userId) {
   const pet = await Pet.findById(petId).select("ownerId");
-  if (!pet) { res.sendError(404, "Pet bulunamadı."); return false; }
-  if (String(pet.ownerId) !== String(userId)) { res.sendError(403, "Yetki yok."); return false; }
-  return true;
+  if (!pet) return { error: 404, message: "Pet bulunamadı." };
+  if (String(pet.ownerId) !== String(userId)) return { error: 403, message: "Yetki yok." };
+  return { ok: true };
 }
 
 // GET /api/health/:petId
 export const getRecords = async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
     const { petId } = req.params;
-    if (!await assertOwner(petId, req.user.id, res)) return;
+    const userId = req.user.sub;
+    const check = await assertOwner(petId, userId);
+    if (!check.ok) return sendError(res, check.error, check.message, check.error === 404 ? "not_found" : "forbidden");
 
     const { type, from, to, limit = 50 } = req.query;
     const filter = { petId };
@@ -28,30 +34,35 @@ export const getRecords = async (req, res) => {
       .sort({ date: -1 })
       .limit(Number(limit));
 
-    res.sendOk({ records });
+    return sendOk(res, 200, { records });
   } catch (err) {
-    res.sendError(err.message);
+    console.error("[getRecords]", err);
+    return sendError(res, 500, err.message, "internal_error");
   }
 };
 
 // POST /api/health/:petId
 export const addRecord = async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
     const { petId } = req.params;
-    if (!await assertOwner(petId, req.user.id, res)) return;
+    const userId = req.user.sub;
+    const check = await assertOwner(petId, userId);
+    if (!check.ok) return sendError(res, check.error, check.message, check.error === 404 ? "not_found" : "forbidden");
 
     const { type, date, weightKg, medicationName, dosage, frequency,
             vetName, diagnosis, notes } = req.body;
 
     const validTypes = ["weight", "medication", "vet_visit", "note"];
     if (!type || !validTypes.includes(type)) {
-      return res.sendError(400, "Geçerli bir kayıt tipi seçin.");
+      return sendError(res, 400, "Geçerli bir kayıt tipi seçin.", "validation_error");
     }
-    if (!date) return res.sendError(400, "Tarih zorunludur.");
+    if (!date) return sendError(res, 400, "Tarih zorunludur.", "validation_error");
 
     const record = await HealthRecord.create({
       petId,
-      ownerId: req.user.id,
+      ownerId: userId,
       type,
       date: new Date(date),
       weightKg: weightKg !== undefined ? Number(weightKg) : undefined,
@@ -63,18 +74,22 @@ export const addRecord = async (req, res) => {
       notes,
     });
 
-    res.sendOk({ record }, 201);
+    return sendOk(res, 201, { record });
   } catch (err) {
-    res.sendError(err.message);
+    console.error("[addRecord]", err);
+    return sendError(res, 500, err.message, "internal_error");
   }
 };
 
 // PUT /api/health/record/:id
 export const updateRecord = async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
+    const userId = req.user.sub;
     const record = await HealthRecord.findById(req.params.id);
-    if (!record) return res.sendError(404, "Kayıt bulunamadı.");
-    if (String(record.ownerId) !== String(req.user.id)) return res.sendError(403, "Yetki yok.");
+    if (!record) return sendError(res, 404, "Kayıt bulunamadı.", "not_found");
+    if (String(record.ownerId) !== String(userId)) return sendError(res, 403, "Yetki yok.", "forbidden");
 
     const allowed = ["date", "weightKg", "medicationName", "dosage",
                      "frequency", "vetName", "diagnosis", "notes"];
@@ -82,38 +97,48 @@ export const updateRecord = async (req, res) => {
       if (req.body[field] !== undefined) record[field] = req.body[field];
     });
     await record.save();
-    res.sendOk({ record });
+    return sendOk(res, 200, { record });
   } catch (err) {
-    res.sendError(err.message);
+    console.error("[updateRecord]", err);
+    return sendError(res, 500, err.message, "internal_error");
   }
 };
 
 // DELETE /api/health/record/:id
 export const deleteRecord = async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
+    const userId = req.user.sub;
     const record = await HealthRecord.findById(req.params.id);
-    if (!record) return res.sendError(404, "Kayıt bulunamadı.");
-    if (String(record.ownerId) !== String(req.user.id)) return res.sendError(403, "Yetki yok.");
+    if (!record) return sendError(res, 404, "Kayıt bulunamadı.", "not_found");
+    if (String(record.ownerId) !== String(userId)) return sendError(res, 403, "Yetki yok.", "forbidden");
     await record.deleteOne();
-    res.sendOk({ message: "Kayıt silindi." });
+    return sendOk(res, 200, { message: "Kayıt silindi." });
   } catch (err) {
-    res.sendError(err.message);
+    console.error("[deleteRecord]", err);
+    return sendError(res, 500, err.message, "internal_error");
   }
 };
 
 // GET /api/health/:petId/weight-chart  — son 20 kilo kaydı (grafik için)
 export const getWeightChart = async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
     const { petId } = req.params;
-    if (!await assertOwner(petId, req.user.id, res)) return;
+    const userId = req.user.sub;
+    const check = await assertOwner(petId, userId);
+    if (!check.ok) return sendError(res, check.error, check.message, check.error === 404 ? "not_found" : "forbidden");
 
     const records = await HealthRecord.find({ petId, type: "weight" })
       .select("date weightKg")
       .sort({ date: 1 })
       .limit(20);
 
-    res.sendOk({ weightData: records });
+    return sendOk(res, 200, { weightData: records });
   } catch (err) {
-    res.sendError(err.message);
+    console.error("[getWeightChart]", err);
+    return sendError(res, 500, err.message, "internal_error");
   }
 };

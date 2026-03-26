@@ -222,6 +222,9 @@ export async function login(req, res) {
     if (!user) return sendError(res, 401, "Geçersiz bilgiler", "invalid_credentials");
     const ok = await comparePassword(password, user.password);
     if (!ok) return sendError(res, 401, "Geçersiz bilgiler", "invalid_credentials");
+    if (user.role === "banned") {
+      return sendError(res, 403, "Hesabınız askıya alınmıştır", "account_banned");
+    }
     if (!user.isVerified) {
       return sendError(res, 403, "Hesabınız doğrulanmamış. Lütfen e-postanızı kontrol edin.", "email_not_verified", {
         email: user.email,
@@ -239,11 +242,15 @@ export async function login(req, res) {
 }
 
 export async function me(req, res) {
-  const user = await User.findById(req.user.sub).select("name email role city about avatarUrl isSeller");
-  if (!user) {
-    return sendError(res, 404, "Kullanıcı bulunamadı", "user_not_found");
+  try {
+    const user = await User.findById(req.user.sub).select("name email role city about avatarUrl isSeller");
+    if (!user) {
+      return sendError(res, 404, "Kullanıcı bulunamadı", "user_not_found");
+    }
+    return sendOk(res, 200, { user: buildUserPayload(user) });
+  } catch (err) {
+    return sendError(res, 500, "Kullanıcı bilgisi alınamadı", "internal_error", err.message);
   }
-  return sendOk(res, 200, { user: buildUserPayload(user) });
 }
 
 export async function uploadAvatar(req, res) {
@@ -415,10 +422,11 @@ export async function getUserPublicProfile(req, res) {
     if (!user) {
       return sendError(res, 404, "Kullanıcı bulunamadı", "user_not_found");
     }
-    const pets = await Pet.find({ owner: userId, isActive: { $ne: false } })
+    const pets = await Pet.find({ ownerId: userId, isActive: { $ne: false } })
       .select("name species breed age gender photos advertType")
       .sort({ createdAt: -1 })
-      .limit(20);
+      .limit(20)
+      .lean();
 
     return sendOk(res, 200, {
       user: {
@@ -442,7 +450,13 @@ export async function registerFcmToken(req, res) {
     const { token } = req.body;
     if (!token) return sendError(res, 400, "FCM token gerekli", "validation_error");
 
-    await User.findByIdAndUpdate(req.user.sub, { $addToSet: { fcmTokens: token } });
+    await User.findByIdAndUpdate(req.user.sub, {
+      $addToSet: { fcmTokens: token },
+    });
+    // Cap array at 20 to prevent unbounded growth
+    await User.findByIdAndUpdate(req.user.sub, {
+      $push: { fcmTokens: { $each: [], $slice: -20 } },
+    });
     return sendOk(res, 200, { message: "FCM token kaydedildi" });
   } catch (err) {
     return sendError(res, 500, "Token kaydedilemedi", "internal_error", err.message);

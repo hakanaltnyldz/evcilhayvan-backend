@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api from '../api.js'
+import toast from 'react-hot-toast'
 
 const emptyForm = {
   code: '',
@@ -55,7 +56,7 @@ export default function Coupons() {
       const res = await api.patch(`/admin/coupons/${coupon._id}/toggle`)
       setCoupons((prev) => prev.map((c) => c._id === coupon._id ? res.data.coupon : c))
     } catch (err) {
-      alert(err.response?.data?.message || 'İşlem başarısız')
+      toast.error(err.response?.data?.message || 'İşlem başarısız')
     } finally {
       setToggling(null)
     }
@@ -69,14 +70,35 @@ export default function Coupons() {
       setCoupons((prev) => prev.filter((c) => c._id !== coupon._id))
       setTotal((t) => t - 1)
     } catch (err) {
-      alert(err.response?.data?.message || 'Silinemedi')
+      toast.error(err.response?.data?.message || 'Silinemedi')
     } finally {
       setDeleting(null)
     }
   }
 
+  const [editCoupon, setEditCoupon] = useState(null) // düzenleme modali için
+
   function openCreate() {
     setForm(emptyForm)
+    setEditCoupon(null)
+    setShowModal(true)
+  }
+
+  function openEdit(coupon) {
+    setForm({
+      code: coupon.code || '',
+      description: coupon.description || '',
+      discountType: coupon.discountType || 'percentage',
+      discountValue: String(coupon.discountValue ?? ''),
+      minPurchaseAmount: String(coupon.minPurchaseAmount ?? ''),
+      maxDiscountAmount: String(coupon.maxDiscountAmount ?? ''),
+      validFrom: coupon.validFrom ? coupon.validFrom.substring(0, 10) : '',
+      validUntil: coupon.validUntil ? coupon.validUntil.substring(0, 10) : '',
+      usageLimit: String(coupon.usageLimit ?? ''),
+      perUserLimit: String(coupon.perUserLimit ?? '1'),
+      firstOrderOnly: coupon.firstOrderOnly || false,
+    })
+    setEditCoupon(coupon)
     setShowModal(true)
   }
 
@@ -101,21 +123,31 @@ export default function Coupons() {
   async function handleSubmit(e) {
     e.preventDefault()
     setSaving(true)
+    const payload = {
+      ...form,
+      discountValue: Number(form.discountValue),
+      minPurchaseAmount: form.minPurchaseAmount ? Number(form.minPurchaseAmount) : 0,
+      maxDiscountAmount: form.maxDiscountAmount ? Number(form.maxDiscountAmount) : undefined,
+      usageLimit: form.usageLimit ? Number(form.usageLimit) : undefined,
+      perUserLimit: Number(form.perUserLimit) || 1,
+      firstOrderOnly: form.firstOrderOnly,
+    }
     try {
-      const res = await api.post('/admin/coupons', {
-        ...form,
-        discountValue: Number(form.discountValue),
-        minPurchaseAmount: form.minPurchaseAmount ? Number(form.minPurchaseAmount) : 0,
-        maxDiscountAmount: form.maxDiscountAmount ? Number(form.maxDiscountAmount) : undefined,
-        usageLimit: form.usageLimit ? Number(form.usageLimit) : undefined,
-        perUserLimit: Number(form.perUserLimit) || 1,
-        firstOrderOnly: form.firstOrderOnly,
-      })
-      setCoupons((prev) => [res.data.coupon, ...prev])
-      setTotal((t) => t + 1)
+      if (editCoupon) {
+        // Güncelleme
+        const res = await api.patch(`/admin/coupons/${editCoupon._id}`, payload)
+        setCoupons((prev) => prev.map((c) => c._id === editCoupon._id ? res.data.coupon : c))
+        toast.success('Kupon güncellendi')
+      } else {
+        // Yeni oluşturma
+        const res = await api.post('/admin/coupons', payload)
+        setCoupons((prev) => [res.data.coupon, ...prev])
+        setTotal((t) => t + 1)
+        toast.success('Kupon oluşturuldu')
+      }
       setShowModal(false)
     } catch (err) {
-      alert(err.response?.data?.message || 'Kupon oluşturulamadı')
+      toast.error(err.response?.data?.message || (editCoupon ? 'Kupon güncellenemedi' : 'Kupon oluşturulamadı'))
     } finally {
       setSaving(false)
     }
@@ -247,6 +279,12 @@ export default function Coupons() {
                           {toggling === c._id ? '...' : c.isActive ? 'Pasif Yap' : 'Aktif Et'}
                         </button>
                         <button
+                          onClick={() => openEdit(c)}
+                          className="px-2 py-1 rounded-lg text-xs font-semibold bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition-colors"
+                        >
+                          Düzenle
+                        </button>
+                        <button
                           onClick={() => openUsageModal(c)}
                           className="px-2 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
                         >
@@ -361,7 +399,7 @@ export default function Coupons() {
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
-            <h2 className="font-bold text-lg mb-5">Yeni Kupon Oluştur</h2>
+            <h2 className="font-bold text-lg mb-5">{editCoupon ? 'Kuponu Düzenle' : 'Yeni Kupon Oluştur'}</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">

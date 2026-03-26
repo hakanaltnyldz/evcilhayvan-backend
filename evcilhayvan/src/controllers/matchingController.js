@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import Pet from "../models/Pet.js";
 import Conversation from "../models/Conversation.js";
 import MatchRequest from "../models/MatchRequest.js";
+import Interaction from "../models/Interaction.js";
 import { sendError, sendOk } from "../utils/apiResponse.js";
 import { ensureConversationWithSystemMessage } from "../services/conversationService.js";
 import { io } from "../../server.js";
@@ -420,10 +421,15 @@ export async function getMatchingProfiles(req, res) {
     const myLocationPet = myPets.find((pet) => isValidCoordinates(pet.location));
     const myPrimaryPet = myPets[0] || null;
 
+    // Exclude already-swiped pets (liked or passed)
+    const interactedDocs = await Interaction.find({ fromUser: userId }).select("toPet").lean();
+    const interactedPetIds = interactedDocs.map((d) => d.toPet);
+
     const matchFilter = {
       ownerId: { $ne: toObjectId(userId) },
       isActive: true,
       advertType: "mating",
+      ...(interactedPetIds.length > 0 && { _id: { $nin: interactedPetIds } }),
     };
 
     if (normalizedSpecies && normalizedSpecies !== "tum") {

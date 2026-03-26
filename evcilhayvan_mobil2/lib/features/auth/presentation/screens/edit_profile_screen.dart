@@ -7,6 +7,7 @@ import 'package:evcilhayvan_mobil2/features/auth/domain/user_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
+import 'package:evcilhayvan_mobil2/core/constants.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -49,7 +50,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   // Profil Fotoğrafı Yükleme Fonksiyonu
   Future<void> _uploadAvatar() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: kImageQualityMedium);
     if (image == null) return; // Kullanıcı iptal etti
 
     setState(() => _isLoading = true);

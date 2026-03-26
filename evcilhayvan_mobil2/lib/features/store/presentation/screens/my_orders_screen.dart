@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:go_router/go_router.dart';
 
@@ -80,6 +81,32 @@ class MyOrdersScreen extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _TrackButton extends StatelessWidget {
+  final String? url;
+  const _TrackButton({this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    if (url == null) return const SizedBox.shrink();
+    return TextButton.icon(
+      onPressed: () async {
+        final uri = Uri.parse(url!);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      },
+      icon: const Icon(Icons.open_in_new, size: 14),
+      label: const Text('Takip Et', style: TextStyle(fontSize: 12)),
+      style: TextButton.styleFrom(
+        foregroundColor: Colors.purple[700],
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
     );
   }
@@ -198,6 +225,29 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
       return DateFormat('dd MMM yyyy, HH:mm', 'tr').format(date);
     } catch (_) {
       return DateFormat('dd MMM yyyy, HH:mm').format(date);
+    }
+  }
+
+  static String? _trackingUrl(String? carrier, String? number) {
+    if (number == null || number.isEmpty) return null;
+    final n = Uri.encodeComponent(number);
+    switch (carrier) {
+      case 'Yurtiçi':
+        return 'https://www.yurticikargo.com/tr/online-islemler/gonderi-sorgula?code=$n';
+      case 'MNG':
+        return 'https://www.mngkargo.com.tr/wps/portal/mng/main/mngkanal/bireysel/gonderitakip?siparisNo=$n';
+      case 'PTT':
+        return 'https://gonderitakip.ptt.gov.tr/Track/Verify?q=$n';
+      case 'UPS':
+        return 'https://www.ups.com/track?tracknum=$n';
+      case 'DHL':
+        return 'https://www.dhl.com/tr-tr/home/tracking.html?tracking-id=$n';
+      case 'Aras':
+        return 'https://www.araskargo.com.tr/pages/kargo-takip';
+      case 'Sürat':
+        return 'https://www.suratkargo.com.tr/KargoSorgulama/';
+      default:
+        return 'https://www.google.com/search?q=$n+kargo+takip';
     }
   }
 
@@ -526,19 +576,28 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                                   ],
                                 ),
                               ),
-                              IconButton(
-                                onPressed: () {
-                                  Clipboard.setData(ClipboardData(text: order.trackingNumber!));
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(l10n.orderTrackingCopied(order.trackingNumber!)),
-                                      backgroundColor: Colors.purple,
-                                      duration: const Duration(seconds: 2),
-                                    ),
-                                  );
-                                },
-                                icon: Icon(Icons.copy, color: Colors.purple[700], size: 20),
-                                tooltip: l10n.copyTooltip,
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      Clipboard.setData(ClipboardData(text: order.trackingNumber!));
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(l10n.orderTrackingCopied(order.trackingNumber!)),
+                                          backgroundColor: Colors.purple,
+                                          duration: const Duration(seconds: 2),
+                                        ),
+                                      );
+                                    },
+                                    icon: Icon(Icons.copy, color: Colors.purple[700], size: 20),
+                                    tooltip: l10n.copyTooltip,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  _TrackButton(
+                                    url: _trackingUrl(order.trackingCompany, order.trackingNumber),
+                                  ),
+                                ],
                               ),
                             ],
                           ),

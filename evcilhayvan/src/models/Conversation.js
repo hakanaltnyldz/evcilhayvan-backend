@@ -43,6 +43,10 @@ const conversationSchema = new Schema(
       default: null,
       index: true,
     },
+    deletedFor: {
+      type: [{ type: Schema.Types.ObjectId, ref: "User" }],
+      default: [],
+    },
   },
   {
     timestamps: true,

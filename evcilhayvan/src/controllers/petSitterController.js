@@ -43,13 +43,20 @@ export async function listSitters(req, res) {
     const skip = (Number(page) - 1) * Number(limit);
 
     if (lat && lng) {
+      const latNum = Number(lat);
+      const lngNum = Number(lng);
+      if (isNaN(latNum) || latNum < -90 || latNum > 90 || isNaN(lngNum) || lngNum < -180 || lngNum > 180) {
+        return sendError(res, 400, "Gecersiz koordinatlar", "invalid_coords");
+      }
+      const radiusM = Math.min(Number(radiusKm) || 20, 100) * 1000;
+
       const pipeline = [];
       pipeline.push({
         $geoNear: {
-          near: { type: "Point", coordinates: [Number(lng), Number(lat)] },
+          near: { type: "Point", coordinates: [lngNum, latNum] },
           distanceField: "distanceMeters",
           spherical: true,
-          maxDistance: Number(radiusKm) * 1000,
+          maxDistance: radiusM,
         },
       });
 

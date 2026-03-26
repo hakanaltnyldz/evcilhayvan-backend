@@ -5,6 +5,7 @@ import fs from "fs";
 import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
+import mongoSanitize from "express-mongo-sanitize";
 import mongoose from "mongoose";
 import path from "path";
 import { createServer } from "http";
@@ -145,6 +146,8 @@ app.use(cors({ origin: config.corsOrigins, credentials: true }));
 app.use(express.json({ limit: "2mb" }));
 app.use(helmet());
 app.use(morgan(config.env === "production" ? "combined" : "dev"));
+// NoSQL injection koruması: req.body / req.params içindeki $ ve . operatörlerini temizle
+app.use(mongoSanitize({ replaceWith: "_" }));
 app.use("/api", globalLimiter);
 app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
@@ -225,14 +228,11 @@ export async function startServer() {
     await seedVaccinationSchedules();
     httpServer.listen(config.port, "0.0.0.0", () => {
       console.log(`Server listening on 0.0.0.0:${config.port}`);
-      // Asi hatirlatma cron job'ini baslat
+      // Cron job'leri 5'er saniye arayla başlat (MongoDB startup yükünü dağıtmak için)
       startVaccinationReminderJob(io);
-      // Dogum gunu hatirlatma job'ini baslat
-      startBirthdayReminderJob(io);
-      // Randevu hatirlatma job'ini baslat (24h once FCM + socket)
-      startAppointmentReminderJob(io);
-      // İlan süresi dolmak üzere olanlar için uyarı gönder (30 günlük süre)
-      startAdvertExpiryReminderJob(io);
+      setTimeout(() => startBirthdayReminderJob(io), 5_000);
+      setTimeout(() => startAppointmentReminderJob(io), 10_000);
+      setTimeout(() => startAdvertExpiryReminderJob(io), 15_000);
     });
   } catch (err) {
     console.error("Mongo connection error:", err.message);

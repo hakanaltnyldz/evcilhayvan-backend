@@ -28,65 +28,92 @@ const ownerSelect = { path: "owner", select: "name avatarUrl city" };
 
 export async function discoverStores(_req, res) {
   try {
-    const stores = await Store.find({ isActive: true }).populate(ownerSelect).sort({ createdAt: -1 });
+    const stores = await Store.find({ isActive: true })
+      .populate(ownerSelect)
+      .sort({ createdAt: -1 })
+      .lean();
     return sendOk(res, 200, { stores });
   } catch (err) {
-    return sendError(res, 500, "Magazalar alinmadi", "internal_error", err.message);
+    return sendError(res, 500, "Magazalar alinmadi", "internal_error");
   }
 }
 
 export async function productFeed(_req, res) {
   try {
-    const products = await Product.find({ isActive: true })
+    const activeStoreDocs = await Store.find({ isActive: true }).select("_id").lean();
+    const activeStoreIds = activeStoreDocs.map((s) => s._id);
+    const products = await Product.find({ isActive: true, store: { $in: activeStoreIds } })
       .populate(storePopulate)
       .sort({ createdAt: -1 })
-      .limit(100);
+      .limit(40)
+      .lean();
     return sendOk(res, 200, { products });
   } catch (err) {
-    return sendError(res, 500, "Urunler getirilemedi", "internal_error", err.message);
+    return sendError(res, 500, "Urunler getirilemedi", "internal_error");
   }
 }
 
 export async function getMyStore(req, res) {
-  const store = await Store.findOne({ owner: req.user.sub }).populate(ownerSelect);
-  if (!store) {
-    return sendError(res, 404, "Magaza bulunamadi", "store_not_found");
+  try {
+    const store = await Store.findOne({ owner: req.user.sub }).populate(ownerSelect);
+    if (!store) {
+      return sendError(res, 404, "Magaza bulunamadi", "store_not_found");
+    }
+    return sendOk(res, 200, { store });
+  } catch (err) {
+    console.error("[getMyStore]", err);
+    return sendError(res, 500, "Magaza alinmadi", "internal_error", err.message);
   }
-  return sendOk(res, 200, { store });
 }
 
 export async function getMyProducts(req, res) {
-  const store = await Store.findOne({ owner: req.user.sub });
-  if (!store) {
-    return sendError(res, 404, "Henuz magazaniz yok", "store_not_found");
+  try {
+    const store = await Store.findOne({ owner: req.user.sub });
+    if (!store) {
+      return sendError(res, 404, "Henuz magazaniz yok", "store_not_found");
+    }
+    const products = await Product.find({ store: store._id }).populate(storePopulate).sort({ createdAt: -1 });
+    return sendOk(res, 200, { products });
+  } catch (err) {
+    console.error("[getMyProducts]", err);
+    return sendError(res, 500, "Urunler alinmadi", "internal_error", err.message);
   }
-  const products = await Product.find({ store: store._id }).populate(storePopulate).sort({ createdAt: -1 });
-  return sendOk(res, 200, { products });
 }
 
 export async function getStore(req, res) {
-  const { storeId } = req.params;
-  const store = await Store.findById(storeId).populate(ownerSelect);
-  if (!store || !store.isActive) {
-    return sendError(res, 404, "Magaza bulunamadi", "store_not_found");
+  try {
+    const { storeId } = req.params;
+    const store = await Store.findById(storeId).populate(ownerSelect);
+    if (!store || !store.isActive) {
+      return sendError(res, 404, "Magaza bulunamadi", "store_not_found");
+    }
+    return sendOk(res, 200, { store });
+  } catch (err) {
+    console.error("[getStore]", err);
+    return sendError(res, 500, "Magaza alinmadi", "internal_error", err.message);
   }
-  return sendOk(res, 200, { store });
 }
 
 export async function getStoreProducts(req, res) {
-  const { storeId } = req.params;
-  const store = await Store.findById(storeId);
-  if (!store) {
-    return sendError(res, 404, "Magaza bulunamadi", "store_not_found");
+  try {
+    const { storeId } = req.params;
+    const store = await Store.findById(storeId);
+    if (!store || !store.isActive) {
+      return sendError(res, 404, "Magaza bulunamadi", "store_not_found");
+    }
+    const products = await Product.find({ store: storeId, isActive: true })
+      .populate(storePopulate)
+      .sort({ createdAt: -1 })
+      .lean();
+    return sendOk(res, 200, { products });
+  } catch (err) {
+    return sendError(res, 500, "Urunler yuklenemedi", "internal_error");
   }
-  const products = await Product.find({ store: storeId, isActive: true })
-    .populate(storePopulate)
-    .sort({ createdAt: -1 });
-  return sendOk(res, 200, { products });
 }
 
 // Direct seller creation without admin approval
 export async function applySeller(req, res) {
+  try {
   const storeName = req.body?.storeName || req.body?.name;
   const { description, logoUrl } = req.body || {};
   if (!storeName) {
@@ -142,47 +169,56 @@ export async function applySeller(req, res) {
     user: buildUserPayload(user),
     store: populatedStore,
   });
+  } catch (err) {
+    console.error("[applySeller]", err);
+    return sendError(res, 500, "Mağaza oluşturulamadı", "internal_error");
+  }
 }
 
 export async function addProduct(req, res) {
-  if (!["seller", "admin"].includes(req.user.role)) {
-    return sendError(res, 403, "Sadece saticilar urun ekleyebilir", "forbidden");
+  try {
+    if (!["seller", "admin"].includes(req.user.role)) {
+      return sendError(res, 403, "Sadece saticilar urun ekleyebilir", "forbidden");
+    }
+    const { title, name, price, description, photos, images, stock, category, categoryId } = req.body || {};
+    const productTitle = title || name;
+    const productImages = Array.isArray(images) ? images : Array.isArray(photos) ? photos : [];
+    const resolvedCategory = category ?? categoryId;
+
+    if (!productTitle || price === undefined || price === null) {
+      return sendError(res, 400, "Baslik ve fiyat gereklidir", "validation_error");
+    }
+
+    const store = await Store.findOne({ owner: req.user.sub });
+    if (!store) {
+      return sendError(res, 404, "Magaza bulunamadi", "store_not_found");
+    }
+
+    const product = await Product.create({
+      title: productTitle,
+      name: productTitle,
+      price: Number(price),
+      description,
+      photos: productImages,
+      images: productImages,
+      stock: typeof stock === "number" ? stock : Number(stock) || 0,
+      category: resolvedCategory,
+      store: store._id,
+      seller: req.user.sub,
+    });
+
+    const populatedProduct = await product.populate(storePopulate);
+
+    await recordAudit("product.create", {
+      userId: req.user.sub,
+      entityType: "product",
+      entityId: product._id.toString(),
+      metadata: { store: store._id.toString() },
+    });
+
+    return sendOk(res, 201, { product: populatedProduct });
+  } catch (err) {
+    console.error("[addProduct]", err);
+    return sendError(res, 500, "Urun olusturulamadi", "internal_error", err.message);
   }
-  const { title, name, price, description, photos, images, stock, category, categoryId } = req.body || {};
-  const productTitle = title || name;
-  const productImages = Array.isArray(images) ? images : Array.isArray(photos) ? photos : [];
-  const resolvedCategory = category ?? categoryId;
-
-  if (!productTitle || price === undefined || price === null) {
-    return sendError(res, 400, "Baslik ve fiyat gereklidir", "validation_error");
-  }
-
-  const store = await Store.findOne({ owner: req.user.sub });
-  if (!store) {
-    return sendError(res, 404, "Magaza bulunamadi", "store_not_found");
-  }
-
-  const product = await Product.create({
-    title: productTitle,
-    name: productTitle,
-    price: Number(price),
-    description,
-    photos: productImages,
-    images: productImages,
-    stock: typeof stock === "number" ? stock : Number(stock) || 0,
-    category: resolvedCategory,
-    store: store._id,
-    seller: req.user.sub,
-  });
-
-  const populatedProduct = await product.populate(storePopulate);
-
-  await recordAudit("product.create", {
-    userId: req.user.sub,
-    entityType: "product",
-    entityId: product._id.toString(),
-    metadata: { store: store._id.toString() },
-  });
-
-  return sendOk(res, 201, { product: populatedProduct });
 }

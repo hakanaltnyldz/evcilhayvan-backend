@@ -58,46 +58,50 @@ export async function getPetFeed(req, res) {
 
 // POST /api/pets
 export async function createPet(req, res) {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 400, "Dogrulama hatasi", "validation_error", errors.array());
-  }
-
-  const ownerId = req.user.sub;
-  const body = { ...req.body, ownerId };
-  const location = buildLocation(body.location);
-  if (location) {
-    body.location = location;
-  } else {
-    delete body.location;
-  }
-
-  if (Array.isArray(body.images) && !body.photos) {
-    body.photos = body.images;
-  }
-  if (body.advertType) {
-    const normalizedType = String(body.advertType).toLowerCase();
-    if (["adoption", "mating"].includes(normalizedType)) {
-      body.advertType = normalizedType;
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 400, "Dogrulama hatasi", "validation_error", errors.array());
     }
+
+    const ownerId = req.user.sub;
+    const body = { ...req.body, ownerId };
+    const location = buildLocation(body.location);
+    if (location) {
+      body.location = location;
+    } else {
+      delete body.location;
+    }
+
+    if (Array.isArray(body.images) && !body.photos) {
+      body.photos = body.images;
+    }
+    if (body.advertType) {
+      const normalizedType = String(body.advertType).toLowerCase();
+      if (["adoption", "mating"].includes(normalizedType)) {
+        body.advertType = normalizedType;
+      }
+    }
+    if (!body.advertType) {
+      body.advertType = "adoption";
+    }
+
+    body.isActive = true;
+
+    let pet = await Pet.create(body);
+    pet = await pet.populate("ownerId", "name avatarUrl");
+
+    await recordAudit("pet.create", {
+      userId: ownerId,
+      entityType: "pet",
+      entityId: pet.id || pet._id,
+    }).catch((e) => console.error("[createPet] audit error", e.message));
+
+    return sendOk(res, 201, { pet });
+  } catch (err) {
+    console.error("[createPet]", err);
+    return sendError(res, 500, "Evcil hayvan olusturulamadi", "internal_error");
   }
-  if (!body.advertType) {
-    body.advertType = "adoption";
-  }
-
-  // İlanın aktif olduğundan emin ol
-  body.isActive = true;
-
-  let pet = await Pet.create(body);
-  pet = await pet.populate("ownerId", "name avatarUrl");
-
-  await recordAudit("pet.create", {
-    userId: ownerId,
-    entityType: "pet",
-    entityId: pet.id || pet._id,
-  });
-
-  return sendOk(res, 201, { pet });
 }
 
 // GET /api/pets/me
@@ -150,51 +154,56 @@ export async function myAdverts(req, res) {
 
 // PUT /api/pets/:id
 export async function updatePet(req, res) {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 400, "Dogrulama hatasi", "validation_error", errors.array());
-  }
-  const { id } = req.params;
-  const isAdmin = req.user.role === "admin";
-  const pet = await Pet.findById(id);
-  if (!pet) {
-    return sendError(res, 404, "Pet bulunamadi", "pet_not_found");
-  }
-  if (!isAdmin && String(pet.ownerId) !== String(req.user.sub)) {
-    return sendError(res, 403, "Bu ilan size ait degil", "forbidden");
-  }
-
-  const update = { ...req.body };
-  const location = buildLocation(update.location);
-  if (location) {
-    update.location = location;
-  } else if (update.location) {
-    delete update.location;
-  }
-
-  if (Array.isArray(update.images) && !update.photos) {
-    update.photos = update.images;
-  }
-  if (update.advertType) {
-    const normalizedType = String(update.advertType).toLowerCase();
-    if (["adoption", "mating"].includes(normalizedType)) {
-      update.advertType = normalizedType;
-    } else {
-      delete update.advertType;
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 400, "Dogrulama hatasi", "validation_error", errors.array());
     }
+    const { id } = req.params;
+    const isAdmin = req.user.role === "admin";
+    const pet = await Pet.findById(id);
+    if (!pet) {
+      return sendError(res, 404, "Pet bulunamadi", "pet_not_found");
+    }
+    if (!isAdmin && String(pet.ownerId) !== String(req.user.sub)) {
+      return sendError(res, 403, "Bu ilan size ait degil", "forbidden");
+    }
+
+    const update = { ...req.body };
+    const location = buildLocation(update.location);
+    if (location) {
+      update.location = location;
+    } else if (update.location) {
+      delete update.location;
+    }
+
+    if (Array.isArray(update.images) && !update.photos) {
+      update.photos = update.images;
+    }
+    if (update.advertType) {
+      const normalizedType = String(update.advertType).toLowerCase();
+      if (["adoption", "mating"].includes(normalizedType)) {
+        update.advertType = normalizedType;
+      } else {
+        delete update.advertType;
+      }
+    }
+
+    Object.assign(pet, update);
+    const saved = await pet.save();
+    await saved.populate("ownerId", "name avatarUrl");
+
+    await recordAudit("pet.update", {
+      userId: req.user.sub,
+      entityType: "pet",
+      entityId: saved.id || saved._id,
+    });
+
+    return sendOk(res, 200, { pet: saved });
+  } catch (err) {
+    console.error("[updatePet]", err);
+    return sendError(res, 500, "Ilan guncellenemedi", "internal_error", err.message);
   }
-
-  Object.assign(pet, update);
-  const saved = await pet.save();
-  await saved.populate("ownerId", "name avatarUrl");
-
-  await recordAudit("pet.update", {
-    userId: req.user.sub,
-    entityType: "pet",
-    entityId: saved.id || saved._id,
-  });
-
-  return sendOk(res, 200, { pet: saved });
 }
 
 // GET /api/pets
@@ -229,7 +238,8 @@ export async function listPets(req, res) {
         .populate("ownerId", "name avatarUrl")
         .sort(q ? { score: { $meta: "textScore" } } : { createdAt: -1 })
         .skip(skip)
-        .limit(Number(limit)),
+        .limit(Number(limit))
+        .lean(),
       Pet.countDocuments(filter),
     ]);
     return sendOk(res, 200, {
@@ -253,11 +263,11 @@ export async function getPet(req, res) {
       return sendError(res, 400, "Gecersiz ilan ID", "validation_error");
     }
 
-    await Pet.findByIdAndUpdate(id, { $inc: { viewCount: 1 } });
     const pet = await Pet.findById(id).populate("ownerId", "name avatarUrl");
     if (!pet || !pet.isActive) {
       return sendError(res, 404, "Ilan bulunamadi", "pet_not_found");
     }
+    await Pet.findByIdAndUpdate(id, { $inc: { viewCount: 1 } });
 
     return sendOk(res, 200, { pet });
   } catch (err) {
@@ -315,50 +325,60 @@ export async function deletePet(req, res) {
 
 // POST /api/pets/:id/images
 export async function uploadPetImage(req, res) {
-  const { id } = req.params;
-  const filter = { _id: id };
-  if (req.user.role !== "admin") {
-    filter.ownerId = req.user.sub;
+  try {
+    const { id } = req.params;
+    const filter = { _id: id };
+    if (req.user.role !== "admin") {
+      filter.ownerId = req.user.sub;
+    }
+    const pet = await Pet.findOne(filter);
+    if (!pet) return sendError(res, 404, "Pet bulunamadi veya yetkiniz yok", "pet_not_found");
+    if (!req.file) return sendError(res, 400, "Dosya gerekli", "file_required");
+    const publicPath = await storageService.save(req.file);
+    pet.images = [...(pet.images || []), publicPath];
+    if (!pet.photos) pet.photos = [];
+    pet.photos = [...pet.photos, publicPath];
+    await pet.save();
+
+    await recordAudit("pet.media.upload", {
+      userId: req.user.sub,
+      entityType: "pet",
+      entityId: id,
+      metadata: { type: "image", url: publicPath },
+    });
+
+    return sendOk(res, 201, { url: publicPath, images: pet.images, photos: pet.photos });
+  } catch (err) {
+    console.error("[uploadPetImage]", err);
+    return sendError(res, 500, "Resim yuklenemedi", "internal_error", err.message);
   }
-  const pet = await Pet.findOne(filter);
-  if (!pet) return sendError(res, 404, "Pet bulunamadi veya yetkiniz yok", "pet_not_found");
-  if (!req.file) return sendError(res, 400, "Dosya gerekli", "file_required");
-  const publicPath = await storageService.save(req.file);
-  pet.images = [...(pet.images || []), publicPath];
-  if (!pet.photos) pet.photos = [];
-  pet.photos = [...pet.photos, publicPath];
-  await pet.save();
-
-  await recordAudit("pet.media.upload", {
-    userId: req.user.sub,
-    entityType: "pet",
-    entityId: id,
-    metadata: { type: "image", url: publicPath },
-  });
-
-  return sendOk(res, 201, { url: publicPath, images: pet.images, photos: pet.photos });
 }
 
 // POST /api/pets/:id/videos
 export async function uploadPetVideo(req, res) {
-  const { id } = req.params;
-  const filter = { _id: id };
-  if (req.user.role !== "admin") {
-    filter.ownerId = req.user.sub;
+  try {
+    const { id } = req.params;
+    const filter = { _id: id };
+    if (req.user.role !== "admin") {
+      filter.ownerId = req.user.sub;
+    }
+    const pet = await Pet.findOne(filter);
+    if (!pet) return sendError(res, 404, "Pet bulunamadi veya yetkiniz yok", "pet_not_found");
+    if (!req.file) return sendError(res, 400, "Dosya gerekli", "file_required");
+    const publicPath = await storageService.save(req.file);
+    pet.videos = [...(pet.videos || []), publicPath];
+    await pet.save();
+
+    await recordAudit("pet.media.upload", {
+      userId: req.user.sub,
+      entityType: "pet",
+      entityId: id,
+      metadata: { type: "video", url: publicPath },
+    });
+
+    return sendOk(res, 201, { url: publicPath, videos: pet.videos });
+  } catch (err) {
+    console.error("[uploadPetVideo]", err);
+    return sendError(res, 500, "Video yuklenemedi", "internal_error", err.message);
   }
-  const pet = await Pet.findOne(filter);
-  if (!pet) return sendError(res, 404, "Pet bulunamadi veya yetkiniz yok", "pet_not_found");
-  if (!req.file) return sendError(res, 400, "Dosya gerekli", "file_required");
-  const publicPath = await storageService.save(req.file);
-  pet.videos = [...(pet.videos || []), publicPath];
-  await pet.save();
-
-  await recordAudit("pet.media.upload", {
-    userId: req.user.sub,
-    entityType: "pet",
-    entityId: id,
-    metadata: { type: "video", url: publicPath },
-  });
-
-  return sendOk(res, 201, { url: publicPath, videos: pet.videos });
 }

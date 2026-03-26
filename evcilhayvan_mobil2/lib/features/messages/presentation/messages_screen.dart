@@ -208,11 +208,23 @@ class _ConversationsTab extends ConsumerWidget {
   }
 }
 
-class _RequestsTab extends ConsumerWidget {
+class _RequestsTab extends ConsumerStatefulWidget {
   const _RequestsTab();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_RequestsTab> createState() => _RequestsTabState();
+}
+
+class _RequestsTabState extends ConsumerState<_RequestsTab> {
+  bool _showArchived = false;
+
+  static bool _isArchived(String status) {
+    final s = status.toUpperCase();
+    return s == 'CANCELLED' || s == 'REJECTED';
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final matchingAsync = ref.watch(inboxMatchRequestsProvider);
     final adoptionAsync = ref.watch(inboxAdoptionApplicationsProvider);
 
@@ -224,6 +236,17 @@ class _RequestsTab extends ConsumerWidget {
       data: (items) => items.where((e) => e.status.toUpperCase() == 'PENDING').length,
       orElse: () => 0,
     );
+
+    // Count archived items for toggle button label
+    final archivedMatchCount = matchingAsync.maybeWhen(
+      data: (items) => items.where((e) => _isArchived(e.status)).length,
+      orElse: () => 0,
+    );
+    final archivedAdoptCount = adoptionAsync.maybeWhen(
+      data: (items) => items.where((e) => _isArchived(e.status)).length,
+      orElse: () => 0,
+    );
+    final totalArchived = archivedMatchCount + archivedAdoptCount;
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -237,11 +260,14 @@ class _RequestsTab extends ConsumerWidget {
           const SizedBox(height: 12),
           matchingAsync.when(
             data: (items) {
-              if (items.isEmpty) {
+              final visible = _showArchived
+                  ? items
+                  : items.where((e) => !_isArchived(e.status)).toList();
+              if (visible.isEmpty) {
                 return _EmptySection(message: AppLocalizations.of(context)!.msgNoMatingRequests);
               }
               return Column(
-                children: items
+                children: visible
                     .map((request) => _MatchingRequestCard(request: request))
                     .toList(),
               );
@@ -257,11 +283,14 @@ class _RequestsTab extends ConsumerWidget {
           const SizedBox(height: 12),
           adoptionAsync.when(
             data: (items) {
-              if (items.isEmpty) {
+              final visible = _showArchived
+                  ? items
+                  : items.where((e) => !_isArchived(e.status)).toList();
+              if (visible.isEmpty) {
                 return _EmptySection(message: AppLocalizations.of(context)!.msgNoAdoptionRequests);
               }
               return Column(
-                children: items
+                children: visible
                     .map((application) => _AdoptionApplicationCard(application: application))
                     .toList(),
               );
@@ -272,6 +301,25 @@ class _RequestsTab extends ConsumerWidget {
               onRetry: () => ref.invalidate(inboxAdoptionApplicationsProvider),
             ),
           ),
+          // Archive toggle
+          if (totalArchived > 0) ...[
+            const SizedBox(height: 16),
+            Center(
+              child: TextButton.icon(
+                onPressed: () => setState(() => _showArchived = !_showArchived),
+                icon: Icon(
+                  _showArchived ? Icons.visibility_off_outlined : Icons.history,
+                  size: 16,
+                ),
+                label: Text(
+                  _showArchived
+                      ? 'Geçmişi Gizle'
+                      : 'Geçmiş İstekleri Göster ($totalArchived)',
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -443,6 +491,25 @@ class _MatchingRequestCard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 6),
+            // Deleted advert indicator
+            if (status == 'CANCELLED' && request.listing == null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.info_outline, size: 14, color: Colors.orange),
+                    SizedBox(width: 6),
+                    Text('İlan artık aktif değil', style: TextStyle(fontSize: 12, color: Colors.orange)),
+                  ],
+                ),
+              ),
             Text(AppLocalizations.of(context)!.msgSenderLabel(request.fromUser?.name ?? '-')),
             if ((request.fromPet?.name ?? '').isNotEmpty) ...[
               const SizedBox(height: 4),

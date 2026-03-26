@@ -5,6 +5,7 @@ import AdoptionApplication from "../models/AdoptionApplication.js";
 import { ensureConversationWithSystemMessage } from "../services/conversationService.js";
 import { sendError, sendOk } from "../utils/apiResponse.js";
 import { io } from "../../server.js";
+import { sendPush } from "../utils/fcm.js";
 
 const applicationPopulate = [
   { path: "adoptionListingId", select: "name images photos ownerId species advertType" },
@@ -176,6 +177,15 @@ export async function acceptAdoptionApplication(req, res) {
     application.respondedAt = new Date();
     await application.save();
 
+    // İlanı kapat
+    await Pet.findByIdAndUpdate(application.adoptionListingId, { isActive: false });
+
+    // Diğer tüm pending başvuruları otomatik reddet
+    await AdoptionApplication.updateMany(
+      { adoptionListingId: application.adoptionListingId, status: "PENDING", _id: { $ne: id } },
+      { $set: { status: "REJECTED", respondedAt: new Date() } }
+    );
+
     const { conversation, message } = await ensureConversationWithSystemMessage({
       fromUserId: application.applicantUserId,
       toUserId: listing.ownerId,
@@ -207,6 +217,14 @@ export async function acceptAdoptionApplication(req, res) {
       });
       io.to(`conv:${conversationId}`).emit("message:new", { message });
     }
+
+    // FCM push to applicant
+    const listingName = application.adoptionListingId?.name || "Sahiplendirme";
+    sendPush([String(application.applicantUserId)], {
+      title: "Başvurunuz Kabul Edildi!",
+      body: `${listingName} başvurunuz kabul edildi`,
+      data: { type: "adoption_accepted", conversationId: conversationId || "" },
+    }).catch(() => {});
 
     return sendOk(res, 200, { application: shaped, conversationId });
   } catch (err) {
@@ -244,7 +262,21 @@ export async function rejectAdoptionApplication(req, res) {
     application.respondedAt = new Date();
     await application.save();
 
-    return sendOk(res, 200, { application: shapeAdoptionApplication(application) });
+    const shapedRejected = shapeAdoptionApplication(application);
+
+    if (io?.to) {
+      io.to(`user:${String(application.applicantUserId)}`).emit("adoption_application:rejected", {
+        application: shapedRejected,
+      });
+    }
+
+    sendPush([String(application.applicantUserId)], {
+      title: "Başvuru Güncellendi",
+      body: "Sahiplendirme başvurunuz değerlendirildi",
+      data: { type: "adoption_rejected" },
+    }).catch(() => {});
+
+    return sendOk(res, 200, { application: shapedRejected });
   } catch (err) {
     console.error("[rejectAdoptionApplication]", err);
     return sendError(res, 500, "Basvuru guncellenemedi", "internal_error", err.message);

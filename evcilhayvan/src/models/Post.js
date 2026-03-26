@@ -39,6 +39,6 @@ const postSchema = new Schema(
 );
 
 postSchema.index({ userId: 1, createdAt: -1 });
-postSchema.index({ createdAt: -1 });
+postSchema.index({ isActive: 1, createdAt: -1 });
 
 export default mongoose.model("Post", postSchema);

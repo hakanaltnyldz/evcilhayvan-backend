@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 import { authRequired } from "../middlewares/auth.js";
 import {
   createReport,
@@ -39,15 +39,15 @@ router.get("/near", nearbyReports);
 router.get("/", listReports);
 
 // GET /:id - Detay
-router.get("/:id", getReport);
+router.get("/:id", [param("id").isMongoId()], getReport);
 
 // PUT /:id - Guncelle
-router.put("/:id", authRequired(), updateReport);
+router.put("/:id", authRequired(), [param("id").isMongoId()], updateReport);
 
 // PATCH /:id/status - Durum guncelle
-router.patch("/:id/status", authRequired(), updateStatus);
+router.patch("/:id/status", authRequired(), [param("id").isMongoId()], updateStatus);
 
 // DELETE /:id
-router.delete("/:id", authRequired(), deleteReport);
+router.delete("/:id", authRequired(), [param("id").isMongoId()], deleteReport);
 
 export default router;

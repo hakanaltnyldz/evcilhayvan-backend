@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../api.js'
 import Table from '../components/Table.jsx'
+import toast from 'react-hot-toast'
 
 export default function Posts() {
   const [posts, setPosts] = useState([])
@@ -8,6 +9,7 @@ export default function Posts() {
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [toggling, setToggling] = useState(null)
+  const [deleting, setDeleting] = useState(null)
 
   useEffect(() => {
     setLoading(true)
@@ -19,6 +21,21 @@ export default function Posts() {
       .finally(() => setLoading(false))
   }, [page])
 
+  async function deletePost(post) {
+    if (!window.confirm('Bu gönderiyi kalıcı olarak silmek istiyor musunuz?')) return
+    setDeleting(post._id)
+    try {
+      await api.delete(`/admin/posts/${post._id}`)
+      setPosts((prev) => prev.filter((p) => p._id !== post._id))
+      setTotal((t) => t - 1)
+      toast.success('Gönderi silindi')
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Silme başarısız')
+    } finally {
+      setDeleting(null)
+    }
+  }
+
   async function toggleVisibility(post) {
     setToggling(post._id)
     try {
@@ -28,7 +45,7 @@ export default function Posts() {
         prev.map((p) => (p._id === post._id ? { ...p, isActive: updated.isActive } : p))
       )
     } catch (err) {
-      alert(err.response?.data?.message || 'İşlem başarısız')
+      toast.error(err.response?.data?.message || 'İşlem başarısız')
     } finally {
       setToggling(null)
     }
@@ -84,17 +101,27 @@ export default function Posts() {
       key: 'actions',
       label: '',
       render: (r) => (
-        <button
-          onClick={() => toggleVisibility(r)}
-          disabled={toggling === r._id}
-          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
-            r.isActive
-              ? 'bg-red-100 text-red-600 hover:bg-red-200'
-              : 'bg-green-100 text-green-700 hover:bg-green-200'
-          }`}
-        >
-          {toggling === r._id ? '...' : r.isActive ? 'Gizle' : 'Göster'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => toggleVisibility(r)}
+            disabled={toggling === r._id}
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+              r.isActive
+                ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                : 'bg-green-100 text-green-700 hover:bg-green-200'
+            }`}
+          >
+            {toggling === r._id ? '...' : r.isActive ? 'Gizle' : 'Göster'}
+          </button>
+          <button
+            onClick={() => deletePost(r)}
+            disabled={deleting === r._id}
+            className="px-2 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-600 transition-colors disabled:opacity-50"
+            title="Kalıcı sil"
+          >
+            {deleting === r._id ? '...' : '🗑️'}
+          </button>
+        </div>
       ),
     },
   ]

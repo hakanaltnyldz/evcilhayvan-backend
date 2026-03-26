@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:evcilhayvan_mobil2/core/http.dart';
 
 /// Arka planda gelen FCM mesajlarını işler (top-level fonksiyon olmalı)
 @pragma('vm:entry-point')
@@ -44,7 +45,25 @@ class FcmService {
         return '/';
       case 'appointment':
       case 'appointment_reminder':
+        final apptId = data['appointmentId'] as String?;
+        if (apptId != null && apptId.isNotEmpty) return '/veterinary/appointment/$apptId';
         return '/veterinary';
+      case 'vaccination':
+      case 'vaccination_reminder':
+        final vacPetId = data['petId'] as String?;
+        if (vacPetId != null && vacPetId.isNotEmpty) return '/veterinary/vaccination/$vacPetId';
+        return '/veterinary';
+      case 'order':
+      case 'order_update':
+      case 'order_status':
+        return '/store/orders';
+      case 'sitter_booking':
+      case 'booking_update':
+        return '/sitters/bookings';
+      case 'lost_found':
+        final lfId = data['reportId'] as String?;
+        if (lfId != null && lfId.isNotEmpty) return '/lost-found/$lfId';
+        return '/lost-found';
       case 'notification':
       default:
         return '/notifications';
@@ -82,6 +101,9 @@ class FcmService {
       final notification = message.notification;
       if (notification == null) return;
 
+      // Route'u payload olarak geç → kullanıcı bildirimi tıklayınca navigate et
+      final route = routeFromMessage(message);
+
       _localNotifications.show(
         notification.hashCode,
         notification.title,
@@ -96,12 +118,18 @@ class FcmService {
             icon: '@mipmap/ic_launcher',
           ),
         ),
+        payload: route,
       );
     });
 
     // Uygulama arka plandayken bildirime tıklanınca navigate et
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
       _routeController.add(routeFromMessage(message));
+    });
+
+    // FCM token yenilendiğinde backend'i güncelle
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+      registerToken(newToken);
     });
 
     // Local notification tıklanınca da deep link
@@ -129,41 +157,30 @@ class FcmService {
     }
   }
 
-  /// Kullanıcı giriş yaptıktan sonra token'ı backend'e kaydet
-  static Future<void> registerToken(String authToken, String baseUrl) async {
+  /// Kullanıcı giriş yaptıktan sonra (veya token yenilenince) backend'e kaydet.
+  /// [fcmToken] verilmezse Firebase'den anlık token alınır.
+  static Future<void> registerToken([String? fcmToken]) async {
     try {
-      final token = await _messaging.getToken();
+      final token = fcmToken ?? await _messaging.getToken();
       if (token == null) return;
-
-      final client = HttpClient();
-      final request = await client.postUrl(
-        Uri.parse('$baseUrl/api/notifications/register-token'),
+      await ApiClient().dio.post(
+        '/api/notifications/register-token',
+        data: {'token': token, 'platform': Platform.isAndroid ? 'android' : 'ios'},
       );
-      request.headers.set('Content-Type', 'application/json');
-      request.headers.set('Authorization', 'Bearer $authToken');
-      request.write('{"token":"$token","platform":"android"}');
-      await request.close();
-      client.close();
     } catch (_) {
       // Token kaydedilemese de uygulama çalışmaya devam eder
     }
   }
 
   /// Kullanıcı çıkış yaptığında token'ı sil
-  static Future<void> unregisterToken(String authToken, String baseUrl) async {
+  static Future<void> unregisterToken() async {
     try {
       final token = await _messaging.getToken();
       if (token == null) return;
-
-      final client = HttpClient();
-      final request = await client.deleteUrl(
-        Uri.parse('$baseUrl/api/notifications/unregister-token'),
+      await ApiClient().dio.delete(
+        '/api/notifications/unregister-token',
+        data: {'token': token},
       );
-      request.headers.set('Content-Type', 'application/json');
-      request.headers.set('Authorization', 'Bearer $authToken');
-      request.write('{"token":"$token"}');
-      await request.close();
-      client.close();
     } catch (_) {}
   }
 }

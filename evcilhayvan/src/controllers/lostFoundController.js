@@ -71,15 +71,22 @@ export async function listReports(req, res) {
     const skip = (Number(page) - 1) * Number(limit);
 
     if (hasGeo) {
+      const latNum = Number(lat);
+      const lngNum = Number(lng);
+      if (isNaN(latNum) || latNum < -90 || latNum > 90 || isNaN(lngNum) || lngNum < -180 || lngNum > 180) {
+        return sendError(res, 400, "Gecersiz koordinatlar", "invalid_coords");
+      }
+      const radiusM = Math.min(Number(radiusKm) || 50, 100) * 1000;
+
       // Geo-query ile
       const pipeline = [];
 
       pipeline.push({
         $geoNear: {
-          near: { type: "Point", coordinates: [Number(lng), Number(lat)] },
+          near: { type: "Point", coordinates: [lngNum, latNum] },
           distanceField: "distanceMeters",
           spherical: true,
-          maxDistance: Number(radiusKm) * 1000,
+          maxDistance: radiusM,
         },
       });
 
@@ -144,13 +151,20 @@ export async function nearbyReports(req, res) {
       return sendError(res, 400, "lat ve lng parametreleri gerekli", "missing_params");
     }
 
+    const latNum = Number(lat);
+    const lngNum = Number(lng);
+    if (isNaN(latNum) || latNum < -90 || latNum > 90 || isNaN(lngNum) || lngNum < -180 || lngNum > 180) {
+      return sendError(res, 400, "Gecersiz koordinatlar", "invalid_coords");
+    }
+    const radiusM = Math.min(Number(radiusKm) || 20, 100) * 1000;
+
     const pipeline = [
       {
         $geoNear: {
-          near: { type: "Point", coordinates: [Number(lng), Number(lat)] },
+          near: { type: "Point", coordinates: [lngNum, latNum] },
           distanceField: "distanceMeters",
           spherical: true,
-          maxDistance: Number(radiusKm) * 1000,
+          maxDistance: radiusM,
         },
       },
       { $match: { status: "active" } },
@@ -182,7 +196,7 @@ export async function nearbyReports(req, res) {
 // GET /:id - Detay
 export async function getReport(req, res) {
   try {
-    const doc = await LostFoundPet.findById(req.params.id).populate("userId", "name avatarUrl email").lean();
+    const doc = await LostFoundPet.findById(req.params.id).populate("userId", "name avatarUrl").lean();
     if (!doc) return sendError(res, 404, "Ilan bulunamadi", "not_found");
 
     return sendOk(res, 200, {
@@ -191,7 +205,6 @@ export async function getReport(req, res) {
         id: doc._id,
         userName: doc.userId?.name,
         userAvatar: doc.userId?.avatarUrl,
-        userEmail: doc.userId?.email,
       },
     });
   } catch (err) {
@@ -246,6 +259,9 @@ export async function updateStatus(req, res) {
     if (!doc) return sendError(res, 404, "Ilan bulunamadi", "not_found");
     if (String(doc.userId) !== userId) {
       return sendError(res, 403, "Bu ilani duzenleme yetkiniz yok", "forbidden");
+    }
+    if (doc.status !== "active") {
+      return sendError(res, 400, "Bu ilan zaten kapatilmis", "already_closed");
     }
 
     doc.status = status;

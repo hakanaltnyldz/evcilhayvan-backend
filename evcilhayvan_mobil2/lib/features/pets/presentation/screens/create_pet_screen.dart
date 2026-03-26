@@ -12,6 +12,7 @@ import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/data/pet_breeds.dart';
 
+import 'package:evcilhayvan_mobil2/core/constants.dart';
 import '../../data/repositories/pets_repository.dart';
 import '../../domain/models/pet_model.dart';
 import 'location_picker_screen.dart';
@@ -96,7 +97,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
   Future<void> _pickImages() async {
     try {
       final picker = ImagePicker();
-      final files = await picker.pickMultiImage(imageQuality: 85);
+      final files = await picker.pickMultiImage(imageQuality: kImageQualityHigh);
       if (files.isEmpty) return;
       setState(() => _isLoading = true);
       final repo = ref.read(petsRepositoryProvider);

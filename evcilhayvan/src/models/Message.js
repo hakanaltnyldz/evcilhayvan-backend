@@ -79,5 +79,7 @@ messageSchema.pre("validate", function mapSender(next) {
 });
 
 messageSchema.index({ conversationId: 1, createdAt: -1 });
+messageSchema.index({ sender: 1, createdAt: -1 });       // Kullanıcı mesaj geçmişi sorguları
+messageSchema.index({ senderId: 1, createdAt: -1 });     // senderId alias desteği
 
 export default mongoose.model("Message", messageSchema);

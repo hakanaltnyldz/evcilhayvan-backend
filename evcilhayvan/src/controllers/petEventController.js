@@ -42,13 +42,20 @@ export async function listEvents(req, res) {
     const now = new Date();
 
     if (lat && lng) {
+      const latNum = Number(lat);
+      const lngNum = Number(lng);
+      if (isNaN(latNum) || latNum < -90 || latNum > 90 || isNaN(lngNum) || lngNum < -180 || lngNum > 180) {
+        return sendError(res, 400, "Gecersiz koordinatlar", "invalid_coords");
+      }
+      const radiusM = Math.min(Number(radiusKm) || 50, 100) * 1000;
+
       const pipeline = [];
       pipeline.push({
         $geoNear: {
-          near: { type: "Point", coordinates: [Number(lng), Number(lat)] },
+          near: { type: "Point", coordinates: [lngNum, latNum] },
           distanceField: "distanceMeters",
           spherical: true,
-          maxDistance: Number(radiusKm) * 1000,
+          maxDistance: radiusM,
         },
       });
 
@@ -167,37 +174,42 @@ export async function attendEvent(req, res) {
     if (!event) return sendError(res, 404, "Etkinlik bulunamadi", "not_found");
     if (event.isCancelled) return sendError(res, 400, "Etkinlik iptal edildi", "cancelled");
 
-    // Kapasite kontrol
-    if (status === "going" && event.maxAttendees) {
-      const goingCount = await EventAttendance.countDocuments({ eventId: event._id, status: "going" });
-      if (goingCount >= event.maxAttendees) {
-        return sendError(res, 400, "Etkinlik kapasitesi doldu", "full");
-      }
+    const existing = await EventAttendance.findOne({ eventId: event._id, userId });
+    const wasGoing = existing?.status === "going";
+    const needsNewSlot = status === "going" && !wasGoing;
+
+    // Kapasite kontrol — atomik: $expr ile slot boşsa $inc, yoksa null döner
+    if (needsNewSlot && event.maxAttendees) {
+      const slotGranted = await PetEvent.findOneAndUpdate(
+        { _id: event._id, $expr: { $lt: ["$attendeeCount", "$maxAttendees"] } },
+        { $inc: { attendeeCount: 1 } },
+        { new: true }
+      );
+      if (!slotGranted) return sendError(res, 400, "Etkinlik kapasitesi doldu", "full");
+      // attendeeCount atomik olarak arttirildi
     }
 
-    const existing = await EventAttendance.findOne({ eventId: event._id, userId });
     let attendance;
-
     if (existing) {
-      const wasGoing = existing.status === "going";
       existing.status = status;
       existing.petIds = petIds;
       existing.note = note;
       await existing.save();
       attendance = existing;
-
-      // Sayaci guncelle
-      if (wasGoing && status !== "going") await PetEvent.findByIdAndUpdate(event._id, { $inc: { attendeeCount: -1 } });
-      if (!wasGoing && status === "going") await PetEvent.findByIdAndUpdate(event._id, { $inc: { attendeeCount: 1 } });
     } else {
       attendance = await EventAttendance.create({ eventId: event._id, userId, status, petIds, note });
-      if (status === "going") await PetEvent.findByIdAndUpdate(event._id, { $inc: { attendeeCount: 1 } });
+    }
+
+    // maxAttendees olmayan durumlarda sayaci guncelle
+    if (needsNewSlot && !event.maxAttendees) {
+      await PetEvent.findByIdAndUpdate(event._id, { $inc: { attendeeCount: 1 } });
+    } else if (wasGoing && status !== "going") {
+      await PetEvent.findByIdAndUpdate(event._id, { $inc: { attendeeCount: -1 } });
     }
 
     return sendOk(res, 200, { attendance });
   } catch (err) {
     if (err.code === 11000) {
-      // Unique index ihlali - guncelle
       return sendError(res, 409, "Katilim zaten mevcut", "conflict");
     }
     console.error("[PetEvent] attend error:", err.message);

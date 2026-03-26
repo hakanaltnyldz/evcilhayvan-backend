@@ -1,5 +1,6 @@
 // lib/features/pets/domain/models/pet_model.dart
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 class PetOwner {
   final String id;

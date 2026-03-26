@@ -11,7 +11,7 @@ const UserSchema = new mongoose.Schema(
     city: { type: String, trim: true },
     about: { type: String, trim: true, maxlength: 500 },
     avatarUrl: { type: String, trim: true },
-    fcmTokens: { type: [String], default: [] },
+    fcmTokens: { type: [String], default: [], select: false },
     isVerified: { type: Boolean, default: false },
     verificationToken: { type: String, select: false },
     verificationTokenExpires: { type: Date, select: false },

@@ -5,7 +5,7 @@ import UserReport from "../models/UserReport.js";
 export const blockUser = async (req, res) => {
   try {
     const targetId = req.params.userId;
-    const myId = req.user.id;
+    const myId = req.user.sub;
 
     if (String(targetId) === String(myId)) {
       return res.sendError("Kendinizi engelleyemezsiniz.", 400);
@@ -28,7 +28,7 @@ export const blockUser = async (req, res) => {
 export const unblockUser = async (req, res) => {
   try {
     const targetId = req.params.userId;
-    const myId = req.user.id;
+    const myId = req.user.sub;
 
     await User.findByIdAndUpdate(myId, {
       $pull: { blockedUsers: targetId },
@@ -43,7 +43,7 @@ export const unblockUser = async (req, res) => {
 // GET /api/users/blocked
 export const getBlockedUsers = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id)
+    const user = await User.findById(req.user.sub)
       .select("blockedUsers")
       .populate("blockedUsers", "name avatarUrl");
 
@@ -57,7 +57,7 @@ export const getBlockedUsers = async (req, res) => {
 export const isBlocked = async (req, res) => {
   try {
     const targetId = req.params.userId;
-    const user = await User.findById(req.user.id).select("blockedUsers");
+    const user = await User.findById(req.user.sub).select("blockedUsers");
     const blocked = user?.blockedUsers?.some((id) => String(id) === String(targetId)) ?? false;
     res.sendOk({ blocked });
   } catch (err) {
@@ -69,7 +69,7 @@ export const isBlocked = async (req, res) => {
 export const reportUser = async (req, res) => {
   try {
     const reportedId = req.params.userId;
-    const reporterId = req.user.id;
+    const reporterId = req.user.sub;
     const { reason, description } = req.body;
 
     if (String(reportedId) === String(reporterId)) {

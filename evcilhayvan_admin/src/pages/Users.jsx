@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../api.js'
 import Table from '../components/Table.jsx'
+import toast from 'react-hot-toast'
 
 export default function Users() {
   const [users, setUsers] = useState([])
@@ -11,6 +12,7 @@ export default function Users() {
   const [loading, setLoading] = useState(true)
   const [banning, setBanning] = useState(null)
   const [changingRole, setChangingRole] = useState(null)
+  const [deleting, setDeleting] = useState(null)
 
   useEffect(() => {
     setLoading(true)
@@ -30,8 +32,9 @@ export default function Users() {
       setUsers((prev) =>
         prev.map((u) => (u._id === user._id ? { ...u, role: updated.role } : u))
       )
+      toast.success(updated.role === 'banned' ? 'Kullanıcı banlandı' : 'Ban kaldırıldı')
     } catch (err) {
-      alert(err.response?.data?.message || 'İşlem başarısız')
+      toast.error(err.response?.data?.message || 'İşlem başarısız')
     } finally {
       setBanning(null)
     }
@@ -43,10 +46,26 @@ export default function Users() {
       const res = await api.patch(`/admin/users/${user._id}/role`, { role })
       const updated = res.data?.user
       setUsers((prev) => prev.map((u) => u._id === user._id ? { ...u, role: updated.role } : u))
+      toast.success(`Rol güncellendi: ${updated.role}`)
     } catch (err) {
-      alert(err.response?.data?.message || 'İşlem başarısız')
+      toast.error(err.response?.data?.message || 'İşlem başarısız')
     } finally {
       setChangingRole(null)
+    }
+  }
+
+  async function deleteUser(user) {
+    if (!window.confirm(`"${user.name}" kullanıcısını kalıcı olarak silmek istiyor musunuz?`)) return
+    setDeleting(user._id)
+    try {
+      await api.delete(`/admin/users/${user._id}`)
+      setUsers((prev) => prev.filter((u) => u._id !== user._id))
+      setTotal((t) => t - 1)
+      toast.success('Kullanıcı silindi')
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Silme başarısız')
+    } finally {
+      setDeleting(null)
     }
   }
 
@@ -97,6 +116,16 @@ export default function Users() {
           <option value="vet">vet</option>
           <option value="admin">admin</option>
         </select>
+        {u.role !== 'admin' && (
+          <button
+            onClick={() => deleteUser(u)}
+            disabled={deleting === u._id}
+            className="px-2 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-600 transition-colors disabled:opacity-50"
+            title="Kalıcı sil"
+          >
+            {deleting === u._id ? '...' : '🗑️'}
+          </button>
+        )}
       </div>
     )},
   ]

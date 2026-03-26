@@ -1,5 +1,6 @@
 import VaccinationRecord from "../models/VaccinationRecord.js";
 import Pet from "../models/Pet.js";
+import { sendPush } from "../utils/fcm.js";
 
 const REMINDER_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 saat
 const REMINDER_DAYS_BEFORE = 7;
@@ -19,12 +20,16 @@ export function startVaccinationReminderJob(io) {
         reminderSent: false,
       }).populate({
         path: "petId",
-        select: "name species ownerId",
+        select: "name species ownerId isActive",
+      }).populate({
+        path: "userId",
+        select: "notificationPreferences",
       });
 
       let sentCount = 0;
       for (const record of records) {
-        if (!record.petId?.ownerId) continue;
+        if (!record.petId?.ownerId || record.petId?.isActive === false) continue;
+        if (record.userId?.notificationPreferences?.vaccinations === false) continue;
 
         const userId = String(record.petId.ownerId);
         const daysUntil = Math.ceil(
@@ -42,6 +47,13 @@ export function startVaccinationReminderJob(io) {
             recordId: record._id,
           });
         }
+
+        // FCM push (uygulama kapali ise)
+        await sendPush(String(record.userId), {
+          title: "💉 Aşı Hatırlatıcısı",
+          body: `${record.petId.name} için ${record.vaccineName} aşısı ${daysUntil} gün içinde yapılmalı.`,
+          data: { type: "vaccination_reminder", recordId: String(record._id) },
+        });
 
         record.reminderSent = true;
         await record.save();

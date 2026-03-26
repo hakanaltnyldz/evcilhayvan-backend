@@ -1,5 +1,6 @@
 import Post from "../models/Post.js";
 import User from "../models/User.js";
+import { sendOk, sendError } from "../utils/apiResponse.js";
 
 // GET /api/posts?page=1&limit=20
 export async function getFeed(req, res) {
@@ -18,6 +19,9 @@ export async function getFeed(req, res) {
     // Populate'dan gelen güncel kullanıcı adı/avatarını stale denormalized alanlara yaz
     const posts = rawPosts.map(p => {
       const obj = p.toJSON();
+      // likes array yerine sadece count gönder (bant genişliği optimizasyonu)
+      obj.likeCount = (p.likes || []).length;
+      delete obj.likes;
       if (p.userId && typeof p.userId === 'object' && p.userId.name) {
         obj.userName = p.userId.name;
         obj.userAvatar = p.userId.avatarUrl || null;
@@ -37,28 +41,28 @@ export async function getFeed(req, res) {
 
     const total = await Post.countDocuments({ isActive: true });
 
-    return res.sendOk({
+    return sendOk(res, 200, {
       posts,
       page,
       totalPages: Math.ceil(total / limit),
       total,
     });
   } catch (err) {
-    return res.sendError(err.message, 500);
+    return sendError(res, 500, err.message, "internal_error");
   }
 }
 
 // POST /api/posts
 export async function createPost(req, res) {
   try {
-    const userId = req.user._id || req.user.id;
+    const userId = req.user.sub;
     const user = await User.findById(userId).lean();
-    if (!user) return res.sendError("Kullanici bulunamadi", 404);
+    if (!user) return sendError(res, 404, "Kullanici bulunamadi", "not_found");
 
     const { content, photos, petId, petName } = req.body;
 
     if (!content && (!photos || photos.length === 0)) {
-      return res.sendError("Gonderi icerigi veya fotograf gerekli", 400);
+      return sendError(res, 400, "Gonderi icerigi veya fotograf gerekli", "validation_error");
     }
 
     const post = await Post.create({
@@ -71,83 +75,81 @@ export async function createPost(req, res) {
       petName: petName || null,
     });
 
-    return res.sendOk({ post }, 201);
+    return sendOk(res, 201, { post });
   } catch (err) {
-    return res.sendError(err.message, 500);
+    return sendError(res, 500, err.message, "internal_error");
   }
 }
 
 // PUT /api/posts/:id
 export async function updatePost(req, res) {
   try {
-    const userId = req.user._id || req.user.id;
+    const userId = req.user.sub;
     const post = await Post.findById(req.params.id);
-    if (!post || !post.isActive) return res.sendError("Gonderi bulunamadi", 404);
-    if (String(post.userId) !== String(userId)) return res.sendError("Yetkisiz", 403);
+    if (!post || !post.isActive) return sendError(res, 404, "Gonderi bulunamadi", "not_found");
+    if (String(post.userId) !== String(userId)) return sendError(res, 403, "Yetkisiz", "forbidden");
 
     const { content, photos } = req.body;
     if (content !== undefined) post.content = content?.trim();
     if (photos !== undefined) post.photos = photos;
     await post.save();
 
-    return res.sendOk({ post });
+    return sendOk(res, 200, { post });
   } catch (err) {
-    return res.sendError(err.message, 500);
+    return sendError(res, 500, err.message, "internal_error");
   }
 }
 
 // DELETE /api/posts/:id
 export async function deletePost(req, res) {
   try {
-    const userId = req.user._id || req.user.id;
+    const userId = req.user.sub;
     const post = await Post.findById(req.params.id);
-    if (!post) return res.sendError("Gonderi bulunamadi", 404);
-    if (String(post.userId) !== String(userId)) return res.sendError("Yetkisiz", 403);
+    if (!post) return sendError(res, 404, "Gonderi bulunamadi", "not_found");
+    if (String(post.userId) !== String(userId)) return sendError(res, 403, "Yetkisiz", "forbidden");
 
     post.isActive = false;
     await post.save();
 
-    return res.sendOk({ message: "Gonderi silindi" });
+    return sendOk(res, 200, { message: "Gonderi silindi" });
   } catch (err) {
-    return res.sendError(err.message, 500);
+    return sendError(res, 500, err.message, "internal_error");
   }
 }
 
 // POST /api/posts/:id/like
 export async function toggleLike(req, res) {
   try {
-    const userId = req.user._id || req.user.id;
+    const userId = req.user.sub;
     const post = await Post.findById(req.params.id);
-    if (!post || !post.isActive) return res.sendError("Gonderi bulunamadi", 404);
+    if (!post || !post.isActive) return sendError(res, 404, "Gonderi bulunamadi", "not_found");
 
+    // Atomik $addToSet / $pull — race condition olmadan duplicate like engellenir
     const alreadyLiked = post.likes.some((id) => String(id) === String(userId));
+    const updated = await Post.findOneAndUpdate(
+      { _id: post._id },
+      alreadyLiked ? { $pull: { likes: userId } } : { $addToSet: { likes: userId } },
+      { new: true }
+    );
 
-    if (alreadyLiked) {
-      post.likes = post.likes.filter((id) => String(id) !== String(userId));
-    } else {
-      post.likes.push(userId);
-    }
-
-    await post.save();
-
-    return res.sendOk({ liked: !alreadyLiked, likeCount: post.likes.length });
+    return sendOk(res, 200, { liked: !alreadyLiked, likeCount: updated.likes.length });
   } catch (err) {
-    return res.sendError(err.message, 500);
+    return sendError(res, 500, err.message, "internal_error");
   }
 }
 
 // POST /api/posts/:id/comment
 export async function addComment(req, res) {
   try {
-    const userId = req.user._id || req.user.id;
+    const userId = req.user.sub;
     const user = await User.findById(userId).lean();
-    if (!user) return res.sendError("Kullanici bulunamadi", 404);
+    if (!user) return sendError(res, 404, "Kullanici bulunamadi", "not_found");
 
     const { text } = req.body;
-    if (!text?.trim()) return res.sendError("Yorum metni gerekli", 400);
+    if (!text?.trim()) return sendError(res, 400, "Yorum metni gerekli", "validation_error");
 
     const post = await Post.findById(req.params.id);
-    if (!post || !post.isActive) return res.sendError("Gonderi bulunamadi", 404);
+    if (!post || !post.isActive) return sendError(res, 404, "Gonderi bulunamadi", "not_found");
 
     const comment = {
       userId,
@@ -159,22 +161,22 @@ export async function addComment(req, res) {
     post.comments.push(comment);
     await post.save();
 
-    return res.sendOk({ comment: post.comments[post.comments.length - 1] }, 201);
+    return sendOk(res, 201, { comment: post.comments[post.comments.length - 1] });
   } catch (err) {
-    return res.sendError(err.message, 500);
+    return sendError(res, 500, err.message, "internal_error");
   }
 }
 
 // POST /api/conversations/:convId/messages/:msgId/react
 export async function reactToMessage(req, res) {
   try {
-    const userId = String(req.user._id || req.user.id);
+    const userId = String(req.user.sub);
     const { emoji } = req.body;
-    if (!emoji) return res.sendError("Emoji gerekli", 400);
+    if (!emoji) return sendError(res, 400, "Emoji gerekli", "validation_error");
 
     const Message = (await import("../models/Message.js")).default;
     const msg = await Message.findById(req.params.msgId);
-    if (!msg) return res.sendError("Mesaj bulunamadi", 404);
+    if (!msg) return sendError(res, 404, "Mesaj bulunamadi", "not_found");
 
     if (!msg.reactions) msg.reactions = new Map();
 
@@ -197,8 +199,8 @@ export async function reactToMessage(req, res) {
       reactions: Object.fromEntries(msg.reactions),
     });
 
-    return res.sendOk({ reactions: Object.fromEntries(msg.reactions) });
+    return sendOk(res, 200, { reactions: Object.fromEntries(msg.reactions) });
   } catch (err) {
-    return res.sendError(err.message, 500);
+    return sendError(res, 500, err.message, "internal_error");
   }
 }

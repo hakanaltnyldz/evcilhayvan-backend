@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../api.js'
 import Table from '../components/Table.jsx'
+import toast from 'react-hot-toast'
 
 const TRACKING_URLS = {
   'Yurtiçi': (no) => `https://www.yurticikargo.com/tr/online-islemler/gonderi-sorgula?code=${no}`,
@@ -60,8 +61,9 @@ export default function Orders() {
       const res = await api.patch(`/admin/orders/${trackingModal._id}/tracking`, trackingForm)
       setOrders((prev) => prev.map((o) => o._id === trackingModal._id ? res.data.order : o))
       setTrackingModal(null)
+      toast.success('Kargo bilgisi kaydedildi')
     } catch (err) {
-      alert(err.response?.data?.message || 'İşlem başarısız')
+      toast.error(err.response?.data?.message || 'İşlem başarısız')
     } finally {
       setSavingTracking(false)
     }

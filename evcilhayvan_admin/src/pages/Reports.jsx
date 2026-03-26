@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../api.js'
 import Table from '../components/Table.jsx'
+import toast from 'react-hot-toast'
 
 export default function Reports() {
   const [reports, setReports] = useState([])
@@ -29,7 +30,7 @@ export default function Reports() {
         prev.map((r) => (r._id === report._id ? { ...r, status: updated.status } : r))
       )
     } catch (err) {
-      alert(err.response?.data?.message || 'İşlem başarısız')
+      toast.error(err.response?.data?.message || 'İşlem başarısız')
     } finally {
       setResolving(null)
     }

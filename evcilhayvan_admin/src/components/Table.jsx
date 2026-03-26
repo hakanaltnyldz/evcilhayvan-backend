@@ -25,7 +25,7 @@ export default function Table({ columns, rows, loading, emptyText = 'Veri yok' }
         </thead>
         <tbody className="divide-y divide-gray-50 bg-white">
           {rows.map((row, i) => (
-            <tr key={i} className="hover:bg-gray-50 transition-colors">
+            <tr key={row._id ?? i} className="hover:bg-gray-50 transition-colors">
               {columns.map((col) => (
                 <td key={col.key} className="px-4 py-3 text-gray-700">
                   {col.render ? col.render(row) : row[col.key] ?? '—'}

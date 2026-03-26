@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import Coupon from "../models/Coupon.js";
@@ -44,46 +45,43 @@ export async function createOrder(req, res) {
         return sendError(res, 400, `Kendi urunlerinizi satin alamazsiniz: ${product.name || product.title}`, "self_purchase_denied");
       }
 
-      if (product.stock < item.quantity) {
-        return sendError(
-          res,
-          400,
-          `Yetersiz stok: ${product.name || product.title} (Mevcut: ${product.stock}, İstenen: ${item.quantity})`,
-          "insufficient_stock"
-        );
+      // Variant validasyonu
+      let itemPrice = product.price;
+      if (item.variantName && item.variantLabel) {
+        const variant = product.variants?.find((v) => v.name === item.variantName);
+        const option = variant?.options?.find((o) => o.label === item.variantLabel);
+        if (!variant || !option) {
+          return sendError(res, 400, `Gecersiz variant: ${item.variantName}/${item.variantLabel}`, "invalid_variant");
+        }
+        if (option.stock < item.quantity) {
+          return sendError(res, 400, `Variant stok yetersiz: ${option.label} (Mevcut: ${option.stock})`, "insufficient_stock");
+        }
+        itemPrice = product.price + (option.priceDiff || 0);
+      } else if (product.variants?.length > 0) {
+        return sendError(res, 400, `${product.name || product.title} icin variant secimi zorunludur`, "variant_required");
+      } else {
+        if (product.stock < item.quantity) {
+          return sendError(
+            res,
+            400,
+            `Yetersiz stok: ${product.name || product.title} (Mevcut: ${product.stock}, İstenen: ${item.quantity})`,
+            "insufficient_stock"
+          );
+        }
       }
 
-      const itemTotal = product.price * item.quantity;
+      const itemTotal = itemPrice * item.quantity;
       totalAmount += itemTotal;
 
       orderItems.push({
         product: product._id,
         quantity: item.quantity,
-        price: product.price,
+        price: itemPrice,
         name: product.name || product.title,
         image: product.images?.[0] || product.photos?.[0] || null,
+        variantName: item.variantName || null,
+        variantLabel: item.variantLabel || null,
       });
-    }
-
-    // Stokları atomik olarak güncelle (race condition önleme)
-    for (const item of items) {
-      const updated = await Product.findOneAndUpdate(
-        { _id: item.productId, stock: { $gte: item.quantity } },
-        { $inc: { stock: -item.quantity } },
-        { new: true }
-      );
-      if (!updated) {
-        // Stok yetersiz - önceki stok düşümlerini geri al
-        for (const prevItem of items) {
-          if (prevItem.productId === item.productId) break;
-          await Product.findByIdAndUpdate(
-            prevItem.productId,
-            { $inc: { stock: prevItem.quantity } }
-          );
-        }
-        const product = products.find(p => p._id.toString() === item.productId);
-        return sendError(res, 400, `Stok yetersiz: ${product?.name || product?.title || item.productId}`, "insufficient_stock");
-      }
     }
 
     // ── Kupon uygulama ──────────────────────────────────────────────────────
@@ -120,36 +118,80 @@ export async function createOrder(req, res) {
 
     const finalAmount = originalAmount - discountAmount;
 
-    // Siparişi oluştur
-    const order = await Order.create({
-      user: userId,
-      items: orderItems,
-      totalAmount: finalAmount,
-      originalAmount,
-      discountAmount,
-      couponCode: appliedCoupon ? appliedCoupon.code : undefined,
-      shippingAddress: shippingAddress || {},
-      paymentMethod: paymentMethod || "credit_card",
-      notes,
-      status: "pending",
-      paymentStatus: "pending",
-      statusHistory: [{ status: "pending", note: "Sipariş oluşturuldu", updatedAt: new Date() }],
-    });
+    // ── Stok düşümü + Sipariş oluşturma + Kupon kaydı — MongoDB transaction (atomik) ────
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    let order;
+    try {
+      // Stokları atomik olarak düş (race condition koruması)
+      for (const item of items) {
+        if (item.variantName && item.variantLabel) {
+          // Variant stok düşümü
+          const updated = await Product.findOneAndUpdate(
+            {
+              _id: item.productId,
+              "variants.name": item.variantName,
+              "variants.options": { $elemMatch: { label: item.variantLabel, stock: { $gte: item.quantity } } },
+            },
+            { $inc: { "variants.$[v].options.$[o].stock": -item.quantity } },
+            { arrayFilters: [{ "v.name": item.variantName }, { "o.label": item.variantLabel }], new: true, session }
+          );
+          if (!updated) {
+            await session.abortTransaction();
+            return sendError(res, 400, `Variant stok yetersiz: ${item.variantLabel}`, "insufficient_stock");
+          }
+        } else {
+          // Normal stok düşümü
+          const updated = await Product.findOneAndUpdate(
+            { _id: item.productId, stock: { $gte: item.quantity } },
+            { $inc: { stock: -item.quantity } },
+            { new: true, session }
+          );
+          if (!updated) {
+            const product = products.find(p => p._id.toString() === item.productId);
+            await session.abortTransaction();
+            return sendError(res, 400, `Stok yetersiz: ${product?.name || product?.title || item.productId}`, "insufficient_stock");
+          }
+        }
+      }
 
-    // Kupon kullanımını atomik olarak kaydet (fire-and-forget, siparişi bloke etme)
-    if (appliedCoupon) {
-      Promise.all([
-        CouponUsage.create({
-          couponId: appliedCoupon._id,
-          userId,
-          orderId: order._id,
-          discountAmount,
-          originalAmount,
-          finalAmount,
-        }),
-        Coupon.findByIdAndUpdate(appliedCoupon._id, { $inc: { usageCount: 1 } }),
-      ]).catch((err) => console.error("[createOrder] coupon usage record error (non-critical):", err.message));
+      [order] = await Order.create([{
+        user: userId,
+        items: orderItems,
+        totalAmount: finalAmount,
+        originalAmount,
+        discountAmount,
+        couponCode: appliedCoupon ? appliedCoupon.code : undefined,
+        shippingAddress: shippingAddress || {},
+        paymentMethod: paymentMethod || "credit_card",
+        notes,
+        status: "pending",
+        paymentStatus: "pending",
+        statusHistory: [{ status: "pending", note: "Sipariş oluşturuldu", updatedAt: new Date() }],
+      }], { session });
+
+      // Kupon kullanımını transaction içinde kaydet (race condition önleme)
+      if (appliedCoupon) {
+        const usageDoc = await CouponUsage.findOneAndUpdate(
+          { couponId: appliedCoupon._id, userId },
+          { $inc: { count: 1 }, $setOnInsert: { orderId: order._id, discountAmount, originalAmount, finalAmount } },
+          { upsert: true, new: true, session }
+        );
+        if (usageDoc.count > (appliedCoupon.perUserLimit || 1)) {
+          await session.abortTransaction();
+          return sendError(res, 400, "Kupon kullanim limitiniz doldu", "usage_limit_exceeded");
+        }
+        await Coupon.findByIdAndUpdate(appliedCoupon._id, { $inc: { usageCount: 1 } }, { session });
+      }
+
+      await session.commitTransaction();
+    } catch (txErr) {
+      await session.abortTransaction();
+      throw txErr;
+    } finally {
+      session.endSession();
     }
+    // ── Transaction sonu ──────────────────────────────────────────────────
 
     // Audit log
     try {
@@ -263,18 +305,27 @@ export async function cancelOrder(req, res) {
       return sendError(res, 400, "Teslim edilen siparis iptal edilemez", "cannot_cancel_delivered");
     }
 
-    // Stokları geri yükle
-    for (const item of order.items) {
-      await Product.findByIdAndUpdate(
-        item.product,
-        { $inc: { stock: item.quantity } }
-      );
+    // Stokları geri yükle + sipariş güncelle (transaction ile atomik)
+    const cancelSession = await mongoose.startSession();
+    cancelSession.startTransaction();
+    try {
+      for (const item of order.items) {
+        await Product.findByIdAndUpdate(
+          item.product,
+          { $inc: { stock: item.quantity } },
+          { session: cancelSession }
+        );
+      }
+      order.status = "cancelled";
+      order.paymentStatus = order.paymentStatus === "paid" ? "refunded" : "failed";
+      await order.save({ session: cancelSession });
+      await cancelSession.commitTransaction();
+    } catch (txErr) {
+      await cancelSession.abortTransaction();
+      throw txErr;
+    } finally {
+      cancelSession.endSession();
     }
-
-    // Siparişi güncelle
-    order.status = "cancelled";
-    order.paymentStatus = order.paymentStatus === "paid" ? "refunded" : "failed";
-    await order.save();
 
     try {
       await recordAudit("order.cancel", {
@@ -362,6 +413,16 @@ export async function updateOrderStatus(req, res) {
 
     if (order.status === "cancelled") {
       return sendError(res, 400, "Iptal edilen siparis güncellenemez", "order_cancelled");
+    }
+
+    const validTransitions = {
+      pending: ["processing"],
+      processing: ["shipped"],
+      shipped: ["delivered"],
+    };
+    const allowed = validTransitions[order.status] || [];
+    if (!allowed.includes(status)) {
+      return sendError(res, 400, `'${order.status}' durumundan '${status}' durumuna gecilemez`, "invalid_transition");
     }
 
     order.status = status;

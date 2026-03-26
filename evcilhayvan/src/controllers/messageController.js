@@ -10,24 +10,49 @@ import { sendPush } from "../utils/fcm.js";
 
 export async function getMyConversations(req, res) {
   try {
-    const userId = req.user.sub;
+    const userId = new mongoose.Types.ObjectId(req.user.sub);
 
-    const conversations = await Conversation.find({ participants: userId })
-      .populate("participants", "name avatarUrl email")
-      .populate({
-        path: "relatedPet",
-        select: "name photos images advertType species breed",
-        populate: {
-          path: "ownerId",
-          select: "name email avatarUrl"
-        }
-      })
-      .sort({ lastMessageAt: -1, updatedAt: -1 });
+    // Tek agregasyon sorgusu — N+1 populate zinciri yerine $lookup kullan
+    const conversations = await Conversation.aggregate([
+      { $match: { participants: userId, deletedFor: { $ne: userId } } },
+      { $sort: { lastMessageAt: -1, updatedAt: -1 } },
+
+      // Katılımcıları tek sorguda çek
+      { $lookup: {
+        from: "users",
+        localField: "participants",
+        foreignField: "_id",
+        pipeline: [{ $project: { name: 1, avatarUrl: 1, email: 1 } }],
+        as: "participants",
+      }},
+
+      // İlgili peti çek
+      { $lookup: {
+        from: "pets",
+        localField: "relatedPet",
+        foreignField: "_id",
+        pipeline: [
+          { $project: { name: 1, photos: 1, images: 1, advertType: 1, species: 1, breed: 1, ownerId: 1 } },
+          // Pet sahibini aynı pipeline içinde çek (nested N+1'i önler)
+          { $lookup: {
+            from: "users",
+            localField: "ownerId",
+            foreignField: "_id",
+            pipeline: [{ $project: { name: 1, email: 1, avatarUrl: 1 } }],
+            as: "ownerId",
+          }},
+          { $unwind: { path: "$ownerId", preserveNullAndEmpty: true } },
+        ],
+        as: "relatedPetData",
+      }},
+      { $addFields: { relatedPet: { $arrayElemAt: ["$relatedPetData", 0] } } },
+      { $unset: "relatedPetData" },
+    ]);
 
     return sendOk(res, 200, { conversations });
   } catch (err) {
     console.error("[getMyConversations]", err);
-    return sendError(res, 500, "Sohbetler alinmadi", "internal_error", err.message);
+    return sendError(res, 500, "Sohbetler alinmadi", "internal_error");
   }
 }
 
@@ -37,19 +62,35 @@ export async function getConversationById(req, res) {
     const { conversationId } = req.params;
     const userId = req.user.sub;
 
-    const conversation = await Conversation.findOne({
-      _id: conversationId,
-      participants: userId,
-    })
-      .populate("participants", "name avatarUrl email")
-      .populate({
-        path: "relatedPet",
-        select: "name photos images advertType species breed",
-        populate: {
-          path: "ownerId",
-          select: "name email avatarUrl"
-        }
-      });
+    const [conversation] = await Conversation.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(conversationId), participants: new mongoose.Types.ObjectId(userId) } },
+      { $lookup: {
+        from: "users",
+        localField: "participants",
+        foreignField: "_id",
+        pipeline: [{ $project: { name: 1, avatarUrl: 1, email: 1 } }],
+        as: "participants",
+      }},
+      { $lookup: {
+        from: "pets",
+        localField: "relatedPet",
+        foreignField: "_id",
+        pipeline: [
+          { $project: { name: 1, photos: 1, images: 1, advertType: 1, species: 1, breed: 1, ownerId: 1 } },
+          { $lookup: {
+            from: "users",
+            localField: "ownerId",
+            foreignField: "_id",
+            pipeline: [{ $project: { name: 1, email: 1, avatarUrl: 1 } }],
+            as: "ownerId",
+          }},
+          { $unwind: { path: "$ownerId", preserveNullAndEmpty: true } },
+        ],
+        as: "relatedPetData",
+      }},
+      { $addFields: { relatedPet: { $arrayElemAt: ["$relatedPetData", 0] } } },
+      { $unset: "relatedPetData" },
+    ]);
 
     if (!conversation) {
       return sendError(res, 404, "Sohbet bulunamadi veya yetkiniz yok", "conversation_not_found");
@@ -321,8 +362,18 @@ export async function deleteConversation(req, res) {
       return sendError(res, 404, "Sohbet bulunamadi veya yetkiniz yok", "conversation_not_found");
     }
 
-    await Message.deleteMany({ conversationId });
-    await conversation.deleteOne();
+    // Soft-delete: sadece bu kullanıcı için gizle
+    if (!conversation.deletedFor.some((id) => String(id) === String(userId))) {
+      conversation.deletedFor.push(userId);
+    }
+
+    // Tüm katılımcılar sildiyse hard-delete
+    if (conversation.deletedFor.length >= conversation.participants.length) {
+      await Message.deleteMany({ conversationId: conversation._id });
+      await conversation.deleteOne();
+    } else {
+      await conversation.save();
+    }
 
     return sendOk(res, 200, { deleted: true });
   } catch (err) {

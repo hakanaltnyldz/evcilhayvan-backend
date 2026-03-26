@@ -14,6 +14,7 @@ import CouponUsage from "../models/CouponUsage.js";
 import SupportTicket from "../models/SupportTicket.js";
 import PetSitter from "../models/PetSitter.js";
 import { sendPush } from "../utils/fcm.js";
+import { recordAudit } from "../utils/audit.js";
 
 const router = Router();
 
@@ -104,12 +105,44 @@ router.patch(
       user.role = user.role === "banned" ? "user" : "banned";
       await user.save();
 
+      await recordAudit("admin.user.ban", {
+        userId: req.user.sub,
+        entityType: "User",
+        entityId: user._id.toString(),
+        metadata: { newRole: user.role },
+      });
+
       return sendOk(res, 200, {
         message: user.role === "banned" ? "Kullanıcı banlandı" : "Ban kaldırıldı",
         user: { id: user._id, name: user.name, role: user.role },
       });
     } catch (err) {
       return sendError(res, 500, "İşlem başarısız", "internal_error", err.message);
+    }
+  }
+);
+
+// DELETE /api/admin/users/:id
+router.delete(
+  "/users/:id",
+  [param("id").isMongoId().withMessage("Geçersiz kullanıcı ID")],
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id);
+      if (!user) return sendError(res, 404, "Kullanıcı bulunamadı", "user_not_found");
+      if (user.role === "admin") return sendError(res, 403, "Admin silinemez", "forbidden");
+      // Kullanicinin aktif ilanlarini pasifleştir (orphan önleme)
+      await Pet.updateMany({ ownerId: user._id }, { isActive: false });
+      await user.deleteOne();
+      await recordAudit("admin.user.delete", {
+        userId: req.user.sub,
+        entityType: "User",
+        entityId: req.params.id,
+        metadata: { name: user.name, email: user.email },
+      });
+      return sendOk(res, 200, { deleted: true, id: req.params.id });
+    } catch (err) {
+      return sendError(res, 500, "Silme başarısız", "internal_error", err.message);
     }
   }
 );
@@ -277,6 +310,13 @@ router.patch(
       post.isActive = !post.isActive;
       await post.save();
 
+      await recordAudit("admin.post.visibility", {
+        userId: req.user.sub,
+        entityType: "Post",
+        entityId: post._id.toString(),
+        metadata: { isActive: post.isActive },
+      });
+
       return sendOk(res, 200, {
         message: post.isActive ? "Gönderi yayında" : "Gönderi gizlendi",
         post: { id: post._id, isActive: post.isActive },
@@ -287,23 +327,56 @@ router.patch(
   }
 );
 
-// PATCH /api/admin/users/:id/role
-router.patch("/users/:id/role", async (req, res) => {
-  try {
-    const { role } = req.body;
-    const allowed = ["user", "admin", "seller", "vet"];
-    if (!allowed.includes(role)) return sendError(res, 400, "Geçersiz rol.");
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { role },
-      { new: true, select: "name email role" }
-    );
-    if (!user) return sendError(res, 404, "Kullanıcı bulunamadı.");
-    return sendOk(res, 200, { user });
-  } catch (err) {
-    return sendError(res, 500, "İşlem başarısız", "internal_error", err.message);
+// DELETE /api/admin/posts/:id
+router.delete(
+  "/posts/:id",
+  [param("id").isMongoId().withMessage("Geçersiz gönderi ID")],
+  async (req, res) => {
+    try {
+      const post = await Post.findByIdAndDelete(req.params.id);
+      if (!post) return sendError(res, 404, "Gönderi bulunamadı", "post_not_found");
+      await recordAudit("admin.post.delete", {
+        userId: req.user.sub,
+        entityType: "Post",
+        entityId: req.params.id,
+      });
+      return sendOk(res, 200, { deleted: true, id: req.params.id });
+    } catch (err) {
+      return sendError(res, 500, "Silme başarısız", "internal_error", err.message);
+    }
   }
-});
+);
+
+// PATCH /api/admin/users/:id/role
+router.patch(
+  "/users/:id/role",
+  [param("id").isMongoId().withMessage("Geçersiz kullanıcı ID")],
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { role } = req.body;
+      const allowed = ["user", "admin", "seller", "vet"];
+      if (!role || !allowed.includes(role)) {
+        return sendError(res, 400, `Geçersiz rol. İzin verilenler: ${allowed.join(", ")}`, "validation_error");
+      }
+      const user = await User.findByIdAndUpdate(
+        id,
+        { role },
+        { new: true, select: "name email role" }
+      );
+      if (!user) return sendError(res, 404, "Kullanıcı bulunamadı", "not_found");
+      await recordAudit("admin.user.role_change", {
+        userId: req.user.sub,
+        entityType: "User",
+        entityId: id,
+        metadata: { newRole: role },
+      });
+      return sendOk(res, 200, { user });
+    } catch (err) {
+      return sendError(res, 500, "İşlem başarısız", "internal_error");
+    }
+  }
+);
 
 // PATCH /api/admin/orders/:id/tracking
 router.patch("/orders/:id/tracking", async (req, res) => {
@@ -334,7 +407,19 @@ router.patch("/orders/:id/tracking", async (req, res) => {
 
     await order.save();
 
-    // Müşteriye anlık bildirim — fire-and-forget (yanıtı bloke etme)
+    // Socket.io — uygulama açıkken anlık güncelleme
+    const io = req.app.get("io");
+    if (io && order.user?._id) {
+      io.to(`user:${String(order.user._id)}`).emit("order:status_update", {
+        orderId: String(order._id),
+        status: order.status,
+        trackingNumber: order.trackingNumber,
+        carrier: order.carrier,
+        estimatedDelivery: order.estimatedDelivery,
+      });
+    }
+
+    // FCM push — uygulama kapalıyken bildirim
     if (order.user?._id && trackingNumber) {
       sendPush(order.user._id, {
         title: "Siparişiniz Kargoya Verildi",
@@ -398,6 +483,27 @@ router.post("/coupons", async (req, res) => {
   } catch (err) {
     if (err.code === 11000) return sendError(res, 409, "Bu kupon kodu zaten kullanılıyor.");
     return sendError(res, 500, "Kupon oluşturulamadı", "internal_error", err.message);
+  }
+});
+
+// PATCH /api/admin/coupons/:id  — kupon güncelleme
+router.patch("/coupons/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id.match(/^[a-f\d]{24}$/i)) return sendError(res, 400, "Geçersiz kupon ID", "validation_error");
+    const allowed = ["code", "description", "discountType", "discountValue",
+      "minPurchaseAmount", "maxDiscountAmount", "validFrom", "validUntil",
+      "usageLimit", "perUserLimit", "firstOrderOnly"];
+    const update = {};
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) update[key] = req.body[key];
+    }
+    if (update.code) update.code = String(update.code).toUpperCase().trim();
+    const coupon = await Coupon.findByIdAndUpdate(id, update, { new: true, runValidators: true });
+    if (!coupon) return sendError(res, 404, "Kupon bulunamadı", "not_found");
+    return sendOk(res, 200, { coupon });
+  } catch (err) {
+    return sendError(res, 500, "Kupon güncellenemedi", "internal_error");
   }
 });
 

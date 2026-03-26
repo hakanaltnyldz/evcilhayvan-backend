@@ -41,7 +41,7 @@ export async function sendPush(userIds, { title, body, data = {} }) {
   if (!ids.length) return;
 
   // Fetch FCM tokens from DB
-  const users = await User.find({ _id: { $in: ids } }).select("fcmTokens");
+  const users = await User.find({ _id: { $in: ids } }).select("+fcmTokens");
   const tokens = users.flatMap((u) => u.fcmTokens ?? []).filter(Boolean);
   if (!tokens.length) return;
 

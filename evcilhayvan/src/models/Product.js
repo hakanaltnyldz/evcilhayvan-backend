@@ -56,6 +56,9 @@ const ProductSchema = new mongoose.Schema(
 );
 
 ProductSchema.index({ title: "text", name: "text", description: "text" });
+ProductSchema.index({ seller: 1, isActive: 1 });  // Satıcı ürün listesi sorguları
+ProductSchema.index({ store: 1, isActive: 1 });   // Mağaza ürün listesi sorguları
+ProductSchema.index({ isActive: 1, createdAt: -1 }); // productFeed sorgusu
 
 // Alanlar arasındaki eski/yeni isim farklarını eşleştir
 ProductSchema.pre("validate", function (next) {

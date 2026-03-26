@@ -1,10 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-
-function getToken() {
-  return localStorage.getItem('admin_token')
-}
+import api from '../api.js'
+import toast from 'react-hot-toast'
 
 const SERVICE_LABELS = {
   walking: 'Gezdirme',
@@ -30,15 +26,11 @@ export default function Sitters() {
   const fetchSitters = useCallback(async () => {
     setLoading(true)
     try {
-      const params = new URLSearchParams({ page, verified: filter })
-      const res = await fetch(`${API}/api/admin/pet-sitters?${params}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      })
-      const data = await res.json()
-      setSitters(data.sitters || [])
-      setTotal(data.total || 0)
+      const res = await api.get('/admin/pet-sitters', { params: { page, verified: filter } })
+      setSitters(res.data?.sitters || [])
+      setTotal(res.data?.total || 0)
     } catch (e) {
-      console.error(e)
+      toast.error(e.response?.data?.message || 'Bakıcılar yüklenemedi')
     } finally {
       setLoading(false)
     }
@@ -49,17 +41,11 @@ export default function Sitters() {
   async function toggleVerify(sitter) {
     setActionId(sitter._id)
     try {
-      await fetch(`${API}/api/admin/pet-sitters/${sitter._id}/verify`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({ isVerified: !sitter.isVerified }),
-      })
+      await api.patch(`/admin/pet-sitters/${sitter._id}/verify`, { isVerified: !sitter.isVerified })
+      toast.success(sitter.isVerified ? 'Doğrulama kaldırıldı' : 'Bakıcı doğrulandı')
       fetchSitters()
     } catch (e) {
-      console.error(e)
+      toast.error(e.response?.data?.message || 'İşlem başarısız')
     } finally {
       setActionId(null)
     }

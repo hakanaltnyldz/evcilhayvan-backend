@@ -22,7 +22,7 @@ export function startAppointmentReminderJob(io) {
         status: { $in: ["pending", "confirmed"] },
         reminderSent: false,
       })
-        .populate("userId", "name fcmTokens")
+        .populate("userId", "name +fcmTokens")
         .populate("petId", "name species")
         .populate("veterinaryId", "name address");
 

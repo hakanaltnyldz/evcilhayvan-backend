@@ -21,29 +21,34 @@ const couponUsageSchema = new Schema(
     orderId: {
       type: Schema.Types.ObjectId,
       ref: 'Order',
-      required: true,
+    },
+    // Atomik kullanım sayacı — perUserLimit race condition önler ($inc ile güncellenir)
+    count: {
+      type: Number,
+      default: 1,
+      min: 1,
     },
     discountAmount: {
       type: Number,
-      required: true,
       min: 0,
+      default: 0,
     },
     originalAmount: {
       type: Number,
-      required: true,
       min: 0,
+      default: 0,
     },
     finalAmount: {
       type: Number,
-      required: true,
       min: 0,
+      default: 0,
     },
   },
   { timestamps: true }
 );
 
-// Bileşik index: belirli bir kuponu belirli bir kullanıcının kaç kez kullandığını hızla bul
-couponUsageSchema.index({ couponId: 1, userId: 1 });
+// Unique bileşik index: aynı kullanıcı + kupon için tek kayıt (upsert + $inc ile count artırılır)
+couponUsageSchema.index({ couponId: 1, userId: 1 }, { unique: true });
 // Kupon bazlı toplam kullanım sorgusu için
 couponUsageSchema.index({ couponId: 1, createdAt: -1 });
 // Kullanıcı sipariş geçmişi için

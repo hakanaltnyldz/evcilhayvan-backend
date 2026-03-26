@@ -15,11 +15,11 @@ export default function Login() {
     setLoading(true)
     try {
       const res = await api.post('/auth/login', { email, password })
-      const token = res.data?.data?.token || res.data?.token
-      const role = res.data?.data?.user?.role || res.data?.user?.role
+      const token = res.data?.token
+      const role = res.data?.user?.role
       if (!token) throw new Error('Token alınamadı')
       if (role !== 'admin') throw new Error('Bu hesabın admin yetkisi yok')
-      localStorage.setItem('admin_token', token)
+      sessionStorage.setItem('admin_token', token)
       navigate('/')
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Giriş başarısız')
