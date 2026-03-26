@@ -28,6 +28,18 @@ final petDetailProvider = FutureProvider.autoDispose.family<Pet, String>((ref, p
   return repository.getPetById(petId);
 });
 
+String _resolveSpecies(String species, AppLocalizations l10n) {
+  switch (species) {
+    case 'dog':    return l10n.speciesDog;
+    case 'cat':    return l10n.speciesCat;
+    case 'bird':   return l10n.speciesBird;
+    case 'fish':   return l10n.speciesFish;
+    case 'rodent': return l10n.speciesHamster;
+    case 'other':  return l10n.speciesOther;
+    default:       return species;
+  }
+}
+
 class PetDetailScreen extends ConsumerWidget {
   final String petId;
   const PetDetailScreen({super.key, required this.petId});
@@ -227,7 +239,7 @@ class PetDetailScreen extends ConsumerWidget {
                       children: [
                         Text(pet.name,
                             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                        Text('${pet.species} • ${pet.breed}',
+                        Text('${_resolveSpecies(pet.species, l10n)} • ${pet.breed}',
                             style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
                       ],
                     ),
@@ -2049,7 +2061,7 @@ class _PetSelectionCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${pet.species} • ${pet.breed}',
+                    '${_resolveSpecies(pet.species, AppLocalizations.of(context)!)} • ${pet.breed}',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 13,

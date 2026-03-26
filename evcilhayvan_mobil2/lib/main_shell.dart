@@ -18,6 +18,7 @@ import 'package:evcilhayvan_mobil2/features/auth/domain/user_model.dart';
 import 'package:evcilhayvan_mobil2/features/notifications/domain/models/app_notification.dart';
 import 'package:evcilhayvan_mobil2/features/notifications/providers/notification_provider.dart';
 import 'package:evcilhayvan_mobil2/features/pets/data/repositories/pets_repository.dart';
+import 'package:evcilhayvan_mobil2/features/store/data/order_repository.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/birthday_celebration.dart';
 
 class MainShell extends ConsumerStatefulWidget {
@@ -421,6 +422,7 @@ class _MainShellState extends ConsumerState<MainShell> {
               duration: const Duration(seconds: 5),
             ),
           );
+          ref.invalidate(myOrdersProvider);
         }
       } catch (_) {}
     });

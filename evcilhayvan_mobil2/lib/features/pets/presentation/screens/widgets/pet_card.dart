@@ -22,12 +22,25 @@ class PetCard extends StatefulWidget {
   State<PetCard> createState() => _PetCardState();
 }
 
+String _resolveSpecies(String species, AppLocalizations l10n) {
+  switch (species) {
+    case 'dog':    return l10n.speciesDog;
+    case 'cat':    return l10n.speciesCat;
+    case 'bird':   return l10n.speciesBird;
+    case 'fish':   return l10n.speciesFish;
+    case 'rodent': return l10n.speciesHamster;
+    case 'other':  return l10n.speciesOther;
+    default:       return species;
+  }
+}
+
 class _PetCardState extends State<PetCard> {
   bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
     final pet = widget.pet;
+    final l10n = AppLocalizations.of(context)!;
     final String ownerName = pet.owner?.name ?? '';
     final String avatarLetter = ownerName.isNotEmpty ? ownerName.substring(0, 1).toUpperCase() : '?';
     final heroTag = 'pet-image-${pet.id}';
@@ -119,7 +132,7 @@ class _PetImage extends StatelessWidget {
             children: [
               _Badge(
                 icon: Icons.category,
-                label: pet.species,
+                label: _resolveSpecies(pet.species, l10n),
               ),
               const SizedBox(width: 8),
               _Badge(
