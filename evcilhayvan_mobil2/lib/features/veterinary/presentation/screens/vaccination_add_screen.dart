@@ -34,12 +34,20 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
   }
 
   Future<void> _pickDate({required bool isNextDue}) async {
-    final initial = isNextDue ? (_nextDueDate ?? DateTime.now()) : (_dateAdministered ?? DateTime.now());
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    // dateAdministered → geçmiş veya bugün; nextDueDate → gelecek
+    final firstDate = isNextDue ? today.add(const Duration(days: 1)) : DateTime(2020);
+    final lastDate  = isNextDue ? today.add(const Duration(days: 730)) : today;
+    final defaultInitial = isNextDue ? today.add(const Duration(days: 1)) : today;
+    final initial = isNextDue
+        ? (_nextDueDate?.isAfter(today) == true ? _nextDueDate! : defaultInitial)
+        : (_dateAdministered != null && !_dateAdministered!.isAfter(today) ? _dateAdministered! : defaultInitial);
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 730)),
+      firstDate: firstDate,
+      lastDate: lastDate,
     );
     if (picked != null) {
       setState(() {

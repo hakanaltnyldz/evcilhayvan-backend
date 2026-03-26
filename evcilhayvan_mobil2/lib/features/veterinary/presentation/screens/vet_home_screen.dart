@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
+import 'package:evcilhayvan_mobil2/core/constants.dart';
 import '../../data/repositories/appointment_repository.dart';
 import '../../data/repositories/vaccination_repository.dart';
 import '../../data/repositories/veterinary_repository.dart';
@@ -121,7 +122,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
       final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
       final repo = ref.read(veterinaryRepositoryProvider);
       // Google Places ile yakın vets ara → DB'ye upsert et ve döndür
-      final vets = await repo.googleSearch(lat: pos.latitude, lng: pos.longitude, radiusKm: 10);
+      final vets = await repo.googleSearch(lat: pos.latitude, lng: pos.longitude, radiusKm: kDefaultVetRadiusKm);
       if (mounted) setState(() { _nearbyVets = vets; _loadingVets = false; });
     } catch (_) {
       if (mounted) setState(() => _loadingVets = false);

@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
+import 'package:evcilhayvan_mobil2/core/constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
@@ -32,7 +33,7 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
   String _query = '';
   double? _lat;
   double? _lng;
-  double _radiusKm = 10;
+  double _radiusKm = kDefaultVetRadiusKm;
   bool _locationLoading = false;
   List<VeterinaryModel>? _results;
   bool _loading = false;
