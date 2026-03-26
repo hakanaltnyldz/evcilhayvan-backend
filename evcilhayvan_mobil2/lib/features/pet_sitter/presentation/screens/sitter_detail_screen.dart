@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
+import 'package:evcilhayvan_mobil2/features/messages/data/repositories/message_repository.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
 import '../../domain/models/pet_sitter_model.dart';
 
@@ -197,28 +198,95 @@ class SitterDetailScreen extends ConsumerWidget {
               ),
             ],
           ),
-          bottomNavigationBar: user != null && sitter.availability
+          bottomNavigationBar: user != null
               ? SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: ElevatedButton.icon(
-                      onPressed: () => context.pushNamed('sitter-booking',
-                          pathParameters: {'sitterId': sitter.id},
-                          extra: sitter),
-                      icon: const Icon(Icons.calendar_month),
-                      label: const Text('Rezervasyon Yap', style: TextStyle(fontSize: 16)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green.shade600,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    child: Row(
+                      children: [
+                        if (sitter.userId != null && sitter.userId != user.id) ...[
+                          Expanded(
+                            child: _MessageSitterButton(sitter: sitter, userId: user.id),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
+                        if (sitter.availability)
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () => context.pushNamed('sitter-booking',
+                                  pathParameters: {'sitterId': sitter.id},
+                                  extra: sitter),
+                              icon: const Icon(Icons.calendar_month),
+                              label: const Text('Rezervasyon Yap', style: TextStyle(fontSize: 16)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green.shade600,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 )
               : null,
         );
       },
+    );
+  }
+}
+
+class _MessageSitterButton extends ConsumerStatefulWidget {
+  final PetSitterModel sitter;
+  final String userId;
+  const _MessageSitterButton({required this.sitter, required this.userId});
+
+  @override
+  ConsumerState<_MessageSitterButton> createState() => _MessageSitterButtonState();
+}
+
+class _MessageSitterButtonState extends ConsumerState<_MessageSitterButton> {
+  bool _loading = false;
+
+  Future<void> _openChat() async {
+    setState(() => _loading = true);
+    try {
+      final repo = ref.read(messageRepositoryProvider);
+      final conv = await repo.createOrGetConversation(
+        participantId: widget.sitter.userId!,
+        currentUserId: widget.userId,
+      );
+      if (mounted) {
+        context.pushNamed('chat',
+            pathParameters: {'conversationId': conv.id},
+            extra: {'name': widget.sitter.displayName, 'avatar': widget.sitter.avatar});
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: _loading ? null : _openChat,
+      icon: _loading
+          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+          : const Icon(Icons.message_outlined),
+      label: const Text('Mesajla', style: TextStyle(fontSize: 16)),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Colors.green.shade700,
+        side: BorderSide(color: Colors.green.shade600),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
     );
   }
 }

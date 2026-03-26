@@ -127,7 +127,7 @@ class MessageRepository {
 
   Future<void> markAsRead(String conversationId) {
     return _guard(() async {
-      await _dio.patch('/api/conversations//read');
+      await _dio.patch('/api/conversations/$conversationId/read');
     });
   }
   Future<void> deleteMessageForMe(String messageId) {

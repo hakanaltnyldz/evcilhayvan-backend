@@ -19,6 +19,7 @@ import 'package:evcilhayvan_mobil2/features/notifications/domain/models/app_noti
 import 'package:evcilhayvan_mobil2/features/notifications/providers/notification_provider.dart';
 import 'package:evcilhayvan_mobil2/features/pets/data/repositories/pets_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/order_repository.dart';
+import 'package:evcilhayvan_mobil2/features/pet_sitter/data/repositories/pet_sitter_repository.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/birthday_celebration.dart';
 
 class MainShell extends ConsumerStatefulWidget {
@@ -423,6 +424,67 @@ class _MainShellState extends ConsumerState<MainShell> {
             ),
           );
           ref.invalidate(myOrdersProvider);
+        }
+      } catch (_) {}
+    });
+
+    // Bakıcı: yeni rezervasyon geldi
+    socketService.onEvent('sitter:new_booking', (data) {
+      if (!mounted) return;
+      try {
+        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
+        final sitterName = d['petName'] as String? ?? 'Yeni rezervasyon';
+        notifier.addNotification(AppNotification(
+          id: 'sitter_booking_${d['bookingId'] ?? DateTime.now().millisecondsSinceEpoch}',
+          type: NotificationType.general,
+          title: 'Yeni Rezervasyon Talebi',
+          body: '$sitterName için rezervasyon talebi geldi.',
+          data: {'bookingId': d['bookingId']?.toString()},
+          createdAt: DateTime.now(),
+        ));
+        ref.invalidate(incomingBookingsProvider);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('🐾 Yeni rezervasyon talebi var!'),
+              action: SnackBarAction(label: 'Görüntüle', onPressed: () => context.push('/sitters/bookings')),
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+      } catch (_) {}
+    });
+
+    // Bakıcı rezervasyon durumu güncellendi
+    socketService.onEvent('sitter:booking_update', (data) {
+      if (!mounted) return;
+      try {
+        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
+        final status = d['status']?.toString() ?? '';
+        final statusLabel = {
+          'accepted': 'Kabul Edildi',
+          'rejected': 'Reddedildi',
+          'completed': 'Tamamlandı',
+          'cancelled': 'İptal Edildi',
+        }[status] ?? status;
+        notifier.addNotification(AppNotification(
+          id: 'sitter_update_${d['bookingId'] ?? DateTime.now().millisecondsSinceEpoch}',
+          type: NotificationType.general,
+          title: 'Rezervasyon Güncellendi',
+          body: 'Rezervasyonunuz: $statusLabel',
+          data: {'bookingId': d['bookingId']?.toString()},
+          createdAt: DateTime.now(),
+        ));
+        ref.invalidate(myBookingsProvider);
+        ref.invalidate(incomingBookingsProvider);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('🐾 Rezervasyon güncellendi: $statusLabel'),
+              action: SnackBarAction(label: 'Görüntüle', onPressed: () => context.push('/sitters/bookings')),
+              duration: const Duration(seconds: 5),
+            ),
+          );
         }
       } catch (_) {}
     });
