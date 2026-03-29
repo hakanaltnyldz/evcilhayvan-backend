@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import '../../data/repositories/appointment_repository.dart';
 import '../../domain/models/appointment_model.dart';
@@ -19,7 +19,8 @@ class AppointmentDetailScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.apptDetailTitle), backgroundColor: Colors.transparent, elevation: 0),
+      backgroundColor: const Color(0xFFF4FAF6),
+      appBar: AppBar(title: Text(l10n.apptDetailTitle), backgroundColor: const Color(0xFF1B4332), foregroundColor: Colors.white, elevation: 0),
       body: aptAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(l10n.apptDetailError(e.toString()))),
@@ -130,20 +131,20 @@ class AppointmentDetailScreen extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, color: AppPalette.primary),
+            Icon(icon, color: const Color(0xFF2D6A4F)),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: theme.textTheme.labelMedium?.copyWith(color: AppPalette.onSurfaceVariant)),
+                  Text(title, style: theme.textTheme.labelMedium?.copyWith(color: Colors.grey.shade600)),
                   const SizedBox(height: 2),
                   Text(content, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500)),
-                  if (subtitle != null) Text(subtitle, style: theme.textTheme.bodySmall?.copyWith(color: AppPalette.onSurfaceVariant)),
+                  if (subtitle != null) Text(subtitle, style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600)),
                 ],
               ),
             ),
-            if (onTap != null) const Icon(Icons.chevron_right, color: AppPalette.onSurfaceVariant),
+            if (onTap != null) Icon(Icons.chevron_right, color: Colors.grey.shade600),
           ],
         ),
       ),
@@ -152,9 +153,9 @@ class AppointmentDetailScreen extends ConsumerWidget {
 
   Color _statusColor(AppointmentModel apt) {
     switch (apt.status) {
-      case 'confirmed': return AppPalette.tertiary;
+      case 'confirmed': return const Color(0xFF52B788);
       case 'cancelled': return Colors.red;
-      case 'completed': return Colors.blue;
+      case 'completed': return const Color(0xFF2D6A4F);
       case 'no_show': return Colors.grey;
       default: return Colors.orange;
     }

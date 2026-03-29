@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/core/constants.dart';
@@ -13,17 +13,6 @@ import '../../data/repositories/veterinary_repository.dart';
 import '../../domain/models/veterinary_model.dart';
 import '../widgets/appointment_card.dart';
 import '../widgets/vet_card.dart';
-
-const List<Color> _vetBackgroundLight = [
-  Color(0xFFF0FFF4),
-  Color(0xFFE8F5FF),
-  Color(0xFFFFF8F0),
-];
-const List<Color> _vetBackgroundDark = [
-  Color(0xFF0E1F16),
-  Color(0xFF0D1A26),
-  Color(0xFF1F1610),
-];
 
 class VetHomeScreen extends ConsumerStatefulWidget {
   const VetHomeScreen({super.key, this.initialTabIndex = 0});
@@ -52,41 +41,32 @@ class _VetHomeScreenState extends ConsumerState<VetHomeScreen> with SingleTicker
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final isDark = theme.brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark ? _vetBackgroundDark : _vetBackgroundLight,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: Text(AppLocalizations.of(context)!.vetTitle, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-          bottom: TabBar(
-            controller: _tabController,
-            labelColor: AppPalette.primary,
-            unselectedLabelColor: AppPalette.onSurfaceVariant,
-            indicatorColor: AppPalette.primary,
-            tabs: [
-              Tab(icon: const Icon(Icons.search), text: AppLocalizations.of(context)!.vetHomeTabSearch),
-              Tab(icon: const Icon(Icons.calendar_today), text: AppLocalizations.of(context)!.vetHomeTabAppointments),
-              Tab(icon: const Icon(Icons.vaccines), text: AppLocalizations.of(context)!.vetHomeTabVaccine),
-            ],
-          ),
-        ),
-        body: TabBarView(
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        title: Text(AppLocalizations.of(context)!.vetTitle, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: Colors.white)),
+        bottom: TabBar(
           controller: _tabController,
-          children: [
-            _SearchTab(),
-            _AppointmentsTab(),
-            _VaccinationTab(),
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white60,
+          indicatorColor: Colors.white,
+          tabs: [
+            Tab(icon: const Icon(Icons.search), text: AppLocalizations.of(context)!.vetHomeTabSearch),
+            Tab(icon: const Icon(Icons.calendar_today), text: AppLocalizations.of(context)!.vetHomeTabAppointments),
+            Tab(icon: const Icon(Icons.vaccines), text: AppLocalizations.of(context)!.vetHomeTabVaccine),
           ],
         ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _SearchTab(),
+          _AppointmentsTab(),
+          _VaccinationTab(),
+        ],
       ),
     );
   }
@@ -154,9 +134,9 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.search, color: AppPalette.onSurfaceVariant),
+                  Icon(Icons.search, color: Colors.grey.shade600),
                   const SizedBox(width: 12),
-                  Text(l10n.vetHomeSearchHint, style: theme.textTheme.bodyLarge?.copyWith(color: AppPalette.onSurfaceVariant)),
+                  Text(l10n.vetHomeSearchHint, style: theme.textTheme.bodyLarge?.copyWith(color: Colors.grey.shade600)),
                 ],
               ),
             ),
@@ -170,7 +150,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
                 child: _QuickActionCard(
                   icon: Icons.location_on,
                   label: l10n.vetHomeNearMe,
-                  color: const Color(0xFF4CAF50),
+                  color: const Color(0xFF2D6A4F),
                   onTap: () => context.pushNamed('vet-search', extra: {'nearMe': true}),
                 ),
               ),
@@ -179,7 +159,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
                 child: _QuickActionCard(
                   icon: Icons.add_business,
                   label: l10n.vetHomeSaveClinic,
-                  color: const Color(0xFF2196F3),
+                  color: const Color(0xFF52B788),
                   onTap: () => context.pushNamed('vet-register'),
                 ),
               ),
@@ -218,12 +198,12 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
             Center(
               child: Text(l10n.vetHomeNearbyPermRequired,
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant)),
+                  style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600)),
             )
           else if (_nearbyVets == null || _nearbyVets!.isEmpty)
             Center(
               child: Text(l10n.vetHomeNearbyEmpty,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant)),
+                  style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600)),
             )
           else
             ListView.builder(
@@ -302,11 +282,11 @@ class _AppointmentsTab extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.calendar_today, size: 64, color: AppPalette.onSurfaceVariant.withOpacity(0.3)),
+                Icon(Icons.calendar_today, size: 64, color: Colors.grey.shade600.withOpacity(0.3)),
                 const SizedBox(height: 16),
                 Text(AppLocalizations.of(context)!.vetHomeApptsEmpty, style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
-                Text(AppLocalizations.of(context)!.vetHomeApptsEmptyDesc, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant)),
+                Text(AppLocalizations.of(context)!.vetHomeApptsEmptyDesc, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600)),
               ],
             ),
           );
@@ -356,13 +336,13 @@ class _VaccinationTab extends ConsumerWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.vaccines, size: 64, color: AppPalette.onSurfaceVariant.withOpacity(0.3)),
+                        Icon(Icons.vaccines, size: 64, color: Colors.grey.shade600.withOpacity(0.3)),
                         const SizedBox(height: 16),
                         Text(l10n.vetHomeVaccineEmpty, style: Theme.of(context).textTheme.bodyLarge),
                         const SizedBox(height: 8),
                         Text(l10n.vetHomeVaccineEmptyDesc,
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant)),
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600)),
                       ],
                     ),
                   ),

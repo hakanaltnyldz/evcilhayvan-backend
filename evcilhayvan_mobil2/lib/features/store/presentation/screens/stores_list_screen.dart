@@ -12,7 +12,7 @@ import 'package:evcilhayvan_mobil2/features/store/domain/models/store_model.dart
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 const List<Color> _storeListGradientA = [
-  Color(0xFF7C7BFF),
+  Color(0xFF2D6A4F),
   Color(0xFF5FD9C1),
 ];
 
@@ -43,13 +43,15 @@ class _StoresListScreenState extends ConsumerState<StoresListScreen> {
 
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: AppPalette.storeSoftBlue.withOpacity(0.3),
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
         title: Text(
           l10n.storesListTitle,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        elevation: 0,
       ),
       body: Column(
         children: [

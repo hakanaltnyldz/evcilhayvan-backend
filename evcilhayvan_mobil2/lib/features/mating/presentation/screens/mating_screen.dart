@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
@@ -41,9 +41,11 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
     final profilesAsync = ref.watch(matingProfilesProvider(filters));
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
         title: const Text('Eşleştirme Bul'),
         actions: [
           IconButton(
@@ -53,9 +55,8 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
           ),
         ],
       ),
-      body: ModernBackground(
-        child: SafeArea(
-          child: Padding(
+      body: SafeArea(
+        child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,7 +147,6 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
             ),
           ),
         ),
-      ),
     );
   }
 
@@ -693,13 +693,13 @@ class _SwipeCardDeckState extends State<_SwipeCardDeck> with SingleTickerProvide
               ),
               _ActionBtn(
                 icon: Icons.info_outline_rounded,
-                color: Colors.blue.shade400,
+                color: const Color(0xFF2D6A4F),
                 size: 46,
                 onTap: () => widget.onDetails(profile),
               ),
               _ActionBtn(
                 icon: Icons.favorite_rounded,
-                color: const Color(0xFF4CAF50),
+                color: const Color(0xFF2D6A4F),
                 size: 58,
                 onTap: () => _commitSwipe(true),
               ),
@@ -896,7 +896,7 @@ class _SwipeCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFF4CAF50), width: 3),
+                        border: Border.all(color: const Color(0xFF2D6A4F), width: 3),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
@@ -959,7 +959,7 @@ class _CardImagePlaceholder extends StatelessWidget {
         child: Icon(
           Icons.pets,
           size: 80,
-          color: AppPalette.primary.withOpacity(0.3),
+          color: const Color(0xFF2D6A4F).withOpacity(0.3),
         ),
       ),
     );
@@ -1075,7 +1075,7 @@ class _EmptyState extends StatelessWidget {
 }
 
 Color _scoreColor(int score) {
-  if (score >= 70) return const Color(0xFF4CAF50);
+  if (score >= 70) return const Color(0xFF2D6A4F);
   if (score >= 40) return const Color(0xFFFFA726);
   return const Color(0xFF78909C);
 }

@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/features/pets/domain/models/pet_model.dart';
 
@@ -223,20 +222,27 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
         title: TextField(
           controller: _ctrl,
           autofocus: true,
           onChanged: _onChanged,
+          style: const TextStyle(color: Colors.white),
+          cursorColor: Colors.white,
           decoration: InputDecoration(
             hintText: AppLocalizations.of(context)!.searchHint,
+            hintStyle: const TextStyle(color: Colors.white60),
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
             fillColor: Colors.transparent,
             suffixIcon: _query.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(Icons.clear),
+                    icon: const Icon(Icons.clear, color: Colors.white),
                     onPressed: () {
                       _ctrl.clear();
                       setState(() => _query = '');
@@ -258,8 +264,12 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search_rounded,
-                size: 64, color: theme.colorScheme.primary.withOpacity(0.3)),
+            Container(
+              width: 96,
+              height: 96,
+              decoration: const BoxDecoration(color: Color(0xFFD8F3DC), shape: BoxShape.circle),
+              child: const Icon(Icons.search_rounded, size: 48, color: Color(0xFF2D6A4F)),
+            ),
             const SizedBox(height: 16),
             Text(
               AppLocalizations.of(context)!.searchTypeHint,
@@ -313,7 +323,7 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
                 deleteIcon: const Icon(Icons.close, size: 14),
                 onDeleted: () => _removeHistory(term),
                 onPressed: () => _searchTerm(term),
-                backgroundColor: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                backgroundColor: const Color(0xFFD8F3DC),
               );
             }).toList(),
           ),
@@ -334,9 +344,12 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.search_off_rounded,
-                    size: 64,
-                    color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3)),
+                Container(
+                  width: 96,
+                  height: 96,
+                  decoration: const BoxDecoration(color: Color(0xFFD8F3DC), shape: BoxShape.circle),
+                  child: const Icon(Icons.search_off_rounded, size: 48, color: Color(0xFF2D6A4F)),
+                ),
                 const SizedBox(height: 16),
                 Text(
                   AppLocalizations.of(context)!.searchNoResults(_query),
@@ -387,12 +400,12 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: AppPalette.primary),
+          Icon(icon, size: 16, color: const Color(0xFF2D6A4F)),
           const SizedBox(width: 6),
           Text(
             label.toUpperCase(),
             style: theme.textTheme.labelSmall?.copyWith(
-              color: AppPalette.primary,
+              color: const Color(0xFF2D6A4F),
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
             ),
@@ -457,8 +470,8 @@ class _ResultTile extends StatelessWidget {
     return Container(
       width: 48,
       height: 48,
-      color: AppPalette.primary.withOpacity(0.1),
-      child: Icon(_typeIcon, color: AppPalette.primary, size: 24),
+      color: const Color(0xFF2D6A4F).withOpacity(0.1),
+      child: Icon(_typeIcon, color: const Color(0xFF2D6A4F), size: 24),
     );
   }
 }

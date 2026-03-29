@@ -3,8 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
-import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/features/reviews/data/repositories/review_repository.dart';
 import 'package:evcilhayvan_mobil2/features/reviews/domain/models/review_model.dart';
@@ -100,7 +98,7 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
                   ? l10n.reviewUpdated
                   : l10n.reviewAdded,
             ),
-            backgroundColor: AppPalette.tertiary,
+            backgroundColor: const Color(0xFF2D6A4F),
           ),
         );
         Navigator.of(context).pop(true);
@@ -127,11 +125,14 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(
           widget.existingReview != null ? AppLocalizations.of(context)!.reviewEditTitle : AppLocalizations.of(context)!.reviewAddTitle,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: Form(
@@ -143,11 +144,11 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: context.cardColor,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppPalette.storePrimary.withOpacity(0.08),
+                    color: const Color(0xFF2D6A4F).withOpacity(0.08),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -159,7 +160,7 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
                   Text(
                     AppLocalizations.of(context)!.reviewProductLabel,
                     style: theme.textTheme.labelLarge?.copyWith(
-                      color: AppPalette.onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -179,11 +180,11 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: context.cardColor,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppPalette.storePrimary.withOpacity(0.08),
+                    color: const Color(0xFF2D6A4F).withOpacity(0.08),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -215,7 +216,7 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
                       child: Text(
                         _getRatingText(_rating),
                         style: theme.textTheme.bodyLarge?.copyWith(
-                          color: AppPalette.storePrimary,
+                          color: const Color(0xFF2D6A4F),
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -231,11 +232,11 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: context.cardColor,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppPalette.storePrimary.withOpacity(0.08),
+                    color: const Color(0xFF2D6A4F).withOpacity(0.08),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -258,7 +259,7 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
                     decoration: InputDecoration(
                       hintText: AppLocalizations.of(context)!.reviewCommentHint,
                       filled: true,
-                      fillColor: AppPalette.storeSoftBlue,
+                      fillColor: const Color(0xFFD8F3DC),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -275,9 +276,13 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
             ElevatedButton(
               onPressed: _isSubmitting ? null : _submitReview,
               style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2D6A4F),
+                foregroundColor: Colors.white,
+                elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 16),
+                minimumSize: const Size.fromHeight(52),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
               child: _isSubmitting

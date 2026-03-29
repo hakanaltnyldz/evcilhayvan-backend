@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import '../../data/repositories/vaccination_repository.dart';
 
@@ -98,7 +98,8 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Asi Kaydi Ekle'), backgroundColor: Colors.transparent, elevation: 0),
+      backgroundColor: const Color(0xFFF4FAF6),
+      appBar: AppBar(title: const Text('Asi Kaydi Ekle'), backgroundColor: const Color(0xFF1B4332), foregroundColor: Colors.white, elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -143,7 +144,7 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
               ElevatedButton(
                 onPressed: _loading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppPalette.primary,
+                  backgroundColor: const Color(0xFF2D6A4F),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -172,7 +173,7 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.calendar_today, color: AppPalette.primary, size: 20),
+            const Icon(Icons.calendar_today, color: Color(0xFF2D6A4F), size: 20),
             const SizedBox(width: 12),
             Text(date != null ? _formatDate(date) : hint, style: Theme.of(context).textTheme.bodyLarge),
           ],

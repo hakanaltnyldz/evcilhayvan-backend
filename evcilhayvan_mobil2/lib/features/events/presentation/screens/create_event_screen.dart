@@ -8,8 +8,6 @@ import 'package:intl/intl.dart';
 import 'dart:io';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
-import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/event_repository.dart';
 
@@ -224,9 +222,11 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
     final speciesOptions = _getSpeciesOptions(l10n);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(l10n.eventCreateTitle),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -351,7 +351,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                 title: Text(l10n.eventFreeLabel),
                 value: _isFree,
                 onChanged: (v) => setState(() => _isFree = v),
-                activeColor: AppPalette.primary,
+                activeColor: const Color(0xFF2D6A4F),
                 contentPadding: EdgeInsets.zero,
               ),
               if (!_isFree) ...[
@@ -387,8 +387,8 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
                         if (_speciesAllowed.isEmpty) _speciesAllowed.add('all');
                       }
                     }),
-                    selectedColor: AppPalette.primary.withOpacity(0.2),
-                    checkmarkColor: AppPalette.primary,
+                    selectedColor: const Color(0xFFD8F3DC),
+                    checkmarkColor: const Color(0xFF2D6A4F),
                   );
                 }).toList(),
               ),
@@ -404,7 +404,7 @@ class _CreateEventScreenState extends ConsumerState<CreateEventScreen> {
               ElevatedButton(
                 onPressed: _loading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppPalette.primary,
+                  backgroundColor: const Color(0xFF2D6A4F),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -442,13 +442,13 @@ class _DateTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: context.cardColor,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: context.subtleBorder),
+          border: Border.all(color: Colors.grey.shade200),
         ),
         child: Row(
           children: [
-            const Icon(Icons.calendar_today, color: AppPalette.primary, size: 20),
+            const Icon(Icons.calendar_today, color: Color(0xFF2D6A4F), size: 20),
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,

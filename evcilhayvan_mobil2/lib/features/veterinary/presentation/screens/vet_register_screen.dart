@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 import '../../data/repositories/veterinary_repository.dart';
 
 class VetRegisterScreen extends ConsumerStatefulWidget {
@@ -119,7 +119,8 @@ class _VetRegisterScreenState extends ConsumerState<VetRegisterScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Klinik Kaydet'), backgroundColor: Colors.transparent, elevation: 0),
+      backgroundColor: const Color(0xFFF4FAF6),
+      appBar: AppBar(title: const Text('Klinik Kaydet'), backgroundColor: const Color(0xFF1B4332), foregroundColor: Colors.white, elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -199,7 +200,7 @@ class _VetRegisterScreenState extends ConsumerState<VetRegisterScreen> {
               ElevatedButton(
                 onPressed: _loading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppPalette.primary,
+                  backgroundColor: const Color(0xFF2D6A4F),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

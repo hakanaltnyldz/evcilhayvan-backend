@@ -22,6 +22,15 @@ class PetCard extends StatefulWidget {
   State<PetCard> createState() => _PetCardState();
 }
 
+String _formatAge(int months, AppLocalizations l10n) {
+  if (months < 1) return '< 1 ay';
+  if (months < 12) return '$months ay';
+  final years = months ~/ 12;
+  final rem = months % 12;
+  if (rem == 0) return '$years yıl';
+  return '$years yıl $rem ay';
+}
+
 String _resolveSpecies(String species, AppLocalizations l10n) {
   switch (species) {
     case 'dog':    return l10n.speciesDog;
@@ -86,7 +95,7 @@ class _PetImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final borderRadius = const BorderRadius.vertical(top: Radius.circular(20));
-    final badgeColor = pet.advertType == 'mating' ? Colors.purple.shade200 : Colors.green.shade200;
+    final badgeColor = pet.advertType == 'mating' ? Colors.pink.shade200 : const Color(0xFFD8F3DC);
     final badgeText = pet.advertType == 'mating' ? l10n.petCardMating : l10n.petCardAdoption;
     final badgeIcon = pet.advertType == 'mating' ? Icons.favorite : Icons.home;
 
@@ -193,8 +202,8 @@ class _PetImage extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
-              ? [const Color(0xFF1E1C30), const Color(0xFF2A2843)]
-              : [const Color(0xFFE5E3FF), const Color(0xFFFDE4DF)],
+              ? [const Color(0xFF1E2E28), const Color(0xFF2D4A3E)]
+              : [const Color(0xFFD8F3DC), const Color(0xFFEDF7F0)],
         ),
       ),
       child: Icon(
@@ -220,6 +229,7 @@ class _PetInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       child: Column(
@@ -229,33 +239,44 @@ class _PetInfoSection extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundColor: AppPalette.secondary.withOpacity(0.15),
-                foregroundColor: AppPalette.secondary,
+                backgroundColor: const Color(0xFFD8F3DC),
+                foregroundColor: const Color(0xFF2D6A4F),
                 child: Text(
                   avatarLetter,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  ownerName.isNotEmpty ? ownerName : AppLocalizations.of(context)!.petCardOwnerUnknown,
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  ownerName.isNotEmpty ? ownerName : l10n.petCardOwnerUnknown,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1B4332),
+                  ),
                 ),
               ),
-              const Icon(Icons.chevron_right),
+              Icon(Icons.chevron_right, size: 18, color: Colors.grey.shade400),
             ],
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              Icon(Icons.cake_outlined, size: 18, color: theme.colorScheme.primary),
-              const SizedBox(width: 6),
-              Text('${pet.ageMonths} ay'),
-              const SizedBox(width: 12),
-              Icon(Icons.pets, size: 18, color: theme.colorScheme.secondary),
-              const SizedBox(width: 6),
-              Text(pet.breed),
+              _InfoChip(
+                icon: Icons.cake_outlined,
+                label: _formatAge(pet.ageMonths, l10n),
+                bgColor: const Color(0xFFD8F3DC),
+                iconColor: const Color(0xFF2D6A4F),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _InfoChip(
+                  icon: Icons.pets,
+                  label: pet.breed,
+                  bgColor: Colors.grey.shade100,
+                  iconColor: Colors.grey.shade600,
+                ),
+              ),
             ],
           ),
         ],
@@ -294,6 +315,50 @@ class _Badge extends StatelessWidget {
             style: TextStyle(
               fontWeight: FontWeight.w600,
               color: foregroundColor ?? Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color bgColor;
+  final Color iconColor;
+
+  const _InfoChip({
+    required this.icon,
+    required this.label,
+    required this.bgColor,
+    required this.iconColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: iconColor),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: iconColor,
+              ),
             ),
           ),
         ],

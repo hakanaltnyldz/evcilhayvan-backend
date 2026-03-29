@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:evcilhayvan_mobil2/core/providers/theme_provider.dart';
 import 'package:evcilhayvan_mobil2/core/providers/locale_provider.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/green_tile.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/section_header.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
@@ -69,10 +71,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final user = ref.watch(authProvider);
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(l10n.settingsTitle),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: ModernBackground(
@@ -88,41 +90,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: l10n.settingsSectionAccount,
                 subtitle: l10n.settingsSectionAccountSub,
                 children: [
-                  ListTile(
-                    leading: const Icon(Icons.person_outline),
-                    title: Text(l10n.settingsEditProfile),
-                    subtitle: Text(l10n.settingsEditProfileSub),
+                  GreenTile(
+                    icon: Icons.person_outline,
+                    title: l10n.settingsEditProfile,
+                    subtitle: l10n.settingsEditProfileSub,
                     onTap: () => context.pushNamed('edit-profile'),
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.lock_reset),
-                    title: Text(l10n.settingsChangePassword),
-                    subtitle: Text(l10n.settingsChangePasswordSub),
+                  GreenTile(
+                    icon: Icons.lock_reset,
+                    title: l10n.settingsChangePassword,
+                    subtitle: l10n.settingsChangePasswordSub,
                     onTap: () => context.pushNamed('forgot-password'),
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.shopping_bag_outlined),
-                    title: Text(l10n.settingsMyOrders),
-                    subtitle: Text(l10n.settingsMyOrdersSub),
+                  GreenTile(
+                    icon: Icons.shopping_bag_outlined,
+                    title: l10n.settingsMyOrders,
+                    subtitle: l10n.settingsMyOrdersSub,
                     onTap: () => context.push('/store/orders'),
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.favorite_outline),
-                    title: Text(l10n.settingsMyFavorites),
-                    subtitle: Text(l10n.settingsMyFavoritesSub),
+                  GreenTile(
+                    icon: Icons.favorite_outline,
+                    title: l10n.settingsMyFavorites,
+                    subtitle: l10n.settingsMyFavoritesSub,
                     onTap: () => context.pushNamed('favorites'),
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.local_offer_outlined),
-                    title: const Text('Kuponlarım'),
-                    subtitle: const Text('İndirim kuponlarınızı görüntüleyin'),
+                  GreenTile(
+                    icon: Icons.local_offer_outlined,
+                    title: 'Kuponlarım',
+                    subtitle: 'İndirim kuponlarınızı görüntüleyin',
                     onTap: () => context.pushNamed('my-coupons'),
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.location_on_outlined),
-                    title: const Text('Adreslerim'),
-                    subtitle: const Text('Kayıtlı adreslerinizi yönetin'),
-                    trailing: const Icon(Icons.chevron_right),
+                  GreenTile(
+                    icon: Icons.location_on_outlined,
+                    title: 'Adreslerim',
+                    subtitle: 'Kayıtlı adreslerinizi yönetin',
                     onTap: () => context.pushNamed('my-addresses'),
                   ),
                 ],
@@ -133,28 +134,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   title: l10n.settingsSectionStore,
                   subtitle: l10n.settingsSectionStoreSub,
                   children: [
-                    ListTile(
-                      leading: const Icon(Icons.storefront_outlined),
-                      title: Text(l10n.settingsMyStore),
-                      subtitle: Text(l10n.settingsMyStoreSub),
+                    GreenTile(
+                      icon: Icons.storefront_outlined,
+                      title: l10n.settingsMyStore,
+                      subtitle: l10n.settingsMyStoreSub,
                       onTap: () => context.pushNamed('seller-dashboard'),
                     ),
-                    ListTile(
-                      leading: const Icon(Icons.receipt_long_outlined),
-                      title: Text(l10n.settingsIncomingOrders),
-                      subtitle: Text(l10n.settingsIncomingOrdersSub),
+                    GreenTile(
+                      icon: Icons.receipt_long_outlined,
+                      title: l10n.settingsIncomingOrders,
+                      subtitle: l10n.settingsIncomingOrdersSub,
                       onTap: () => context.pushNamed('seller-orders'),
                     ),
-                    ListTile(
-                      leading: const Icon(Icons.inventory_2_outlined),
-                      title: Text(l10n.settingsManageProducts),
-                      subtitle: Text(l10n.settingsManageProductsSub),
+                    GreenTile(
+                      icon: Icons.inventory_2_outlined,
+                      title: l10n.settingsManageProducts,
+                      subtitle: l10n.settingsManageProductsSub,
                       onTap: () => context.pushNamed('product-management'),
                     ),
-                    ListTile(
-                      leading: const Icon(Icons.discount_outlined),
-                      title: const Text('Kupon Yönetimi'),
-                      subtitle: const Text('Mağazanız için kupon oluşturun'),
+                    GreenTile(
+                      icon: Icons.discount_outlined,
+                      title: 'Kupon Yönetimi',
+                      subtitle: 'Mağazanız için kupon oluşturun',
                       onTap: () => context.pushNamed('seller-coupons'),
                     ),
                   ],
@@ -165,11 +166,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: l10n.settingsSectionNotif,
                 subtitle: l10n.settingsSectionNotifSub,
                 children: [
-                  ListTile(
-                    leading: const Icon(Icons.notifications_outlined),
-                    title: const Text('Bildirim Tercihleri'),
-                    subtitle: const Text('Hangi bildirimleri alacağını seç'),
-                    trailing: const Icon(Icons.chevron_right),
+                  GreenTile(
+                    icon: Icons.notifications_outlined,
+                    title: 'Bildirim Tercihleri',
+                    subtitle: 'Hangi bildirimleri alacağını seç',
                     onTap: () => context.pushNamed('notification-preferences'),
                   ),
                 ],
@@ -209,10 +209,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     builder: (context, ref, _) {
                       final locale = ref.watch(localeProvider);
                       final l10n = AppLocalizations.of(context)!;
-                      return ListTile(
-                        leading: const Icon(Icons.language_outlined),
-                        title: Text(l10n.languageLabel),
-                        subtitle: Text(l10n.selectLanguage),
+                      return GreenTile(
+                        icon: Icons.language_outlined,
+                        title: l10n.languageLabel,
+                        subtitle: l10n.selectLanguage,
+                        showChevron: false,
                         trailing: _LanguageSegmentedButton(
                           currentLocale: locale,
                           onChanged: (newLocale) {
@@ -222,10 +223,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       );
                     },
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.download_outlined),
-                    title: Text(l10n.settingsExportData),
-                    subtitle: Text(l10n.settingsExportDataSub),
+                  GreenTile(
+                    icon: Icons.download_outlined,
+                    title: l10n.settingsExportData,
+                    subtitle: l10n.settingsExportDataSub,
                     onTap: () => _showSnack(
                       AppLocalizations.of(context)!.settingsExportData,
                     ),
@@ -237,26 +238,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: l10n.settingsSectionSupport,
                 subtitle: l10n.settingsSectionSupportSub,
                 children: [
-                  ListTile(
-                    leading: const Icon(Icons.help_outline),
-                    title: Text(l10n.settingsHelp),
+                  GreenTile(
+                    icon: Icons.help_outline,
+                    title: l10n.settingsHelp,
                     onTap: () => _showSnack(l10n.settingsHelp),
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.mail_outline),
-                    title: Text(l10n.settingsContact),
+                  GreenTile(
+                    icon: Icons.mail_outline,
+                    title: l10n.settingsContact,
                     onTap: () => _showSnack('support@evcildostum.app'),
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.share_outlined),
-                    title: Text(l10n.settingsShare),
-                    subtitle: Text(l10n.settingsShareSub),
+                  GreenTile(
+                    icon: Icons.share_outlined,
+                    title: l10n.settingsShare,
+                    subtitle: l10n.settingsShareSub,
                     onTap: () => _showSnack(l10n.settingsShare),
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.star_outline_rounded),
-                    title: Text(l10n.settingsReview),
-                    subtitle: Text(l10n.reviewDialogDesc),
+                  GreenTile(
+                    icon: Icons.star_outline_rounded,
+                    title: l10n.settingsReview,
+                    subtitle: l10n.reviewDialogDesc,
+                    iconColor: const Color(0xFFFFC107),
+                    iconBgColor: const Color(0xFFFFF8E1),
                     onTap: () async {
                       final review = InAppReview.instance;
                       if (await review.isAvailable()) {
@@ -266,15 +269,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       }
                     },
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.privacy_tip_outlined),
-                    title: Text(l10n.settingsPrivacy),
+                  GreenTile(
+                    icon: Icons.privacy_tip_outlined,
+                    title: l10n.settingsPrivacy,
                     onTap: () => context.pushNamed('privacy-policy'),
                   ),
-                  ListTile(
-                    leading: const Icon(Icons.report_outlined),
-                    title: const Text('Şikayet Bildir'),
-                    subtitle: const Text('Sorun veya şikayetinizi iletin'),
+                  GreenTile(
+                    icon: Icons.report_outlined,
+                    title: 'Şikayet Bildir',
+                    subtitle: 'Sorun veya şikayetinizi iletin',
                     onTap: () => context.pushNamed('complaint'),
                   ),
                 ],
@@ -284,11 +287,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: l10n.settingsLogout,
                 subtitle: l10n.profileLogout,
                 children: [
-                  ListTile(
-                    leading: const Icon(Icons.logout, color: Colors.redAccent),
-                    title: Text(l10n.logout),
-                    iconColor: Colors.redAccent,
-                    textColor: Colors.redAccent,
+                  GreenTile(
+                    icon: Icons.logout,
+                    title: l10n.logout,
+                    isDestructive: true,
+                    showChevron: false,
                     onTap: () async {
                       await ref.read(authProvider.notifier).logout();
                       if (context.mounted) {
@@ -480,36 +483,27 @@ class _SettingsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(26),
-        color: theme.colorScheme.surface.withOpacity(0.94),
+        borderRadius: BorderRadius.circular(20),
+        color: theme.colorScheme.surface,
+        border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.primary.withOpacity(0.12),
-            blurRadius: 24,
-            offset: const Offset(0, 14),
+            color: const Color(0xFF2D6A4F).withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: SectionHeader(title: title),
           ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 16),
           ...children,
+          const SizedBox(height: 8),
         ],
       ),
     );

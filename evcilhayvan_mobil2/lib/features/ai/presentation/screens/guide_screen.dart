@@ -4,7 +4,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
@@ -165,7 +164,11 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
         title: Row(
           children: [
             Container(
@@ -173,7 +176,7 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
               height: 34,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF6C63FF), Color(0xFFFF7A59)],
+                  colors: [Color(0xFF1B4332), Color(0xFF52B788)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -217,14 +220,14 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
             height: 80,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF6C63FF), Color(0xFFFF7A59)],
+                colors: [Color(0xFF1B4332), Color(0xFF52B788)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppPalette.primary.withOpacity(0.3),
+                  color: const Color(0xFF2D6A4F).withOpacity(0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -245,13 +248,13 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
         Text(
           AppLocalizations.of(context)!.guideWelcomeSub,
           textAlign: TextAlign.center,
-          style: theme.textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant),
+          style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
         ).animate().fadeIn(delay: 350.ms).slideY(begin: 0.2),
         const SizedBox(height: 24),
         Text(
           AppLocalizations.of(context)!.guideQuickOptions,
           style: theme.textTheme.labelLarge?.copyWith(
-            color: AppPalette.primary,
+            color: const Color(0xFF2D6A4F),
             fontWeight: FontWeight.w700,
           ),
         ).animate().fadeIn(delay: 450.ms),
@@ -263,9 +266,9 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
             return ActionChip(
               label: Text(e.value, style: const TextStyle(fontSize: 13)),
               onPressed: () => _send(e.value),
-              backgroundColor: AppPalette.primary.withOpacity(0.08),
-              side: BorderSide(color: AppPalette.primary.withOpacity(0.2)),
-              labelStyle: TextStyle(color: AppPalette.primary, fontWeight: FontWeight.w600),
+              backgroundColor: const Color(0xFFD8F3DC),
+              side: BorderSide(color: const Color(0xFF52B788)),
+              labelStyle: TextStyle(color: const Color(0xFF2D6A4F), fontWeight: FontWeight.w600),
             ).animate(delay: (500 + e.key * 60).ms).fadeIn().scale(begin: const Offset(0.85, 0.85));
           }).toList(),
         ),
@@ -306,7 +309,7 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
                   height: 28,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF6C63FF), Color(0xFFFF7A59)],
+                      colors: [Color(0xFF1B4332), Color(0xFF52B788)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -321,8 +324,8 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                   decoration: BoxDecoration(
                     color: isUser
-                        ? AppPalette.primary
-                        : theme.colorScheme.surface,
+                        ? const Color(0xFF2D6A4F)
+                        : const Color(0xFFD8F3DC),
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(18),
                       topRight: const Radius.circular(18),
@@ -340,7 +343,7 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
                   child: Text(
                     msg.text,
                     style: TextStyle(
-                      color: isUser ? Colors.white : theme.colorScheme.onSurface,
+                      color: isUser ? Colors.white : const Color(0xFF1B4332),
                       fontSize: 14,
                       height: 1.45,
                     ),
@@ -361,7 +364,7 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
                 icon: const Icon(Icons.arrow_forward_rounded, size: 16),
                 label: Text(AppLocalizations.of(context)!.guideNavigateBtn),
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppPalette.primary,
+                  backgroundColor: const Color(0xFF2D6A4F),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                 ),
@@ -384,9 +387,9 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
                   return ActionChip(
                     label: Text(e.value, style: const TextStyle(fontSize: 12)),
                     onPressed: () => _send(e.value),
-                    backgroundColor: AppPalette.primary.withOpacity(0.08),
-                    side: BorderSide(color: AppPalette.primary.withOpacity(0.2)),
-                    labelStyle: TextStyle(color: AppPalette.primary, fontWeight: FontWeight.w600),
+                    backgroundColor: const Color(0xFFD8F3DC),
+                    side: BorderSide(color: const Color(0xFF52B788)),
+                    labelStyle: TextStyle(color: const Color(0xFF2D6A4F), fontWeight: FontWeight.w600),
                   ).animate(delay: (e.key * 60).ms).fadeIn().slideX(begin: -0.1);
                 }).toList(),
               ),
@@ -410,7 +413,7 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
             height: 28,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF6C63FF), Color(0xFFFF7A59)],
+                colors: [Color(0xFF1B4332), Color(0xFF52B788)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -466,7 +469,7 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
             style: FilledButton.styleFrom(
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(13),
-              backgroundColor: AppPalette.primary,
+              backgroundColor: const Color(0xFF2D6A4F),
             ),
             child: _loading
                 ? const SizedBox(

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import '../../data/repositories/vaccination_repository.dart';
 import '../../domain/models/vaccination_schedule_model.dart';
@@ -28,9 +28,11 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
 
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(l10n.vacCalendarTitle),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           // Görünüm toggle
@@ -64,7 +66,7 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.vaccines, size: 64, color: AppPalette.onSurfaceVariant.withOpacity(0.3)),
+                  Icon(Icons.vaccines, size: 64, color: Colors.grey.shade600.withOpacity(0.3)),
                   const SizedBox(height: 16),
                   Text(l10n.vacCalendarEmpty),
                   const SizedBox(height: 16),
@@ -134,11 +136,11 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
           onPageChanged: (focused) => setState(() => _focusedDay = focused),
           calendarStyle: CalendarStyle(
             todayDecoration: BoxDecoration(
-              color: AppPalette.primary.withOpacity(0.3),
+              color: const Color(0xFF2D6A4F).withOpacity(0.3),
               shape: BoxShape.circle,
             ),
             selectedDecoration: const BoxDecoration(
-              color: AppPalette.primary,
+              color: const Color(0xFF2D6A4F),
               shape: BoxShape.circle,
             ),
             markerDecoration: const BoxDecoration(
@@ -222,8 +224,8 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
     switch (status) {
       case 'overdue':    return Colors.red;
       case 'due_soon':   return Colors.orange;
-      case 'completed':  return AppPalette.tertiary;
-      case 'upcoming':   return Colors.blue;
+      case 'completed':  return const Color(0xFF52B788);
+      case 'upcoming':   return const Color(0xFF52B788);
       default:           return Colors.grey;
     }
   }
@@ -252,8 +254,8 @@ class _VaccinationEventTile extends StatelessWidget {
     switch (item.status) {
       case 'overdue':   return Colors.red;
       case 'due_soon':  return Colors.orange;
-      case 'completed': return AppPalette.tertiary;
-      case 'upcoming':  return Colors.blue;
+      case 'completed': return const Color(0xFF52B788);
+      case 'upcoming':  return const Color(0xFF52B788);
       default:          return Colors.grey;
     }
   }
@@ -276,7 +278,7 @@ class _VaccinationEventTile extends StatelessWidget {
                 ),
                 child: Text(AppLocalizations.of(context)!.vacCalendarAdd),
               )
-            : const Icon(Icons.check_circle, color: AppPalette.tertiary),
+            : const Icon(Icons.check_circle, color: Color(0xFF52B788)),
       ),
     );
   }
@@ -294,9 +296,9 @@ class _VaccinationCalendarCard extends StatelessWidget {
     switch (item.status) {
       case 'overdue':   return Colors.red;
       case 'due_soon':  return Colors.orange;
-      case 'completed': return AppPalette.tertiary;
-      case 'upcoming':  return Colors.blue;
-      default:          return AppPalette.onSurfaceVariant;
+      case 'completed': return const Color(0xFF52B788);
+      case 'upcoming':  return const Color(0xFF52B788);
+      default:          return Colors.grey.shade600;
     }
   }
 
@@ -342,7 +344,7 @@ class _VaccinationCalendarCard extends StatelessWidget {
                     children: [
                       Text(schedule.vaccineName, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
                       if (schedule.description != null)
-                        Text(schedule.description!, style: theme.textTheme.bodySmall?.copyWith(color: AppPalette.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text(schedule.description!, style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600), maxLines: 1, overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ),
@@ -374,7 +376,7 @@ class _VaccinationCalendarCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.event_note, size: 16, color: AppPalette.onSurfaceVariant),
+                      Icon(Icons.event_note, size: 16, color: Colors.grey.shade600),
                       const SizedBox(width: 6),
                       Text(
                         l10n.vacCalendarNext('${item.nextDueDate!.day}.${item.nextDueDate!.month}.${item.nextDueDate!.year}'),
@@ -391,7 +393,7 @@ class _VaccinationCalendarCard extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 4),
                         child: Row(
                           children: [
-                            const Icon(Icons.check, size: 14, color: AppPalette.tertiary),
+                            const Icon(Icons.check, size: 14, color: Color(0xFF52B788)),
                             const SizedBox(width: 6),
                             Text(
                               '${r.dateAdministered.day}.${r.dateAdministered.month}.${r.dateAdministered.year}',
@@ -399,7 +401,7 @@ class _VaccinationCalendarCard extends StatelessWidget {
                             ),
                             if (r.notes != null) ...[
                               const SizedBox(width: 8),
-                              Expanded(child: Text(r.notes!, style: theme.textTheme.bodySmall?.copyWith(color: AppPalette.onSurfaceVariant), overflow: TextOverflow.ellipsis)),
+                              Expanded(child: Text(r.notes!, style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600), overflow: TextOverflow.ellipsis)),
                             ],
                           ],
                         ),
@@ -419,9 +421,9 @@ class _VaccinationCalendarCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color ?? AppPalette.onSurfaceVariant),
+          Icon(icon, size: 14, color: color ?? Colors.grey.shade600),
           const SizedBox(width: 4),
-          Text(text, style: theme.textTheme.labelSmall?.copyWith(color: color ?? AppPalette.onSurfaceVariant)),
+          Text(text, style: theme.textTheme.labelSmall?.copyWith(color: color ?? Colors.grey.shade600)),
         ],
       ),
     );

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/pets/data/repositories/pets_repository.dart';
 import 'package:evcilhayvan_mobil2/features/pets/domain/models/pet_model.dart';
@@ -110,7 +110,8 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
     final myPetsAsync = ref.watch(myPetsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.apptCreateTitle), backgroundColor: Colors.transparent, elevation: 0),
+      backgroundColor: const Color(0xFFF4FAF6),
+      appBar: AppBar(title: Text(l10n.apptCreateTitle), backgroundColor: const Color(0xFF1B4332), foregroundColor: Colors.white, elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -120,12 +121,12 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppPalette.primary.withOpacity(0.08),
+                color: const Color(0xFF2D6A4F).withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.local_hospital, color: AppPalette.primary),
+                  const Icon(Icons.local_hospital, color: Color(0xFF2D6A4F)),
                   const SizedBox(width: 12),
                   Expanded(child: Text(widget.vetName, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600))),
                 ],
@@ -175,7 +176,7 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.calendar_today, color: AppPalette.primary),
+                    const Icon(Icons.calendar_today, color: Color(0xFF2D6A4F)),
                     const SizedBox(width: 12),
                     Text(
                       _selectedDate != null
@@ -243,7 +244,7 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
             ElevatedButton(
               onPressed: _loading ? null : _submit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppPalette.primary,
+                backgroundColor: const Color(0xFF2D6A4F),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

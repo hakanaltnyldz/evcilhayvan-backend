@@ -53,7 +53,7 @@ class SitterCard extends StatelessWidget {
                               maxLines: 1, overflow: TextOverflow.ellipsis),
                         ),
                         if (sitter.isVerified)
-                          const Icon(Icons.verified, color: Colors.blue, size: 16),
+                          const Icon(Icons.verified, color: Color(0xFF2D6A4F), size: 16),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -124,7 +124,7 @@ class SitterCard extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-    color: Colors.indigo.shade50,
-    child: const Center(child: Icon(Icons.person, color: Colors.indigo, size: 40)),
+    color: const Color(0xFFD8F3DC),
+    child: const Center(child: Icon(Icons.person, color: Color(0xFF2D6A4F), size: 40)),
   );
 }

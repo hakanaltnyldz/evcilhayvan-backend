@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../domain/models/appointment_model.dart';
@@ -13,11 +13,11 @@ class AppointmentCard extends StatelessWidget {
   Color get _statusColor {
     switch (appointment.status) {
       case 'confirmed':
-        return AppPalette.tertiary;
+        return const Color(0xFF52B788);
       case 'cancelled':
         return Colors.red;
       case 'completed':
-        return Colors.blue;
+        return const Color(0xFF2D6A4F);
       case 'no_show':
         return Colors.grey;
       default:
@@ -51,13 +51,13 @@ class AppointmentCard extends StatelessWidget {
               width: 56,
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: AppPalette.primary.withOpacity(0.1),
+                color: const Color(0xFF2D6A4F).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 children: [
-                  Text('${date.day}', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: AppPalette.primary)),
-                  Text(_monthName(context, date.month), style: theme.textTheme.labelSmall?.copyWith(color: AppPalette.primary)),
+                  Text('${date.day}', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: const Color(0xFF2D6A4F))),
+                  Text(_monthName(context, date.month), style: theme.textTheme.labelSmall?.copyWith(color: const Color(0xFF2D6A4F))),
                 ],
               ),
             ),
@@ -75,12 +75,12 @@ class AppointmentCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.access_time, size: 14, color: AppPalette.onSurfaceVariant),
+                      Icon(Icons.access_time, size: 14, color: Colors.grey.shade600),
                       const SizedBox(width: 4),
                       Text(timeStr, style: theme.textTheme.bodySmall),
                       if (appointment.pet != null) ...[
                         const SizedBox(width: 12),
-                        const Icon(Icons.pets, size: 14, color: AppPalette.onSurfaceVariant),
+                        Icon(Icons.pets, size: 14, color: Colors.grey.shade600),
                         const SizedBox(width: 4),
                         Flexible(child: Text(appointment.pet!.name, style: theme.textTheme.bodySmall, overflow: TextOverflow.ellipsis)),
                       ],
@@ -88,7 +88,7 @@ class AppointmentCard extends StatelessWidget {
                   ),
                   if (appointment.reason != null) ...[
                     const SizedBox(height: 4),
-                    Text(appointment.reason!, style: theme.textTheme.bodySmall?.copyWith(color: AppPalette.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(appointment.reason!, style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600), maxLines: 1, overflow: TextOverflow.ellipsis),
                   ],
                 ],
               ),

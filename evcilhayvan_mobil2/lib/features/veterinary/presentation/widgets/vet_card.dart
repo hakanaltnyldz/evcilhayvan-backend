@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/shimmer_box.dart';
@@ -59,17 +59,17 @@ class VetCard extends StatelessWidget {
                         child: Text(vet.name, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
                       ),
                       if (vet.isVerified)
-                        const Icon(Icons.verified, color: Colors.blue, size: 18),
+                        const Icon(Icons.verified, color: Color(0xFF2D6A4F), size: 18),
                     ],
                   ),
                   if (vet.address != null) ...[
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.location_on, size: 14, color: AppPalette.onSurfaceVariant),
+                        Icon(Icons.location_on, size: 14, color: Colors.grey.shade600),
                         const SizedBox(width: 4),
                         Expanded(
-                          child: Text(vet.address!, style: theme.textTheme.bodySmall?.copyWith(color: AppPalette.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          child: Text(vet.address!, style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600), maxLines: 1, overflow: TextOverflow.ellipsis),
                         ),
                       ],
                     ),
@@ -82,15 +82,15 @@ class VetCard extends StatelessWidget {
                         const SizedBox(width: 2),
                         Text('${vet.googleRating!.toStringAsFixed(1)}', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
                         const SizedBox(width: 4),
-                        Text('(${vet.googleReviewCount})', style: theme.textTheme.bodySmall?.copyWith(color: AppPalette.onSurfaceVariant)),
+                        Text('(${vet.googleReviewCount})', style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600)),
                         const SizedBox(width: 12),
                       ],
                       if (distanceKm != null) ...[
-                        const Icon(Icons.directions_walk, size: 14, color: AppPalette.onSurfaceVariant),
+                        Icon(Icons.directions_walk, size: 14, color: Colors.grey.shade600),
                         const SizedBox(width: 2),
                         Text(
                           distanceKm! < 1 ? '${(distanceKm! * 1000).round()} m' : '${distanceKm!.toStringAsFixed(1)} km',
-                          style: theme.textTheme.bodySmall?.copyWith(color: AppPalette.onSurfaceVariant, fontWeight: FontWeight.w500),
+                          style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600, fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(width: 12),
                       ],
@@ -98,10 +98,10 @@ class VetCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppPalette.tertiary.withOpacity(0.1),
+                            color: const Color(0xFF52B788).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Text('Online Randevu', style: theme.textTheme.labelSmall?.copyWith(color: AppPalette.tertiary, fontWeight: FontWeight.w600)),
+                          child: Text('Online Randevu', style: theme.textTheme.labelSmall?.copyWith(color: const Color(0xFF52B788), fontWeight: FontWeight.w600)),
                         ),
                     ],
                   ),
@@ -116,8 +116,8 @@ class VetCard extends StatelessWidget {
 
   Widget _placeholder() {
     return Container(
-      color: AppPalette.background,
-      child: const Center(child: Icon(Icons.local_hospital, size: 48, color: AppPalette.onSurfaceVariant)),
+      color: const Color(0xFFF4FAF6),
+      child: Center(child: Icon(Icons.local_hospital, size: 48, color: Colors.grey.shade600)),
     );
   }
 

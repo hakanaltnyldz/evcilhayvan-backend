@@ -11,7 +11,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/providers/onboarding_provider.dart';
 import 'package:evcilhayvan_mobil2/core/providers/theme_provider.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class ThemeSelectionScreen extends ConsumerStatefulWidget {
@@ -54,7 +54,7 @@ class _ThemeSelectionScreenState extends ConsumerState<ThemeSelectionScreen> {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF6C63FF), Color(0xFF4F46E5)],
+            colors: [Color(0xFF1B4332), Color(0xFF2D6A4F)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -132,20 +132,19 @@ class _ThemeSelectionScreenState extends ConsumerState<ThemeSelectionScreen> {
                     child: FilledButton(
                       onPressed: _selected != null ? _confirm : null,
                       style: FilledButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: AppPalette.primary,
+                        backgroundColor: const Color(0xFF52B788),
+                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
+                          borderRadius: BorderRadius.circular(14),
                         ),
-                        elevation: 8,
-                        shadowColor: Colors.black38,
+                        elevation: 0,
                       ),
                       child: _confirming
                           ? const SizedBox(
                               width: 22,
                               height: 22,
                               child: CircularProgressIndicator(
-                                color: AppPalette.primary,
+                                color: Colors.white,
                                 strokeWidth: 2.5,
                               ),
                             )
@@ -200,18 +199,18 @@ class _ThemeCard extends StatelessWidget {
   bool get _isDark => mode == ThemeMode.dark;
 
   // Light palette
-  static const _lightBg = Color(0xFFF4F3FF);
+  static const _lightBg = Color(0xFFF4FAF6);
   static const _lightCard = Colors.white;
-  static const _lightText = Color(0xFF1E1B3A);
-  static const _lightSub = Color(0xFF6E6A96);
-  static const _lightDivider = Color(0xFFE0DFFF);
+  static const _lightText = Color(0xFF1B4332);
+  static const _lightSub = Color(0xFF52B788);
+  static const _lightDivider = Color(0xFFD8F3DC);
 
   // Dark palette
-  static const _darkBg = Color(0xFF12111F);
-  static const _darkCard = Color(0xFF1E1C30);
+  static const _darkBg = Color(0xFF121212);
+  static const _darkCard = Color(0xFF1E2E28);
   static const _darkText = Colors.white;
-  static const _darkSub = Color(0xFFB0AECF);
-  static const _darkDivider = Color(0xFF2A2843);
+  static const _darkSub = Color(0xFF95D5B2);
+  static const _darkDivider = Color(0xFF2D4A3E);
 
   Color get bg => _isDark ? _darkBg : _lightBg;
   Color get card => _isDark ? _darkCard : _lightCard;
@@ -262,8 +261,8 @@ class _ThemeCard extends StatelessWidget {
                       Container(
                         height: 22,
                         color: _isDark
-                            ? const Color(0xFF0E0D1A)
-                            : const Color(0xFFE8E6FF),
+                            ? const Color(0xFF0D2B1E)
+                            : const Color(0xFFD8F3DC),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -286,7 +285,7 @@ class _ThemeCard extends StatelessWidget {
                               width: 18,
                               height: 18,
                               decoration: BoxDecoration(
-                                color: AppPalette.primary,
+                                color: const Color(0xFF2D6A4F),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -323,7 +322,7 @@ class _ThemeCard extends StatelessWidget {
                           height: 44,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF6C63FF), Color(0xFF8F7DFF)],
+                              colors: [Color(0xFF1B4332), Color(0xFF2D6A4F)],
                             ),
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -401,11 +400,11 @@ class _ThemeCard extends StatelessWidget {
                                   width: 18,
                                   height: 18,
                                   decoration: BoxDecoration(
-                                    color: AppPalette.primary.withOpacity(0.15),
+                                    color: const Color(0xFF2D6A4F).withOpacity(0.15),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Icon(Icons.pets,
-                                      color: AppPalette.primary, size: 10),
+                                      color: const Color(0xFF2D6A4F), size: 10),
                                 ),
                                 const SizedBox(width: 6),
                                 Column(
@@ -448,7 +447,7 @@ class _ThemeCard extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _navIcon(Icons.home_rounded, AppPalette.primary, active: true),
+                    _navIcon(Icons.home_rounded, const Color(0xFF2D6A4F), active: true),
                     _navIcon(Icons.chat_bubble_outline_rounded, sub),
                     _navIcon(Icons.pets_rounded, sub),
                     _navIcon(Icons.store_outlined, sub),
@@ -481,7 +480,7 @@ class _ThemeCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: AppPalette.primary, size: 14),
+            Icon(icon, color: const Color(0xFF2D6A4F), size: 14),
             const SizedBox(height: 2),
             Container(
               width: 20,
@@ -503,7 +502,7 @@ class _ThemeCard extends StatelessWidget {
       height: 30,
       decoration: active
           ? BoxDecoration(
-              color: AppPalette.primary.withOpacity(0.12),
+              color: const Color(0xFF2D6A4F).withOpacity(0.12),
               borderRadius: BorderRadius.circular(8),
             )
           : null,

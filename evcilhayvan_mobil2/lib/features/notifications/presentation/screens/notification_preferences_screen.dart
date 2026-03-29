@@ -119,9 +119,13 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: const Text('Bildirim Tercihleri'),
         centerTitle: true,
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
         actions: [
           if (_saving)
             const Padding(
@@ -167,11 +171,11 @@ class _NotificationPreferencesScreenState extends State<NotificationPreferencesS
                           padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
                           child: Text(
                             section['title'] as String,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.primary,
-                              letterSpacing: 0.5,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF2D6A4F),
+                              letterSpacing: 1.2,
                             ),
                           ),
                         ),

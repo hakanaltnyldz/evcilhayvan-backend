@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:evcilhayvan_mobil2/features/health/data/repositories/health_repository.dart';
 import 'package:evcilhayvan_mobil2/features/health/domain/models/health_record_model.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 
 // ── Providers ──────────────────────────────────────────────────────────────
 
@@ -34,10 +34,10 @@ const _typeIcons = {
 };
 
 const _typeColors = {
-  'weight': Color(0xFF2BB673),
-  'medication': Color(0xFF6C63FF),
-  'vet_visit': Color(0xFFFF7A59),
-  'note': Color(0xFF7C7BFF),
+  'weight': Color(0xFF2D6A4F),
+  'medication': Color(0xFF52B788),
+  'vet_visit': Color(0xFF40916C),
+  'note': Color(0xFF74C69D),
 };
 
 String _typeLabel(String type, AppLocalizations l10n) {
@@ -204,7 +204,7 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen> {
                       children: [
                         Icon(Icons.health_and_safety_outlined,
                             size: 64,
-                            color: AppPalette.primary.withOpacity(0.3)),
+                            color: const Color(0xFF2D6A4F).withOpacity(0.3)),
                         const SizedBox(height: 16),
                         Text(
                           _filterType == null
@@ -257,7 +257,7 @@ class _RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final color = _typeColors[record.type] ?? AppPalette.primary;
+    final color = _typeColors[record.type] ?? const Color(0xFF2D6A4F);
     final icon = _typeIcons[record.type] ?? Icons.notes_rounded;
     final label = _typeLabel(record.type, l10n);
 
@@ -351,7 +351,7 @@ class _WeightChartSection extends ConsumerStatefulWidget {
 
 class _WeightChartSectionState extends ConsumerState<_WeightChartSection> {
   double? _goalWeight;
-  static const _chartColor = Color(0xFF2BB673);
+  static const _chartColor = Color(0xFF2D6A4F);
 
   @override
   void initState() {
@@ -669,7 +669,7 @@ class _StatChip extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(value,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2BB673))),
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2D6A4F))),
         Text(label,
           style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
       ],

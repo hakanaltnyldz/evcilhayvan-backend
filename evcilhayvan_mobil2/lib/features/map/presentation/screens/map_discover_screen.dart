@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/features/pets/data/repositories/pets_repository.dart';
 
@@ -204,6 +203,8 @@ class _MapDiscoverScreenState extends ConsumerState<MapDiscoverScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Haritada Kesfe', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
@@ -259,8 +260,8 @@ class _MapDiscoverScreenState extends ConsumerState<MapDiscoverScreen> {
                               style: TextStyle(color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface)),
                         ],
                       ),
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      selectedColor: const Color(0xFF6C63FF),
+                      backgroundColor: Colors.white,
+                      selectedColor: const Color(0xFF2D6A4F),
                       checkmarkColor: Colors.white,
                       elevation: 2,
                       shadowColor: Colors.black26,
@@ -305,10 +306,11 @@ class _MapDiscoverScreenState extends ConsumerState<MapDiscoverScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: context.cardColor,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.grey.shade200),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8),
+                  BoxShadow(color: const Color(0xFF2D6A4F).withOpacity(0.06), blurRadius: 12),
                 ],
               ),
               child: Column(
@@ -319,7 +321,7 @@ class _MapDiscoverScreenState extends ConsumerState<MapDiscoverScreen> {
                   const SizedBox(height: 4),
                   _LegendItem(color: Colors.pink, label: 'Eslestirme'),
                   const SizedBox(height: 4),
-                  _LegendItem(color: Colors.blue, label: 'Konumun'),
+                  _LegendItem(color: const Color(0xFF2D6A4F), label: 'Konumun'),
                 ],
               ),
             ),

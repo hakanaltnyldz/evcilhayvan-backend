@@ -1,82 +1,88 @@
 import 'package:flutter/material.dart';
 
-/// Centralized color definitions for the entire application.
-///
-/// Keeping the palette in a single file makes it easier to tweak the
-/// brand feel without hunting through multiple widgets.
+/// Plant Shop — Yeşil Palet
+/// Tüm AppPalette referansları artık yeşil tonlarını döndürür.
 class AppPalette {
   AppPalette._();
 
-  /// Vibrant royal purple used for primary actions and highlights.
-  static const Color primary = Color(0xFF6C63FF);
+  /// Ana marka rengi — koyu yeşil.
+  static const Color primary = Color(0xFF2D6A4F);
 
-  /// Energetic coral accent that pairs nicely with the primary purple.
-  static const Color secondary = Color(0xFFFF7A59);
+  /// Vurgu / buton rengi — orta yeşil.
+  static const Color secondary = Color(0xFF52B788);
 
-  /// Fresh emerald tone for success states and tertiary emphasis.
-  static const Color tertiary = Color(0xFF2BB673);
+  /// Üçüncül yeşil ton.
+  static const Color tertiary = Color(0xFF40916C);
 
-  /// Soft lavender wash for backgrounds.
-  static const Color background = Color(0xFFF4F3FF);
+  /// Uygulama arka plan rengi — çok açık yeşil.
+  static const Color background = Color(0xFFF4FAF6);
 
-  /// Card surfaces are ever-so-slightly tinted to stand out from the background.
+  /// Kart yüzeyi.
   static const Color surface = Color(0xFFFFFFFF);
 
-  /// Deep charcoal used for text on light backgrounds.
-  static const Color onBackground = Color(0xFF1E1B3A);
+  /// Koyu arka planda metin.
+  static const Color onBackground = Color(0xFF1B4332);
 
-  /// Muted indigo for supporting text.
-  static const Color onSurfaceVariant = Color(0xFF6E6A96);
+  /// İkincil metin / inaktif element.
+  static const Color onSurfaceVariant = Color(0xFF52B788);
 
-  /// Palette used to create subtle gradients around the app.
+  /// Hero section gradient.
   static const List<Color> heroGradient = [
-    Color(0xFF6C63FF),
-    Color(0xFF8F7DFF),
-    Color(0xFFFFA29E),
+    Color(0xFF1B4332),
+    Color(0xFF2D6A4F),
+    Color(0xFF52B788),
   ];
 
-  /// Gradient used for backgrounds behind large sections.
+  /// Arka plan gradient.
   static const List<Color> backgroundGradient = [
-    Color(0xFFF4F3FF),
-    Color(0xFFF9F6FF),
-    Color(0xFFFFF3F0),
+    Color(0xFFF4FAF6),
+    Color(0xFFEDF7F0),
+    Color(0xFFD8F3DC),
   ];
 
-  /// Gradient designed for floating action buttons and chips.
+  /// Aksiyon buton / chip gradient.
   static const List<Color> accentGradient = [
-    Color(0xFFFF7A59),
-    Color(0xFFFF8F6B),
+    Color(0xFF52B788),
+    Color(0xFF74C69D),
   ];
 
-  /// Store (mağaza) temasına özel canlı ama pastel renkler.
-  static const Color storePrimary = Color(0xFF7C7BFF); // pastel mor
-  static const Color storeSecondary = Color(0xFFFFB86C); // pastel turuncu
-  static const Color storeAccent = Color(0xFF5FD9C1); // mint yeşil
-  static const Color storeSoftBlue = Color(0xFFE6F2FF);
-  static const Color storeSoftPink = Color(0xFFFFEAF4);
+  /// Mağaza primary — yeşil.
+  static const Color storePrimary = Color(0xFF2D6A4F);
 
-  /// Mağaza ekranlarında kullanılacak arka plan gradyanı.
+  /// Mağaza secondary — açık yeşil.
+  static const Color storeSecondary = Color(0xFF52B788);
+
+  /// Mağaza accent — accent yeşil.
+  static const Color storeAccent = Color(0xFF74C69D);
+
+  /// Mağaza soft panel arka planı.
+  static const Color storeSoftBlue = Color(0xFFD8F3DC);
+
+  /// Mağaza pembe panel (artık açık yeşil).
+  static const Color storeSoftPink = Color(0xFFD8F3DC);
+
+  /// Mağaza arka plan gradient.
   static const List<Color> storeBackground = [
-    Color(0xFFF7F5FF),
-    Color(0xFFEAF7FF),
-    Color(0xFFFFF4EC),
+    Color(0xFFF4FAF6),
+    Color(0xFFEDF7F0),
+    Color(0xFFD8F3DC),
   ];
 
-  /// Ürün kartları için hafif gradyan.
+  /// Ürün kart gradient.
   static const List<Color> storeCardGradient = [
-    Color(0xFF7C7BFF),
-    Color(0xFF5FD9C1),
+    Color(0xFF2D6A4F),
+    Color(0xFF52B788),
   ];
 
-  /// Banner ve aksiyon butonlarında kullanılabilecek sıcak gradyan.
+  /// Sıcak gradient — yeşil tonlar.
   static const List<Color> storeWarmGradient = [
-    Color(0xFFFFB86C),
-    Color(0xFFFF8FA2),
+    Color(0xFF40916C),
+    Color(0xFF52B788),
   ];
 
-  /// Serin tonlarda gradyan (mavi-yeşil).
+  /// Serin gradient — koyu→orta yeşil.
   static const List<Color> storeCoolGradient = [
-    Color(0xFF11998e),
-    Color(0xFF38ef7d),
+    Color(0xFF1B4332),
+    Color(0xFF2D6A4F),
   ];
 }

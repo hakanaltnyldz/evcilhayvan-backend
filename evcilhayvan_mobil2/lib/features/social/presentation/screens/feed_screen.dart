@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import '../../data/repositories/post_repository.dart';
@@ -27,8 +26,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     final currentUser = ref.watch(authProvider);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: const Text('Sosyal Feed', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
@@ -48,7 +50,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
         },
         icon: const Icon(Icons.edit_rounded),
         label: const Text('Paylas'),
-        backgroundColor: const Color(0xFF6C63FF),
+        backgroundColor: const Color(0xFF2D6A4F),
+        foregroundColor: Colors.white,
       ),
       body: feedAsync.when(
         data: (posts) {
@@ -57,7 +60,15 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.photo_album_outlined, size: 80, color: Theme.of(context).colorScheme.outlineVariant),
+                  Container(
+                    width: 96,
+                    height: 96,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFD8F3DC),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.photo_album_outlined, size: 48, color: Color(0xFF2D6A4F)),
+                  ),
                   const SizedBox(height: 16),
                   Text('Henuz gonderi yok', style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 8),
@@ -190,10 +201,11 @@ class _PostCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: context.cardColor,
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4)),
+          BoxShadow(color: const Color(0xFF2D6A4F).withOpacity(0.06), blurRadius: 12),
         ],
       ),
       child: Column(
@@ -207,7 +219,7 @@ class _PostCard extends StatelessWidget {
                 // Avatar
                 CircleAvatar(
                   radius: 22,
-                  backgroundColor: const Color(0xFF6C63FF),
+                  backgroundColor: const Color(0xFF2D6A4F),
                   backgroundImage: post.userAvatar != null && post.userAvatar!.isNotEmpty
                       ? CachedNetworkImageProvider('$apiBaseUrl${post.userAvatar}')
                       : null,
@@ -468,7 +480,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
       maxChildSize: 0.95,
       builder: (ctx, sc) => Container(
         decoration: BoxDecoration(
-          color: ctx.cardColor,
+          color: Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
@@ -497,7 +509,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                         final letter = c.userName.isNotEmpty ? c.userName[0].toUpperCase() : '?';
                         return ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: const Color(0xFF6C63FF),
+                            backgroundColor: const Color(0xFF2D6A4F),
                             child: Text(letter, style: const TextStyle(color: Colors.white, fontSize: 13)),
                           ),
                           title: Text(c.userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
@@ -530,7 +542,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                       ? const CircularProgressIndicator()
                       : IconButton(
                           onPressed: _send,
-                          icon: const Icon(Icons.send_rounded, color: Color(0xFF6C63FF)),
+                          icon: const Icon(Icons.send_rounded, color: Color(0xFF2D6A4F)),
                         ),
                 ],
               ),

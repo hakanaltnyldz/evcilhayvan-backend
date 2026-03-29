@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/config/app_config.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/messages/data/repositories/message_repository.dart';
 
@@ -148,7 +147,7 @@ class UserProfileScreen extends ConsumerWidget {
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppPalette.primary, Color(0xFF4F46E5)],
+                  colors: [Color(0xFF1B4332), Color(0xFF2D6A4F)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -164,13 +163,13 @@ class UserProfileScreen extends ConsumerWidget {
                 children: [
                   CircleAvatar(
                     radius: 40,
-                    backgroundColor: AppPalette.primary.withOpacity(0.15),
+                    backgroundColor: const Color(0xFF2D6A4F).withOpacity(0.15),
                     backgroundImage:
                         avatarUrl != null && avatarUrl.isNotEmpty
                             ? NetworkImage(_imgUrl(avatarUrl))
                             : null,
                     child: avatarUrl == null || avatarUrl.isEmpty
-                        ? const Icon(Icons.person, size: 40, color: AppPalette.primary)
+                        ? const Icon(Icons.person, size: 40, color: Color(0xFF2D6A4F))
                         : null,
                   ),
                   const SizedBox(width: 14),
@@ -288,7 +287,7 @@ class _PetMiniCard extends StatelessWidget {
 
     String photoUrl = photos.isNotEmpty ? imgUrl(photos.first) : '';
 
-    Color typeColor = AppPalette.primary;
+    Color typeColor = const Color(0xFF2D6A4F);
     String typeLabel = '';
     switch (advertType) {
       case 'adoption':

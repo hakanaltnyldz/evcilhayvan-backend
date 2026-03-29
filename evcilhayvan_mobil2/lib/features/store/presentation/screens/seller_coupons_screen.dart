@@ -454,7 +454,7 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: isPercent
-                                    ? const Color(0xFF6C63FF).withOpacity(0.1)
+                                    ? const Color(0xFF2D6A4F).withOpacity(0.1)
                                     : const Color(0xFFFF7A59).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
@@ -463,7 +463,7 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: isPercent ? const Color(0xFF6C63FF) : const Color(0xFFFF7A59),
+                                  color: isPercent ? const Color(0xFF2D6A4F) : const Color(0xFFFF7A59),
                                 ),
                               ),
                             ),

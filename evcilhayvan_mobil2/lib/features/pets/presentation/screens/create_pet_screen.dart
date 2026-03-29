@@ -334,7 +334,7 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
                               label: Text(l10n.createPetMatingChip),
                               selected: _advertType == 'mating',
                               onSelected: (v) => setState(() => _advertType = 'mating'),
-                              selectedColor: Colors.purple.shade200,
+                              selectedColor: const Color(0xFFD8F3DC),
                             ),
                           ],
                         ),
@@ -823,7 +823,7 @@ class _MediaChip extends StatelessWidget {
       ),
       deleteIcon: const Icon(Icons.close),
       onDeleted: onRemove,
-      backgroundColor: isImage ? Colors.green.shade50 : Colors.purple.shade50,
+      backgroundColor: isImage ? const Color(0xFFD8F3DC) : Colors.grey.shade100,
     );
   }
 }

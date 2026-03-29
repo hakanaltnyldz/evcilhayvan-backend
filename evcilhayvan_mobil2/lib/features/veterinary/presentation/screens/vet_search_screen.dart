@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import '../../data/repositories/veterinary_repository.dart';
 import '../../domain/models/veterinary_model.dart';
@@ -167,9 +167,11 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(widget.googleSearch ? l10n.vetSearchGoogleTitle : l10n.vetSearchTitle),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           PopupMenuButton<_SortMode>(
@@ -181,7 +183,7 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
               PopupMenuItem(
                 value: _SortMode.distance,
                 child: Row(children: [
-                  Icon(Icons.directions_walk, size: 18, color: _sortMode == _SortMode.distance ? Colors.blue : null),
+                  Icon(Icons.directions_walk, size: 18, color: _sortMode == _SortMode.distance ? const Color(0xFF2D6A4F) : null),
                   const SizedBox(width: 8),
                   Text(l10n.vetSearchSortByDistance, style: TextStyle(fontWeight: _sortMode == _SortMode.distance ? FontWeight.bold : null)),
                 ]),
@@ -286,7 +288,7 @@ class _VetSearchScreenState extends ConsumerState<VetSearchScreen> {
     if (_results == null) {
       return Center(
         child: Text(l10n.vetSearchPrompt,
-            textAlign: TextAlign.center, style: theme.textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant)),
+            textAlign: TextAlign.center, style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600)),
       );
     }
     if (_results!.isEmpty) {

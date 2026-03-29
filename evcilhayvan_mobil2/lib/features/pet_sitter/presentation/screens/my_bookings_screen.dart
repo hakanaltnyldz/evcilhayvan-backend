@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
@@ -33,10 +32,17 @@ class _MyBookingsScreenState extends ConsumerState<MyBookingsScreen> with Single
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(l10n.bookingsTitle),
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
         bottom: TabBar(
           controller: _tab,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white60,
+          indicatorColor: Colors.white,
           tabs: [
             Tab(text: l10n.bookingsTabMine),
             Tab(text: l10n.bookingsTabIncoming),
@@ -100,7 +106,7 @@ class _BookingCard extends StatelessWidget {
       case 'accepted': return Colors.green;
       case 'rejected': return Colors.red;
       case 'cancelled': return Colors.grey;
-      case 'completed': return Colors.blue;
+      case 'completed': return const Color(0xFF2D6A4F);
       default: return Colors.grey;
     }
   }
@@ -111,7 +117,9 @@ class _BookingCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -142,7 +150,7 @@ class _BookingCard extends StatelessWidget {
                 style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
             const SizedBox(height: 4),
             Text('${fmt.format(booking.startDate)} - ${fmt.format(booking.endDate)}'),
-            Text('${booking.totalPrice.toInt()} TL', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+            Text('${booking.totalPrice.toInt()} TL', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2D6A4F))),
             if (booking.notes?.isNotEmpty == true)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
@@ -158,7 +166,7 @@ class _BookingCard extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: () => _respond(context, 'accepted'),
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green, foregroundColor: Colors.white),
+                            backgroundColor: const Color(0xFF2D6A4F), foregroundColor: Colors.white, elevation: 0),
                         child: Text(AppLocalizations.of(context)!.bookingsAccept),
                       ),
                     ),
@@ -180,17 +188,17 @@ class _BookingCard extends StatelessWidget {
                   onPressed: () => _respond(context, 'completed'),
                   icon: const Icon(Icons.check_circle),
                   label: Text(AppLocalizations.of(context)!.bookingsMarkCompleted),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2D6A4F), foregroundColor: Colors.white, elevation: 0),
                 ),
               ),
             if (booking.isCompleted && !booking.hasReview && !isSitter)
               Padding(
                 padding: const EdgeInsets.only(top: 10),
-                child: ElevatedButton.icon(
+                child: OutlinedButton.icon(
                   onPressed: () => _showReviewDialog(context),
                   icon: const Icon(Icons.star),
                   label: Text(AppLocalizations.of(context)!.bookingsReview),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.white),
+                  style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF2D6A4F), side: const BorderSide(color: Color(0xFF2D6A4F))),
                 ),
               ),
           ],

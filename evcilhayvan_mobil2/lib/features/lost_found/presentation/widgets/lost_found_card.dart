@@ -26,8 +26,9 @@ class LostFoundCard extends StatelessWidget {
       onTap: onTap,
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: 2,
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)),
+        elevation: 0,
         clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,7 +58,7 @@ class LostFoundCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: isLost ? Colors.red.shade600 : Colors.green.shade600,
+                      color: isLost ? Colors.red.shade600 : const Color(0xFF2D6A4F),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -113,7 +114,7 @@ class LostFoundCard extends StatelessWidget {
                 if (report.isReunited)
                   Positioned.fill(
                     child: Container(
-                      color: Colors.green.withOpacity(0.6),
+                      color: const Color(0xFF2D6A4F).withOpacity(0.7),
                       child: const Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -150,13 +151,13 @@ class LostFoundCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.primaryContainer,
+                            color: const Color(0xFFD8F3DC),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             '${report.distanceKm!.toStringAsFixed(1)} km',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onPrimaryContainer,
+                              color: const Color(0xFF1B4332),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -203,12 +204,12 @@ class LostFoundCard extends StatelessWidget {
 
   Widget _noPhotoPlaceholder(bool isLost) {
     return Container(
-      color: isLost ? Colors.red.shade50 : Colors.green.shade50,
+      color: isLost ? Colors.red.shade50 : const Color(0xFFD8F3DC),
       child: Center(
         child: Icon(
           isLost ? Icons.search : Icons.pets,
           size: 48,
-          color: isLost ? Colors.red.shade200 : Colors.green.shade200,
+          color: isLost ? Colors.red.shade200 : const Color(0xFF52B788),
         ),
       ),
     );

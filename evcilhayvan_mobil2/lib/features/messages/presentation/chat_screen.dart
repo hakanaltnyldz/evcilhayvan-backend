@@ -12,7 +12,6 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/core/socket_service.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
 import 'package:evcilhayvan_mobil2/core/providers/socket_provider.dart';
@@ -279,10 +278,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 leading: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color: const Color(0xFF2D6A4F).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.photo_library, color: Colors.blue),
+                  child: const Icon(Icons.photo_library, color: Color(0xFF2D6A4F)),
                 ),
                 title: Text(AppLocalizations.of(ctx)!.chatSelectFromGallery),
                 subtitle: Text(AppLocalizations.of(ctx)!.chatSelectFromGallerySub),
@@ -549,7 +548,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     )
                   : DecoratedBox(
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: AppPalette.accentGradient),
+                        gradient: LinearGradient(colors: [const Color(0xFF2D6A4F), const Color(0xFF52B788)]),
                         borderRadius: BorderRadius.circular(18),
                       ),
                       child: _controller.text.isEmpty
@@ -1013,11 +1012,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           gradient: LinearGradient(
             colors: isAdoption
                 ? [Colors.green.shade50, Colors.green.shade100]
-                : [Colors.purple.shade50, Colors.purple.shade100],
+                : [const Color(0xFFD8F3DC), const Color(0xFFD8F3DC)],
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isAdoption ? Colors.green.shade200 : Colors.purple.shade200,
+            color: isAdoption ? Colors.green.shade200 : const Color(0xFF52B788),
             width: 1,
           ),
         ),
@@ -1037,12 +1036,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Icon(
                         Icons.pets,
-                        color: isAdoption ? Colors.green : Colors.purple,
+                        color: isAdoption ? Colors.green : const Color(0xFF52B788),
                       ),
                     )
                   : Icon(
                       Icons.pets,
-                      color: isAdoption ? Colors.green : Colors.purple,
+                      color: isAdoption ? Colors.green : const Color(0xFF52B788),
                     ),
             ),
             const SizedBox(width: 12),
@@ -1064,7 +1063,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: isAdoption ? Colors.green : Colors.purple,
+                          color: isAdoption ? Colors.green : const Color(0xFF52B788),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -1091,7 +1090,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
             Icon(
               Icons.chevron_right,
-              color: isAdoption ? Colors.green : Colors.purple,
+              color: isAdoption ? Colors.green : const Color(0xFF52B788),
             ),
           ],
         ),
@@ -1481,7 +1480,7 @@ class _MessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final background = isMine
-        ? LinearGradient(colors: AppPalette.accentGradient)
+        ? LinearGradient(colors: [const Color(0xFF2D6A4F), const Color(0xFF52B788)])
         : LinearGradient(colors: [
             theme.colorScheme.surface,
             theme.colorScheme.surfaceVariant.withOpacity(0.6),
@@ -1663,10 +1662,10 @@ class _MessageBubble extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: iReacted ? const Color(0xFF6C63FF).withOpacity(0.15) : Theme.of(context).colorScheme.surfaceVariant,
+                color: iReacted ? const Color(0xFF2D6A4F).withOpacity(0.15) : Theme.of(context).colorScheme.surfaceVariant,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: iReacted ? const Color(0xFF6C63FF) : Theme.of(context).dividerColor,
+                  color: iReacted ? const Color(0xFF2D6A4F) : Theme.of(context).dividerColor,
                   width: 1,
                 ),
               ),

@@ -1,14 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-/// CachedNetworkImage placeholder olarak kullan — sola-sağa kayan shimmer dalgası.
-///
-/// ```dart
-/// CachedNetworkImage(
-///   placeholder: (_, __) => ShimmerBox(height: 200),
-///   ...
-/// )
-/// ```
+/// CachedNetworkImage placeholder — Plant Shop yeşil shimmer dalgası.
 class ShimmerBox extends StatelessWidget {
   const ShimmerBox({
     super.key,
@@ -24,8 +17,10 @@ class ShimmerBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseColor = isDark ? const Color(0xFF2A2840) : const Color(0xFFE8E6FF);
-    final highlightColor = isDark ? const Color(0xFF3D3A5C) : const Color(0xFFF5F4FF);
+    final baseColor =
+        isDark ? const Color(0xFF1A2E24) : const Color(0xFFD8F3DC);
+    final highlightColor =
+        isDark ? const Color(0xFF2D4A3E) : const Color(0xFFEDF7F0);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
@@ -61,7 +56,8 @@ class ShimmerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF1E1C30) : const Color(0xFFF0EFFF);
+    final bgColor =
+        isDark ? const Color(0xFF1E2E28) : const Color(0xFFEDF7F0);
 
     return Container(
       margin: margin ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 10),

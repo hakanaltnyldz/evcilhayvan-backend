@@ -248,9 +248,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final addressesAsync = ref.watch(addressNotifierProvider);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
-        title: Text(l10n.checkoutTitle),
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
+        title: Text(l10n.checkoutTitle),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

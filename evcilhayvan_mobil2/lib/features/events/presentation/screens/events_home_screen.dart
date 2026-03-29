@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/event_repository.dart';
@@ -63,9 +62,11 @@ class _EventsHomeScreenState extends ConsumerState<EventsHomeScreen> {
     final eventsAsync = ref.watch(eventListProvider(params));
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(l10n.eventsTitle2),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
@@ -79,7 +80,7 @@ class _EventsHomeScreenState extends ConsumerState<EventsHomeScreen> {
         onPressed: () => context.push('/events/create'),
         icon: const Icon(Icons.add),
         label: Text(l10n.eventsCreateBtn),
-        backgroundColor: AppPalette.primary,
+        backgroundColor: const Color(0xFF2D6A4F),
         foregroundColor: Colors.white,
       ),
       body: Column(
@@ -107,12 +108,12 @@ class _EventsHomeScreenState extends ConsumerState<EventsHomeScreen> {
                     avatar: Icon(
                       cat['icon'] as IconData,
                       size: 16,
-                      color: selected ? Colors.white : AppPalette.primary,
+                      color: selected ? Colors.white : const Color(0xFF2D6A4F),
                     ),
                     label: Text(cat['label'] as String),
                     selected: selected,
                     onSelected: (_) => setState(() => _selectedCategory = catValue),
-                    selectedColor: AppPalette.primary,
+                    selectedColor: const Color(0xFF2D6A4F),
                     labelStyle: TextStyle(
                       color: selected ? Colors.white : null,
                       fontWeight: selected ? FontWeight.bold : FontWeight.normal,

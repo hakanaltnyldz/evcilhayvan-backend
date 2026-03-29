@@ -42,70 +42,63 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF6C63FF), Color(0xFF4F46E5)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ScaleTransition(
-                scale: _scale,
-                child: FadeTransition(
-                  opacity: _fade,
-                  child: Container(
-                    width: 108,
-                    height: 108,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.25),
-                          blurRadius: 32,
-                          offset: const Offset(0, 12),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.pets,
-                      size: 60,
-                      color: Color(0xFF6C63FF),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 28),
-              FadeTransition(
+      backgroundColor: const Color(0xFF1B4332),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ScaleTransition(
+              scale: _scale,
+              child: FadeTransition(
                 opacity: _fade,
-                child: const Text(
-                  'Pati Arkadaşı',
-                  style: TextStyle(
+                child: Container(
+                  width: 108,
+                  height: 108,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D6A4F),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.25),
+                        blurRadius: 32,
+                        offset: const Offset(0, 12),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.pets,
+                    size: 60,
                     color: Colors.white,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.8,
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              FadeTransition(
-                opacity: _fade,
-                child: Text(
-                  'Evcil hayvan dostunun yanında',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 14,
-                  ),
+            ),
+            const SizedBox(height: 28),
+            FadeTransition(
+              opacity: _fade,
+              child: const Text(
+                'Pati Arkadaşı',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2,
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 8),
+            FadeTransition(
+              opacity: _fade,
+              child: const Text(
+                'Evcil hayvan dostunun yanında',
+                style: TextStyle(
+                  color: Color(0xFF95D5B2),
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

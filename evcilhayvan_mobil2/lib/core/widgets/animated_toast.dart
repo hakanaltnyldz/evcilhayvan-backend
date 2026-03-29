@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../theme/app_palette.dart';
+
 
 enum ToastType { success, error, info }
 
@@ -73,7 +73,7 @@ class _AnimatedToastWidgetState extends State<_AnimatedToastWidget> {
     final (color, icon) = switch (widget.type) {
       ToastType.success => (const Color(0xFF4CAF50), Icons.check_circle_outline_rounded),
       ToastType.error   => (const Color(0xFFEF5350), Icons.error_outline_rounded),
-      ToastType.info    => (AppPalette.primary, Icons.info_outline_rounded),
+      ToastType.info    => (const Color(0xFF2D6A4F), Icons.info_outline_rounded),
     };
 
     final toast = Material(

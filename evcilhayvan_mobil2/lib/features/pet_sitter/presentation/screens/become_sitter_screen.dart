@@ -7,7 +7,6 @@ import 'package:dio/dio.dart';
 import 'dart:io';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
 import '../../domain/models/pet_sitter_model.dart';
@@ -218,9 +217,11 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
     final speciesOptions = _getSpeciesOptions(l10n);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(isEdit ? l10n.sitterEditProfile : l10n.sitterBecomeSitterBtn),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -238,21 +239,21 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
                     children: [
                       CircleAvatar(
                         radius: 50,
-                        backgroundColor: AppPalette.primary.withOpacity(0.1),
+                        backgroundColor: const Color(0xFFD8F3DC),
                         backgroundImage: _avatarFile != null
                             ? FileImage(File(_avatarFile!.path)) as ImageProvider
                             : (_existingAvatar != null && _existingAvatar!.isNotEmpty)
                                 ? NetworkImage('$apiBaseUrl$_existingAvatar')
                                 : null,
                         child: (_avatarFile == null && (_existingAvatar == null || _existingAvatar!.isEmpty))
-                            ? const Icon(Icons.person, size: 50, color: AppPalette.primary)
+                            ? const Icon(Icons.person, size: 50, color: Color(0xFF2D6A4F))
                             : null,
                       ),
                       Positioned(
                         bottom: 0, right: 0,
                         child: Container(
                           padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(color: AppPalette.primary, shape: BoxShape.circle),
+                          decoration: const BoxDecoration(color: Color(0xFF2D6A4F), shape: BoxShape.circle),
                           child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
                         ),
                       ),
@@ -294,8 +295,9 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
                     : const Icon(Icons.my_location),
                 label: Text(_lat != null ? l10n.sitterLocationObtained : l10n.sitterUseLocation),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _lat != null ? Colors.green : null,
-                  foregroundColor: _lat != null ? Colors.white : null,
+                  backgroundColor: _lat != null ? const Color(0xFF2D6A4F) : null,
+                  foregroundColor: _lat != null ? Colors.white : const Color(0xFF2D6A4F),
+                  elevation: 0,
                 ),
               ),
               const SizedBox(height: 12),
@@ -320,8 +322,9 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
                       if (selected) _speciesServed.remove(opt['value']);
                       else _speciesServed.add(opt['value']!);
                     }),
-                    selectedColor: AppPalette.primary.withOpacity(0.2),
-                    checkmarkColor: AppPalette.primary,
+                    selectedColor: const Color(0xFF2D6A4F),
+                    labelStyle: TextStyle(color: selected ? Colors.white : null),
+                    checkmarkColor: Colors.white,
                   );
                 }).toList(),
               ),
@@ -355,10 +358,12 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
               ElevatedButton(
                 onPressed: _loading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppPalette.primary,
+                  backgroundColor: const Color(0xFF2D6A4F),
                   foregroundColor: Colors.white,
+                  elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  minimumSize: const Size.fromHeight(52),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
                 child: _loading
                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
@@ -382,7 +387,9 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(

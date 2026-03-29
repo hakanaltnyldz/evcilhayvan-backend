@@ -9,7 +9,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/services/fcm_service.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_colors.dart';
+
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/socket_service.dart';
 import 'package:evcilhayvan_mobil2/core/providers/socket_provider.dart';
@@ -360,7 +361,7 @@ class _MainShellState extends ConsumerState<MainShell> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('🗓️ $petName için yarın $vetName randevunuz var!'),
-              backgroundColor: Colors.teal.shade600,
+              backgroundColor: const Color(0xFF2D6A4F),
               duration: const Duration(seconds: 5),
               action: SnackBarAction(
                 label: AppLocalizations.of(context)!.shellApptSnackView,
@@ -563,7 +564,7 @@ class _MainShellState extends ConsumerState<MainShell> {
           padding: const EdgeInsets.only(bottom: 76),
           child: FloatingActionButton.small(
             onPressed: () => context.pushNamed('guide'),
-            backgroundColor: AppPalette.primary,
+            backgroundColor: const Color(0xFF2D6A4F),
             foregroundColor: Colors.white,
             elevation: 4,
             tooltip: l10n.shellGuideFab,
@@ -612,19 +613,15 @@ class _MainShellState extends ConsumerState<MainShell> {
           child: Container(
             clipBehavior: Clip.none,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  context.scaffoldBg.withOpacity(0.97),
-                  theme.colorScheme.surfaceVariant.withOpacity(0.95),
-                ],
-              ),
+              color: context.isDark ? const Color(0xFF1E1E1E) : Colors.white,
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: context.subtleBorder, width: 0.5),
+              border: Border.all(color: Colors.grey.shade200, width: 0.5),
               boxShadow: [
                 BoxShadow(
-                  color: theme.colorScheme.primary.withOpacity(0.18),
-                  blurRadius: 28,
-                  offset: const Offset(0, 18),
+                  color: kPrimaryGreen.withOpacity(0.12),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
@@ -840,7 +837,7 @@ class _PillNavItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
-    final mutedColor = theme.colorScheme.onSurfaceVariant;
+    final mutedColor = Colors.grey.shade500;
 
     return GestureDetector(
       onTap: onTap,
@@ -852,13 +849,13 @@ class _PillNavItemWidget extends StatelessWidget {
         transformAlignment: Alignment.center,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withOpacity(0.13) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected ? kPrimaryPale : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: primaryColor.withOpacity(0.22),
-                    blurRadius: 12,
+                    color: kPrimaryGreen.withOpacity(0.20),
+                    blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
                 ]

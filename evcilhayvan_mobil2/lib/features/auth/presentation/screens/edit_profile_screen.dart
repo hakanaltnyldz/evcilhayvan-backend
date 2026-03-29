@@ -102,9 +102,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     // build metodu içinde 'watch' kullanarak state'i izle
     final currentUser = ref.watch(authProvider);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.editProfileTitle),
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -141,7 +146,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         child: IconButton(
                           icon: const Icon(Icons.camera_alt),
                           style: IconButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                            backgroundColor: const Color(0xFFD8F3DC),
+                            foregroundColor: const Color(0xFF2D6A4F),
                           ),
                           onPressed: _isLoading ? null : _uploadAvatar,
                         ),

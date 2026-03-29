@@ -10,13 +10,13 @@ import 'package:evcilhayvan_mobil2/features/store/domain/models/cart_item_model.
 import 'package:evcilhayvan_mobil2/features/store/providers/cart_providers.dart';
 
 const List<Color> _cartGradientA = [
-  Color(0xFF7C7BFF),
-  Color(0xFF5FD9C1),
+  Color(0xFF2D6A4F),
+  Color(0xFF52B788),
 ];
 
 const List<Color> _cartGradientB = [
-  Color(0xFFFFB86C),
-  Color(0xFFFF8FA2),
+  Color(0xFF40916C),
+  Color(0xFF74C69D),
 ];
 
 class CartScreen extends ConsumerStatefulWidget {
@@ -148,12 +148,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppPalette.storeSoftBlue.withOpacity(0.3),
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(
           l10n.cartTitle,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           if (cartAsync.value != null && cartAsync.value!.items.isNotEmpty)
@@ -459,11 +461,12 @@ class _CartSummary extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: context.cardColor,
+        color: theme.colorScheme.surface,
+        border: const Border(top: BorderSide(color: Color(0xFFD8F3DC), width: 1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
+            color: const Color(0xFF2D6A4F).withOpacity(0.08),
+            blurRadius: 16,
             offset: const Offset(0, -4),
           ),
         ],

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../theme/app_palette.dart';
+
 
 /// Sonuç bulunamadığında gösterilen animasyonlu boş durum widget'ı.
 ///
@@ -34,7 +34,7 @@ class AnimatedEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = iconColor ?? AppPalette.primary;
+    final color = iconColor ?? const Color(0xFF2D6A4F);
 
     return Center(
       child: Padding(
@@ -79,7 +79,7 @@ class AnimatedEmptyState extends StatelessWidget {
               Text(
                 subtitle!,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: AppPalette.onSurfaceVariant,
+                  color: Colors.grey.shade600,
                 ),
                 textAlign: TextAlign.center,
               )

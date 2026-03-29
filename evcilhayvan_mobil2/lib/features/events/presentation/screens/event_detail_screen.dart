@@ -6,7 +6,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import '../../data/repositories/event_repository.dart';
@@ -65,6 +64,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         body: ErrorView(message: e.toString(), onRetry: () => ref.invalidate(eventDetailProvider(widget.eventId))),
       ),
       data: (event) => Scaffold(
+        backgroundColor: const Color(0xFFF4FAF6),
         body: CustomScrollView(
           slivers: [
             _buildSliverAppBar(event, theme),
@@ -195,6 +195,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     return SliverAppBar(
       expandedHeight: photos.isNotEmpty ? 260 : 0,
       pinned: true,
+      backgroundColor: const Color(0xFF1B4332),
+      foregroundColor: Colors.white,
       flexibleSpace: photos.isNotEmpty
           ? FlexibleSpaceBar(
               background: Stack(
@@ -254,8 +256,8 @@ class _CategoryRow extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(color: AppPalette.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
-          child: Text(event.categoryLabel, style: const TextStyle(color: AppPalette.primary, fontWeight: FontWeight.bold, fontSize: 13)),
+          decoration: BoxDecoration(color: const Color(0xFFD8F3DC), borderRadius: BorderRadius.circular(20)),
+          child: Text(event.categoryLabel, style: const TextStyle(color: Color(0xFF2D6A4F), fontWeight: FontWeight.bold, fontSize: 13)),
         ),
       ],
     );
@@ -268,13 +270,17 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(children: children),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(color: const Color(0xFF2D6A4F).withOpacity(0.06), blurRadius: 12),
+        ],
       ),
+      padding: const EdgeInsets.all(12),
+      child: Column(children: children),
     );
   }
 }
@@ -290,7 +296,7 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: AppPalette.primary),
+          Icon(icon, size: 18, color: const Color(0xFF2D6A4F)),
           const SizedBox(width: 10),
           Expanded(child: Text(text, style: const TextStyle(fontSize: 14))),
         ],
@@ -358,7 +364,7 @@ class _AttendanceBar extends StatelessWidget {
                           icon: Icon(myStatus == 'going' ? Icons.check_circle : Icons.event_available),
                           label: Text(myStatus == 'going' ? 'Katiliyorum' : 'Katil'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: myStatus == 'going' ? Colors.green : AppPalette.primary,
+                            backgroundColor: myStatus == 'going' ? const Color(0xFF52B788) : const Color(0xFF2D6A4F),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

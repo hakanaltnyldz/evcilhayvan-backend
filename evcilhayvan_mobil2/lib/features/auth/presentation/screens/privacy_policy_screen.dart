@@ -97,6 +97,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.privacyPolicyTitle),
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
@@ -150,10 +153,13 @@ class _Section extends StatelessWidget {
         children: [
           Text(
             title,
-            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF2D6A4F),
+            ),
           ),
           const SizedBox(height: 8),
-          Text(content, style: theme.textTheme.bodyMedium),
+          Text(content, style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade700)),
         ],
       ),
     );

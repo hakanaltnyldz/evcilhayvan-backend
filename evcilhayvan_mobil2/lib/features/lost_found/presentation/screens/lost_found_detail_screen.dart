@@ -35,13 +35,15 @@ class LostFoundDetailScreen extends ConsumerWidget {
         final isOwner = currentUser != null && currentUser.id == report.userId;
 
         return Scaffold(
+          backgroundColor: const Color(0xFFF4FAF6),
           body: CustomScrollView(
             slivers: [
               // Photo gallery
               SliverAppBar(
                 expandedHeight: 300,
                 pinned: true,
-                backgroundColor: report.isLost ? Colors.red.shade700 : Colors.green.shade700,
+                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFF1B4332),
                 flexibleSpace: FlexibleSpaceBar(
                   background: report.photos.isNotEmpty
                       ? PageView.builder(
@@ -59,12 +61,12 @@ class LostFoundDetailScreen extends ConsumerWidget {
                           },
                         )
                       : Container(
-                          color: report.isLost ? Colors.red.shade100 : Colors.green.shade100,
+                          color: const Color(0xFFD8F3DC),
                           child: Center(
                             child: Icon(
                               report.isLost ? Icons.search : Icons.pets,
                               size: 80,
-                              color: report.isLost ? Colors.red.shade300 : Colors.green.shade300,
+                              color: const Color(0xFF52B788),
                             ),
                           ),
                         ),
@@ -124,7 +126,7 @@ class LostFoundDetailScreen extends ConsumerWidget {
                       const SizedBox(height: 16),
 
                       // Description
-                      Text('Aciklama', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                      Text('Aciklama', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: const Color(0xFF1B4332))),
                       const SizedBox(height: 8),
                       Text(report.description, style: Theme.of(context).textTheme.bodyLarge),
                       const SizedBox(height: 16),
@@ -138,7 +140,7 @@ class LostFoundDetailScreen extends ConsumerWidget {
                         const SizedBox(height: 8),
                         Card(
                           child: ListTile(
-                            leading: const Icon(Icons.location_on, color: AppPalette.primary),
+                            leading: const Icon(Icons.location_on, color: Color(0xFF2D6A4F)),
                             title: Text(report.lastSeenAddress!),
                             subtitle: report.distanceKm != null
                                 ? Text('${report.distanceKm!.toStringAsFixed(1)} km uzakta')
@@ -155,7 +157,8 @@ class LostFoundDetailScreen extends ConsumerWidget {
                         Card(
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: AppPalette.primary.withOpacity(0.1),
+                              backgroundColor: const Color(0xFFD8F3DC),
+                              foregroundColor: const Color(0xFF2D6A4F),
                               child: Text(
                                 report.userName!.isNotEmpty ? report.userName![0].toUpperCase() : '?',
                                 style: const TextStyle(fontWeight: FontWeight.bold),
@@ -179,10 +182,11 @@ class LostFoundDetailScreen extends ConsumerWidget {
                                   icon: const Icon(Icons.phone),
                                   label: const Text('Ara'),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green.shade600,
+                                    backgroundColor: const Color(0xFF2D6A4F),
                                     foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(vertical: 14),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                    elevation: 0,
                                   ),
                                 ),
                               ),
@@ -199,10 +203,11 @@ class LostFoundDetailScreen extends ConsumerWidget {
                                 icon: const Icon(Icons.chat),
                                 label: const Text('Mesaj Gonder'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppPalette.primary,
+                                  backgroundColor: const Color(0xFF2D6A4F),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  elevation: 0,
                                 ),
                               ),
                             ),
@@ -221,10 +226,11 @@ class LostFoundDetailScreen extends ConsumerWidget {
                                 icon: const Icon(Icons.check_circle),
                                 label: const Text('Kavusturuldu'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green.shade600,
+                                  backgroundColor: const Color(0xFF2D6A4F),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  elevation: 0,
                                 ),
                               ),
                             ),
@@ -344,13 +350,13 @@ class _StatusBadge extends StatelessWidget {
     IconData icon;
 
     if (report.isReunited) {
-      bg = Colors.green.shade100;
-      fg = Colors.green.shade800;
+      bg = const Color(0xFFD8F3DC);
+      fg = const Color(0xFF1B4332);
       label = 'Kavusturuldu';
       icon = Icons.check_circle;
     } else if (report.status == 'cancelled') {
-      bg = Theme.of(context).colorScheme.surfaceVariant;
-      fg = Theme.of(context).colorScheme.onSurfaceVariant;
+      bg = Colors.grey.shade200;
+      fg = Colors.grey.shade700;
       label = 'Iptal';
       icon = Icons.cancel;
     } else if (report.isLost) {
@@ -359,8 +365,8 @@ class _StatusBadge extends StatelessWidget {
       label = 'Kayip';
       icon = Icons.search;
     } else {
-      bg = Colors.green.shade100;
-      fg = Colors.green.shade800;
+      bg = const Color(0xFFD8F3DC);
+      fg = const Color(0xFF1B4332);
       label = 'Bulunan';
       icon = Icons.pets;
     }
@@ -393,7 +399,9 @@ class _InfoCard extends StatelessWidget {
     final dateStr = DateFormat('dd.MM.yyyy').format(report.lastSeenDate);
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)),
+      elevation: 0,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -420,7 +428,7 @@ class _InfoCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          Icon(icon, size: 18, color: const Color(0xFF2D6A4F)),
           const SizedBox(width: 10),
           Text('$label: ', style: const TextStyle(fontWeight: FontWeight.w600)),
           Expanded(child: Text(value)),

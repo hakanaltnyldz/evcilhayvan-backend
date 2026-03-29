@@ -199,9 +199,11 @@ class _ReportLostFoundScreenState extends ConsumerState<ReportLostFoundScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: const Text('Kayip/Bulunan Ilani'),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -242,7 +244,7 @@ class _ReportLostFoundScreenState extends ConsumerState<ReportLostFoundScreen> {
                     label: Text(opt['label']!),
                     selected: selected,
                     onSelected: (_) => setState(() => _species = opt['value']!),
-                    selectedColor: AppPalette.primary.withOpacity(0.2),
+                    selectedColor: const Color(0xFFD8F3DC),
                   );
                 }).toList(),
               ),
@@ -323,11 +325,11 @@ class _ReportLostFoundScreenState extends ConsumerState<ReportLostFoundScreen> {
                           width: 100,
                           height: 100,
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceVariant,
+                            color: const Color(0xFFD8F3DC),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Theme.of(context).dividerColor),
+                            border: Border.all(color: const Color(0xFF52B788), style: BorderStyle.solid),
                           ),
-                          child: Icon(Icons.add_a_photo, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 32),
+                          child: const Icon(Icons.add_a_photo, color: Color(0xFF2D6A4F), size: 32),
                         ),
                       ),
                   ],
@@ -347,13 +349,13 @@ class _ReportLostFoundScreenState extends ConsumerState<ReportLostFoundScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
-                    color: context.cardColor,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: context.subtleBorder),
+                    border: Border.all(color: Colors.grey.shade300),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today, color: AppPalette.primary, size: 20),
+                      const Icon(Icons.calendar_today, color: Color(0xFF2D6A4F), size: 20),
                       const SizedBox(width: 12),
                       Text(_formatDate(_lastSeenDate), style: theme.textTheme.bodyLarge),
                     ],
@@ -375,8 +377,9 @@ class _ReportLostFoundScreenState extends ConsumerState<ReportLostFoundScreen> {
                           : const Icon(Icons.my_location),
                       label: Text(_lat != null ? 'Konum Alindi' : 'Konumumu Kullan'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _lat != null ? Colors.green : null,
-                        foregroundColor: _lat != null ? Colors.white : null,
+                        backgroundColor: _lat != null ? const Color(0xFF2D6A4F) : const Color(0xFFD8F3DC),
+                        foregroundColor: _lat != null ? Colors.white : const Color(0xFF2D6A4F),
+                        elevation: 0,
                       ),
                     ),
                   ),
@@ -431,10 +434,12 @@ class _ReportLostFoundScreenState extends ConsumerState<ReportLostFoundScreen> {
               ElevatedButton(
                 onPressed: _loading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _type == 'lost' ? Colors.red.shade600 : Colors.green.shade600,
+                  backgroundColor: const Color(0xFF2D6A4F),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  elevation: 0,
+                  minimumSize: const Size.fromHeight(52),
                 ),
                 child: _loading
                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 
 class ModernBackground extends StatelessWidget {
   final Widget child;
@@ -30,7 +30,7 @@ class ModernBackground extends StatelessWidget {
         gradient: LinearGradient(
           begin: begin,
           end: end,
-          colors: colors ?? AppPalette.backgroundGradient,
+          colors: colors ?? [const Color(0xFFF4FAF6), Colors.white],
         ),
       ),
       child: child,

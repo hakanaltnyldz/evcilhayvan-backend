@@ -4,9 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
-import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import '../../data/repositories/adoption_repository.dart';
 import '../../domain/models/adoption_application.dart';
 
@@ -36,15 +34,17 @@ class _AdoptionApplicationsScreenState extends ConsumerState<AdoptionApplication
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.adoptionAppsTitle),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppPalette.primary,
-          unselectedLabelColor: AppPalette.onSurfaceVariant,
-          indicatorColor: AppPalette.primary,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white60,
+          indicatorColor: Colors.white,
           tabs: [
             Tab(text: AppLocalizations.of(context)!.adoptionAppsTabInbox),
             Tab(text: AppLocalizations.of(context)!.adoptionAppsTabSent),
@@ -175,11 +175,16 @@ Widget _emptyState(BuildContext context, IconData icon, String title, String sub
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 64, color: AppPalette.onSurfaceVariant.withOpacity(0.3)),
+          Container(
+            width: 96,
+            height: 96,
+            decoration: const BoxDecoration(color: Color(0xFFD8F3DC), shape: BoxShape.circle),
+            child: Icon(icon, size: 48, color: const Color(0xFF2D6A4F)),
+          ),
           const SizedBox(height: 16),
           Text(title, style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
-          Text(subtitle, textAlign: TextAlign.center, style: theme.textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant)),
+          Text(subtitle, textAlign: TextAlign.center, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
         ],
       ),
     ),
@@ -196,7 +201,7 @@ class _ApplicationCard extends StatelessWidget {
 
   Color get _statusColor {
     switch (application.status) {
-      case 'ACCEPTED': return Colors.green;
+      case 'ACCEPTED': return const Color(0xFF2D6A4F);
       case 'REJECTED': return Colors.red;
       case 'CANCELLED': return Colors.grey;
       default: return Colors.orange;
@@ -227,9 +232,10 @@ class _ApplicationCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: context.cardColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 3))],
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [BoxShadow(color: const Color(0xFF2D6A4F).withOpacity(0.06), blurRadius: 12)],
       ),
       child: Column(
         children: [
@@ -261,9 +267,9 @@ class _ApplicationCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       if (isInbox && applicant != null)
-                        Text(AppLocalizations.of(context)!.adoptionAppsApplicant(applicant.name), style: theme.textTheme.bodySmall?.copyWith(color: AppPalette.onSurfaceVariant))
+                        Text(AppLocalizations.of(context)!.adoptionAppsApplicant(applicant.name), style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant))
                       else if (listing?.species != null)
-                        Text(listing!.species!, style: theme.textTheme.bodySmall?.copyWith(color: AppPalette.onSurfaceVariant)),
+                        Text(listing!.species!, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                       const SizedBox(height: 4),
                       Row(
                         children: [
@@ -328,8 +334,9 @@ class _ApplicationCard extends StatelessWidget {
                       icon: const Icon(Icons.check, size: 18),
                       label: Text(AppLocalizations.of(context)!.adoptionAppsAcceptBtn),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: const Color(0xFF2D6A4F),
                         foregroundColor: Colors.white,
+                        elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
@@ -348,8 +355,9 @@ class _ApplicationCard extends StatelessWidget {
                   icon: const Icon(Icons.chat),
                   label: Text(AppLocalizations.of(context)!.adoptionAppsGoToChat),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppPalette.primary,
+                    backgroundColor: const Color(0xFF2D6A4F),
                     foregroundColor: Colors.white,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
@@ -362,8 +370,8 @@ class _ApplicationCard extends StatelessWidget {
 
   Widget _placeholder() {
     return Container(
-      color: AppPalette.background,
-      child: const Center(child: Icon(Icons.pets, color: AppPalette.onSurfaceVariant)),
+      color: const Color(0xFFD8F3DC),
+      child: const Center(child: Icon(Icons.pets, color: Color(0xFF2D6A4F))),
     );
   }
 }
@@ -392,7 +400,7 @@ class _ApplicationTimeline extends StatelessWidget {
                 child: Container(
                   height: 2,
                   color: steps[i].$2 == _StepState.done
-                      ? Colors.green.withOpacity(0.6)
+                      ? const Color(0xFF2D6A4F).withOpacity(0.6)
                       : Theme.of(context).dividerColor,
                 ),
               ),
@@ -453,11 +461,11 @@ class _TimelineStep extends StatelessWidget {
     IconData icon;
     switch (state) {
       case _StepState.done:
-        color = Colors.green;
+        color = const Color(0xFF2D6A4F);
         icon = Icons.check_circle_rounded;
         break;
       case _StepState.active:
-        color = Colors.orange;
+        color = const Color(0xFF52B788);
         icon = Icons.radio_button_checked_rounded;
         break;
       case _StepState.error:

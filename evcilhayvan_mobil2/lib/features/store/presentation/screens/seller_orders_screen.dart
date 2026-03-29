@@ -40,13 +40,15 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
 
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
         title: Text(
           l10n.sellerOrdersTitle,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        elevation: 0,
         actions: [
           IconButton(
             onPressed: () {
@@ -159,14 +161,14 @@ class _StatsSummary extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF7C7BFF), Color(0xFF5FD9C1)],
+          colors: [Color(0xFF2D6A4F), Color(0xFF52B788)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.purple.withOpacity(0.3),
+            color: const Color(0xFF52B788).withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -355,9 +357,9 @@ class _OrderCard extends StatelessWidget {
       case OrderStatus.pending:
         return Colors.orange;
       case OrderStatus.processing:
-        return Colors.blue;
+        return const Color(0xFF2D6A4F);
       case OrderStatus.shipped:
-        return Colors.purple;
+        return const Color(0xFF52B788);
       case OrderStatus.delivered:
         return Colors.green;
       case OrderStatus.cancelled:
@@ -494,7 +496,7 @@ class _OrderCard extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: () => onStatusUpdate('processing'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
+                          backgroundColor: const Color(0xFF2D6A4F),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -508,7 +510,7 @@ class _OrderCard extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: () => onStatusUpdate('shipped'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple,
+                          backgroundColor: const Color(0xFF52B788),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),

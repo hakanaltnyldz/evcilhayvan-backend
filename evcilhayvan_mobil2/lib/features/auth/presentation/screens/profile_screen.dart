@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
@@ -188,7 +187,7 @@ class ProfileScreen extends ConsumerWidget {
                           icon: const Icon(Icons.add, size: 16),
                           label: const Text('Sahiplendir', overflow: TextOverflow.ellipsis),
                           style: FilledButton.styleFrom(
-                            backgroundColor: Colors.green.shade600,
+                            backgroundColor: const Color(0xFF2D6A4F),
                             padding: const EdgeInsets.symmetric(vertical: 7),
                           ),
                         ),
@@ -200,7 +199,7 @@ class ProfileScreen extends ConsumerWidget {
                           icon: const Icon(Icons.favorite, size: 16),
                           label: const Text('Eşleştir', overflow: TextOverflow.ellipsis),
                           style: FilledButton.styleFrom(
-                            backgroundColor: Colors.purple.shade600,
+                            backgroundColor: const Color(0xFF52B788),
                             padding: const EdgeInsets.symmetric(vertical: 7),
                           ),
                         ),
@@ -267,8 +266,8 @@ class _ProfileHeader extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
-              ? [const Color(0xFF1A1A2E), const Color(0xFF2D1B4E)]
-              : [const Color(0xFFB2F5EA), const Color(0xFFE9D8FD)],
+              ? [const Color(0xFF0D2B1E), const Color(0xFF1B4332)]
+              : [const Color(0xFF1B4332), const Color(0xFF2D6A4F)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -291,7 +290,7 @@ class _ProfileHeader extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundColor: AppPalette.primary.withOpacity(0.15),
+                      backgroundColor: const Color(0xFF2D6A4F).withOpacity(0.15),
                       backgroundImage: avatarUrl != null ? CachedNetworkImageProvider(avatarUrl) : null,
                       child: avatarUrl == null
                           ? Text(initial, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold))
@@ -311,7 +310,7 @@ class _ProfileHeader extends StatelessWidget {
                       right: 0,
                       child: Container(
                         padding: const EdgeInsets.all(3),
-                        decoration: const BoxDecoration(color: AppPalette.primary, shape: BoxShape.circle),
+                        decoration: const BoxDecoration(color: Color(0xFF2D6A4F), shape: BoxShape.circle),
                         child: const Icon(Icons.edit, size: 10, color: Colors.white),
                       ),
                     ),
@@ -371,11 +370,11 @@ class _ProfileHeader extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              _StatItem(icon: Icons.pets, color: Colors.green, intValue: adoptionCount, label: l10n.profileAdoptionCount),
+              _StatItem(icon: Icons.pets, color: const Color(0xFF2D6A4F), intValue: adoptionCount, label: l10n.profileAdoptionCount),
               Container(width: 1, height: 36, color: theme.colorScheme.outline.withOpacity(0.25)),
-              _StatItem(icon: Icons.favorite, color: Colors.purple, intValue: matingCount, label: l10n.profileMatingCount),
+              _StatItem(icon: Icons.favorite, color: const Color(0xFF52B788), intValue: matingCount, label: l10n.profileMatingCount),
               Container(width: 1, height: 36, color: theme.colorScheme.outline.withOpacity(0.25)),
-              _StatItem(icon: Icons.remove_red_eye_outlined, color: Colors.blue, intValue: totalViews, label: l10n.profileViewCount),
+              _StatItem(icon: Icons.remove_red_eye_outlined, color: const Color(0xFF40916C), intValue: totalViews, label: l10n.profileViewCount),
             ],
           ),
         ],
@@ -385,8 +384,8 @@ class _ProfileHeader extends StatelessWidget {
 
   Color _roleColor(String? role) {
     switch (role) {
-      case 'seller': return Colors.blue;
-      case 'sitter': return Colors.teal;
+      case 'seller': return const Color(0xFF2D6A4F);
+      case 'sitter': return const Color(0xFF40916C);
       case 'admin':  return Colors.red;
       default:       return Colors.grey;
     }
@@ -425,13 +424,13 @@ class _StatsRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _StatItem(icon: Icons.pets, color: Colors.green, intValue: adoptionCount, label: l10n.profileAdoptionCount),
+          _StatItem(icon: Icons.pets, color: const Color(0xFF2D6A4F), intValue: adoptionCount, label: l10n.profileAdoptionCount),
           Container(width: 1, height: 40, color: Theme.of(context).dividerColor),
-          _StatItem(icon: Icons.favorite, color: Colors.purple, intValue: matingCount, label: l10n.profileMatingCount),
+          _StatItem(icon: Icons.favorite, color: const Color(0xFF52B788), intValue: matingCount, label: l10n.profileMatingCount),
           Container(width: 1, height: 40, color: Theme.of(context).dividerColor),
           _StatItem(
             icon: Icons.remove_red_eye_outlined,
-            color: Colors.blue,
+            color: const Color(0xFF40916C),
             intValue: totalViews,
             label: l10n.profileViewCount,
           ),
@@ -503,12 +502,12 @@ class _QuickLinksCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _QuickLinkBtn(icon: Icons.favorite_outline,      label: l10n.profileFavorites,     color: Colors.red,    onTap: () => context.pushNamed('favorites')),
-          _QuickLinkBtn(icon: Icons.shopping_bag_outlined, label: l10n.profileOrders,         color: Colors.orange, onTap: () => context.push('/store/orders')),
-          _QuickLinkBtn(icon: Icons.pets_outlined,         label: l10n.profileSitterBtn,      color: Colors.teal,   onTap: () => context.pushNamed('sitter-bookings')),
-          _QuickLinkBtn(icon: Icons.notifications_outlined,label: l10n.profileNotifications,  color: Colors.indigo, onTap: () => context.pushNamed('notifications')),
+          _QuickLinkBtn(icon: Icons.favorite_outline,      label: l10n.profileFavorites,     color: Colors.red,                   onTap: () => context.pushNamed('favorites')),
+          _QuickLinkBtn(icon: Icons.shopping_bag_outlined, label: l10n.profileOrders,         color: Colors.orange,                onTap: () => context.push('/store/orders')),
+          _QuickLinkBtn(icon: Icons.pets_outlined,         label: l10n.profileSitterBtn,      color: const Color(0xFF40916C),      onTap: () => context.pushNamed('sitter-bookings')),
+          _QuickLinkBtn(icon: Icons.notifications_outlined,label: l10n.profileNotifications,  color: const Color(0xFF2D6A4F),      onTap: () => context.pushNamed('notifications')),
           if (isSeller)
-            _QuickLinkBtn(icon: Icons.store_outlined, label: l10n.profileMyStore, color: Colors.blue, onTap: () => context.pushNamed('seller-dashboard')),
+            _QuickLinkBtn(icon: Icons.store_outlined, label: l10n.profileMyStore, color: const Color(0xFF52B788), onTap: () => context.pushNamed('seller-dashboard')),
         ],
       ),
     );

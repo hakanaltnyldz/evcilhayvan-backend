@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:evcilhayvan_mobil2/core/providers/onboarding_provider.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class _OnboardingPage {
@@ -25,7 +24,7 @@ List<_OnboardingPage> _getPages(AppLocalizations l10n) => [
     icon: Icons.pets,
     title: l10n.onboardingPage1Title,
     subtitle: l10n.onboardingPage1Subtitle,
-    gradient: const [Color(0xFF6C63FF), Color(0xFF8F7DFF)],
+    gradient: const [Color(0xFF1B4332), Color(0xFF2D6A4F)],
   ),
   _OnboardingPage(
     icon: Icons.favorite_rounded,
@@ -37,13 +36,13 @@ List<_OnboardingPage> _getPages(AppLocalizations l10n) => [
     icon: Icons.local_hospital_rounded,
     title: l10n.onboardingPage3Title,
     subtitle: l10n.onboardingPage3Subtitle,
-    gradient: const [Color(0xFF2BB673), Color(0xFF54D99F)],
+    gradient: const [Color(0xFF40916C), Color(0xFF52B788)],
   ),
   _OnboardingPage(
     icon: Icons.storefront_rounded,
     title: l10n.onboardingPage4Title,
     subtitle: l10n.onboardingPage4Subtitle,
-    gradient: const [Color(0xFF7C7BFF), Color(0xFF5FD9C1)],
+    gradient: const [Color(0xFF2D6A4F), Color(0xFF74C69D)],
   ),
 ];
 
@@ -110,7 +109,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: Text(
                 AppLocalizations.of(context)!.onboardingSkip,
                 style: const TextStyle(
-                  color: Colors.white70,
+                  color: Color(0xFF52B788),
                   fontWeight: FontWeight.w600,
                   fontSize: 15,
                 ),
@@ -137,8 +136,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       height: 8,
                       decoration: BoxDecoration(
                         color: i == _currentPage
-                            ? Colors.white
-                            : Colors.white38,
+                            ? const Color(0xFF2D6A4F)
+                            : const Color(0xFFB7E4C7),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -149,28 +148,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 // Next / Start button
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: FilledButton(
-                      onPressed: _next,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: _pages[_currentPage].gradient[0],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
-                        ),
-                        elevation: 8,
-                        shadowColor: Colors.black38,
+                  child: FilledButton(
+                    onPressed: _next,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D6A4F),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 52),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Text(
-                        _currentPage == _pages.length - 1
-                            ? AppLocalizations.of(context)!.onboardingStart
-                            : AppLocalizations.of(context)!.onboardingNext,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      _currentPage == _pages.length - 1
+                          ? 'Hadi Başlayalım!'
+                          : AppLocalizations.of(context)!.onboardingNext,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -192,13 +187,7 @@ class _OnboardingPageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: page.gradient,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
+      color: Colors.white,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 36),
@@ -206,12 +195,12 @@ class _OnboardingPageWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(flex: 2),
-              // Animated icon container
+              // Illustration container
               Container(
                 width: 160,
                 height: 160,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.18),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFD8F3DC),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -227,9 +216,9 @@ class _OnboardingPageWidget extends StatelessWidget {
                 page.title,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1B4332),
                   height: 1.2,
                 ),
               ),
@@ -237,9 +226,9 @@ class _OnboardingPageWidget extends StatelessWidget {
               Text(
                 page.subtitle,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.white70,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.grey.shade600,
                   height: 1.5,
                 ),
               ),

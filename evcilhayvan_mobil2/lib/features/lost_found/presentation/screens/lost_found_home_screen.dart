@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/lost_found_repository.dart';
@@ -93,10 +93,11 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.lostFoundTitle2),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
@@ -107,6 +108,9 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
         ],
         bottom: TabBar(
           controller: _tabController,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white60,
           tabs: [
             Tab(
               icon: const Icon(Icons.search, size: 18),
@@ -119,17 +123,7 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
           ],
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: Theme.of(context).brightness == Brightness.dark
-                ? [const Color(0xFF12111F), const Color(0xFF0D0C1A)]
-                : [const Color(0xFFeef2ff), const Color(0xFFF8F9FB)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: SafeArea(
+      body: SafeArea(
           child: _locationLoading || _loading
               ? const Center(child: CircularProgressIndicator())
               : _error != null
@@ -148,11 +142,10 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
                             _buildList(_foundReports ?? []),
                           ],
                         ),
-        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.pushNamed('report-lost-found'),
-        backgroundColor: AppPalette.primary,
+        backgroundColor: const Color(0xFF2D6A4F),
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
         label: Text(AppLocalizations.of(context)!.lostFoundCreateBtn),

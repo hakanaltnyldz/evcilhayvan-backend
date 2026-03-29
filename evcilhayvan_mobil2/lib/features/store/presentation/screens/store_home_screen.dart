@@ -18,30 +18,30 @@ import 'package:evcilhayvan_mobil2/features/store/providers/store_providers.dart
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 const List<Color> _storeBoldBackground = [
-  Color(0xFFF5F2FF),
-  Color(0xFFE9FBFF),
-  Color(0xFFFFF1E2),
+  Color(0xFFF4FAF6),
+  Color(0xFFEDF7F0),
+  Color(0xFFD8F3DC),
 ];
 
 const List<Color> _storeHeroGradient = [
-  Color(0xFF2F1BFF),
-  Color(0xFF00C2FF),
-  Color(0xFFFFC857),
+  Color(0xFF1B4332),
+  Color(0xFF2D6A4F),
+  Color(0xFF52B788),
 ];
 
 const List<Color> _storeCardGradientA = [
-  Color(0xFF3C2BFF),
-  Color(0xFF00B8FF),
+  Color(0xFF1B4332),
+  Color(0xFF2D6A4F),
 ];
 
 const List<Color> _storeCardGradientB = [
-  Color(0xFFFF4D6D),
-  Color(0xFFFFB347),
+  Color(0xFF40916C),
+  Color(0xFF52B788),
 ];
 
 const List<Color> _storeAccentGradient = [
-  Color(0xFF00C2FF),
-  Color(0xFF5EFCE8),
+  Color(0xFF52B788),
+  Color(0xFF74C69D),
 ];
 
 class StoreHomeScreen extends ConsumerStatefulWidget {
@@ -174,7 +174,7 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                colors: [Color(0xFF6C63FF), Color(0xFF9C59FF)],
+                                colors: [Color(0xFF1B4332), Color(0xFF2D6A4F)],
                               ),
                               borderRadius: BorderRadius.circular(14),
                             ),
@@ -947,22 +947,37 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final canShowAction = actionLabel != null && onActionTap != null;
     return Row(
       children: [
+        Container(
+          width: 4,
+          height: 20,
+          decoration: BoxDecoration(
+            color: const Color(0xFF2D6A4F),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 8),
         Expanded(
           child: Text(
             title,
-            style: theme.textTheme.titleLarge?.copyWith(
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w800,
+              color: const Color(0xFF1B4332),
             ),
           ),
         ),
-        if (canShowAction)
-          TextButton(
-            onPressed: onActionTap,
-            child: Text(actionLabel!),
+        if (actionLabel != null && onActionTap != null)
+          GestureDetector(
+            onTap: onActionTap,
+            child: Text(
+              actionLabel!,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF52B788),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
       ],
     );

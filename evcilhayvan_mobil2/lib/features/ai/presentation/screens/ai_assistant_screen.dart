@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
@@ -162,18 +161,18 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
         title: Row(
           children: [
             Container(
               width: 34,
               height: 34,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: AppPalette.heroGradient,
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+              decoration: const BoxDecoration(
+                color: Color(0xFF2D6A4F),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 18),
@@ -284,7 +283,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
                   child: ChoiceChip(
                     label: Text(entry.value),
                     selected: selected,
-                    selectedColor: AppPalette.primary,
+                    selectedColor: const Color(0xFF2D6A4F),
                     labelStyle: TextStyle(
                       color: selected ? Colors.white : null,
                       fontWeight: FontWeight.w600,
@@ -317,7 +316,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
               return FilterChip(
                 label: Text(s, style: const TextStyle(fontSize: 11)),
                 selected: selected,
-                selectedColor: AppPalette.secondary.withOpacity(0.85),
+                selectedColor: const Color(0xFF52B788),
                 labelStyle: TextStyle(
                   color: selected ? Colors.white : null,
                   fontWeight: selected ? FontWeight.w600 : null,
@@ -342,7 +341,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
                   child: Text(
                     AppLocalizations.of(context)!.aiSymptomSelected(_selectedSymptoms.join(', ')),
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppPalette.secondary,
+                      color: const Color(0xFF52B788),
                       fontWeight: FontWeight.w600,
                     ),
                     maxLines: 1,
@@ -372,17 +371,13 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
         const SizedBox(height: 12),
         Center(
           child: Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: AppPalette.heroGradient,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+            width: 96,
+            height: 96,
+            decoration: const BoxDecoration(
+              color: Color(0xFFD8F3DC),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 36),
+            child: const Icon(Icons.smart_toy_rounded, color: Color(0xFF2D6A4F), size: 48),
           ),
         ),
         const SizedBox(height: 16),
@@ -406,7 +401,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
           const SizedBox(height: 20),
           Text(AppLocalizations.of(context)!.aiExampleLabel,
               style: theme.textTheme.labelLarge
-                  ?.copyWith(color: AppPalette.primary, fontWeight: FontWeight.w700)),
+                  ?.copyWith(color: const Color(0xFF2D6A4F), fontWeight: FontWeight.w700)),
           const SizedBox(height: 10),
           Wrap(
             spacing: 8,
@@ -500,14 +495,11 @@ class _MessageBubble extends StatelessWidget {
             Container(
               width: 30,
               height: 30,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                    colors: AppPalette.heroGradient,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight),
+              decoration: const BoxDecoration(
+                color: Color(0xFFD8F3DC),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 14),
+              child: const Icon(Icons.smart_toy_rounded, color: Color(0xFF2D6A4F), size: 14),
             ),
             const SizedBox(width: 8),
           ],
@@ -520,10 +512,10 @@ class _MessageBubble extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                   decoration: BoxDecoration(
                     color: isUser
-                        ? AppPalette.primary
+                        ? const Color(0xFF2D6A4F)
                         : isDark
-                            ? const Color(0xFF2A2843)
-                            : Colors.white,
+                            ? const Color(0xFF1E2E28)
+                            : const Color(0xFFD8F3DC),
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(18),
                       topRight: const Radius.circular(18),
@@ -584,21 +576,18 @@ class _TypingIndicator extends StatelessWidget {
           Container(
             width: 30,
             height: 30,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  colors: AppPalette.heroGradient,
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight),
+            decoration: const BoxDecoration(
+              color: Color(0xFFD8F3DC),
               shape: BoxShape.circle,
             ),
             child:
-                const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 14),
+                const Icon(Icons.smart_toy_rounded, color: Color(0xFF2D6A4F), size: 14),
           ),
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: const Color(0xFFD8F3DC),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(18),
                 topRight: Radius.circular(18),
@@ -612,7 +601,7 @@ class _TypingIndicator extends StatelessWidget {
                     offset: const Offset(0, 2)),
               ],
             ),
-            child: const PawDotLoading(color: AppPalette.primary),
+            child: const PawDotLoading(color: Color(0xFF2D6A4F)),
           ),
         ],
       ),
@@ -679,6 +668,8 @@ class _InputBar extends StatelessWidget {
           FilledButton(
             onPressed: isLoading ? null : () => onSend(),
             style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF2D6A4F),
+              foregroundColor: Colors.white,
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(13),
             ),

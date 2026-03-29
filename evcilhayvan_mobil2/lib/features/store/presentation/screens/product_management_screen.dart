@@ -33,6 +33,8 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
           l10n.productMgmtTitle,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
@@ -882,7 +884,7 @@ class _ProductCard extends StatelessWidget {
                 _CardActionButton(
                   icon: Icons.edit_outlined,
                   label: AppLocalizations.of(context)!.productMgmtEditAction,
-                  color: Colors.blue,
+                  color: const Color(0xFF2D6A4F),
                   onTap: onEdit,
                 ),
                 _CardActionButton(

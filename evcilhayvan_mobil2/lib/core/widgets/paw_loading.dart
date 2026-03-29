@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-import '../theme/app_palette.dart';
+
 
 /// Tüm ekranlarda CircularProgressIndicator yerine kullanılabilecek
 /// pençe animasyonlu özel yükleme göstergesi.
@@ -112,7 +112,7 @@ class _PawDotLoadingState extends State<PawDotLoading>
 
   @override
   Widget build(BuildContext context) {
-    final color = widget.color ?? AppPalette.primary;
+    final color = widget.color ?? const Color(0xFF2D6A4F);
 
     return Row(
       mainAxisSize: MainAxisSize.min,

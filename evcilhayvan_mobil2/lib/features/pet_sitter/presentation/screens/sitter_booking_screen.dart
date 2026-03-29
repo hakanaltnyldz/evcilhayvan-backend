@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
-import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/pets/data/repositories/pets_repository.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
 import '../../domain/models/pet_sitter_model.dart';
@@ -101,7 +99,13 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
     final petsAsync = ref.watch(myPetsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.sitter.displayName} - Rezervasyon')),
+      backgroundColor: const Color(0xFFF4FAF6),
+      appBar: AppBar(
+        title: Text('${widget.sitter.displayName} - Rezervasyon'),
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -124,7 +128,9 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                   ),
                   selected: selected,
                   onSelected: (_) => setState(() => _selectedServiceType = s.type),
-                  selectedColor: AppPalette.primary.withOpacity(0.2),
+                  selectedColor: const Color(0xFF2D6A4F),
+                  labelStyle: TextStyle(color: _selectedServiceType == s.type ? Colors.white : null),
+                  checkmarkColor: Colors.white,
                 );
               }).toList(),
             ),
@@ -163,9 +169,9 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: context.cardColor,
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: context.subtleBorder),
+                        border: Border.all(color: Colors.grey.shade200),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,9 +192,9 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: context.cardColor,
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: context.subtleBorder),
+                        border: Border.all(color: Colors.grey.shade200),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,18 +226,19 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
             // Fiyat ozeti
             if (_selectedServiceType != null)
               Card(
-                color: Colors.green.shade50,
+                color: const Color(0xFFD8F3DC),
+                elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
-                      const Icon(Icons.payments, color: Colors.green),
+                      const Icon(Icons.payments, color: Color(0xFF2D6A4F)),
                       const SizedBox(width: 8),
                       const Text('Tahmini Toplam:', style: TextStyle(fontWeight: FontWeight.w600)),
                       const Spacer(),
                       Text('${_calcPrice().toInt()} TL',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.green)),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF2D6A4F))),
                     ],
                   ),
                 ),
@@ -241,9 +248,11 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
             ElevatedButton(
               onPressed: _loading ? null : _submit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green.shade600,
+                backgroundColor: const Color(0xFF2D6A4F),
                 foregroundColor: Colors.white,
+                elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 16),
+                minimumSize: const Size.fromHeight(52),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               child: _loading

@@ -17,10 +17,11 @@ class NotificationsScreen extends ConsumerWidget {
     final unreadCount = ref.watch(unreadCountProvider);
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text('${AppLocalizations.of(context)!.notificationsTitle}${unreadCount > 0 ? ' ($unreadCount)' : ''}'),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           if (notifications.isNotEmpty) ...[
@@ -61,44 +62,57 @@ class NotificationsScreen extends ConsumerWidget {
           ],
         ],
       ),
-      body: ModernBackground(
-        child: SafeArea(
-          child: notifications.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.notifications_none, size: 72, color: Theme.of(context).colorScheme.outlineVariant),
-                      const SizedBox(height: 16),
-                      Text(
-                        AppLocalizations.of(context)!.notificationsEmpty,
-                        style: Theme.of(context).textTheme.titleMedium,
+      body: SafeArea(
+        child: notifications.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 96,
+                      height: 96,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD8F3DC),
+                        shape: BoxShape.circle,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Yeni bildirimler burada gorunecek.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
+                      child: const Icon(
+                        Icons.notifications_none_rounded,
+                        size: 48,
+                        color: Color(0xFF2D6A4F),
                       ),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  itemCount: notifications.length,
-                  itemBuilder: (context, index) {
-                    final notification = notifications[index];
-                    return _NotificationCard(
-                      notification: notification,
-                      onTap: () => _handleNotificationTap(context, ref, notification),
-                      onDismiss: () {
-                        ref.read(notificationProvider.notifier).removeNotification(notification.id);
-                      },
-                    );
-                  },
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      AppLocalizations.of(context)!.notificationsEmpty,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1B4332),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Yeni bildirimler burada görünecek.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
                 ),
-        ),
+              )
+            : ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                itemCount: notifications.length,
+                itemBuilder: (context, index) {
+                  final notification = notifications[index];
+                  return _NotificationCard(
+                    notification: notification,
+                    onTap: () => _handleNotificationTap(context, ref, notification),
+                    onDismiss: () {
+                      ref.read(notificationProvider.notifier).removeNotification(notification.id);
+                    },
+                  );
+                },
+              ),
       ),
     );
   }
@@ -220,7 +234,7 @@ class _NotificationCard extends StatelessWidget {
       case NotificationType.matchRejected:
         return Colors.red;
       case NotificationType.newMessage:
-        return Colors.blue;
+        return const Color(0xFF2D6A4F);
       case NotificationType.adoptionNew:
         return Colors.orange;
       case NotificationType.adoptionAccepted:
@@ -230,11 +244,11 @@ class _NotificationCard extends StatelessWidget {
       case NotificationType.lostFoundNearby:
         return Colors.deepOrange;
       case NotificationType.sitterBooking:
-        return Colors.indigo;
+        return const Color(0xFF1B4332);
       case NotificationType.vaccinationReminder:
-        return Colors.teal;
+        return const Color(0xFF40916C);
       case NotificationType.orderUpdate:
-        return Colors.purple;
+        return const Color(0xFF52B788);
       case NotificationType.general:
         return Colors.grey;
     }
@@ -244,6 +258,7 @@ class _NotificationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final timeAgo = _formatTimeAgo(notification.createdAt);
+    final iconColor = _getIconColor();
 
     return Dismissible(
       key: Key(notification.id),
@@ -252,90 +267,120 @@ class _NotificationCard extends StatelessWidget {
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        margin: const EdgeInsets.symmetric(vertical: 4),
+        margin: const EdgeInsets.symmetric(vertical: 5),
         decoration: BoxDecoration(
           color: Colors.red.shade400,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const Icon(Icons.delete, color: Colors.white),
+        child: const Icon(Icons.delete_rounded, color: Colors.white),
       ),
-      child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        elevation: notification.isRead ? 0 : 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        color: notification.isRead
-            ? theme.colorScheme.surface.withOpacity(0.7)
-            : theme.colorScheme.surface,
-        child: InkWell(
-          onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 5),
+        decoration: BoxDecoration(
+          color: notification.isRead
+              ? theme.colorScheme.surface
+              : (theme.brightness == Brightness.dark ? const Color(0xFF1E2E28) : Colors.white),
           borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: _getIconColor().withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: notification.isRead ? Colors.grey.shade200 : const Color(0xFFD8F3DC),
+          ),
+          boxShadow: notification.isRead
+              ? null
+              : [
+                  BoxShadow(
+                    color: const Color(0xFF2D6A4F).withOpacity(0.08),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
                   ),
-                  child: Icon(_getIcon(), color: _getIconColor(), size: 22),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: InkWell(
+            onTap: onTap,
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (!notification.isRead)
+                    Container(width: 4, color: const Color(0xFF2D6A4F)),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: iconColor.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(_getIcon(), color: iconColor, size: 22),
+                          ),
+                          const SizedBox(width: 12),
                           Expanded(
-                            child: Text(
-                              notification.title,
-                              style: theme.textTheme.titleSmall?.copyWith(
-                                fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        notification.title,
+                                        style: theme.textTheme.titleSmall?.copyWith(
+                                          fontWeight: notification.isRead
+                                              ? FontWeight.w500
+                                              : FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                    if (!notification.isRead)
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF2D6A4F),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  notification.body,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurface.withOpacity(0.65),
+                                    height: 1.4,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  timeAgo,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF52B788),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          if (!notification.isRead)
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: AppPalette.primary,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        notification.body,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.7),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        timeAgo,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.5),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
-  }
-}
+  }}
 
 String _formatTimeAgo(DateTime dateTime) {
   final diff = DateTime.now().difference(dateTime);

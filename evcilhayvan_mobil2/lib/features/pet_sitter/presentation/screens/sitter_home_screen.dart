@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
@@ -71,10 +71,11 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
     final services = _getServices(l10n);
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(l10n.sitterFindTitle),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           if (user != null)
@@ -89,8 +90,8 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: Theme.of(context).brightness == Brightness.dark
-                ? [const Color(0xFF0E1F16), const Color(0xFF12111F)]
-                : [const Color(0xFFe8f5e9), const Color(0xFFF8F9FB)],
+                ? [const Color(0xFF1B4332), const Color(0xFF121212)]
+                : [const Color(0xFFF4FAF6), const Color(0xFFF8F9FB)],
             begin: Alignment.topCenter, end: Alignment.bottomCenter,
           ),
         ),
@@ -116,7 +117,7 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
                           setState(() => _selectedService = s['value'] as String?);
                           _load();
                         },
-                        selectedColor: AppPalette.primary.withOpacity(0.2),
+                        selectedColor: const Color(0xFF2D6A4F).withOpacity(0.2),
                       ),
                     );
                   },

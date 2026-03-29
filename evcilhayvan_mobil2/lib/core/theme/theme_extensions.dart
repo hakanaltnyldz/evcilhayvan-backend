@@ -1,27 +1,25 @@
 // lib/core/theme/theme_extensions.dart
 //
-// Dark-aware color helpers.
+// Dark-aware color helpers — Plant Shop Green.
 // Usage: context.cardColor, context.subtleBackground, etc.
-// These automatically return the correct color for light OR dark mode.
 
 import 'package:flutter/material.dart';
-import 'app_palette.dart';
 
 extension AppThemeContext on BuildContext {
   ThemeData get theme => Theme.of(this);
   ColorScheme get cs => Theme.of(this).colorScheme;
   bool get isDark => Theme.of(this).brightness == Brightness.dark;
 
-  // White in light → dark surface in dark
-  Color get cardColor => isDark ? const Color(0xFF1E1C30) : Colors.white;
+  // White in light → dark green surface in dark
+  Color get cardColor => isDark ? const Color(0xFF1E2E28) : Colors.white;
 
   // Soft background tints
   Color get subtleBackground =>
-      isDark ? const Color(0xFF2A2843) : const Color(0xFFF4F3FF);
+      isDark ? const Color(0xFF1A2E24) : const Color(0xFFF4FAF6);
 
-  // Store-specific soft blue panel
+  // Store-specific soft panel
   Color get storeSoftColor =>
-      isDark ? const Color(0xFF1A2040) : AppPalette.storeSoftBlue;
+      isDark ? const Color(0xFF1A2E24) : const Color(0xFFD8F3DC);
 
   // Divider / border
   Color get subtleBorder =>
@@ -29,17 +27,17 @@ extension AppThemeContext on BuildContext {
 
   // Text on card
   Color get onCard =>
-      isDark ? Colors.white : AppPalette.onBackground;
+      isDark ? Colors.white : const Color(0xFF1B4332);
 
   // Secondary text
   Color get secondaryText =>
-      isDark ? const Color(0xFFB0AECF) : AppPalette.onSurfaceVariant;
+      isDark ? const Color(0xFF95D5B2) : Colors.grey.shade600;
 
   // Input fill
   Color get inputFill =>
-      isDark ? const Color(0xFF2A2843) : Colors.white;
+      isDark ? const Color(0xFF1A2E24) : Colors.white;
 
   // Scaffold background
   Color get scaffoldBg =>
-      isDark ? const Color(0xFF12111F) : AppPalette.background;
+      isDark ? const Color(0xFF121212) : const Color(0xFFF4FAF6);
 }

@@ -16,13 +16,13 @@ import 'package:evcilhayvan_mobil2/features/reviews/presentation/widgets/reviews
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 const List<Color> _detailGradientA = [
-  Color(0xFF7C7BFF),
-  Color(0xFF5FD9C1),
+  Color(0xFF2D6A4F),
+  Color(0xFF52B788),
 ];
 
 const List<Color> _detailGradientB = [
-  Color(0xFFFFB86C),
-  Color(0xFFFF8FA2),
+  Color(0xFF40916C),
+  Color(0xFF74C69D),
 ];
 
 class ProductDetailPage extends ConsumerStatefulWidget {

@@ -13,7 +13,7 @@ import 'package:evcilhayvan_mobil2/features/store/data/order_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/order_model.dart';
 
 const List<Color> _dashboardGradientA = [
-  Color(0xFF7C7BFF),
+  Color(0xFF2D6A4F),
   Color(0xFF5FD9C1),
 ];
 
@@ -23,7 +23,7 @@ const List<Color> _dashboardGradientB = [
 ];
 
 const List<Color> _dashboardGradientC = [
-  Color(0xFF6C63FF),
+  Color(0xFF2D6A4F),
   Color(0xFFB06AFF),
 ];
 
@@ -76,13 +76,15 @@ class SellerDashboardScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppPalette.storeSoftBlue.withOpacity(0.3),
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
         title: Text(
           l10n.sellerPanelTitle,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        elevation: 0,
         actions: [
           IconButton(
             onPressed: () {
@@ -961,7 +963,7 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
           _QuickActionButton(
             icon: Icons.store_outlined,
             label: l10n.sellerViewStore,
-            color: Colors.teal,
+            color: const Color(0xFF40916C),
             onTap: widget.onViewStore,
           ),
           const SizedBox(height: 12),
@@ -975,14 +977,14 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
           _QuickActionButton(
             icon: Icons.edit_outlined,
             label: 'Mağaza Profilini Düzenle',
-            color: Colors.teal,
+            color: const Color(0xFF40916C),
             onTap: _showEditStoreSheet,
           ),
           const SizedBox(height: 12),
           _QuickActionButton(
             icon: _isSeeding ? Icons.hourglass_empty : Icons.rocket_launch_outlined,
             label: _isSeeding ? l10n.sellerDemoProductsLoading : l10n.sellerDemoProducts,
-            color: Colors.purple,
+            color: const Color(0xFF52B788),
             onTap: _isSeeding ? () {} : _handleSeedDemoProducts,
           ),
         ],
@@ -1265,7 +1267,7 @@ class _RevenueChartCardState extends State<_RevenueChartCard> {
           BarChartRodData(
             toY: val,
             gradient: const LinearGradient(
-              colors: [Color(0xFF7C7BFF), Color(0xFF5FD9C1)],
+              colors: [Color(0xFF2D6A4F), Color(0xFF5FD9C1)],
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
             ),

@@ -50,25 +50,13 @@ class PetDetailScreen extends ConsumerWidget {
     final currentUser = ref.watch(authProvider);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       body: petAsyncValue.when(
         data: (pet) {
           final bool isOwner = (currentUser?.id == pet.owner?.id);
 
           return Stack(
             children: [
-              // Background gradient
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppPalette.heroGradient.first.withOpacity(0.1),
-                      Colors.white,
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-              ),
               CustomScrollView(
                 physics: const BouncingScrollPhysics(),
                 slivers: [
@@ -135,9 +123,11 @@ class PetDetailScreen extends ConsumerWidget {
                               icon: const Icon(Icons.health_and_safety_outlined),
                               label: Text(AppLocalizations.of(context)!.petDetailHealthJournal),
                               style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF2D6A4F),
+                                side: const BorderSide(color: Color(0xFF2D6A4F)),
                                 minimumSize: const Size.fromHeight(48),
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16)),
+                                    borderRadius: BorderRadius.circular(14)),
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -267,7 +257,7 @@ class PetDetailScreen extends ConsumerWidget {
                   version: QrVersions.auto,
                   size: 200,
                   gapless: false,
-                  eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Color(0xFF6C63FF)),
+                  eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Color(0xFF2D6A4F)),
                   dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.circle, color: Colors.black87),
                 ),
               ),
@@ -535,7 +525,7 @@ class PetDetailScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: isMating ? Colors.pink : Colors.blue,
+        color: isMating ? Colors.pink : const Color(0xFF2D6A4F),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -620,10 +610,10 @@ class PetDetailScreen extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: AppPalette.accentGradient),
+            color: const Color(0xFFD8F3DC),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: const Icon(Icons.pets, color: Colors.white, size: 28),
+          child: const Icon(Icons.pets, color: Color(0xFF2D6A4F), size: 28),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -634,12 +624,13 @@ class PetDetailScreen extends ConsumerWidget {
                 pet.species,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1B4332),
                 ),
               ),
               Text(
                 pet.breed.isNotEmpty ? pet.breed : AppLocalizations.of(context)!.petDetailBreedUnspecified,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: Colors.grey.shade600,
                 ),
               ),
             ],
@@ -676,7 +667,7 @@ class PetDetailScreen extends ConsumerWidget {
             label: l10n.petDetailGender,
             value: pet.gender,
             color: pet.gender.toLowerCase().contains('erkek')
-                ? Colors.blue
+                ? const Color(0xFF2D6A4F)
                 : Colors.pink,
           ),
         ),
@@ -699,12 +690,13 @@ class PetDetailScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: context.cardColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
+            color: const Color(0xFF2D6A4F).withOpacity(0.06),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
@@ -717,12 +709,12 @@ class PetDetailScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppPalette.heroGradient.first.withOpacity(0.1),
+                  color: const Color(0xFFD8F3DC),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.description,
-                  color: AppPalette.heroGradient.first,
+                  color: Color(0xFF2D6A4F),
                   size: 20,
                 ),
               ),
@@ -731,6 +723,7 @@ class PetDetailScreen extends ConsumerWidget {
                 AppLocalizations.of(context)!.petDetailAbout,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1B4332),
                 ),
               ),
             ],
@@ -740,7 +733,7 @@ class PetDetailScreen extends ConsumerWidget {
             pet.bio!,
             style: theme.textTheme.bodyLarge?.copyWith(
               height: 1.6,
-              color: Theme.of(context).colorScheme.onSurface,
+              color: Colors.grey.shade700,
             ),
           ),
         ],
@@ -754,12 +747,13 @@ class PetDetailScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: context.cardColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
+            color: const Color(0xFF2D6A4F).withOpacity(0.06),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
@@ -772,12 +766,12 @@ class PetDetailScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: const Color(0xFFD8F3DC),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
                   Icons.info_outline,
-                  color: Colors.blue,
+                  color: Color(0xFF2D6A4F),
                   size: 20,
                 ),
               ),
@@ -786,6 +780,7 @@ class PetDetailScreen extends ConsumerWidget {
                 AppLocalizations.of(context)!.petDetailDetails,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1B4332),
                 ),
               ),
             ],
@@ -834,12 +829,13 @@ class PetDetailScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: context.cardColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
+            color: const Color(0xFF2D6A4F).withOpacity(0.06),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
@@ -852,12 +848,12 @@ class PetDetailScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: const Color(0xFFD8F3DC),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
                   Icons.health_and_safety,
-                  color: Colors.green,
+                  color: Color(0xFF2D6A4F),
                   size: 20,
                 ),
               ),
@@ -866,6 +862,7 @@ class PetDetailScreen extends ConsumerWidget {
                 l10n.petDetailHealth,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: const Color(0xFF1B4332),
                 ),
               ),
             ],
@@ -908,81 +905,68 @@ class PetDetailScreen extends ConsumerWidget {
           ? () => context.pushNamed('user-profile', pathParameters: {'userId': pet.owner!.id})
           : null,
       child: Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppPalette.heroGradient.first.withOpacity(0.1),
-            Theme.of(context).colorScheme.surface,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFD8F3DC),
+          borderRadius: BorderRadius.circular(20),
         ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: AppPalette.accentGradient),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                avatarLetter,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: const BoxDecoration(
+                color: Color(0xFF2D6A4F),
+                shape: BoxShape.circle,
               ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  ownerName,
-                  style: theme.textTheme.titleMedium?.copyWith(
+              child: Center(
+                child: Text(
+                  avatarLetter,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.petDetailOwnerLabel,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    ownerName,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF1B4332),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.petDetailOwnerLabel,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: const Color(0xFF40916C),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppPalette.heroGradient.first.withOpacity(0.1),
-              shape: BoxShape.circle,
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: const BoxDecoration(
+                color: Color(0xFF52B788),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white,
+                size: 16,
+              ),
             ),
-            child: Icon(
-              Icons.arrow_forward_ios,
-              color: AppPalette.heroGradient.first,
-              size: 16,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 
@@ -1063,13 +1047,14 @@ class _QuickInfoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: context.cardColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.15),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
+            color: const Color(0xFF2D6A4F).withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -1098,7 +1083,7 @@ class _QuickInfoCard extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: Colors.grey.shade600,
             ),
           ),
         ],
@@ -1123,12 +1108,19 @@ class _DetailRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: Theme.of(context).colorScheme.outlineVariant),
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: const Color(0xFFD8F3DC),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 18, color: const Color(0xFF2D6A4F)),
+        ),
         const SizedBox(width: 12),
         Text(
           label,
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            color: Colors.grey.shade600,
             fontSize: 14,
           ),
         ),
@@ -1138,6 +1130,7 @@ class _DetailRow extends StatelessWidget {
           style: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 14,
+            color: Color(0xFF1B4332),
           ),
         ),
       ],
@@ -1161,14 +1154,16 @@ class _HealthCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isPositive ? Colors.green : Colors.red;
+    final color = isPositive ? const Color(0xFF2D6A4F) : Colors.red;
+    final bgColor = isPositive ? const Color(0xFFD8F3DC) : Colors.red.shade50;
+    final borderColor = isPositive ? const Color(0xFF52B788).withOpacity(0.3) : Colors.red.withOpacity(0.2);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         children: [
@@ -1178,7 +1173,7 @@ class _HealthCard extends StatelessWidget {
             title,
             style: TextStyle(
               fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: Colors.grey.shade600,
             ),
             textAlign: TextAlign.center,
           ),
@@ -1247,12 +1242,13 @@ class _LocationSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: context.cardColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
+            color: const Color(0xFF2D6A4F).withOpacity(0.06),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
@@ -1265,12 +1261,12 @@ class _LocationSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.indigo.withOpacity(0.1),
+                  color: const Color(0xFFD8F3DC),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
                   Icons.location_on,
-                  color: Colors.indigo,
+                  color: Color(0xFF2D6A4F),
                   size: 20,
                 ),
               ),
@@ -1280,6 +1276,7 @@ class _LocationSection extends StatelessWidget {
                   AppLocalizations.of(context)!.petDetailLocation,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1B4332),
                   ),
                 ),
               ),
@@ -1288,7 +1285,7 @@ class _LocationSection extends StatelessWidget {
                 icon: const Icon(Icons.open_in_new, size: 16),
                 label: Text(AppLocalizations.of(context)!.petDetailOpenInMap),
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.indigo,
+                  foregroundColor: const Color(0xFF2D6A4F),
                 ),
               ),
             ],
@@ -1305,8 +1302,8 @@ class _LocationSection extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Colors.indigo.shade50,
-                      Colors.blue.shade50,
+                      const Color(0xFFD8F3DC),
+                      const Color(0xFFD8F3DC),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -1333,11 +1330,11 @@ class _LocationSection extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.red,
+                              color: const Color(0xFF2D6A4F),
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.red.withOpacity(0.3),
+                                  color: const Color(0xFF2D6A4F).withOpacity(0.3),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
@@ -1390,13 +1387,13 @@ class _LocationSection extends StatelessWidget {
                             Icon(
                               Icons.touch_app,
                               size: 18,
-                              color: Colors.indigo.shade400,
+                              color: const Color(0xFF52B788),
                             ),
                             const SizedBox(width: 8),
                             Text(
                               AppLocalizations.of(context)!.petDetailMapTapHint,
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: Colors.indigo.shade600,
+                                color: const Color(0xFF2D6A4F),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -1470,12 +1467,13 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
     return Container(
       padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).padding.bottom + 16),
       decoration: BoxDecoration(
-        color: context.cardColor,
+        color: Colors.white,
+        border: Border(top: BorderSide(color: const Color(0xFFD8F3DC), width: 1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
+            color: const Color(0xFF2D6A4F).withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
@@ -1490,11 +1488,11 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
                   : OutlinedButton.icon(
                       onPressed: _handleSendMessage,
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppPalette.heroGradient.first,
-                        side: BorderSide(color: AppPalette.heroGradient.first),
+                        foregroundColor: const Color(0xFF2D6A4F),
+                        side: const BorderSide(color: Color(0xFF2D6A4F)),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                       icon: const Icon(Icons.message),
@@ -1512,7 +1510,7 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
                   : ElevatedButton.icon(
                       onPressed: _handleAdoptionApply,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: const Color(0xFF2D6A4F),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -2076,7 +2074,7 @@ class _PetSelectionCard extends StatelessWidget {
                             : Icons.female,
                         size: 14,
                         color: pet.gender.toLowerCase().contains('erkek')
-                            ? Colors.blue
+                            ? const Color(0xFF2D6A4F)
                             : Colors.pink,
                       ),
                       const SizedBox(width: 4),

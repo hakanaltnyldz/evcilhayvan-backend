@@ -15,9 +15,9 @@ class EventCard extends StatelessWidget {
     switch (event.category) {
       case 'park_meetup': return Colors.green;
       case 'adoption_day': return Colors.orange;
-      case 'training': return Colors.blue;
-      case 'competition': return Colors.purple;
-      case 'grooming': return Colors.teal;
+      case 'training': return const Color(0xFF2D6A4F);
+      case 'competition': return const Color(0xFF52B788);
+      case 'grooming': return const Color(0xFF40916C);
       case 'health': return Colors.red;
       default: return Colors.grey;
     }
@@ -134,13 +134,13 @@ class EventCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: event.isFree ? Colors.green.withOpacity(0.1) : Colors.blue.withOpacity(0.1),
+                          color: event.isFree ? Colors.green.withOpacity(0.1) : const Color(0xFF2D6A4F).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           event.isFree ? 'Ucretsiz' : '${event.price.toInt()} TL',
                           style: TextStyle(
-                            color: event.isFree ? Colors.green : Colors.blue,
+                            color: event.isFree ? const Color(0xFF52B788) : const Color(0xFF2D6A4F),
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
                           ),

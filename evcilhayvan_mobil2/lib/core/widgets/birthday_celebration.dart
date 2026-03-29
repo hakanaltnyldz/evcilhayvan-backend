@@ -84,7 +84,7 @@ class _BirthdayCelebrationDialogState extends State<BirthdayCelebrationDialog>
                     style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF6C63FF),
+                      color: Color(0xFF2D6A4F),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -103,7 +103,7 @@ class _BirthdayCelebrationDialogState extends State<BirthdayCelebrationDialog>
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6C63FF),
+                      backgroundColor: const Color(0xFF2D6A4F),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
@@ -147,7 +147,7 @@ class _Confetti {
         phase = rng.nextDouble();
 
   static const _kColors = [
-    Color(0xFF6C63FF),
+    Color(0xFF2D6A4F),
     Color(0xFFFF6B9D),
     Color(0xFFFFD93D),
     Color(0xFF6BCB77),

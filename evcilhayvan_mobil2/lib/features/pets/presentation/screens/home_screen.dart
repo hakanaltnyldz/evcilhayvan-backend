@@ -136,11 +136,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             _NotificationBell(),
           ],
           flexibleSpace: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: context.isDark
-                    ? [const Color(0xFF1E1C30), const Color(0xFF12111F)]
-                    : [const Color(0xFFc7d2fe), const Color(0xFFeef2ff)],
+                colors: [Color(0xFF1B4332), Color(0xFF2D6A4F)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -157,8 +155,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: context.isDark
-                  ? [const Color(0xFF12111F), const Color(0xFF0D0C1A)]
-                  : [const Color(0xFFeef2ff), const Color(0xFFF8F9FB)],
+                  ? [const Color(0xFF121212), const Color(0xFF121212)]
+                  : [const Color(0xFFF4FAF6), const Color(0xFFEDF7F0)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -380,12 +378,12 @@ class _QuickShortcutsRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final shortcuts = [
       (label: l10n.homeShortcutMating, icon: Icons.favorite_rounded, colors: const [Color(0xFFFF6B6B), Color(0xFFFF8E8E)], route: 'mating'),
-      (label: l10n.homeShortcutSitterFull, icon: Icons.pets_rounded, colors: const [Color(0xFF56CCF2), Color(0xFF2F80ED)], route: 'sitters'),
-      (label: l10n.homeShortcutEvents, icon: Icons.event_rounded, colors: const [Color(0xFF6FCF97), Color(0xFF27AE60)], route: 'events'),
+      (label: l10n.homeShortcutSitterFull, icon: Icons.pets_rounded, colors: const [Color(0xFF2D6A4F), Color(0xFF52B788)], route: 'sitters'),
+      (label: l10n.homeShortcutEvents, icon: Icons.event_rounded, colors: const [Color(0xFF40916C), Color(0xFF52B788)], route: 'events'),
       (label: l10n.homeShortcutLostFull, icon: Icons.location_searching_rounded, colors: const [Color(0xFFF2994A), Color(0xFFEB5757)], route: 'lost-found'),
-      (label: l10n.homeShortcutMap, icon: Icons.map_rounded, colors: const [Color(0xFF11998E), Color(0xFF38EF7D)], route: 'map'),
-      (label: l10n.homeShortcutFeed, icon: Icons.dynamic_feed_rounded, colors: const [Color(0xFF6C63FF), Color(0xFF9B8FFF)], route: 'feed'),
-      (label: l10n.homeShortcutAiFull, icon: Icons.smart_toy_rounded, colors: const [Color(0xFFFF7A59), Color(0xFFFF9F7F)], route: 'ai-assistant'),
+      (label: l10n.homeShortcutMap, icon: Icons.map_rounded, colors: const [Color(0xFF1B4332), Color(0xFF40916C)], route: 'map'),
+      (label: l10n.homeShortcutFeed, icon: Icons.dynamic_feed_rounded, colors: const [Color(0xFF2D6A4F), Color(0xFF74C69D)], route: 'feed'),
+      (label: l10n.homeShortcutAiFull, icon: Icons.smart_toy_rounded, colors: const [Color(0xFF52B788), Color(0xFF74C69D)], route: 'ai-assistant'),
     ];
     return SizedBox(
       height: 90,
@@ -791,12 +789,12 @@ class _UpcomingRemindersWidget extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 6),
               child: Row(
                 children: [
-                  const Icon(Icons.event_rounded, size: 14, color: Color(0xFF6C63FF)),
+                  const Icon(Icons.event_rounded, size: 14, color: Color(0xFF2D6A4F)),
                   const SizedBox(width: 4),
                   Text(
                     AppLocalizations.of(context)!.homeUpcomingAppointments,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: const Color(0xFF6C63FF),
+                          color: const Color(0xFF2D6A4F),
                           fontWeight: FontWeight.w700,
                         ),
                   ),
@@ -822,14 +820,14 @@ class _UpcomingRemindersWidget extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF6C63FF), Color(0xFF9C8FFF)],
+                          colors: [Color(0xFF2D6A4F), Color(0xFF52B788)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF6C63FF).withOpacity(0.3),
+                            color: const Color(0xFF2D6A4F).withOpacity(0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),

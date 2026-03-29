@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import '../../data/repositories/veterinary_repository.dart';
 import '../../domain/models/vet_review_model.dart';
@@ -33,6 +33,7 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       body: vetAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('${l10n.error}: $e')),
@@ -44,6 +45,8 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
               SliverAppBar(
                 expandedHeight: 260,
                 pinned: true,
+                backgroundColor: const Color(0xFF1B4332),
+                foregroundColor: Colors.white,
                 flexibleSpace: FlexibleSpaceBar(
                   title: Text(vet.name, style: const TextStyle(shadows: [Shadow(blurRadius: 8, color: Colors.black54)])),
                   background: photos.isEmpty
@@ -97,9 +100,9 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                         children: [
                           if (vet.isVerified)
                             Chip(
-                              avatar: const Icon(Icons.verified, size: 16, color: Colors.blue),
+                              avatar: const Icon(Icons.verified, size: 16, color: const Color(0xFF2D6A4F)),
                               label: Text(l10n.vetVerified),
-                              backgroundColor: Colors.blue.withOpacity(0.1),
+                              backgroundColor: const Color(0xFF2D6A4F).withOpacity(0.1),
                             ),
                           if (vet.source == 'google_places')
                             const Chip(
@@ -109,9 +112,9 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                             ),
                           if (vet.acceptsOnlineAppointments)
                             Chip(
-                              avatar: const Icon(Icons.calendar_today, size: 16, color: AppPalette.tertiary),
+                              avatar: const Icon(Icons.calendar_today, size: 16, color: const Color(0xFF52B788)),
                               label: Text(l10n.vetOnlineAppointment),
-                              backgroundColor: AppPalette.tertiary.withOpacity(0.1),
+                              backgroundColor: const Color(0xFF52B788).withOpacity(0.1),
                             ),
                         ],
                       ),
@@ -265,7 +268,7 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                         icon: const Icon(Icons.calendar_today),
                         label: Text(l10n.vetAppointment),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppPalette.primary,
+                          backgroundColor: const Color(0xFF2D6A4F),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -298,10 +301,10 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
         onTap: onTap,
         child: Row(
           children: [
-            Icon(icon, size: 20, color: AppPalette.primary),
+            Icon(icon, size: 20, color: const Color(0xFF2D6A4F)),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(text, style: theme.textTheme.bodyMedium?.copyWith(color: onTap != null ? AppPalette.primary : null)),
+              child: Text(text, style: theme.textTheme.bodyMedium?.copyWith(color: onTap != null ? const Color(0xFF2D6A4F) : null)),
             ),
           ],
         ),
@@ -311,8 +314,8 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
 
   Widget _heroPlaceholder() {
     return Container(
-      color: AppPalette.background,
-      child: const Center(child: Icon(Icons.local_hospital, size: 80, color: AppPalette.onSurfaceVariant)),
+      color: const Color(0xFFF4FAF6),
+      child: Center(child: Icon(Icons.local_hospital, size: 80, color: Colors.grey.shade600)),
     );
   }
 
@@ -647,8 +650,8 @@ class _MessageVetButtonState extends ConsumerState<_MessageVetButton> {
           : const Icon(Icons.message_outlined),
       label: Text(l10n.vetSendMessage),
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppPalette.primary,
-        side: const BorderSide(color: AppPalette.primary),
+        foregroundColor: const Color(0xFF2D6A4F),
+        side: const BorderSide(color: Color(0xFF2D6A4F)),
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
@@ -716,8 +719,8 @@ class _ClaimVetButtonState extends ConsumerState<_ClaimVetButton> {
           : const Icon(Icons.verified_outlined),
       label: Text(l10n.vetClaimProfile),
       style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.teal,
-        side: const BorderSide(color: Colors.teal),
+        foregroundColor: const Color(0xFF40916C),
+        side: const BorderSide(color: Color(0xFF40916C)),
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),

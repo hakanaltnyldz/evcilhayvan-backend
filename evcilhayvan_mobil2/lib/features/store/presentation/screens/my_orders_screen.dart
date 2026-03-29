@@ -27,9 +27,12 @@ class MyOrdersScreen extends ConsumerWidget {
     final ordersAsync = ref.watch(myOrdersProvider);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
-        title: Text(l10n.orderMyOrdersTitle),
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
+        title: Text(l10n.orderMyOrdersTitle),
       ),
       body: ordersAsync.when(
         data: (orders) {
@@ -103,7 +106,7 @@ class _TrackButton extends StatelessWidget {
       icon: const Icon(Icons.open_in_new, size: 14),
       label: const Text('Takip Et', style: TextStyle(fontSize: 12)),
       style: TextButton.styleFrom(
-        foregroundColor: Colors.purple[700],
+        foregroundColor: const Color(0xFF1B4332),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -130,11 +133,11 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
       case OrderStatus.pending:
         return Colors.orange;
       case OrderStatus.processing:
-        return Colors.blue;
+        return const Color(0xFF40916C);
       case OrderStatus.shipped:
-        return Colors.purple;
+        return const Color(0xFF52B788);
       case OrderStatus.delivered:
-        return Colors.green;
+        return const Color(0xFF2D6A4F);
       case OrderStatus.cancelled:
         return Colors.red;
     }
@@ -530,16 +533,16 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.purple.withOpacity(0.08),
+                        color: const Color(0xFF52B788).withOpacity(0.08),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.purple.withOpacity(0.3)),
+                        border: Border.all(color: const Color(0xFF52B788).withOpacity(0.3)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.local_shipping, color: Colors.purple[700], size: 20),
+                              Icon(Icons.local_shipping, color: const Color(0xFF1B4332), size: 20),
                               const SizedBox(width: 8),
                               Text(
                                 l10n.orderTrackingInfo,
@@ -569,7 +572,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w700,
-                                        color: Colors.purple[700],
+                                        color: const Color(0xFF1B4332),
                                         letterSpacing: 1.2,
                                       ),
                                     ),
@@ -585,12 +588,12 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
                                           content: Text(l10n.orderTrackingCopied(order.trackingNumber!)),
-                                          backgroundColor: Colors.purple,
+                                          backgroundColor: const Color(0xFF52B788),
                                           duration: const Duration(seconds: 2),
                                         ),
                                       );
                                     },
-                                    icon: Icon(Icons.copy, color: Colors.purple[700], size: 20),
+                                    icon: Icon(Icons.copy, color: const Color(0xFF1B4332), size: 20),
                                     tooltip: l10n.copyTooltip,
                                   ),
                                   const SizedBox(width: 4),

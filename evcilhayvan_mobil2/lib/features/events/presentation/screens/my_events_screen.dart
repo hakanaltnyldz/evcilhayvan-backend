@@ -33,10 +33,17 @@ class _MyEventsScreenState extends ConsumerState<MyEventsScreen> with SingleTick
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(l10n.myEventsTitle),
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
         bottom: TabBar(
           controller: _tab,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white60,
+          indicatorColor: Colors.white,
           tabs: [
             Tab(text: l10n.myEventsTabAttending),
             Tab(text: l10n.myEventsTabOrganized),

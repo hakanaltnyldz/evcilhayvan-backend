@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/messages/data/repositories/message_repository.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
@@ -31,17 +30,18 @@ class SitterDetailScreen extends ConsumerWidget {
         final photo = sitter.avatar?.isNotEmpty == true ? sitter.avatar! : (sitter.photos.isNotEmpty ? sitter.photos.first : '');
 
         return Scaffold(
+          backgroundColor: const Color(0xFFF4FAF6),
           body: CustomScrollView(
             slivers: [
               SliverAppBar(
                 expandedHeight: 260,
                 pinned: true,
-                backgroundColor: Colors.green.shade700,
+                backgroundColor: const Color(0xFF1B4332),
                 flexibleSpace: FlexibleSpaceBar(
                   background: photo.isNotEmpty
                       ? CachedNetworkImage(imageUrl: _r(photo), fit: BoxFit.cover)
-                      : Container(color: Colors.indigo.shade100,
-                          child: const Center(child: Icon(Icons.person, size: 80, color: Colors.indigo))),
+                      : Container(color: const Color(0xFFD8F3DC),
+                          child: const Center(child: Icon(Icons.person, size: 80, color: Color(0xFF2D6A4F)))),
                 ),
               ),
               SliverToBoxAdapter(
@@ -60,7 +60,7 @@ class SitterDetailScreen extends ConsumerWidget {
                           if (sitter.isVerified)
                             const Chip(
                               label: Text('Dogrulanmis', style: TextStyle(fontSize: 11)),
-                              avatar: Icon(Icons.verified, size: 14, color: Colors.blue),
+                              avatar: Icon(Icons.verified, size: 14, color: Color(0xFF2D6A4F)),
                               padding: EdgeInsets.zero,
                             ),
                         ],
@@ -86,14 +86,14 @@ class SitterDetailScreen extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: sitter.availability ? Colors.green.withOpacity(0.1) : Theme.of(context).colorScheme.surfaceVariant,
+                          color: sitter.availability ? const Color(0xFFD8F3DC) : Theme.of(context).colorScheme.surfaceVariant,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           sitter.availability ? 'Simdi Musait' : 'Simdilik Dolu',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: sitter.availability ? Colors.green.shade700 : Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: sitter.availability ? const Color(0xFF2D6A4F) : Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -112,10 +112,12 @@ class SitterDetailScreen extends ConsumerWidget {
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       Card(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)),
+                        elevation: 0,
                         child: Column(
                           children: sitter.services.map((s) => ListTile(
-                            leading: const Icon(Icons.pets, color: AppPalette.primary),
+                            leading: const Icon(Icons.pets, color: Color(0xFF2D6A4F)),
                             title: Text(s.label),
                             trailing: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -146,7 +148,7 @@ class SitterDetailScreen extends ConsumerWidget {
                         Text('Konum', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         Row(children: [
-                          const Icon(Icons.location_on, color: AppPalette.primary),
+                          const Icon(Icons.location_on, color: Color(0xFF2D6A4F)),
                           const SizedBox(width: 8),
                           Expanded(child: Text(sitter.address!)),
                         ]),
@@ -160,7 +162,9 @@ class SitterDetailScreen extends ConsumerWidget {
                         const SizedBox(height: 8),
                         ...reviews.map((r) => Card(
                           margin: const EdgeInsets.only(bottom: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          color: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)),
                           child: Padding(
                             padding: const EdgeInsets.all(12),
                             child: Column(
@@ -219,9 +223,11 @@ class SitterDetailScreen extends ConsumerWidget {
                               icon: const Icon(Icons.calendar_month),
                               label: const Text('Rezervasyon Yap', style: TextStyle(fontSize: 16)),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green.shade600,
+                                backgroundColor: const Color(0xFF2D6A4F),
                                 foregroundColor: Colors.white,
+                                elevation: 0,
                                 padding: const EdgeInsets.symmetric(vertical: 16),
+                                minimumSize: const Size.fromHeight(52),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                               ),
                             ),
@@ -282,8 +288,8 @@ class _MessageSitterButtonState extends ConsumerState<_MessageSitterButton> {
           : const Icon(Icons.message_outlined),
       label: const Text('Mesajla', style: TextStyle(fontSize: 16)),
       style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.green.shade700,
-        side: BorderSide(color: Colors.green.shade600),
+        foregroundColor: const Color(0xFF2D6A4F),
+        side: const BorderSide(color: Color(0xFF2D6A4F)),
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),

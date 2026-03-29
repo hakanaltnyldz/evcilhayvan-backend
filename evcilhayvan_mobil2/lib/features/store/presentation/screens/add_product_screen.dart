@@ -347,17 +347,12 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     final l10n = AppLocalizations.of(context)!;
     final categoriesAsync = ref.watch(categoriesProvider);
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
         title: Text(_isEditMode ? l10n.addProductEditTitle : l10n.addProductTitle),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: AppPalette.storeWarmGradient,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
       ),
       body: ModernBackground(
         colors: AppPalette.storeBackground,

@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
-import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/shimmer_box.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
@@ -43,19 +42,20 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen>
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: context.subtleBackground,
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(
           AppLocalizations.of(context)!.favoritesTitle,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        backgroundColor: context.cardColor,
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppPalette.storePrimary,
-          unselectedLabelColor: AppPalette.onSurfaceVariant,
-          indicatorColor: AppPalette.storePrimary,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white60,
+          indicatorColor: Colors.white,
           labelStyle: const TextStyle(fontWeight: FontWeight.w700),
           tabs: const [
             Tab(text: 'Tümü'),
@@ -204,7 +204,7 @@ class _FavoriteCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: context.cardColor,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -377,7 +377,7 @@ class _FavoriteCardSkeleton extends StatelessWidget {
     return Container(
       height: 104,
       decoration: BoxDecoration(
-        color: context.cardColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(

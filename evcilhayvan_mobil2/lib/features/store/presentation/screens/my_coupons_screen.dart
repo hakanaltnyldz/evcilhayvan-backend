@@ -188,7 +188,7 @@ class _CouponCard extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  (isPercent ? const Color(0xFF6C63FF) : const Color(0xFFFF7A59)).withOpacity(0.12),
+                  (isPercent ? const Color(0xFF2D6A4F) : const Color(0xFFFF7A59)).withOpacity(0.12),
                   Colors.transparent,
                 ],
                 begin: Alignment.centerLeft,
@@ -201,7 +201,7 @@ class _CouponCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isPercent ? const Color(0xFF6C63FF) : const Color(0xFFFF7A59),
+                    color: isPercent ? const Color(0xFF2D6A4F) : const Color(0xFFFF7A59),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(

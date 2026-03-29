@@ -91,8 +91,11 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.createPostTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           Padding(
@@ -102,7 +105,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 : ElevatedButton(
                     onPressed: _submit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6C63FF),
+                      backgroundColor: const Color(0xFF2D6A4F),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -135,7 +138,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: Color(0xFF6C63FF)),
+                  borderSide: const BorderSide(color: Color(0xFF2D6A4F)),
                 ),
                 contentPadding: const EdgeInsets.all(16),
               ),
@@ -154,7 +157,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   onPressed: _selectedImages.length < 4 ? _pickImages : null,
                   icon: const Icon(Icons.add_photo_alternate_rounded),
                   label: Text(AppLocalizations.of(context)!.createPostAddBtn),
-                  style: TextButton.styleFrom(foregroundColor: const Color(0xFF6C63FF)),
+                  style: TextButton.styleFrom(foregroundColor: const Color(0xFF2D6A4F)),
                 ),
               ],
             ),

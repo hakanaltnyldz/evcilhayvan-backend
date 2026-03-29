@@ -4,9 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
-import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/pets/domain/models/pet_model.dart';
 import '../../data/repositories/adoption_repository.dart';
 
@@ -70,8 +68,8 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), shape: BoxShape.circle),
-              child: const Icon(Icons.check_circle, color: Colors.green),
+              decoration: const BoxDecoration(color: Color(0xFFD8F3DC), shape: BoxShape.circle),
+              child: const Icon(Icons.check_circle, color: Color(0xFF2D6A4F)),
             ),
             const SizedBox(width: 12),
             Expanded(child: Text(l10n.adoptionApplySuccessTitle)),
@@ -85,7 +83,7 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
               context.pop();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppPalette.primary,
+              backgroundColor: const Color(0xFF2D6A4F),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
             child: Text(l10n.adoptionApplySuccessOk),
@@ -102,7 +100,8 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
     final photoUrl = pet.photos.isNotEmpty ? '$apiBaseUrl${pet.photos[0]}' : null;
 
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.adoptionApplyTitle), backgroundColor: Colors.transparent, elevation: 0),
+      backgroundColor: const Color(0xFFF4FAF6),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.adoptionApplyTitle), backgroundColor: const Color(0xFF1B4332), foregroundColor: Colors.white, elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -112,9 +111,8 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: context.cardColor,
+                color: const Color(0xFFD8F3DC),
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 3))],
               ),
               child: Row(
                 children: [
@@ -135,7 +133,7 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
                       children: [
                         Text(pet.name, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
-                        Text('${pet.species} - ${pet.breed}', style: theme.textTheme.bodyMedium?.copyWith(color: AppPalette.onSurfaceVariant)),
+                        Text('${pet.species} - ${pet.breed}', style: theme.textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                         const SizedBox(height: 4),
                         Row(
                           children: [
@@ -156,19 +154,19 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.05),
+                color: const Color(0xFF2D6A4F).withOpacity(0.05),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.withOpacity(0.2)),
+                border: Border.all(color: const Color(0xFF2D6A4F).withOpacity(0.2)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.info_outline, color: Colors.blue, size: 22),
+                  const Icon(Icons.info_outline, color: Color(0xFF2D6A4F), size: 22),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       AppLocalizations.of(context)!.adoptionApplyInfoText,
-                      style: theme.textTheme.bodyMedium?.copyWith(color: Colors.blue.shade700),
+                      style: theme.textTheme.bodyMedium?.copyWith(color: const Color(0xFF1B4332)),
                     ),
                   ),
                 ],
@@ -186,7 +184,7 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.adoptionApplyNoteHint,
                 filled: true,
-                fillColor: context.inputFill,
+                fillColor: Colors.white,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               ),
             ),
@@ -200,10 +198,12 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
                   : const Icon(Icons.send),
               label: Text(_loading ? AppLocalizations.of(context)!.adoptionApplySending : AppLocalizations.of(context)!.adoptionApplySendBtn),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: const Color(0xFF2D6A4F),
                 foregroundColor: Colors.white,
+                elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                minimumSize: const Size.fromHeight(52),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
@@ -215,8 +215,8 @@ class _AdoptionApplyScreenState extends ConsumerState<AdoptionApplyScreen> {
 
   Widget _petPlaceholder() {
     return Container(
-      color: AppPalette.background,
-      child: const Center(child: Icon(Icons.pets, size: 40, color: AppPalette.onSurfaceVariant)),
+      color: const Color(0xFFD8F3DC),
+      child: const Center(child: Icon(Icons.pets, size: 40, color: Color(0xFF2D6A4F))),
     );
   }
 }

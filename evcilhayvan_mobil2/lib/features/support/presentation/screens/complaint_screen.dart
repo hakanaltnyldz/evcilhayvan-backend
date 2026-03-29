@@ -75,7 +75,13 @@ class _ComplaintScreenState extends ConsumerState<ComplaintScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Şikayet Bildir')),
+      backgroundColor: const Color(0xFFF4FAF6),
+      appBar: AppBar(
+        title: const Text('Şikayet Bildir'),
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -85,12 +91,12 @@ class _ComplaintScreenState extends ConsumerState<ComplaintScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer.withOpacity(0.5),
+                color: const Color(0xFFD8F3DC),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: theme.colorScheme.primary, size: 20),
+                  const Icon(Icons.info_outline, color: Color(0xFF2D6A4F), size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -107,8 +113,9 @@ class _ComplaintScreenState extends ConsumerState<ComplaintScreen> {
               value: _selectedCategory,
               decoration: InputDecoration(
                 labelText: 'Kategori',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                prefixIcon: const Icon(Icons.category_outlined),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2D6A4F))),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2D6A4F), width: 2)),
+                prefixIcon: const Icon(Icons.category_outlined, color: Color(0xFF2D6A4F)),
               ),
               items: _categories.map((cat) {
                 return DropdownMenuItem(
@@ -140,7 +147,7 @@ class _ComplaintScreenState extends ConsumerState<ComplaintScreen> {
             ),
             const SizedBox(height: 24),
             // Submit button
-            FilledButton.icon(
+            ElevatedButton.icon(
               onPressed: _isSubmitting ? null : _submit,
               icon: _isSubmitting
                   ? const SizedBox(
@@ -148,9 +155,12 @@ class _ComplaintScreenState extends ConsumerState<ComplaintScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                   : const Icon(Icons.send_rounded),
               label: Text(_isSubmitting ? 'Gönderiliyor...' : 'Gönder'),
-              style: FilledButton.styleFrom(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2D6A4F),
+                foregroundColor: Colors.white,
+                elevation: 0,
                 minimumSize: const Size.fromHeight(52),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
             ),
           ],
