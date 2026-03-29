@@ -43,3 +43,7 @@ build/
 *serviceAccount*.json
 *firebase-adminsdk*.json
 evcilhayvan_mobil2/android/app/google-services.json
+
+# Claude Code settings (may contain API keys)
+.claude/settings.json
+.claude/settings.local.json
