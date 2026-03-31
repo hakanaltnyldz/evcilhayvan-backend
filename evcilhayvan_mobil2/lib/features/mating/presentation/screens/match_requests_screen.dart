@@ -11,6 +11,7 @@ import '../../../auth/data/repositories/auth_repository.dart';
 import '../../../messages/data/repositories/message_repository.dart';
 import '../../data/repositories/mating_repository.dart';
 import '../../domain/models/match_request.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 class MatchRequestsScreen extends ConsumerWidget {
   const MatchRequestsScreen({super.key});
@@ -69,7 +70,7 @@ class _RequestTab extends ConsumerWidget {
           },
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: PawLoading()),
       error: (e, _) => Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -13,6 +13,7 @@ import '../../../store/domain/models/address_model.dart';
 import '../../../store/providers/address_providers.dart';
 import '../../../store/providers/cart_providers.dart';
 import 'add_address_screen.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -286,7 +287,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     ],
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: PawLoading()),
                 error: (e, _) => Text(l10n.checkoutAddressLoadError(e.toString())),
               ),
             ),
@@ -579,7 +580,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     ],
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: PawLoading()),
                 error: (e, _) => Text(l10n.checkoutCartLoadError(e.toString())),
               ),
             ),

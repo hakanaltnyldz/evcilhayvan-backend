@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:flutter_animate/flutter_animate.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/premium_card.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/status_timeline.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import '../../data/repositories/appointment_repository.dart';
 import '../../domain/models/appointment_model.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
@@ -20,96 +23,182 @@ class AppointmentDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4FAF6),
-      appBar: AppBar(title: Text(l10n.apptDetailTitle), backgroundColor: const Color(0xFF1B4332), foregroundColor: Colors.white, elevation: 0),
+      appBar: AppBar(
+        title: Text(l10n.apptDetailTitle),
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: aptAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: PawLoading()),
         error: (e, _) => Center(child: Text(l10n.apptDetailError(e.toString()))),
         data: (apt) {
           final date = apt.date;
-          final dateStr = '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
-          final timeStr = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+          final dateStr =
+              '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
+          final timeStr =
+              '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+
+          // Build info cards list for staggered animation indexing
+          final List<Widget> infoCards = [];
+          int cardIndex = 0;
+
+          // Date & time card
+          infoCards.add(
+            _buildInfoCard(
+              context,
+              theme,
+              icon: Icons.calendar_today,
+              title: 'Tarih ve Saat',
+              content: '$dateStr - $timeStr',
+              index: cardIndex++,
+            ),
+          );
+
+          // Vet card
+          if (apt.vet != null) {
+            infoCards.add(
+              _buildInfoCard(
+                context,
+                theme,
+                icon: Icons.local_hospital,
+                title: 'Veteriner',
+                content: apt.vet!.name,
+                subtitle: apt.vet!.address,
+                onTap: () => context.pushNamed('vet-detail',
+                    pathParameters: {'id': apt.veterinaryId}),
+                index: cardIndex++,
+              ),
+            );
+          }
+
+          // Pet card
+          if (apt.pet != null) {
+            infoCards.add(
+              _buildInfoCard(
+                context,
+                theme,
+                icon: Icons.pets,
+                title: 'Evcil Hayvan',
+                content: apt.pet!.name,
+                subtitle: apt.pet!.species,
+                index: cardIndex++,
+              ),
+            );
+          }
+
+          // Reason card
+          if (apt.reason != null) {
+            infoCards.add(
+              _buildInfoCard(
+                context,
+                theme,
+                icon: Icons.notes,
+                title: 'Randevu Nedeni',
+                content: apt.reason!,
+                index: cardIndex++,
+              ),
+            );
+          }
+
+          // Notes card
+          if (apt.notes != null) {
+            infoCards.add(
+              _buildInfoCard(
+                context,
+                theme,
+                icon: Icons.note_alt,
+                title: 'Notlar',
+                content: apt.notes!,
+                index: cardIndex++,
+              ),
+            );
+          }
+
+          // Vet notes card
+          if (apt.vetNotes != null) {
+            infoCards.add(
+              _buildInfoCard(
+                context,
+                theme,
+                icon: Icons.medical_information,
+                title: 'Veteriner Notlari',
+                content: apt.vetNotes!,
+                index: cardIndex++,
+              ),
+            );
+          }
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Status card
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [_statusColor(apt).withOpacity(0.15), _statusColor(apt).withOpacity(0.05)],
+                // Status timeline card
+                PremiumCard(
+                  accentColor: _statusColor(apt),
+                  child: StatusTimeline(steps: [
+                    StatusStep(
+                      title: 'Oluşturuldu',
+                      subtitle: dateStr,
+                      isCompleted: true,
                     ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(_statusIcon(apt), size: 48, color: _statusColor(apt)),
-                      const SizedBox(height: 8),
-                      Text(apt.statusText, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: _statusColor(apt))),
-                    ],
-                  ),
-                ),
+                    StatusStep(
+                      title: apt.status == 'confirmed'
+                          ? 'Onaylandı'
+                          : apt.status == 'cancelled'
+                              ? 'İptal Edildi'
+                              : 'Onay Bekleniyor',
+                      subtitle: apt.status == 'confirmed'
+                          ? 'Veteriner onayladı'
+                          : null,
+                      isCompleted: apt.status == 'confirmed' ||
+                          apt.status == 'completed',
+                      isActive: apt.status == 'pending',
+                    ),
+                    StatusStep(
+                      title: 'Tamamlandı',
+                      isCompleted: apt.status == 'completed',
+                      isActive: apt.status == 'confirmed',
+                    ),
+                  ]),
+                )
+                    .animate()
+                    .fadeIn(duration: 300.ms)
+                    .slideY(begin: 0.05),
+
                 const SizedBox(height: 20),
 
-                // Date & time
-                _card(
-                  context, theme,
-                  icon: Icons.calendar_today,
-                  title: 'Tarih ve Saat',
-                  content: '$dateStr - $timeStr',
-                ),
-                const SizedBox(height: 12),
+                // Info cards with spacing
+                ...infoCards
+                    .expand((card) => [card, const SizedBox(height: 12)])
+                    .toList()
+                  ..removeLast(),
 
-                // Vet
-                if (apt.vet != null)
-                  _card(
-                    context, theme,
-                    icon: Icons.local_hospital,
-                    title: 'Veteriner',
-                    content: apt.vet!.name,
-                    subtitle: apt.vet!.address,
-                    onTap: () => context.pushNamed('vet-detail', pathParameters: {'id': apt.veterinaryId}),
-                  ),
-                const SizedBox(height: 12),
-
-                // Pet
-                if (apt.pet != null)
-                  _card(
-                    context, theme,
-                    icon: Icons.pets,
-                    title: 'Evcil Hayvan',
-                    content: apt.pet!.name,
-                    subtitle: apt.pet!.species,
-                  ),
-                const SizedBox(height: 12),
-
-                // Reason
-                if (apt.reason != null)
-                  _card(context, theme, icon: Icons.notes, title: 'Randevu Nedeni', content: apt.reason!),
-                if (apt.notes != null) ...[
-                  const SizedBox(height: 12),
-                  _card(context, theme, icon: Icons.note_alt, title: 'Notlar', content: apt.notes!),
-                ],
-                if (apt.vetNotes != null) ...[
-                  const SizedBox(height: 12),
-                  _card(context, theme, icon: Icons.medical_information, title: 'Veteriner Notlari', content: apt.vetNotes!),
-                ],
                 const SizedBox(height: 24),
 
-                // Actions
+                // Cancel button
                 if (apt.canCancel)
-                  OutlinedButton.icon(
-                    onPressed: () => _cancelAppointment(context, ref, apt),
-                    icon: const Icon(Icons.cancel_outlined, color: Colors.red),
-                    label: const Text('Randevuyu Iptal Et', style: TextStyle(color: Colors.red)),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.red),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _cancelAppointment(context, ref, apt),
+                      icon: const Icon(Icons.cancel_outlined,
+                          color: Colors.red),
+                      label: const Text('Randevuyu İptal Et'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.red),
+                        minimumSize: const Size.fromHeight(52),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                      ),
                     ),
-                  ),
+                  )
+                      .animate(
+                          delay: Duration(milliseconds: 100 * cardIndex))
+                      .fadeIn(duration: 300.ms)
+                      .slideY(begin: 0.05),
               ],
             ),
           );
@@ -118,69 +207,169 @@ class AppointmentDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _card(BuildContext context, ThemeData theme, {required IconData icon, required String title, required String content, String? subtitle, VoidCallback? onTap}) {
-    return InkWell(
+  Widget _buildInfoCard(
+    BuildContext context,
+    ThemeData theme, {
+    required IconData icon,
+    required String title,
+    required String content,
+    String? subtitle,
+    VoidCallback? onTap,
+    required int index,
+  }) {
+    return PremiumCard(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: context.cardColor,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: const Color(0xFF2D6A4F)),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: theme.textTheme.labelMedium?.copyWith(color: Colors.grey.shade600)),
-                  const SizedBox(height: 2),
-                  Text(content, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500)),
-                  if (subtitle != null) Text(subtitle, style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600)),
-                ],
-              ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: const Color(0xFFD8F3DC),
+              borderRadius: BorderRadius.circular(12),
             ),
-            if (onTap != null) Icon(Icons.chevron_right, color: Colors.grey.shade600),
-          ],
-        ),
+            child: Icon(icon, color: const Color(0xFF2D6A4F), size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: theme.textTheme.labelSmall
+                        ?.copyWith(color: Colors.grey.shade600)),
+                const SizedBox(height: 2),
+                Text(content,
+                    style: theme.textTheme.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.bold)),
+                if (subtitle != null)
+                  Text(subtitle,
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: Colors.grey.shade600)),
+              ],
+            ),
+          ),
+          if (onTap != null)
+            Icon(Icons.chevron_right, color: Colors.grey.shade400),
+        ],
       ),
-    );
+    )
+        .animate(delay: Duration(milliseconds: 100 * index))
+        .fadeIn(duration: 300.ms)
+        .slideY(begin: 0.05);
   }
 
   Color _statusColor(AppointmentModel apt) {
     switch (apt.status) {
-      case 'confirmed': return const Color(0xFF52B788);
-      case 'cancelled': return Colors.red;
-      case 'completed': return const Color(0xFF2D6A4F);
-      case 'no_show': return Colors.grey;
-      default: return Colors.orange;
+      case 'confirmed':
+        return const Color(0xFF52B788);
+      case 'cancelled':
+        return Colors.red;
+      case 'completed':
+        return const Color(0xFF2D6A4F);
+      case 'no_show':
+        return Colors.grey;
+      default:
+        return Colors.orange;
     }
   }
 
   IconData _statusIcon(AppointmentModel apt) {
     switch (apt.status) {
-      case 'confirmed': return Icons.check_circle;
-      case 'cancelled': return Icons.cancel;
-      case 'completed': return Icons.task_alt;
-      case 'no_show': return Icons.person_off;
-      default: return Icons.schedule;
+      case 'confirmed':
+        return Icons.check_circle;
+      case 'cancelled':
+        return Icons.cancel;
+      case 'completed':
+        return Icons.task_alt;
+      case 'no_show':
+        return Icons.person_off;
+      default:
+        return Icons.schedule;
     }
   }
 
-  Future<void> _cancelAppointment(BuildContext context, WidgetRef ref, AppointmentModel apt) async {
-    final confirmed = await showDialog<bool>(
+  Future<void> _cancelAppointment(
+      BuildContext context, WidgetRef ref, AppointmentModel apt) async {
+    final confirmed = await showModalBottomSheet<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Randevuyu Iptal Et'),
-        content: const Text('Randevuyu iptal etmek istediginize emin misiniz?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Vazgec')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Iptal Et', style: TextStyle(color: Colors.red))),
-        ],
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(Icons.warning_amber_rounded,
+                  color: Colors.red, size: 32),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Randevuyu İptal Et',
+              style: Theme.of(ctx)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Bu işlem geri alınamaz. Randevuyu iptal etmek istediğinize emin misiniz?',
+              textAlign: TextAlign.center,
+              style: Theme.of(ctx)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(48),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Vazgeç'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(48),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('İptal Et'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
     if (confirmed != true) return;
@@ -190,9 +379,15 @@ class AppointmentDetailScreen extends ConsumerWidget {
       await repo.updateStatus(apt.id, 'cancelled');
       ref.invalidate(appointmentDetailProvider(apt.id));
       ref.invalidate(myAppointmentsProvider);
-      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Randevu iptal edildi')));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Randevu iptal edildi')));
+      }
     } catch (e) {
-      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e')));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Hata: $e')));
+      }
     }
   }
 }

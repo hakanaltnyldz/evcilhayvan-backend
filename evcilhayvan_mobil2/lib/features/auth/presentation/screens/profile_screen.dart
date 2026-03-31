@@ -13,6 +13,7 @@ import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_reposito
 import 'package:evcilhayvan_mobil2/features/auth/domain/user_model.dart';
 import 'package:evcilhayvan_mobil2/features/pets/data/repositories/pets_repository.dart';
 import 'package:evcilhayvan_mobil2/features/pets/domain/models/pet_model.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/features/notifications/providers/notification_provider.dart';
 
 import '../../../pets/presentation/screens/widgets/pet_card.dart';
@@ -624,7 +625,7 @@ class _AdvertsTab extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: PawLoading()),
       error: (e, _) => RefreshIndicator(
         onRefresh: refresh,
         child: ListView(

@@ -8,6 +8,7 @@ import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/cart_item_model.dart';
 import 'package:evcilhayvan_mobil2/features/store/providers/cart_providers.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 const List<Color> _cartGradientA = [
   Color(0xFF2D6A4F),
@@ -221,7 +222,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             );
           },
           loading: () => const Center(
-            child: CircularProgressIndicator(),
+            child: PawLoading(),
           ),
           error: (error, _) => Center(
             child: Padding(

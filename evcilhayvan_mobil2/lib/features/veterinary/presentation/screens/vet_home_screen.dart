@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
-
+import 'package:flutter_animate/flutter_animate.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/premium_card.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/core/constants.dart';
 import '../../data/repositories/appointment_repository.dart';
@@ -114,15 +118,37 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
+    final quickActions = <_QuickActionData>[
+      _QuickActionData(
+        icon: Icons.location_on,
+        label: l10n.vetHomeNearMe,
+        onTap: () => context.pushNamed('vet-search', extra: {'nearMe': true}),
+      ),
+      _QuickActionData(
+        icon: Icons.add_business,
+        label: l10n.vetHomeSaveClinic,
+        onTap: () => context.pushNamed('vet-register'),
+      ),
+      _QuickActionData(
+        icon: Icons.map,
+        label: l10n.vetHomeGoogleSearch,
+        onTap: () => context.pushNamed('vet-search', extra: {'googleSearch': true}),
+      ),
+      _QuickActionData(
+        icon: Icons.notifications_active,
+        label: l10n.vetHomeReminders,
+        onTap: () => context.pushNamed('vaccination-reminders'),
+      ),
+    ];
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Arama butonu
-          InkWell(
+          InteractiveScale(
             onTap: () => context.pushNamed('vet-search'),
-            borderRadius: BorderRadius.circular(16),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
@@ -148,19 +174,15 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
             children: [
               Expanded(
                 child: _QuickActionCard(
-                  icon: Icons.location_on,
-                  label: l10n.vetHomeNearMe,
-                  color: const Color(0xFF2D6A4F),
-                  onTap: () => context.pushNamed('vet-search', extra: {'nearMe': true}),
+                  data: quickActions[0],
+                  index: 0,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _QuickActionCard(
-                  icon: Icons.add_business,
-                  label: l10n.vetHomeSaveClinic,
-                  color: const Color(0xFF52B788),
-                  onTap: () => context.pushNamed('vet-register'),
+                  data: quickActions[1],
+                  index: 1,
                 ),
               ),
             ],
@@ -170,19 +192,15 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
             children: [
               Expanded(
                 child: _QuickActionCard(
-                  icon: Icons.map,
-                  label: l10n.vetHomeGoogleSearch,
-                  color: const Color(0xFFFF9800),
-                  onTap: () => context.pushNamed('vet-search', extra: {'googleSearch': true}),
+                  data: quickActions[2],
+                  index: 2,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _QuickActionCard(
-                  icon: Icons.notifications_active,
-                  label: l10n.vetHomeReminders,
-                  color: const Color(0xFFE91E63),
-                  onTap: () => context.pushNamed('vaccination-reminders'),
+                  data: quickActions[3],
+                  index: 3,
                 ),
               ),
             ],
@@ -193,17 +211,16 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
           Text(l10n.vetHomeNearbyTitle, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           if (_loadingVets)
-            const Center(child: CircularProgressIndicator())
+            const Center(child: PawLoading())
           else if (_locationDenied)
-            Center(
-              child: Text(l10n.vetHomeNearbyPermRequired,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600)),
+            AnimatedEmptyState(
+              icon: Icons.location_searching,
+              title: l10n.vetHomeNearbyPermRequired,
             )
           else if (_nearbyVets == null || _nearbyVets!.isEmpty)
-            Center(
-              child: Text(l10n.vetHomeNearbyEmpty,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600)),
+            AnimatedEmptyState(
+              icon: Icons.location_searching,
+              title: l10n.vetHomeNearbyEmpty,
             )
           else
             ListView.builder(
@@ -218,7 +235,10 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
                     vet: vet,
                     onTap: () => context.pushNamed('vet-detail', pathParameters: {'id': vet.id}),
                   ),
-                );
+                )
+                    .animate(delay: Duration(milliseconds: index * 60))
+                    .fadeIn(duration: 280.ms)
+                    .slideY(begin: 0.05, duration: 280.ms, curve: Curves.easeOut);
               },
             ),
         ],
@@ -227,44 +247,76 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
   }
 }
 
-class _QuickActionCard extends StatelessWidget {
+class _QuickActionData {
   final IconData icon;
   final String label;
-  final Color color;
   final VoidCallback onTap;
 
-  const _QuickActionCard({required this.icon, required this.label, required this.color, required this.onTap});
+  const _QuickActionData({required this.icon, required this.label, required this.onTap});
+}
+
+class _QuickActionCard extends StatelessWidget {
+  final _QuickActionData data;
+  final int index;
+
+  const _QuickActionCard({required this.data, required this.index});
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+    return InteractiveScale(
+      onTap: data.onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: context.cardColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
-            BoxShadow(color: color.withOpacity(0.15), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(
+              color: const Color(0xFF2D6A4F).withOpacity(0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFFD8F3DC),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: color, size: 28),
+              child: Icon(data.icon, color: const Color(0xFF2D6A4F), size: 24),
             ),
             const SizedBox(height: 8),
-            Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+            Text(
+              data.label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
-    );
+    )
+        .animate(delay: Duration(milliseconds: 80 * index))
+        .fadeIn(duration: 300.ms)
+        .slideY(begin: 0.1, duration: 300.ms, curve: Curves.easeOut);
+  }
+}
+
+Color _accentForStatus(String status) {
+  switch (status) {
+    case 'confirmed':
+      return const Color(0xFF52B788);
+    case 'cancelled':
+      return Colors.red;
+    case 'completed':
+      return const Color(0xFF2D6A4F);
+    case 'no_show':
+      return Colors.grey;
+    default:
+      return Colors.orange;
   }
 }
 
@@ -274,21 +326,14 @@ class _AppointmentsTab extends ConsumerWidget {
     final appointmentsAsync = ref.watch(myAppointmentsProvider);
 
     return appointmentsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: PawLoading()),
       error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.vetHomeLoadError(e.toString()))),
       data: (appointments) {
         if (appointments.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.calendar_today, size: 64, color: Colors.grey.shade600.withOpacity(0.3)),
-                const SizedBox(height: 16),
-                Text(AppLocalizations.of(context)!.vetHomeApptsEmpty, style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                Text(AppLocalizations.of(context)!.vetHomeApptsEmptyDesc, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600)),
-              ],
-            ),
+          return AnimatedEmptyState(
+            icon: Icons.calendar_today,
+            title: AppLocalizations.of(context)!.vetHomeApptsEmpty,
+            subtitle: AppLocalizations.of(context)!.vetHomeApptsEmptyDesc,
           );
         }
         return RefreshIndicator(
@@ -300,11 +345,16 @@ class _AppointmentsTab extends ConsumerWidget {
               final apt = appointments[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: AppointmentCard(
-                  appointment: apt,
+                child: PremiumCard(
+                  accentColor: _accentForStatus(apt.status),
                   onTap: () => context.pushNamed('appointment-detail', pathParameters: {'id': apt.id}),
+                  padding: EdgeInsets.zero,
+                  child: AppointmentCard(appointment: apt, onTap: null),
                 ),
-              );
+              )
+                  .animate(delay: Duration(milliseconds: index * 60))
+                  .fadeIn(duration: 280.ms)
+                  .slideY(begin: 0.05, duration: 280.ms, curve: Curves.easeOut);
             },
           ),
         );
@@ -320,7 +370,7 @@ class _VaccinationTab extends ConsumerWidget {
 
     final l10n = AppLocalizations.of(context)!;
     return remindersAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: PawLoading()),
       error: (e, _) => Center(child: Text(l10n.vetHomeLoadError(e.toString()))),
       data: (reminders) {
         return Padding(
@@ -332,19 +382,10 @@ class _VaccinationTab extends ConsumerWidget {
               const SizedBox(height: 8),
               if (reminders.isEmpty)
                 Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.vaccines, size: 64, color: Colors.grey.shade600.withOpacity(0.3)),
-                        const SizedBox(height: 16),
-                        Text(l10n.vetHomeVaccineEmpty, style: Theme.of(context).textTheme.bodyLarge),
-                        const SizedBox(height: 8),
-                        Text(l10n.vetHomeVaccineEmptyDesc,
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600)),
-                      ],
-                    ),
+                  child: AnimatedEmptyState(
+                    icon: Icons.vaccines,
+                    title: l10n.vetHomeVaccineEmpty,
+                    subtitle: l10n.vetHomeVaccineEmptyDesc,
                   ),
                 )
               else
@@ -353,25 +394,53 @@ class _VaccinationTab extends ConsumerWidget {
                     itemCount: reminders.length,
                     itemBuilder: (context, index) {
                       final r = reminders[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
-                          leading: Icon(
-                            r.isOverdue ? Icons.warning : Icons.vaccines,
-                            color: r.isOverdue ? Colors.red : Colors.orange,
-                          ),
-                          title: Text(r.vaccineName),
-                          subtitle: Text(
-                            r.nextDueDate != null
-                                ? '${r.nextDueDate!.day}.${r.nextDueDate!.month}.${r.nextDueDate!.year}'
-                                : '',
-                          ),
-                          trailing: r.isOverdue
-                              ? Chip(label: Text(l10n.vetHomeVaccineOverdue, style: const TextStyle(color: Colors.white, fontSize: 11)), backgroundColor: Colors.red)
-                              : Chip(label: Text(l10n.vetHomeVaccineUpcoming, style: const TextStyle(color: Colors.white, fontSize: 11)), backgroundColor: Colors.orange),
+                      final isOverdue = r.isOverdue;
+                      final accentColor = isOverdue ? Colors.red : Colors.orange;
+                      final iconColor = isOverdue ? Colors.red : Colors.orange;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: PremiumCard(
+                          accentColor: accentColor,
                           onTap: () => context.pushNamed('vaccination-calendar', pathParameters: {'petId': r.petId}),
+                          child: Row(
+                            children: [
+                              Icon(
+                                isOverdue ? Icons.warning : Icons.vaccines,
+                                color: iconColor,
+                                size: 28,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      r.vaccineName,
+                                      style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                                    ),
+                                    if (r.nextDueDate != null)
+                                      Text(
+                                        '${r.nextDueDate!.day}.${r.nextDueDate!.month}.${r.nextDueDate!.year}',
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              Chip(
+                                label: Text(
+                                  isOverdue ? l10n.vetHomeVaccineOverdue : l10n.vetHomeVaccineUpcoming,
+                                  style: const TextStyle(color: Colors.white, fontSize: 11),
+                                ),
+                                backgroundColor: accentColor,
+                              ),
+                            ],
+                          ),
                         ),
-                      );
+                      )
+                          .animate(delay: Duration(milliseconds: index * 60))
+                          .fadeIn(duration: 280.ms)
+                          .slideY(begin: 0.05, duration: 280.ms, curve: Curves.easeOut);
                     },
                   ),
                 ),

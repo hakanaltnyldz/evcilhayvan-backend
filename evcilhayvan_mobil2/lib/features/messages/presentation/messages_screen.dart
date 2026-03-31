@@ -1,10 +1,13 @@
 // lib/features/messages/presentation/screens/messages_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
@@ -102,8 +105,8 @@ class _ConversationsTab extends ConsumerWidget {
                     padding: const EdgeInsets.only(bottom: 24, top: 12),
                     itemCount: conversations.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (itemContext, index) {
-                      final conv = conversations[index];
+                    itemBuilder: (itemContext, i) {
+                      final conv = conversations[i];
                       return Dismissible(
                         key: ValueKey(conv.id),
                         direction: DismissDirection.endToStart,
@@ -196,7 +199,10 @@ class _ConversationsTab extends ConsumerWidget {
                             }
                           },
                         ),
-                      );
+                      )
+                          .animate(delay: Duration(milliseconds: i * 60))
+                          .fadeIn(duration: 280.ms)
+                          .slideY(begin: 0.05);
                     },
                   ),
                 );
@@ -381,7 +387,7 @@ class _SectionLoading extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 12),
-      child: Center(child: CircularProgressIndicator()),
+      child: const Center(child: PawLoading()),
     );
   }
 }
@@ -923,7 +929,9 @@ class _ConversationCard extends ConsumerWidget {
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 2),
                       ),
-                    ),
+                    )
+                        .animate(onPlay: (c) => c.repeat(reverse: true))
+                        .scaleXY(begin: 1.0, end: 1.25, duration: 1200.ms, curve: Curves.easeInOut),
                   ),
                 ],
               ),
@@ -1001,48 +1009,10 @@ class _EmptyConversations extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(28),
-              child: Image.network(
-                'https://images.unsplash.com/photo-1507146426996-ef05306b995a?auto=format&fit=crop&w=420&q=80',
-                height: 140,
-                width: 200,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  height: 140,
-                  width: 200,
-                  color: theme.colorScheme.primary.withOpacity(0.1),
-                  child: Icon(
-                    Icons.chat_bubble_outline,
-                    size: 38,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              AppLocalizations.of(context)!.messagesEmpty,
-              style: theme.textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              AppLocalizations.of(context)!.messagesEmptyDesc,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return AnimatedEmptyState(
+      icon: Icons.chat_bubble_outline,
+      title: AppLocalizations.of(context)!.messagesEmpty,
+      subtitle: AppLocalizations.of(context)!.messagesEmptyDesc,
     );
   }
 }

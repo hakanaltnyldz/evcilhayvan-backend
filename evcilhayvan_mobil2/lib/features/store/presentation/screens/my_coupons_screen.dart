@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 // ── Providers ──────────────────────────────────────────────────────────────
 
@@ -94,7 +95,7 @@ class _AvailableTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final couponsAsync = ref.watch(availableCouponsProvider);
     return couponsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: PawLoading()),
       error: (e, _) => Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -348,7 +349,7 @@ class _UsageHistoryTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final usageAsync = ref.watch(couponUsageHistoryProvider);
     return usageAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: PawLoading()),
       error: (e, _) => Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -144,6 +144,49 @@ Page<void> _buildPage(GoRouterState state, Widget child) {
   );
 }
 
+/// Detail ekranlar için scale + fade geçişi.
+Page<void> _buildDetailPage(GoRouterState state, Widget child) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 280),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+      return FadeTransition(
+        opacity: curved,
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 0.94, end: 1.0).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
+/// Modal ekranlar (create/booking) için slideUp geçişi.
+Page<void> _buildModalPage(GoRouterState state, Widget child) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 300),
+    reverseTransitionDuration: const Duration(milliseconds: 220),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.15),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
   final onboardingSeen = ref.watch(onboardingSeenProvider);
@@ -344,7 +387,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       pageBuilder: (context, state) {
         final String petId = state.pathParameters['id']!;
         if (!_isValidObjectId(petId)) return _notFoundPage(state);
-        return _buildPage(state, PetDetailScreen(petId: petId));
+        return _buildDetailPage(state, PetDetailScreen(petId: petId));
       },
     ),
     GoRoute(
@@ -523,14 +566,14 @@ final routerProvider = Provider<GoRouter>((ref) {
     GoRoute(
       path: '/lost-found/report',
       name: 'report-lost-found',
-      pageBuilder: (context, state) => _buildPage(state, const ReportLostFoundScreen()),
+      pageBuilder: (context, state) => _buildModalPage(state, const ReportLostFoundScreen()),
     ),
     GoRoute(
       path: '/lost-found/:id',
       name: 'lost-found-detail',
       pageBuilder: (context, state) {
         final id = state.pathParameters['id']!;
-        return _buildPage(state, LostFoundDetailScreen(reportId: id));
+        return _buildDetailPage(state, LostFoundDetailScreen(reportId: id));
       },
     ),
 
@@ -559,7 +602,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       name: 'sitter-detail',
       pageBuilder: (context, state) {
         final id = state.pathParameters['id']!;
-        return _buildPage(state, SitterDetailScreen(sitterId: id));
+        return _buildDetailPage(state, SitterDetailScreen(sitterId: id));
       },
     ),
     GoRoute(
@@ -567,7 +610,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       name: 'sitter-booking',
       pageBuilder: (context, state) {
         final sitter = state.extra as PetSitterModel;
-        return _buildPage(state, SitterBookingScreen(sitter: sitter));
+        return _buildModalPage(state, SitterBookingScreen(sitter: sitter));
       },
     ),
 
@@ -580,7 +623,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     GoRoute(
       path: '/events/create',
       name: 'create-event',
-      pageBuilder: (context, state) => _buildPage(state, const CreateEventScreen()),
+      pageBuilder: (context, state) => _buildModalPage(state, const CreateEventScreen()),
     ),
     GoRoute(
       path: '/events/attending',
@@ -592,7 +635,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       name: 'event-detail',
       pageBuilder: (context, state) {
         final id = state.pathParameters['id']!;
-        return _buildPage(state, EventDetailScreen(eventId: id));
+        return _buildDetailPage(state, EventDetailScreen(eventId: id));
       },
     ),
 
@@ -631,7 +674,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       name: 'vet-detail',
       pageBuilder: (context, state) {
         final id = state.pathParameters['id']!;
-        return _buildPage(state, VetDetailScreen(vetId: id));
+        return _buildDetailPage(state, VetDetailScreen(vetId: id));
       },
     ),
     GoRoute(
@@ -644,7 +687,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       name: 'appointment-create',
       pageBuilder: (context, state) {
         final extra = state.extra as Map<String, dynamic>;
-        return _buildPage(state, AppointmentCreateScreen(
+        return _buildModalPage(state, AppointmentCreateScreen(
           vetId: extra['vetId'] as String,
           vetName: extra['vetName'] as String,
         ));
@@ -655,7 +698,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       name: 'appointment-detail',
       pageBuilder: (context, state) {
         final id = state.pathParameters['id']!;
-        return _buildPage(state, AppointmentDetailScreen(appointmentId: id));
+        return _buildDetailPage(state, AppointmentDetailScreen(appointmentId: id));
       },
     ),
     GoRoute(
@@ -696,7 +739,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     GoRoute(
       path: '/feed/create',
       name: 'create-post',
-      pageBuilder: (context, state) => _buildPage(state, const CreatePostScreen()),
+      pageBuilder: (context, state) => _buildModalPage(state, const CreatePostScreen()),
     ),
 
     // Kullanici public profili

@@ -11,6 +11,7 @@ import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_reposito
 import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/order_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/order_model.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 const List<Color> _dashboardGradientA = [
   Color(0xFF2D6A4F),
@@ -215,7 +216,7 @@ class SellerDashboardScreen extends ConsumerWidget {
                       data: (points) => _RevenueChartCard(points: points),
                       loading: () => const SizedBox(
                         height: 180,
-                        child: Card(child: Center(child: CircularProgressIndicator())),
+                        child: Card(child: Center(child: PawLoading())),
                       ),
                       error: (_, __) => Card(
                         child: Padding(

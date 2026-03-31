@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/models/address_model.dart';
 import '../../providers/address_providers.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 class MyAddressesScreen extends ConsumerWidget {
   const MyAddressesScreen({super.key});
@@ -24,7 +25,7 @@ class MyAddressesScreen extends ConsumerWidget {
         child: const Icon(Icons.add),
       ),
       body: state.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: PawLoading()),
         error: (e, _) => Center(child: Text('Adresler yüklenemedi: $e')),
         data: (addresses) {
           if (addresses.isEmpty) {

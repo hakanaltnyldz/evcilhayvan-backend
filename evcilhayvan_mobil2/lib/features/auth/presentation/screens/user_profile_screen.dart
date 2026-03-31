@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:evcilhayvan_mobil2/config/app_config.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/messages/data/repositories/message_repository.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 class UserProfileScreen extends ConsumerWidget {
   const UserProfileScreen({super.key, required this.userId});
@@ -25,7 +26,7 @@ class UserProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       body: profileAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: PawLoading()),
         error: (e, _) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,

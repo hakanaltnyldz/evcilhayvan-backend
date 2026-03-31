@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/event_repository.dart';
 import '../../domain/models/pet_event_model.dart';
@@ -129,7 +130,7 @@ class _EventsHomeScreenState extends ConsumerState<EventsHomeScreen> {
           // Events list
           Expanded(
             child: eventsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: PawLoading()),
               error: (e, _) => ErrorView(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(eventListProvider(params)),

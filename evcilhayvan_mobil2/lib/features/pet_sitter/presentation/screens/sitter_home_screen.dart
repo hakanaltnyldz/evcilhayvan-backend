@@ -3,9 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
-
+import 'package:flutter_animate/flutter_animate.dart';
 
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/premium_card.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
@@ -33,6 +38,23 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
     {'value': 'daycare', 'label': l10n.sitterServiceDaycare},
     {'value': 'grooming', 'label': l10n.sitterServiceGrooming},
   ];
+
+  IconData _getServiceIcon(String? value) {
+    switch (value) {
+      case 'walking':
+        return Icons.directions_walk;
+      case 'home_sitting':
+        return Icons.home;
+      case 'boarding':
+        return Icons.hotel;
+      case 'daycare':
+        return Icons.wb_sunny;
+      case 'grooming':
+        return Icons.content_cut;
+      default:
+        return Icons.apps;
+    }
+  }
 
   @override
   void initState() {
@@ -100,24 +122,59 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
             children: [
               // Service filters
               SizedBox(
-                height: 48,
+                height: 56,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   itemCount: services.length,
                   itemBuilder: (context, i) {
                     final s = services[i];
-                    final selected = _selectedService == s['value'];
+                    final value = s['value'] as String?;
+                    final selected = _selectedService == value;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(s['label']! as String),
-                        selected: selected,
-                        onSelected: (_) {
-                          setState(() => _selectedService = s['value'] as String?);
-                          _load();
-                        },
-                        selectedColor: const Color(0xFF2D6A4F).withOpacity(0.2),
+                      child: InteractiveScale(
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() => _selectedService = value);
+                            _load();
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeInOut,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: selected ? const Color(0xFF2D6A4F) : Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: selected ? const Color(0xFF2D6A4F) : Colors.grey.shade200,
+                                width: 1.5,
+                              ),
+                              boxShadow: selected
+                                  ? [BoxShadow(color: const Color(0xFF2D6A4F).withOpacity(0.25), blurRadius: 8, offset: const Offset(0, 2))]
+                                  : [],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _getServiceIcon(value),
+                                  size: 18,
+                                  color: selected ? Colors.white : const Color(0xFF2D6A4F),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  s['label']! as String,
+                                  style: TextStyle(
+                                    color: selected ? Colors.white : const Color(0xFF2D6A4F),
+                                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     );
                   },
@@ -126,7 +183,7 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
               // List
               Expanded(
                 child: _loading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(child: PawLoading())
                     : _error != null
                         ? ErrorView(message: _error!, onRetry: _load)
                         : _sitters == null || _sitters!.isEmpty
@@ -136,7 +193,7 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
                                   physics: const AlwaysScrollableScrollPhysics(),
                                   children: [
                                     const SizedBox(height: 80),
-                                    EmptyState(
+                                    AnimatedEmptyState(
                                       icon: Icons.home_work_outlined,
                                       title: l10n.sitterEmptyTitle,
                                       subtitle: l10n.sitterEmptySubtitle,
@@ -153,7 +210,7 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
                                     sitter: _sitters![i],
                                     onTap: () => context.pushNamed('sitter-detail',
                                         pathParameters: {'id': _sitters![i].id}),
-                                  ),
+                                  ).animate(delay: Duration(milliseconds: i * 60)).fadeIn(duration: 280.ms).slideY(begin: 0.05),
                                 ),
                               ),
               ),
@@ -162,12 +219,20 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
         ),
       ),
       floatingActionButton: user != null
-          ? FloatingActionButton.extended(
-              onPressed: () => context.pushNamed('become-sitter'),
-              backgroundColor: Colors.green.shade600,
-              foregroundColor: Colors.white,
-              icon: const Icon(Icons.add),
-              label: Text(l10n.sitterBecomeSitterBtn),
+          ? Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: const LinearGradient(colors: [Color(0xFF2D6A4F), Color(0xFF52B788)]),
+                boxShadow: [BoxShadow(color: Color(0xFF52B788).withOpacity(0.4), blurRadius: 20, spreadRadius: 2)],
+              ),
+              child: FloatingActionButton.extended(
+                onPressed: () => context.pushNamed('become-sitter'),
+                backgroundColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                icon: const Icon(Icons.add),
+                label: Text(l10n.sitterBecomeSitterBtn),
+              ),
             )
           : null,
     );

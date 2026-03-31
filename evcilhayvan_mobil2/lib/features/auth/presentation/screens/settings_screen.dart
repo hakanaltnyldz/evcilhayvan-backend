@@ -12,6 +12,7 @@ import 'package:evcilhayvan_mobil2/core/widgets/green_tile.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/section_header.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -80,7 +81,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ModernBackground(
         child: SafeArea(
           child: _isLoadingPrefs
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(child: PawLoading())
               : ListView(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
             children: [

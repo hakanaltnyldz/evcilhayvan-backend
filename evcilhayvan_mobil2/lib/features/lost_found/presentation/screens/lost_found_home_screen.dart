@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 
 
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/lost_found_repository.dart';
 import '../../domain/models/lost_found_model.dart';
@@ -125,7 +126,7 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
       ),
       body: SafeArea(
           child: _locationLoading || _loading
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(child: PawLoading())
               : _error != null
                   ? Center(
                       child: ErrorView(

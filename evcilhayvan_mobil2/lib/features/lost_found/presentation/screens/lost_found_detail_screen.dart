@@ -10,6 +10,7 @@ import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import '../../data/repositories/lost_found_repository.dart';
 import '../../domain/models/lost_found_model.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 class LostFoundDetailScreen extends ConsumerWidget {
   final String reportId;
@@ -26,7 +27,7 @@ class LostFoundDetailScreen extends ConsumerWidget {
     final currentUser = ref.watch(authProvider);
 
     return reportAsync.when(
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => const Scaffold(body: Center(child: PawLoading())),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
         body: Center(child: Text('Hata: $e')),

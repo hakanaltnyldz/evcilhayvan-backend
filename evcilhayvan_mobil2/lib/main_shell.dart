@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -519,6 +521,7 @@ class _MainShellState extends ConsumerState<MainShell> {
   }
 
   void _onItemTapped(int index, BuildContext context) {
+    HapticFeedback.lightImpact();
     final currentUser = ref.read(authProvider);
 
     if (currentUser == null && (index == 0 || index == 2 || index == 4)) {
@@ -562,13 +565,30 @@ class _MainShellState extends ConsumerState<MainShell> {
         // Rehber Pati — uygulama içi AI navigasyon asistanı
         floatingActionButton: Padding(
           padding: const EdgeInsets.only(bottom: 76),
-          child: FloatingActionButton.small(
-            onPressed: () => context.pushNamed('guide'),
-            backgroundColor: const Color(0xFF2D6A4F),
-            foregroundColor: Colors.white,
-            elevation: 4,
-            tooltip: l10n.shellGuideFab,
-            child: const Icon(Icons.assistant_rounded, size: 20),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2D6A4F), Color(0xFF52B788)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF52B788).withOpacity(0.4),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: FloatingActionButton.small(
+              onPressed: () => context.pushNamed('guide'),
+              backgroundColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              tooltip: l10n.shellGuideFab,
+              child: const Icon(Icons.assistant_rounded, size: 20),
+            ),
           )
               .animate(
                 onPlay: (ctrl) => ctrl.repeat(reverse: true, period: const Duration(seconds: 3)),
@@ -610,12 +630,23 @@ class _MainShellState extends ConsumerState<MainShell> {
         ),
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: Container(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(32),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+              child: Container(
             clipBehavior: Clip.none,
             decoration: BoxDecoration(
-              color: context.isDark ? const Color(0xFF1E1E1E) : Colors.white,
+              color: context.isDark
+                  ? const Color(0xFF1E1E1E).withOpacity(0.88)
+                  : Colors.white.withOpacity(0.88),
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: Colors.grey.shade200, width: 0.5),
+              border: Border.all(
+                color: context.isDark
+                    ? Colors.white.withOpacity(0.08)
+                    : Colors.grey.shade200,
+                width: 0.5,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: kPrimaryGreen.withOpacity(0.12),
@@ -657,6 +688,8 @@ class _MainShellState extends ConsumerState<MainShell> {
                   label: AppLocalizations.of(context)?.navProfile ?? 'Profil',
                 ),
               ],
+            ),
+          ),
             ),
           ),
         ),

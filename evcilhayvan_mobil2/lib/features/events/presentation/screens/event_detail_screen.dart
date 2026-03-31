@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import '../../data/repositories/event_repository.dart';
 import '../../domain/models/pet_event_model.dart';
@@ -58,7 +59,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     final user = ref.watch(authProvider);
 
     return eventAsync.when(
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => const Scaffold(body: Center(child: PawLoading())),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
         body: ErrorView(message: e.toString(), onRetry: () => ref.invalidate(eventDetailProvider(widget.eventId))),
@@ -346,7 +347,7 @@ class _AttendanceBar extends StatelessWidget {
           boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: const Offset(0, -2))],
         ),
         child: loading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: PawLoading())
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import '../../data/repositories/post_repository.dart';
 import '../../domain/models/post_model.dart';
 
@@ -92,11 +93,14 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                 onDelete: currentUser?.id == posts[i].userId
                     ? () => _handleDelete(posts[i].id)
                     : null,
-              ),
+              )
+                  .animate(delay: Duration(milliseconds: i * 60))
+                  .fadeIn(duration: 280.ms)
+                  .slideY(begin: 0.05),
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: PawLoading()),
         error: (e, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

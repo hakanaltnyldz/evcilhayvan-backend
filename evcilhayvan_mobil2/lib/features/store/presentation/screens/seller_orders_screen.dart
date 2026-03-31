@@ -8,6 +8,7 @@ import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/order_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/order_model.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 class SellerOrdersScreen extends ConsumerStatefulWidget {
   const SellerOrdersScreen({super.key});
@@ -80,7 +81,7 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
             data: (stats) => _StatsSummary(stats: stats),
             loading: () => const SizedBox(
               height: 100,
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: PawLoading()),
             ),
             error: (_, __) => const SizedBox.shrink(),
           ),
@@ -123,7 +124,7 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
                   ],
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: PawLoading()),
               error: (e, _) => Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

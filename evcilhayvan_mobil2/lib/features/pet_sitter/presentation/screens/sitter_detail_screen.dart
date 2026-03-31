@@ -3,8 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/premium_card.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/messages/data/repositories/message_repository.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
@@ -16,18 +21,56 @@ class SitterDetailScreen extends ConsumerWidget {
 
   String _r(String url) => url.startsWith('http') ? url : '$apiBaseUrl$url';
 
+  IconData _serviceIcon(String type) {
+    switch (type) {
+      case 'walking':
+        return Icons.directions_walk;
+      case 'home_sitting':
+        return Icons.home;
+      case 'boarding':
+        return Icons.hotel;
+      case 'daycare':
+        return Icons.wb_sunny;
+      case 'grooming':
+        return Icons.content_cut;
+      default:
+        return Icons.pets;
+    }
+  }
+
+  Widget _sectionTitle(String title, IconData icon) => Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Row(children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFD8F3DC),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: const Color(0xFF2D6A4F), size: 18),
+          ),
+          const SizedBox(width: 10),
+          Text(title,
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        ]),
+      );
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(sitterDetailProvider(sitterId));
     final user = ref.watch(authProvider);
 
     return async.when(
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (e, _) => Scaffold(appBar: AppBar(), body: Center(child: Text('Hata: $e'))),
+      loading: () => const Scaffold(body: Center(child: PawLoading())),
+      error: (e, _) =>
+          Scaffold(appBar: AppBar(), body: Center(child: Text('Hata: $e'))),
       data: (data) {
         final sitter = data['sitter'] as PetSitterModel;
         final reviews = data['reviews'] as List<SitterReview>;
-        final photo = sitter.avatar?.isNotEmpty == true ? sitter.avatar! : (sitter.photos.isNotEmpty ? sitter.photos.first : '');
+        final photo = sitter.avatar?.isNotEmpty == true
+            ? sitter.avatar!
+            : (sitter.photos.isNotEmpty ? sitter.photos.first : '');
 
         return Scaffold(
           backgroundColor: const Color(0xFFF4FAF6),
@@ -38,10 +81,38 @@ class SitterDetailScreen extends ConsumerWidget {
                 pinned: true,
                 backgroundColor: const Color(0xFF1B4332),
                 flexibleSpace: FlexibleSpaceBar(
-                  background: photo.isNotEmpty
-                      ? CachedNetworkImage(imageUrl: _r(photo), fit: BoxFit.cover)
-                      : Container(color: const Color(0xFFD8F3DC),
-                          child: const Center(child: Icon(Icons.person, size: 80, color: Color(0xFF2D6A4F)))),
+                  background: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      photo.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: _r(photo), fit: BoxFit.cover)
+                          : Container(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFF1B4332),
+                                    Color(0xFF2D6A4F)
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                              ),
+                              child: const Center(
+                                  child: Icon(Icons.person,
+                                      size: 80, color: Color(0xFFD8F3DC))),
+                            ),
+                      const DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.black26],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               SliverToBoxAdapter(
@@ -55,13 +126,34 @@ class SitterDetailScreen extends ConsumerWidget {
                         children: [
                           Expanded(
                             child: Text(sitter.displayName,
-                                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(fontWeight: FontWeight.bold)),
                           ),
                           if (sitter.isVerified)
-                            const Chip(
-                              label: Text('Dogrulanmis', style: TextStyle(fontSize: 11)),
-                              avatar: Icon(Icons.verified, size: 14, color: Color(0xFF2D6A4F)),
-                              padding: EdgeInsets.zero,
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFD8F3DC),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                    color: const Color(0xFF52B788)),
+                              ),
+                              child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.verified,
+                                        size: 14,
+                                        color: Color(0xFF2D6A4F)),
+                                    SizedBox(width: 4),
+                                    Text('Dogrulanmis',
+                                        style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF2D6A4F))),
+                                  ]),
                             ),
                         ],
                       ),
@@ -69,86 +161,164 @@ class SitterDetailScreen extends ConsumerWidget {
                       // Rating + Distance
                       Row(
                         children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 18),
+                          const Icon(Icons.star,
+                              color: Colors.amber, size: 18),
                           const SizedBox(width: 4),
-                          Text('${sitter.rating.toStringAsFixed(1)} (${sitter.reviewCount} yorum)',
+                          Text(
+                              '${sitter.rating.toStringAsFixed(1)} (${sitter.reviewCount} yorum)',
                               style: Theme.of(context).textTheme.bodyMedium),
                           if (sitter.distanceKm != null) ...[
                             const SizedBox(width: 16),
-                            Icon(Icons.location_on, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                            Text('${sitter.distanceKm!.toStringAsFixed(1)} km',
-                                style: Theme.of(context).textTheme.bodyMedium),
+                            Icon(Icons.location_on,
+                                size: 16,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant),
+                            Text(
+                                '${sitter.distanceKm!.toStringAsFixed(1)} km',
+                                style:
+                                    Theme.of(context).textTheme.bodyMedium),
                           ],
                         ],
                       ),
                       const SizedBox(height: 8),
-                      // Availability
+                      // Availability badge with pulse animation
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: sitter.availability ? const Color(0xFFD8F3DC) : Theme.of(context).colorScheme.surfaceVariant,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          sitter.availability ? 'Simdi Musait' : 'Simdilik Dolu',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: sitter.availability ? const Color(0xFF2D6A4F) : Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: sitter.availability
+                              ? const Color(0xFFD8F3DC)
+                              : Theme.of(context).colorScheme.surfaceVariant,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: sitter.availability
+                                ? const Color(0xFF52B788)
+                                : Colors.grey.shade300,
+                            width: 1.5,
                           ),
                         ),
-                      ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: sitter.availability
+                                    ? const Color(0xFF2D6A4F)
+                                    : Colors.grey,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              sitter.availability
+                                  ? 'Simdi Musait'
+                                  : 'Simdilik Dolu',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: sitter.availability
+                                    ? const Color(0xFF2D6A4F)
+                                    : Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                          .animate(
+                            onPlay: (controller) => sitter.availability
+                                ? controller.repeat(reverse: true)
+                                : null,
+                          )
+                          .scale(
+                            begin: const Offset(1, 1),
+                            end: const Offset(1.03, 1.03),
+                            duration: 1200.ms,
+                            curve: Curves.easeInOut,
+                          ),
                       const SizedBox(height: 16),
 
                       // Bio
                       if (sitter.bio?.isNotEmpty == true) ...[
-                        Text('Hakkinda', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-                        Text(sitter.bio!, style: Theme.of(context).textTheme.bodyLarge),
+                        _sectionTitle('Hakkinda', Icons.info_outline),
+                        Text(sitter.bio!,
+                            style: Theme.of(context).textTheme.bodyLarge),
                         const SizedBox(height: 16),
                       ],
 
                       // Services + Prices
-                      Text('Hizmetler ve Fiyatlar',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
-                      Card(
-                        color: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)),
-                        elevation: 0,
-                        child: Column(
-                          children: sitter.services.map((s) => ListTile(
-                            leading: const Icon(Icons.pets, color: Color(0xFF2D6A4F)),
-                            title: Text(s.label),
-                            trailing: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                      _sectionTitle('Hizmetler ve Fiyatlar', Icons.handyman),
+                      ...sitter.services.asMap().entries.map((entry) {
+                        final i = entry.key;
+                        final s = entry.value;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: PremiumCard(
+                            accentColor: const Color(0xFF52B788),
+                            enableScale: false,
+                            padding: const EdgeInsets.all(14),
+                            child: Row(
                               children: [
-                                if (s.pricePerHour > 0)
-                                  Text('${s.pricePerHour.toInt()} TL/saat',
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                if (s.pricePerDay > 0)
-                                  Text('${s.pricePerDay.toInt()} TL/gun',
-                                      style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFD8F3DC),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(_serviceIcon(s.type),
+                                      color: const Color(0xFF2D6A4F),
+                                      size: 22),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                    child: Text(s.label,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15))),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    if (s.pricePerHour > 0)
+                                      Text('${s.pricePerHour.toInt()} TL/saat',
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                              color: Color(0xFF2D6A4F))),
+                                    if (s.pricePerDay > 0)
+                                      Text('${s.pricePerDay.toInt()} TL/gun',
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey.shade600)),
+                                  ],
+                                ),
                               ],
                             ),
-                          )).toList(),
-                        ),
-                      ),
+                          )
+                              .animate(
+                                  delay:
+                                      Duration(milliseconds: 100 * i))
+                              .fadeIn(duration: 300.ms)
+                              .slideX(begin: 0.05),
+                        );
+                      }),
                       const SizedBox(height: 16),
 
                       // Species
-                      Text('Bakilan Turler',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
-                      Text(sitter.speciesLabel, style: Theme.of(context).textTheme.bodyLarge),
+                      _sectionTitle('Bakilan Turler', Icons.pets),
+                      Text(sitter.speciesLabel,
+                          style: Theme.of(context).textTheme.bodyLarge),
                       const SizedBox(height: 16),
 
                       // Address
                       if (sitter.address?.isNotEmpty == true) ...[
-                        Text('Konum', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
+                        _sectionTitle('Konum', Icons.location_on),
                         Row(children: [
-                          const Icon(Icons.location_on, color: Color(0xFF2D6A4F)),
+                          const Icon(Icons.location_on,
+                              color: Color(0xFF2D6A4F)),
                           const SizedBox(width: 8),
                           Expanded(child: Text(sitter.address!)),
                         ]),
@@ -157,48 +327,69 @@ class SitterDetailScreen extends ConsumerWidget {
 
                       // Reviews
                       if (reviews.isNotEmpty) ...[
-                        Text('Yorumlar (${reviews.length})',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-                        ...reviews.map((r) => Card(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          color: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 16,
-                                      child: Text((r.ownerName ?? '?')[0].toUpperCase()),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(r.ownerName ?? 'Kullanici',
-                                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                                    const Spacer(),
-                                    ...List.generate(5, (i) => Icon(
-                                      i < r.rating ? Icons.star : Icons.star_border,
-                                      color: Colors.amber, size: 14,
-                                    )),
+                        _sectionTitle(
+                            'Yorumlar (${reviews.length})', Icons.reviews),
+                        ...reviews.asMap().entries.map((entry) {
+                          final i = entry.key;
+                          final r = entry.value;
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: PremiumCard(
+                              enableScale: false,
+                              padding: const EdgeInsets.all(14),
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 16,
+                                        backgroundColor:
+                                            const Color(0xFFD8F3DC),
+                                        child: Text(
+                                            (r.ownerName ?? '?')[0]
+                                                .toUpperCase(),
+                                            style: const TextStyle(
+                                                color: Color(0xFF2D6A4F),
+                                                fontWeight:
+                                                    FontWeight.bold)),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(r.ownerName ?? 'Kullanici',
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold)),
+                                      const Spacer(),
+                                      ...List.generate(
+                                          5,
+                                          (j) => Icon(
+                                                j < r.rating
+                                                    ? Icons.star
+                                                    : Icons.star_border,
+                                                color: Colors.amber,
+                                                size: 14,
+                                              )),
+                                    ],
+                                  ),
+                                  if (r.comment?.isNotEmpty == true) ...[
+                                    const SizedBox(height: 8),
+                                    Text(r.comment!),
                                   ],
-                                ),
-                                if (r.comment?.isNotEmpty == true) ...[
-                                  const SizedBox(height: 6),
-                                  Text(r.comment!),
                                 ],
-                              ],
-                            ),
-                          ),
-                        )),
+                              ),
+                            )
+                                .animate(
+                                    delay:
+                                        Duration(milliseconds: 80 * i))
+                                .fadeIn(duration: 280.ms)
+                                .slideY(begin: 0.05),
+                          );
+                        }),
                       ],
                       const SizedBox(height: 80),
                     ],
                   ),
-                ),
+                ).animate(delay: 200.ms).fadeIn(duration: 300.ms),
               ),
             ],
           ),
@@ -208,27 +399,33 @@ class SitterDetailScreen extends ConsumerWidget {
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                     child: Row(
                       children: [
-                        if (sitter.userId != null && sitter.userId != user.id) ...[
+                        if (sitter.userId != null &&
+                            sitter.userId != user.id) ...[
                           Expanded(
-                            child: _MessageSitterButton(sitter: sitter, userId: user.id),
+                            child: _MessageSitterButton(
+                                sitter: sitter, userId: user.id),
                           ),
                           const SizedBox(width: 12),
                         ],
                         if (sitter.availability)
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: () => context.pushNamed('sitter-booking',
+                              onPressed: () => context.pushNamed(
+                                  'sitter-booking',
                                   pathParameters: {'sitterId': sitter.id},
                                   extra: sitter),
                               icon: const Icon(Icons.calendar_month),
-                              label: const Text('Rezervasyon Yap', style: TextStyle(fontSize: 16)),
+                              label: const Text('Rezervasyon Yap',
+                                  style: TextStyle(fontSize: 16)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF2D6A4F),
                                 foregroundColor: Colors.white,
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                                 minimumSize: const Size.fromHeight(52),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14)),
                               ),
                             ),
                           ),

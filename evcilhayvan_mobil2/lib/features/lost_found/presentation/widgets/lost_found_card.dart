@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
 import '../../domain/models/lost_found_model.dart';
 
 class LostFoundCard extends StatelessWidget {
@@ -22,7 +23,7 @@ class LostFoundCard extends StatelessWidget {
     final dateStr = DateFormat('dd.MM.yyyy').format(report.lastSeenDate);
     final isLost = report.isLost;
 
-    return GestureDetector(
+    return InteractiveScale(
       onTap: onTap,
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),

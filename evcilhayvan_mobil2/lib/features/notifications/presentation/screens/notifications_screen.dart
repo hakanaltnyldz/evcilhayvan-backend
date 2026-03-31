@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -110,7 +111,10 @@ class NotificationsScreen extends ConsumerWidget {
                     onDismiss: () {
                       ref.read(notificationProvider.notifier).removeNotification(notification.id);
                     },
-                  );
+                  )
+                      .animate(delay: Duration(milliseconds: index * 60))
+                      .fadeIn(duration: 280.ms)
+                      .slideY(begin: 0.05);
                 },
               ),
       ),

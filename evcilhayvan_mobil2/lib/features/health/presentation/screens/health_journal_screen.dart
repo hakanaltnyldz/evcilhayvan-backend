@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:evcilhayvan_mobil2/features/health/data/repositories/health_repository.dart';
 import 'package:evcilhayvan_mobil2/features/health/domain/models/health_record_model.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 
 // ── Providers ──────────────────────────────────────────────────────────────
@@ -176,7 +177,7 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen> {
           if (_filterType == 'weight') _WeightChartSection(petId: widget.petId),
           Expanded(
             child: recordsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: PawLoading()),
               error: (e, _) => Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -419,7 +420,7 @@ class _WeightChartSectionState extends ConsumerState<_WeightChartSection> {
     return chartAsync.when(
       loading: () => const SizedBox(
         height: 160,
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: PawLoading()),
       ),
       error: (e, _) => Container(
         margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),

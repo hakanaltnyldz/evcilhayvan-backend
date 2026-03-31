@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
 import '../../domain/models/pet_event_model.dart';
 
 class EventCard extends StatelessWidget {
@@ -33,8 +34,10 @@ class EventCard extends StatelessWidget {
         ? (photo.startsWith('http') ? photo : '$apiBaseUrl$photo')
         : null;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+    return InteractiveScale(
+      onTap: onTap,
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -153,6 +156,7 @@ class EventCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

@@ -10,6 +10,7 @@ import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/shimmer_box.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/mating/data/repositories/mating_repository.dart';
 import 'package:evcilhayvan_mobil2/features/mating/domain/models/mating_profile.dart';
@@ -110,7 +111,7 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
                 Expanded(
                   child: profilesAsync.when(
                     loading: () => const Center(
-                      child: CircularProgressIndicator(),
+                      child: PawLoading(),
                     ),
                     error: (error, stackTrace) => _ErrorState(
                       message: error.toString(),

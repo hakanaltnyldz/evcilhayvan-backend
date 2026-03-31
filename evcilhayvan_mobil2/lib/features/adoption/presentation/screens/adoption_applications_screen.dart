@@ -7,6 +7,7 @@ import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/adoption_repository.dart';
 import '../../domain/models/adoption_application.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 class AdoptionApplicationsScreen extends ConsumerStatefulWidget {
   const AdoptionApplicationsScreen({super.key});
@@ -68,7 +69,7 @@ class _InboxTab extends ConsumerWidget {
     final inboxAsync = ref.watch(inboxAdoptionApplicationsProvider);
 
     return inboxAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: PawLoading()),
       error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.adoptionAppsErrGeneric(e.toString()))),
       data: (applications) {
         if (applications.isEmpty) {
@@ -144,7 +145,7 @@ class _SentTab extends ConsumerWidget {
     final sentAsync = ref.watch(sentAdoptionApplicationsProvider);
 
     return sentAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: PawLoading()),
       error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.adoptionAppsErrGeneric(e.toString()))),
       data: (applications) {
         if (applications.isEmpty) {

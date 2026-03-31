@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/features/pets/domain/models/pet_model.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 // ── Search History ─────────────────────────────────────────────────────────
 
@@ -336,7 +337,7 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
     final resultsAsync = ref.watch(_searchResultsProvider(_query));
 
     return resultsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: PawLoading()),
       error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.searchError(e.toString()))),
       data: (results) {
         if (results.isEmpty) {

@@ -17,6 +17,7 @@ import '../../data/order_repository.dart';
 import '../../../reviews/presentation/screens/add_review_screen.dart';
 import '../../../reviews/domain/models/review_model.dart';
 import '../../../auth/domain/user_model.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 class MyOrdersScreen extends ConsumerWidget {
   const MyOrdersScreen({super.key});
@@ -68,7 +69,7 @@ class MyOrdersScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: PawLoading()),
         error: (e, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
