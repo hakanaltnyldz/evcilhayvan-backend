@@ -98,6 +98,9 @@ export const io = new SocketIOServer(httpServer, {
   },
 });
 
+// io'yu app'e ekle — routes içinden req.app.get("io") ile erişilebilsin
+app.set("io", io);
+
 // User-Socket mapping: userId -> Set of socketIds (user can have multiple connections)
 export const userSocketMap = new Map();
 
