@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 
 
 import '../../data/repositories/veterinary_repository.dart';
+import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 
 class VetRegisterScreen extends ConsumerStatefulWidget {
   const VetRegisterScreen({super.key});
@@ -97,11 +98,17 @@ class _VetRegisterScreenState extends ConsumerState<VetRegisterScreen> {
         lng: _lng,
         speciesServed: _selectedSpecies.isEmpty ? null : _selectedSpecies.toList(),
       );
-      // Klinigi olusturan kisi otomatik olarak sahipleniyor
-      await repo.claimVetProfile(vet.id);
+      // Klinigi olusturan kisi otomatik olarak sahiplenme talebi olusturuyor
+      final user = ref.read(authProvider);
+      await repo.claimVetProfile(vet.id, claimData: {
+        'fullName': user?.name ?? _nameController.text.trim(),
+        'phone': _phoneController.text.trim().isEmpty ? '—' : _phoneController.text.trim(),
+        'role': 'Klinik Sahibi',
+        'note': 'Klinigi sisteme ekleyen kullanici tarafindan otomatik olusturuldu.',
+      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Klinik kaydedildi ve hesabınıza bağlandı!'), backgroundColor: Colors.green),
+          const SnackBar(content: Text('Klinik kaydedildi! Sahiplenme talebiniz admin onayına gönderildi.'), backgroundColor: Colors.green),
         );
         context.pop();
       }
