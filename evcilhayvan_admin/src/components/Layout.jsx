@@ -10,6 +10,8 @@ const navItems = [
   { to: '/coupons', label: 'Kuponlar', icon: '🎟️' },
   { to: '/support', label: 'Destek', icon: '🎫' },
   { to: '/sitters', label: 'Bakıcılar', icon: '🐕' },
+  { to: '/vets', label: 'Veterinerler', icon: '🏥' },
+  { to: '/vet-claims', label: 'Klinik Talepleri', icon: '📋' },
 ]
 
 export default function Layout() {

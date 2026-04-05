@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Veterinary from "../models/Veterinary.js";
 import User from "../models/User.js";
 import Conversation from "../models/Conversation.js";
+import VetClaimRequest from "../models/VetClaimRequest.js";
 import { sendError, sendOk } from "../utils/apiResponse.js";
 import { recordAudit } from "../utils/audit.js";
 
@@ -313,7 +314,8 @@ export async function verifyVet(req, res) {
 }
 
 // POST /api/veterinaries/:id/claim
-// Kullanici kendi hesabini vet profiliyle eslestiriyor → role = vet, userId set
+// Kullanici sahiplenme talebi oluşturur → admin onayı bekler
+// Body: { fullName, phone, role, note }
 export async function claimVetProfile(req, res) {
   try {
     const { id } = req.params;
@@ -323,37 +325,66 @@ export async function claimVetProfile(req, res) {
       return sendError(res, 400, "Gecersiz veteriner ID", "validation_error");
     }
 
+    const { fullName, phone, role: claimRole, note } = req.body;
+    if (!fullName || !phone || !claimRole) {
+      return sendError(res, 400, "Ad, telefon ve rol bilgisi gerekli", "validation_error");
+    }
+
     const vet = await Veterinary.findById(id);
-    if (!vet || !vet.isActive) {
+    if (!vet || vet.isActive === false) {
       return sendError(res, 404, "Veteriner bulunamadi", "vet_not_found");
     }
 
-    // Baska biri zaten sahiplenmiş mi?
+    // Zaten sahiplenilmiş mi?
     if (vet.userId && String(vet.userId) !== String(userId)) {
       return sendError(res, 409, "Bu profil zaten baska bir hesaba bagli", "already_claimed");
     }
 
-    // Vet profiline userId bağla
-    vet.userId = userId;
-    await vet.save();
-
-    // Kullanici rolünü vet yap
-    const user = await User.findById(userId);
-    if (user && user.role === "user") {
-      user.role = "vet";
-      await user.save();
+    // Zaten bekleyen bir talep var mı?
+    const existing = await VetClaimRequest.findOne({ vetId: id, userId, status: "pending" });
+    if (existing) {
+      return sendError(res, 409, "Bu klinik icin zaten bekleyen bir talebiniz var", "request_exists");
     }
 
-    await recordAudit("veterinary.claim", {
+    const claimReq = await VetClaimRequest.create({
+      vetId: id,
+      userId,
+      fullName,
+      phone,
+      role: claimRole,
+      note: note || "",
+    });
+
+    await recordAudit("veterinary.claim_request", {
       userId,
       entityType: "veterinary",
       entityId: id,
+      metadata: { claimId: claimReq._id.toString() },
     });
 
-    return sendOk(res, 200, { vet, message: "Profil basariyla sahiplenildi" });
+    return sendOk(res, 201, {
+      claimRequest: claimReq,
+      message: "Sahiplenme talebiniz alindi. Admin onayinin ardından profilinize atanacak.",
+    });
   } catch (err) {
+    if (err.code === 11000) {
+      return sendError(res, 409, "Bu klinik icin zaten bir talebiniz bulunuyor", "request_exists");
+    }
     console.error("[claimVetProfile]", err);
     return sendError(res, 500, "Profil sahiplenme basarisiz", "internal_error", err.message);
+  }
+}
+
+// GET /api/veterinaries/:id/claim-status
+// Kullanicinin bu klinik icin talebi var mi ve durumu nedir?
+export async function getVetClaimStatus(req, res) {
+  try {
+    const { id } = req.params;
+    const userId = req.user.sub;
+    const claimReq = await VetClaimRequest.findOne({ vetId: id, userId }).sort({ createdAt: -1 });
+    return sendOk(res, 200, { claimRequest: claimReq || null });
+  } catch (err) {
+    return sendError(res, 500, "Talep durumu alinamadi", "internal_error", err.message);
   }
 }
 
@@ -406,5 +437,78 @@ export async function startVetConversation(req, res) {
   } catch (err) {
     console.error("[startVetConversation]", err);
     return sendError(res, 500, "Sohbet baslatila madi", "internal_error", err.message);
+  }
+}
+
+// POST /api/veterinaries/:id/fetch-photos
+// Google Places API'dan fotoğrafları çekip vet.photos dizisine ekler
+export async function fetchVetPhotosFromGoogle(req, res) {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return sendError(res, 400, "Gecersiz veteriner ID", "validation_error");
+    }
+
+    const vet = await Veterinary.findById(id);
+    if (!vet || vet.isActive === false) {
+      return sendError(res, 404, "Veteriner bulunamadi", "vet_not_found");
+    }
+
+    const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+    if (!apiKey) {
+      return sendError(res, 503, "Google Places API anahtarı tanımlı değil", "config_error");
+    }
+
+    // placeId yoksa Places API ile ara
+    let placeId = vet.googlePlaceId;
+    if (!placeId && vet.name) {
+      const query = encodeURIComponent(`${vet.name} ${vet.address || ""}`);
+      const searchUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${query}&inputtype=textquery&fields=place_id&key=${apiKey}`;
+      const searchRes = await fetch(searchUrl, { signal: AbortSignal.timeout(8000) });
+      const searchData = await searchRes.json();
+      placeId = searchData.candidates?.[0]?.place_id;
+      if (placeId) {
+        vet.googlePlaceId = placeId;
+      }
+    }
+
+    if (!placeId) {
+      return sendError(res, 404, "Google Places ID bulunamadı", "place_not_found");
+    }
+
+    // Place Details → photos dizisi
+    const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=photos,rating,user_ratings_total&key=${apiKey}`;
+    const detailRes = await fetch(detailUrl, { signal: AbortSignal.timeout(8000) });
+    const detailData = await detailRes.json();
+
+    if (detailData.status !== "OK") {
+      return sendError(res, 502, `Google Places hatası: ${detailData.status}`, "places_error");
+    }
+
+    const placePhotos = detailData.result?.photos || [];
+    // Her fotoğraf için Photo URL oluştur (max 800px genişlik)
+    const photoUrls = placePhotos.slice(0, 8).map(
+      (p) => `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${p.photo_reference}&key=${apiKey}`
+    );
+
+    // Mevcut fotoğraflarla birleştir, tekrarları at
+    const merged = [...new Set([...photoUrls, ...vet.photos])];
+    vet.photos = merged.slice(0, 10); // max 10 fotoğraf
+
+    // Google rating güncelle
+    if (detailData.result?.rating) vet.googleRating = detailData.result.rating;
+    if (detailData.result?.user_ratings_total) vet.googleReviewCount = detailData.result.user_ratings_total;
+
+    await vet.save();
+
+    return sendOk(res, 200, {
+      message: `${photoUrls.length} fotoğraf eklendi`,
+      photos: vet.photos,
+      googleRating: vet.googleRating,
+      googleReviewCount: vet.googleReviewCount,
+    });
+  } catch (err) {
+    console.error("[fetchVetPhotosFromGoogle]", err);
+    return sendError(res, 500, "Fotoğraflar alınamadı", "internal_error", err.message);
   }
 }

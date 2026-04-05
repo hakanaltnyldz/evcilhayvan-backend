@@ -10,7 +10,9 @@ import {
   deleteVet,
   verifyVet,
   claimVetProfile,
+  getVetClaimStatus,
   startVetConversation,
+  fetchVetPhotosFromGoogle,
 } from "../controllers/veterinaryController.js";
 import {
   getVetReviews,
@@ -31,6 +33,8 @@ router.put("/:id", authRequired(), updateVet);
 router.delete("/:id", authRequired(["admin"]), deleteVet);
 router.patch("/:id/verify", authRequired(["admin"]), verifyVet);
 router.post("/:id/claim", authRequired(), claimVetProfile);
+router.get("/:id/claim-status", authRequired(), getVetClaimStatus);
+router.post("/:id/fetch-photos", authRequired(["admin"]), fetchVetPhotosFromGoogle);
 router.post("/:id/conversation", authRequired(), startVetConversation);
 // Yorumlar
 router.get("/:vetId/reviews", getVetReviews);

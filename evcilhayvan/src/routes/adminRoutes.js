@@ -13,6 +13,8 @@ import Coupon from "../models/Coupon.js";
 import CouponUsage from "../models/CouponUsage.js";
 import SupportTicket from "../models/SupportTicket.js";
 import PetSitter from "../models/PetSitter.js";
+import VetClaimRequest from "../models/VetClaimRequest.js";
+import Veterinary from "../models/Veterinary.js";
 import { sendPush } from "../utils/fcm.js";
 import { recordAudit } from "../utils/audit.js";
 
@@ -605,6 +607,94 @@ router.get("/coupons/:id/usage", async (req, res) => {
     });
   } catch (err) {
     return sendError(res, 500, "Kullanım geçmişi alınamadı", "internal_error", err.message);
+  }
+});
+
+// === VETERİNER YÖNETİMİ ===
+
+// GET /api/admin/vets?page=1
+router.get("/vets", async (req, res) => {
+  try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = 20;
+    const skip = (page - 1) * limit;
+    const [vets, total] = await Promise.all([
+      Veterinary.find()
+        .select("name address phone photos googlePlaceId googleRating googleReviewCount isVerified isActive userId source createdAt")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Veterinary.countDocuments(),
+    ]);
+    return sendOk(res, 200, { vets, total, page });
+  } catch (err) {
+    return sendError(res, 500, "Veterinerler alinamadi", "internal_error", err.message);
+  }
+});
+
+// GET /api/admin/vet-claims?page=1&status=pending|approved|rejected
+router.get("/vet-claims", async (req, res) => {
+  try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = 20;
+    const filter = {};
+    if (["pending", "approved", "rejected"].includes(req.query.status)) filter.status = req.query.status;
+    else filter.status = "pending";
+    const [claims, total] = await Promise.all([
+      VetClaimRequest.find(filter)
+        .populate("vetId", "name address phone isVerified")
+        .populate("userId", "name email avatarUrl")
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      VetClaimRequest.countDocuments(filter),
+    ]);
+    return sendOk(res, 200, { claims, total, page });
+  } catch (err) {
+    return sendError(res, 500, "Talepler alinamadi", "internal_error", err.message);
+  }
+});
+
+// PATCH /api/admin/vet-claims/:id/review
+// body: { action: "approved"|"rejected", adminNote? }
+router.patch("/vet-claims/:id/review", async (req, res) => {
+  try {
+    const { action, adminNote } = req.body;
+    if (!["approved", "rejected"].includes(action)) {
+      return sendError(res, 400, "action 'approved' veya 'rejected' olmali", "validation_error");
+    }
+    const claim = await VetClaimRequest.findById(req.params.id);
+    if (!claim) return sendError(res, 404, "Talep bulunamadi", "not_found");
+    if (claim.status !== "pending") {
+      return sendError(res, 409, "Bu talep zaten incelendi", "already_reviewed");
+    }
+
+    claim.status = action;
+    claim.adminNote = adminNote || "";
+    claim.reviewedBy = req.user.sub;
+    claim.reviewedAt = new Date();
+    await claim.save();
+
+    if (action === "approved") {
+      // Vet profiline userId ata ve doğrula
+      await Veterinary.findByIdAndUpdate(claim.vetId, {
+        userId: claim.userId,
+        isVerified: true,
+      });
+      // Kullanici rolünü vet yap
+      await User.findByIdAndUpdate(claim.userId, { role: "vet" });
+    }
+
+    await recordAudit("admin.vet_claim.review", {
+      userId: req.user.sub,
+      entityType: "VetClaimRequest",
+      entityId: claim._id.toString(),
+      metadata: { action, vetId: claim.vetId?.toString() },
+    });
+
+    return sendOk(res, 200, { claim, message: action === "approved" ? "Talep onaylandi" : "Talep reddedildi" });
+  } catch (err) {
+    return sendError(res, 500, "Inceleme basarisiz", "internal_error", err.message);
   }
 });
 

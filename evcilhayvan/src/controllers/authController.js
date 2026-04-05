@@ -422,7 +422,7 @@ export async function getUserPublicProfile(req, res) {
     if (!user) {
       return sendError(res, 404, "Kullanıcı bulunamadı", "user_not_found");
     }
-    const pets = await Pet.find({ ownerId: userId, isActive: { $ne: false } })
+    const pets = await Pet.find({ ownerId: userId, isActive: true })
       .select("name species breed age gender photos advertType")
       .sort({ createdAt: -1 })
       .limit(20)

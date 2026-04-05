@@ -11,6 +11,8 @@ import Posts from './pages/Posts.jsx'
 import Coupons from './pages/Coupons.jsx'
 import Support from './pages/Support.jsx'
 import Sitters from './pages/Sitters.jsx'
+import Vets from './pages/Vets.jsx'
+import VetClaims from './pages/VetClaims.jsx'
 
 function PrivateRoute({ children }) {
   const token = sessionStorage.getItem('admin_token')
@@ -40,6 +42,8 @@ export default function App() {
           <Route path="coupons" element={<Coupons />} />
           <Route path="support" element={<Support />} />
           <Route path="sitters" element={<Sitters />} />
+          <Route path="vets" element={<Vets />} />
+          <Route path="vet-claims" element={<VetClaims />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

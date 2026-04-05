@@ -99,10 +99,9 @@ class VeterinaryRepository {
     });
   }
 
-  Future<VeterinaryModel> claimVetProfile(String vetId) {
+  Future<void> claimVetProfile(String vetId, {required Map<String, String> claimData}) {
     return _guard(() async {
-      final response = await _dio.post('/api/veterinaries/$vetId/claim');
-      return VeterinaryModel.fromJson(response.data['vet']);
+      await _dio.post('/api/veterinaries/$vetId/claim', data: claimData);
     });
   }
 

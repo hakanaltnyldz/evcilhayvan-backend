@@ -877,39 +877,32 @@ class _ClaimVetButtonState extends ConsumerState<_ClaimVetButton> {
   bool _loading = false;
 
   Future<void> _claim() async {
-    final l10n = AppLocalizations.of(context)!;
-    final confirm = await showDialog<bool>(
+    // Form bottom sheet — ad, telefon, klinikdeki rol, açıklama
+    final result = await showModalBottomSheet<Map<String, String>>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(l10n.vetClaimDialogTitle),
-        content: Text(l10n.vetClaimDialogContent),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: const Color(0xFF2D6A4F)),
-            child: Text(l10n.vetClaimAction),
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => const _ClaimFormSheet(),
     );
-    if (confirm != true) return;
+    if (result == null) return;
 
     setState(() => _loading = true);
     try {
       final repo = ref.read(veterinaryRepositoryProvider);
-      await repo.claimVetProfile(widget.vet.id);
+      await repo.claimVetProfile(widget.vet.id, claimData: result);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.vetClaimSuccess), backgroundColor: const Color(0xFF2D6A4F)),
+          const SnackBar(
+            content: Text('Talebiniz alındı. Admin onayı sonrası profilinize atanacak.'),
+            backgroundColor: Color(0xFF2D6A4F),
+            duration: Duration(seconds: 4),
+          ),
         );
-        ref.invalidate(vetDetailProvider(widget.vet.id));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -919,7 +912,6 @@ class _ClaimVetButtonState extends ConsumerState<_ClaimVetButton> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       width: double.infinity,
       child: TextButton.icon(
@@ -927,9 +919,128 @@ class _ClaimVetButtonState extends ConsumerState<_ClaimVetButton> {
         icon: _loading
             ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
             : const Icon(Icons.verified_outlined, size: 16),
-        label: Text(l10n.vetClaimProfile, style: const TextStyle(fontSize: 12)),
+        label: const Text('Bu Kliniği Sahiplen', style: TextStyle(fontSize: 12)),
         style: TextButton.styleFrom(foregroundColor: const Color(0xFF40916C)),
       ),
     );
   }
+}
+
+// Sahiplenme formu — bottom sheet
+class _ClaimFormSheet extends StatefulWidget {
+  const _ClaimFormSheet();
+
+  @override
+  State<_ClaimFormSheet> createState() => _ClaimFormSheetState();
+}
+
+class _ClaimFormSheetState extends State<_ClaimFormSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _noteCtrl = TextEditingController();
+  String _role = 'Veteriner';
+
+  static const _roles = ['Veteriner', 'Klinik Sahibi', 'Çalışan', 'Diğer'];
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _phoneCtrl.dispose();
+    _noteCtrl.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+    Navigator.pop(context, {
+      'fullName': _nameCtrl.text.trim(),
+      'phone': _phoneCtrl.text.trim(),
+      'role': _role,
+      'note': _noteCtrl.text.trim(),
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40, height: 4,
+                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text('Klinik Sahiplenme Talebi',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1B4332))),
+              const SizedBox(height: 4),
+              const Text('Bilgileriniz admin tarafından doğrulanacak ve onay sonrası klinik profilinize atanacak.',
+                  style: TextStyle(fontSize: 12, color: Colors.grey)),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _nameCtrl,
+                decoration: _inputDecor('Ad Soyad', Icons.person_outline),
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Ad soyad gerekli' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _phoneCtrl,
+                keyboardType: TextInputType.phone,
+                decoration: _inputDecor('Telefon Numarası', Icons.phone_outlined),
+                validator: (v) => (v == null || v.trim().length < 10) ? 'Geçerli telefon girin' : null,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: _role,
+                decoration: _inputDecor('Klinikteki Rolünüz', Icons.work_outline),
+                items: _roles.map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
+                onChanged: (v) => setState(() => _role = v ?? _role),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _noteCtrl,
+                maxLines: 2,
+                decoration: _inputDecor('Ek Açıklama (opsiyonel)', Icons.notes_outlined),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _submit,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF2D6A4F),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: const Text('Talebi Gönder', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecor(String label, IconData icon) => InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, size: 20, color: const Color(0xFF40916C)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD8F3DC))),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD8F3DC))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2D6A4F), width: 1.5)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      );
 }
