@@ -120,22 +120,116 @@ class _InboxTab extends ConsumerWidget {
       ref.invalidate(inboxAdoptionApplicationsProvider);
 
       if (context.mounted) {
-        final l10n2 = AppLocalizations.of(context)!;
-        if (action == 'accept' && result.conversationId != null) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n2.adoptionAppsAcceptedStarted)));
-          context.pushNamed('chat', pathParameters: {'conversationId': result.conversationId!});
+        if (action == 'accept') {
+          // Kabul doğrulama modalı
+          await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (ctx) => _AcceptConfirmationDialog(
+              applicantName: app.applicantUser?.name ?? 'Başvuran',
+              petName: app.listing?.name ?? 'İlan',
+              conversationId: result.conversationId,
+            ),
+          );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(action == 'accept' ? l10n2.adoptionAppsAccepted : l10n2.adoptionAppsRejected)),
+            const SnackBar(
+              content: Text('Başvuru reddedildi.'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        final l10n2 = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n2.adoptionAppsErrGeneric(e.toString())), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+        );
       }
     }
+  }
+}
+
+// ─── Kabul Onay Dialog ───────────────────────────────────────────────────────
+
+class _AcceptConfirmationDialog extends StatelessWidget {
+  final String applicantName;
+  final String petName;
+  final String? conversationId;
+
+  const _AcceptConfirmationDialog({
+    required this.applicantName,
+    required this.petName,
+    this.conversationId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80, height: 80,
+              decoration: const BoxDecoration(
+                color: Color(0xFFD8F3DC),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check_circle_rounded, color: Color(0xFF2D6A4F), size: 48),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Sahiplendirme Onaylandı! 🎉',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1B4332)),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.5),
+                children: [
+                  TextSpan(text: '"$petName"'),
+                  const TextSpan(text: ' için '),
+                  TextSpan(text: applicantName, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2D6A4F))),
+                  const TextSpan(text: "'in başvurusunu onayladın.\n\n"),
+                  const TextSpan(text: 'Yeni sahiple mesajlaşarak teslim sürecini planlayabilirsin.'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            if (conversationId != null)
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    context.pushNamed('chat', pathParameters: {'conversationId': conversationId!});
+                  },
+                  icon: const Icon(Icons.chat_bubble_outline),
+                  label: const Text('Mesajlaşmaya Başla'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF2D6A4F),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Tamam', style: TextStyle(color: Colors.grey)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -230,10 +324,14 @@ class _ApplicationCard extends StatelessWidget {
         ? (listing.images.first.startsWith('http') ? listing.images.first : '$apiBaseUrl${listing.images.first}')
         : null;
 
-    return Container(
+    return GestureDetector(
+      onTap: listing != null && listing.id.isNotEmpty
+          ? () => context.pushNamed('pet-detail', pathParameters: {'id': listing.id})
+          : null,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [BoxShadow(color: const Color(0xFF2D6A4F).withOpacity(0.06), blurRadius: 12)],
@@ -366,7 +464,7 @@ class _ApplicationCard extends StatelessWidget {
             ),
         ],
       ),
-    );
+    )); // GestureDetector kapanış
   }
 
   Widget _placeholder() {

@@ -100,6 +100,7 @@ import '../features/store/presentation/screens/seller_coupons_screen.dart';
 import '../features/support/presentation/screens/complaint_screen.dart';
 
 // Auth gerektirmeyen sayfalar
+// Tamamen açık rotalar (giriş gerektirmez)
 const _publicRoutes = {
   '/login',
   '/register',
@@ -111,6 +112,32 @@ const _publicRoutes = {
   '/privacy-policy',
   '/theme-selection',
 };
+
+// Misafir kullanıcıların GEZEBİLECEĞİ ama işlem yapmak için giriş gereken rotalar
+// (yani router bunları login'e yönlendirmez; ilanlar, vet, mağaza vb.)
+const _guestBrowseRoutes = {
+  '/',
+  '/veterinary',
+  '/store',
+  '/lost-found',
+  '/events',
+  '/sitters',
+  '/search',
+};
+
+// Misafir redirect kontrolünde kullanılmak üzere
+bool _isGuestBrowsable(String location) {
+  if (_guestBrowseRoutes.contains(location)) return true;
+  // Dinamik rotalar: /pet/:id, /vet/:id, /sitter/:id, /event/:id, /lost-found/:id
+  if (location.startsWith('/pet/')) return true;
+  if (location.startsWith('/veterinary/')) return true;
+  if (location.startsWith('/sitter/')) return true;
+  if (location.startsWith('/event/')) return true;
+  if (location.startsWith('/lost-found/')) return true;
+  if (location.startsWith('/store/')) return true;
+  if (location.startsWith('/user/')) return true;
+  return false;
+}
 
 /// MongoDB ObjectId format doğrulama (24 hex karakter).
 bool _isValidObjectId(String id) =>
@@ -222,7 +249,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // Giris yapmamis kullanici korunmus sayfaya gitmeye calisirsa login'e yonlendir
-      if (!isLoggedIn && !isPublicRoute) {
+      // Ancak gezinme rotaları (home, vet, store, ilan detay) için yönlendirme yapma
+      if (!isLoggedIn && !isPublicRoute && !_isGuestBrowsable(state.matchedLocation)) {
         return '/login';
       }
 

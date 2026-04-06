@@ -524,8 +524,34 @@ class _MainShellState extends ConsumerState<MainShell> {
     HapticFeedback.lightImpact();
     final currentUser = ref.read(authProvider);
 
-    if (currentUser == null && (index == 0 || index == 2 || index == 4)) {
-      context.goNamed('login');
+    // Misafir için sadece mesajlar (0) ve profil (4) giriş gerektirir
+    if (currentUser == null && (index == 0 || index == 4)) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(children: [
+            Icon(Icons.lock_outline, color: Color(0xFF2D6A4F), size: 22),
+            SizedBox(width: 8),
+            Text('Giriş Gerekiyor', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+          ]),
+          content: Text(
+            index == 0 ? 'Mesajlara erişmek için giriş yapman gerekiyor.' : 'Profilini görmek için giriş yapman gerekiyor.',
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Vazgeç', style: TextStyle(color: Colors.grey))),
+            FilledButton(
+              onPressed: () { Navigator.pop(ctx); context.goNamed('login'); },
+              style: FilledButton.styleFrom(backgroundColor: const Color(0xFF2D6A4F), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+              child: const Text('Giriş Yap'),
+            ),
+            TextButton(
+              onPressed: () { Navigator.pop(ctx); context.goNamed('register'); },
+              child: const Text('Kayıt Ol', style: TextStyle(color: Color(0xFF40916C), fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      );
       return;
     }
 

@@ -1,6 +1,7 @@
 // src/routes/couponRoutes.js
 
 import express from 'express';
+import mongoose from 'mongoose';
 import * as couponController from '../controllers/couponController.js';
 import { protect, authRequired } from '../middlewares/auth.js';
 import Coupon from '../models/Coupon.js';
@@ -16,20 +17,23 @@ router.get('/coupons/:code/validate', authRequired(), couponController.validateC
 // Her kupon için kullanıcının kalan kullanım hakkı da döner
 router.get('/coupons/available', authRequired(), async (req, res) => {
   try {
-    const userId = req.user._id || req.user.id || req.user.sub;
+    const rawUserId = req.user._id || req.user.id || req.user.sub;
+    const userId = mongoose.Types.ObjectId.isValid(rawUserId)
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : null;
     const now = new Date();
     const coupons = await Coupon.find({
-      seller: null,
+      $or: [{ seller: null }, { seller: { $exists: false } }],
       isActive: true,
       validFrom: { $lte: now },
       validUntil: { $gte: now },
     }).select('-applicableProducts -applicableCategories -store').sort({ createdAt: -1 });
 
     // Her kupon için kullanıcının kalan kullanım hakkını hesapla
-    const usageCounts = await CouponUsage.aggregate([
-      { $match: { userId: userId, couponId: { $in: coupons.map(c => c._id) } } },
+    const usageCounts = userId ? await CouponUsage.aggregate([
+      { $match: { userId, couponId: { $in: coupons.map(c => c._id) } } },
       { $group: { _id: '$couponId', count: { $sum: 1 } } },
-    ]);
+    ]) : [];
     const usageMap = {};
     usageCounts.forEach(u => { usageMap[u._id.toString()] = u.count; });
 

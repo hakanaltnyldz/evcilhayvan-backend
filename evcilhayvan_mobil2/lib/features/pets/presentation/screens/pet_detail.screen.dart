@@ -22,6 +22,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../mating/data/repositories/mating_repository.dart';
 import '../../../favorites/presentation/widgets/favorite_button.dart';
 import '../../../adoption/data/repositories/adoption_repository.dart';
+import 'package:evcilhayvan_mobil2/core/utils/auth_guard.dart';
 
 final petDetailProvider = FutureProvider.autoDispose.family<Pet, String>((ref, petId) {
   final repository = ref.watch(petsRepositoryProvider);
@@ -1559,7 +1560,7 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
     final owner = widget.pet.owner;
 
     if (currentUser == null) {
-      _showError(l10n.petDetailErrMsgLogin);
+      await showLoginRequired(context, reason: 'Mesaj göndermek için giriş yapman gerekiyor.');
       return;
     }
 
@@ -1637,7 +1638,12 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
   }
 
   // Sahiplendirme basvuru ekranina yonlendir
-  void _handleAdoptionApply() {
+  Future<void> _handleAdoptionApply() async {
+    final currentUser = ref.read(authProvider);
+    if (currentUser == null) {
+      await showLoginRequired(context, reason: 'Sahiplendirme başvurusu yapabilmek için giriş yapman gerekiyor.');
+      return;
+    }
     context.pushNamed('adoption-apply', extra: widget.pet);
   }
 
@@ -1646,7 +1652,7 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
     final currentUser = ref.read(authProvider);
 
     if (currentUser == null) {
-      _showError(AppLocalizations.of(context)!.petDetailErrMatingLogin);
+      await showLoginRequired(context, reason: 'Çiftleşme isteği göndermek için giriş yapman gerekiyor.');
       return;
     }
 

@@ -129,18 +129,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(
                     _pages.length,
-                    (i) => AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: i == _currentPage ? 24 : 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: i == _currentPage
-                            ? const Color(0xFF2D6A4F)
-                            : const Color(0xFFB7E4C7),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
+                    (i) {
+                      final isDark = Theme.of(context).brightness == Brightness.dark;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: i == _currentPage ? 24 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: i == _currentPage
+                              ? const Color(0xFF52B788)
+                              : isDark ? Colors.white24 : const Color(0xFFB7E4C7),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -186,8 +189,15 @@ class _OnboardingPageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleColor = isDark ? const Color(0xFF74C69D) : const Color(0xFF1B4332);
+    final subtitleColor = isDark ? Colors.white60 : Colors.grey.shade600;
+    final iconBg = isDark
+        ? page.gradient.last.withOpacity(0.25)
+        : const Color(0xFFD8F3DC);
+
     return Container(
-      color: Colors.white,
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 36),
@@ -195,30 +205,31 @@ class _OnboardingPageWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(flex: 2),
-              // Illustration container
               Container(
                 width: 160,
                 height: 160,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFD8F3DC),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [page.gradient.first.withOpacity(0.4), page.gradient.last.withOpacity(0.6)]
+                        : page.gradient,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
-                  child: Icon(
-                    page.icon,
-                    size: 80,
-                    color: Colors.white,
-                  ),
+                  child: Icon(page.icon, size: 80, color: Colors.white),
                 ),
               ),
               const Spacer(flex: 2),
               Text(
                 page.title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1B4332),
+                  color: titleColor,
                   height: 1.2,
                 ),
               ),
@@ -226,11 +237,7 @@ class _OnboardingPageWidget extends StatelessWidget {
               Text(
                 page.subtitle,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Colors.grey.shade600,
-                  height: 1.5,
-                ),
+                style: TextStyle(fontSize: 15, color: subtitleColor, height: 1.5),
               ),
               const Spacer(flex: 4),
             ],
