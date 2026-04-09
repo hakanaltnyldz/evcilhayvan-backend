@@ -31,8 +31,6 @@ services:
   - type: web
     name: evcilhayvan-admin
     env: static
-    region: frankfurt
-    plan: free
     buildCommand: cd evcilhayvan_admin && npm install && npm run build
     staticPublishPath: evcilhayvan_admin/dist
     routes:
