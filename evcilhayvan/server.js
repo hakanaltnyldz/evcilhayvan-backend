@@ -1,5 +1,6 @@
 // server.js
 import express from "express";
+import compression from "compression";
 import cors from "cors";
 import fs from "fs";
 import helmet from "helmet";
@@ -146,9 +147,10 @@ const uploadLimiter = rateLimit({
 
 // Middlewares
 app.use(cors({ origin: config.corsOrigins, credentials: true }));
+app.use(compression());
 app.use(express.json({ limit: "2mb" }));
 app.use(helmet());
-app.use(morgan(config.env === "production" ? "combined" : "dev"));
+app.use(morgan(config.env === "production" ? "short" : "dev"));
 // NoSQL injection koruması: req.body / req.params içindeki $ ve . operatörlerini temizle
 // express-mongo-sanitize — Node 22'de req.query getter çakışmasını önle
 app.use((req, res, next) => {
@@ -173,7 +175,7 @@ const __dirname = path.resolve(path.dirname(""));
 const uploadStaticPath = path.isAbsolute(config.uploadDir)
   ? config.uploadDir
   : path.join(__dirname, config.uploadDir);
-app.use("/uploads", express.static(uploadStaticPath));
+app.use("/uploads", express.static(uploadStaticPath, { maxAge: '7d', etag: true }));
 
 // Health
 app.get("/api/health", (_req, res) => res.sendOk({ ok: true }));
@@ -231,7 +233,13 @@ app.use(errorHandler);
 // DB & Server
 export async function startServer() {
   try {
-    await mongoose.connect(config.mongoUri);
+    await mongoose.connect(config.mongoUri, {
+      maxPoolSize: 10,
+      minPoolSize: 2,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      maxIdleTimeMS: 30000,
+    });
     console.log("MongoDB connected");
     await seedVaccinationSchedules();
     httpServer.listen(config.port, "0.0.0.0", () => {
@@ -241,6 +249,13 @@ export async function startServer() {
       setTimeout(() => startBirthdayReminderJob(io), 5_000);
       setTimeout(() => startAppointmentReminderJob(io), 10_000);
       setTimeout(() => startAdvertExpiryReminderJob(io), 15_000);
+      // Keep-alive ping: Render free tier 15dk sonra uyumasın
+      setInterval(async () => {
+        try {
+          await fetch('https://evcilhayvan-backend.onrender.com/api/health');
+          console.log('[KeepAlive] ping ok');
+        } catch (_) {}
+      }, 14 * 60 * 1000);
     });
   } catch (err) {
     console.error("Mongo connection error:", err.message);
