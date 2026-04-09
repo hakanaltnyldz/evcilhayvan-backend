@@ -247,7 +247,8 @@ export async function updateVet(req, res) {
     const vet = await Veterinary.findById(id);
     if (!vet) return sendError(res, 404, "Veteriner bulunamadi", "vet_not_found");
 
-    if (!isAdmin && String(vet.registeredBy) !== String(userId)) {
+    const isOwner = vet.userId && String(vet.userId) === String(userId);
+    if (!isAdmin && !isOwner && String(vet.registeredBy) !== String(userId)) {
       return sendError(res, 403, "Bu veterineri guncelleme yetkiniz yok", "forbidden");
     }
 
