@@ -28,3 +28,17 @@ services:
         sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
+  - type: web
+    name: evcilhayvan-admin
+    env: static
+    region: frankfurt
+    plan: free
+    buildCommand: cd evcilhayvan_admin && npm install && npm run build
+    staticPublishPath: evcilhayvan_admin/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://evcilhayvan-backend.onrender.com/api

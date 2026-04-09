@@ -167,7 +167,18 @@ export default function Coupons() {
       }
       setShowModal(false)
     } catch (err) {
-      toast.error(err.response?.data?.message || (editCoupon ? 'Kupon güncellenemedi' : 'Kupon oluşturulamadı'))
+      const msg = err.response?.data?.message
+      const status = err.response?.status
+      if (!err.response) {
+        toast.error('Sunucuya bağlanılamadı. Lütfen bağlantınızı kontrol edin.')
+      } else if (status === 401) {
+        toast.error('Oturum sona erdi, lütfen tekrar giriş yapın.')
+      } else if (status === 403) {
+        toast.error('Bu işlem için admin yetkiniz yok.')
+      } else {
+        toast.error(msg || (editCoupon ? 'Kupon güncellenemedi' : 'Kupon oluşturulamadı'))
+      }
+      console.error('[Coupon]', status, err.response?.data || err.message)
     } finally {
       setSaving(false)
     }
