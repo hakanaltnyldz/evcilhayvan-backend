@@ -11,11 +11,13 @@ import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
-import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart' as store_data;
+import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart'
+    as store_data;
 import 'package:evcilhayvan_mobil2/features/store/domain/models/store_model.dart';
 import 'package:evcilhayvan_mobil2/features/store/presentation/widgets/store_category_chips.dart';
 import 'package:evcilhayvan_mobil2/features/store/presentation/widgets/store_product_card.dart';
-import 'package:evcilhayvan_mobil2/features/store/providers/store_providers.dart' as catalog;
+import 'package:evcilhayvan_mobil2/features/store/providers/store_providers.dart'
+    as catalog;
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 const List<Color> _storeBoldBackground = [
@@ -30,20 +32,11 @@ const List<Color> _storeHeroGradient = [
   Color(0xFF52B788),
 ];
 
-const List<Color> _storeCardGradientA = [
-  Color(0xFF1B4332),
-  Color(0xFF2D6A4F),
-];
+const List<Color> _storeCardGradientA = [Color(0xFF1B4332), Color(0xFF2D6A4F)];
 
-const List<Color> _storeCardGradientB = [
-  Color(0xFF40916C),
-  Color(0xFF52B788),
-];
+const List<Color> _storeCardGradientB = [Color(0xFF40916C), Color(0xFF52B788)];
 
-const List<Color> _storeAccentGradient = [
-  Color(0xFF52B788),
-  Color(0xFF74C69D),
-];
+const List<Color> _storeAccentGradient = [Color(0xFF52B788), Color(0xFF74C69D)];
 
 class StoreHomeScreen extends ConsumerStatefulWidget {
   const StoreHomeScreen({super.key});
@@ -70,7 +63,9 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
   }
 
   void _clearFilters() {
-    if (_selectedCategory == null && _query.isEmpty && _searchController.text.isEmpty) {
+    if (_selectedCategory == null &&
+        _query.isEmpty &&
+        _searchController.text.isEmpty) {
       return;
     }
     _searchDebounce?.cancel();
@@ -100,8 +95,9 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
     final categoriesAsync = ref.watch(catalog.categoriesProvider);
     final storesAsync = ref.watch(store_data.storeDiscoverProvider);
     final user = ref.watch(authProvider);
-    final myStoreAsync =
-        user?.role == 'seller' ? ref.watch(store_data.myStoreProvider) : null;
+    final myStoreAsync = user?.role == 'seller'
+        ? ref.watch(store_data.myStoreProvider)
+        : null;
     final hasFilters = _selectedCategory != null || _query.isNotEmpty;
     final myStoreId = myStoreAsync?.valueOrNull?.id;
 
@@ -132,12 +128,9 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                         _Header(
                           controller: _searchController,
                           onChanged: _onSearchChanged,
-                          onCartTap: () =>
-                              context.pushNamed('store-new-cart'),
-                          onFavoritesTap: () =>
-                              context.pushNamed('favorites'),
-                          onOrdersTap: () =>
-                              context.pushNamed('my-orders'),
+                          onCartTap: () => context.pushNamed('store-new-cart'),
+                          onFavoritesTap: () => context.pushNamed('favorites'),
+                          onOrdersTap: () => context.pushNamed('my-orders'),
                         ),
                         const SizedBox(height: 14),
                         const _HeroCard(),
@@ -145,7 +138,11 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                         categoriesAsync.when(
                           data: (categories) {
                             if (categories.isEmpty) {
-                              return _InfoBanner(message: AppLocalizations.of(context)!.storeHomeCategoryNotFound);
+                              return _InfoBanner(
+                                message: AppLocalizations.of(
+                                  context,
+                                )!.storeHomeCategoryNotFound,
+                              );
                             }
                             return StoreCategoryChips(
                               categories: categories,
@@ -160,11 +157,18 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                           error: (e, _) => Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _InfoBanner(message: AppLocalizations.of(context)!.storeHomeCategoryLoadErr),
+                              _InfoBanner(
+                                message: AppLocalizations.of(
+                                  context,
+                                )!.storeHomeCategoryLoadErr,
+                              ),
                               const SizedBox(height: 6),
                               TextButton(
-                                onPressed: () => ref.invalidate(catalog.categoriesProvider),
-                                child: Text(AppLocalizations.of(context)!.storeHomeRetry),
+                                onPressed: () =>
+                                    ref.invalidate(catalog.categoriesProvider),
+                                child: Text(
+                                  AppLocalizations.of(context)!.storeHomeRetry,
+                                ),
                               ),
                             ],
                           ),
@@ -175,7 +179,10 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                           onTap: () => context.pushNamed('my-coupons'),
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [Color(0xFF1B4332), Color(0xFF2D6A4F)],
@@ -184,10 +191,16 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.local_offer, color: Colors.white, size: 18),
+                                const Icon(
+                                  Icons.local_offer,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
                                 const SizedBox(width: 10),
                                 Text(
-                                  AppLocalizations.of(context)!.storeMyCouponsLabel,
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.storeMyCouponsLabel,
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
@@ -195,47 +208,59 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                                   ),
                                 ),
                                 const Spacer(),
-                                const Icon(Icons.chevron_right, color: Colors.white, size: 18),
+                                const Icon(
+                                  Icons.chevron_right,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
                               ],
                             ),
                           ),
                         ),
                         if (user == null || user.role != 'seller')
-                          _SellerCTA(onTap: () {
-                            if (user == null) {
-                              context.pushNamed('login');
-                            } else {
-                              context.pushNamed('store-apply');
-                            }
-                          })
+                          _SellerCTA(
+                            onTap: () {
+                              if (user == null) {
+                                context.pushNamed('login');
+                              } else {
+                                context.pushNamed('store-apply');
+                              }
+                            },
+                          )
                         else if (myStoreAsync != null)
                           myStoreAsync.when(
                             data: (store) {
                               // store burada StoreModel? (nullable) olabilir
                               if (store == null) {
-                              // Satıcının henüz mağazası yoksa CTA göster
+                                // Satıcının henüz mağazası yoksa CTA göster
                                 return _SellerCTA(
-                                  onTap: () =>
-                                      context.pushNamed('store-apply'),
+                                  onTap: () => context.pushNamed('store-apply'),
                                 );
                               }
                               // Artık store kesinlikle null değil
                               return _MyStoreMiniCard(store: store);
                             },
                             loading: () => const _MiniCardSkeleton(),
-                            error: (e, _) =>
-                                Text(AppLocalizations.of(context)!.storeHomeMyStoreLoadErr(e.toString())),
+                            error: (e, _) => Text(
+                              AppLocalizations.of(
+                                context,
+                              )!.storeHomeMyStoreLoadErr(e.toString()),
+                            ),
                           ),
                         const SizedBox(height: 14),
                         _SectionHeader(
-                          title: AppLocalizations.of(context)!.storeHomeFeatured,
+                          title: AppLocalizations.of(
+                            context,
+                          )!.storeHomeFeatured,
                         ),
                         const SizedBox(height: 8),
                         storesAsync.when(
                           data: (stores) {
                             if (stores.isEmpty) {
                               return _InfoBanner(
-                                message: AppLocalizations.of(context)!.storeHomeFeaturedEmpty,
+                                message: AppLocalizations.of(
+                                  context,
+                                )!.storeHomeFeaturedEmpty,
                               );
                             }
                             return _StoreCarousel(stores: stores);
@@ -245,13 +270,18 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _InfoBanner(
-                                message: AppLocalizations.of(context)!.storeHomeStoresLoadErr,
+                                message: AppLocalizations.of(
+                                  context,
+                                )!.storeHomeStoresLoadErr,
                               ),
                               const SizedBox(height: 6),
                               TextButton(
-                                onPressed: () =>
-                                    ref.invalidate(store_data.storeDiscoverProvider),
-                                child: Text(AppLocalizations.of(context)!.storeHomeRetry),
+                                onPressed: () => ref.invalidate(
+                                  store_data.storeDiscoverProvider,
+                                ),
+                                child: Text(
+                                  AppLocalizations.of(context)!.storeHomeRetry,
+                                ),
                               ),
                             ],
                           ),
@@ -261,8 +291,14 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             _SectionHeader(
-                              title: AppLocalizations.of(context)!.storeHomeProducts,
-                              actionLabel: hasFilters ? AppLocalizations.of(context)!.storeHomeFiltersClear : null,
+                              title: AppLocalizations.of(
+                                context,
+                              )!.storeHomeProducts,
+                              actionLabel: hasFilters
+                                  ? AppLocalizations.of(
+                                      context,
+                                    )!.storeHomeFiltersClear
+                                  : null,
                               onActionTap: hasFilters ? _clearFilters : null,
                             ),
                             // Sıralama seçici
@@ -274,15 +310,43 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                                 icon: const Icon(Icons.sort, size: 18),
                                 style: Theme.of(context).textTheme.bodySmall,
                                 items: [
-                                  DropdownMenuItem(value: 'newest',     child: Text(AppLocalizations.of(context)!.storeHomeLatest)),
-                                  DropdownMenuItem(value: 'price_asc',  child: Text(AppLocalizations.of(context)!.storePriceAsc)),
-                                  DropdownMenuItem(value: 'price_desc', child: Text(AppLocalizations.of(context)!.storePriceDesc)),
-                                  DropdownMenuItem(value: 'name_asc',   child: Text(AppLocalizations.of(context)!.storeNameAz)),
+                                  DropdownMenuItem(
+                                    value: 'newest',
+                                    child: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.storeHomeLatest,
+                                    ),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'price_asc',
+                                    child: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.storePriceAsc,
+                                    ),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'price_desc',
+                                    child: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.storePriceDesc,
+                                    ),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'name_asc',
+                                    child: Text(
+                                      AppLocalizations.of(context)!.storeNameAz,
+                                    ),
+                                  ),
                                 ],
                                 onChanged: (v) {
                                   if (v != null) {
                                     setState(() => _sort = v);
-                                    ref.invalidate(catalog.storeProductsProvider);
+                                    ref.invalidate(
+                                      catalog.storeProductsProvider,
+                                    );
                                   }
                                 },
                               ),
@@ -299,65 +363,85 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                       return SliverToBoxAdapter(
                         child: EmptyState(
                           icon: Icons.shopping_bag_outlined,
-                          title: AppLocalizations.of(context)!.storeHomeProductsEmpty,
+                          title: AppLocalizations.of(
+                            context,
+                          )!.storeHomeProductsEmpty,
                           subtitle: hasFilters
-                              ? AppLocalizations.of(context)!.storeHomeProductsNotFound
-                              : AppLocalizations.of(context)!.storeHomeProductsNone,
+                              ? AppLocalizations.of(
+                                  context,
+                                )!.storeHomeProductsNotFound
+                              : AppLocalizations.of(
+                                  context,
+                                )!.storeHomeProductsNone,
                           action: hasFilters
                               ? TextButton(
                                   onPressed: _clearFilters,
-                                  child: Text(AppLocalizations.of(context)!.storeHomeFiltersClear),
+                                  child: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.storeHomeFiltersClear,
+                                  ),
                                 )
                               : null,
                         ),
                       );
                     }
                     return SliverPadding(
-                      padding:
-                          const EdgeInsets.fromLTRB(16, 8, 16, 28),
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
                       sliver: SliverGrid(
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 12,
-                          crossAxisSpacing: 12,
-                          childAspectRatio: 0.65,
-                        ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final product = products[index];
-                            return StoreProductCard(
-                              product: product,
-                              isOwnProduct: myStoreId != null && product.store?.id == myStoreId,
-                              badge: product.stock <= 0
-                                  ? AppLocalizations.of(context)!.storeHomeSoldOut
-                                  : (product.stock <= 3
-                                      ? AppLocalizations.of(context)!.storeHomeLastStock(product.stock)
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
+                              childAspectRatio: 0.65,
+                            ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final product = products[index];
+                          final isOwnProduct =
+                              (product.sellerId != null &&
+                                  product.sellerId == user?.id) ||
+                              (myStoreId != null &&
+                                  product.store?.id == myStoreId);
+                          return StoreProductCard(
+                            product: product,
+                            isOwnProduct: isOwnProduct,
+                            badge: product.stock <= 0
+                                ? AppLocalizations.of(context)!.storeHomeSoldOut
+                                : (product.stock <= 3
+                                      ? AppLocalizations.of(
+                                          context,
+                                        )!.storeHomeLastStock(product.stock)
                                       : null),
-                              onTap: () => context.pushNamed(
-                                'store-new-product',
-                                pathParameters: {'id': product.id},
-                              ),
-                            );
-                          },
-                          childCount: products.length,
-                        ),
+                            onTap: () => context.pushNamed(
+                              'store-new-product',
+                              pathParameters: {'id': product.id},
+                            ),
+                          );
+                        }, childCount: products.length),
                       ),
                     );
                   },
                   loading: () => const _ProductSkeletonSliver(),
                   error: (e, _) => SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 20,
+                        horizontal: 16,
+                      ),
                       child: Column(
                         children: [
                           _InfoBanner(
-                            message: AppLocalizations.of(context)!.storeHomeProductsLoadErr,
+                            message: AppLocalizations.of(
+                              context,
+                            )!.storeHomeProductsLoadErr,
                           ),
                           const SizedBox(height: 6),
                           TextButton(
                             onPressed: () => ref.invalidate(productsProvider),
-                            child: Text(AppLocalizations.of(context)!.storeHomeRetry),
+                            child: Text(
+                              AppLocalizations.of(context)!.storeHomeRetry,
+                            ),
                           ),
                         ],
                       ),
@@ -444,7 +528,9 @@ class _Header extends StatelessWidget {
                       onChanged: onChanged,
                       decoration: InputDecoration(
                         isDense: true,
-                        hintText: AppLocalizations.of(context)!.storeHomeSearchHint,
+                        hintText: AppLocalizations.of(
+                          context,
+                        )!.storeHomeSearchHint,
                         border: InputBorder.none,
                       ),
                     ),
@@ -459,7 +545,10 @@ class _Header extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       child: Text(
                         AppLocalizations.of(context)!.storeHomeSearchBtn,
                         style: theme.textTheme.labelMedium?.copyWith(
@@ -468,7 +557,7 @@ class _Header extends StatelessWidget {
                         ),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -601,7 +690,10 @@ class _HeroCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.22),
                         borderRadius: BorderRadius.circular(14),
@@ -609,7 +701,11 @@ class _HeroCard extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
+                          const Icon(
+                            Icons.auto_awesome,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             l10n.storeHomeQuickExplore,
@@ -632,7 +728,11 @@ class _HeroCard extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: Colors.white.withOpacity(0.2),
                 ),
-                child: const Icon(Icons.storefront, color: Colors.white, size: 32),
+                child: const Icon(
+                  Icons.storefront,
+                  color: Colors.white,
+                  size: 32,
+                ),
               ),
             ],
           ),
@@ -744,15 +844,11 @@ class _MyStoreMiniCard extends StatelessWidget {
               width: 54,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
-                gradient: const LinearGradient(
-                  colors: _storeCardGradientA,
-                ),
+                gradient: const LinearGradient(colors: _storeCardGradientA),
               ),
               alignment: Alignment.center,
               child: Text(
-                store.name.isNotEmpty
-                    ? store.name[0].toUpperCase()
-                    : 'M',
+                store.name.isNotEmpty ? store.name[0].toUpperCase() : 'M',
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w900,
@@ -775,7 +871,9 @@ class _MyStoreMiniCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    description.isNotEmpty ? description : l10n.storeNoDescAdded,
+                    description.isNotEmpty
+                        ? description
+                        : l10n.storeNoDescAdded,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: AppPalette.onSurfaceVariant,
                     ),
@@ -1016,14 +1114,13 @@ class _InfoBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline, size: 18, color: AppPalette.storePrimary),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              message,
-              style: theme.textTheme.bodySmall,
-            ),
+          const Icon(
+            Icons.info_outline,
+            size: 18,
+            color: AppPalette.storePrimary,
           ),
+          const SizedBox(width: 8),
+          Expanded(child: Text(message, style: theme.textTheme.bodySmall)),
         ],
       ),
     );
@@ -1190,4 +1287,3 @@ class _ProductSkeletonCard extends StatelessWidget {
     );
   }
 }
-

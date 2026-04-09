@@ -16,10 +16,7 @@ import 'package:evcilhayvan_mobil2/features/store/presentation/widgets/store_sta
 import 'package:go_router/go_router.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
-const List<Color> _storeDetailGradient = [
-  Color(0xFF2F1BFF),
-  Color(0xFF00C2FF),
-];
+const List<Color> _storeDetailGradient = [Color(0xFF2F1BFF), Color(0xFF00C2FF)];
 
 class StoreDetailScreen extends ConsumerWidget {
   final String storeId;
@@ -46,7 +43,10 @@ class StoreDetailScreen extends ConsumerWidget {
     }
 
     Future<void> openEdit(ProductModel product) async {
-      final result = await context.pushNamed('store-add-product', extra: product);
+      final result = await context.pushNamed(
+        'store-add-product',
+        extra: product,
+      );
       if (result == true && context.mounted) {
         await refreshProducts();
       }
@@ -56,14 +56,15 @@ class StoreDetailScreen extends ConsumerWidget {
       final repo = ref.read(storeRepositoryProvider);
       final nextActive = !product.isActive;
       try {
-        await repo.updateProduct(
-          product.id,
-          data: {'isActive': nextActive},
-        );
+        await repo.updateProduct(product.id, data: {'isActive': nextActive});
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(nextActive ? l10n.storeDetailProductActivated : l10n.storeDetailProductDeactivated),
+              content: Text(
+                nextActive
+                    ? l10n.storeDetailProductActivated
+                    : l10n.storeDetailProductDeactivated,
+              ),
             ),
           );
         }
@@ -71,7 +72,9 @@ class StoreDetailScreen extends ConsumerWidget {
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.storeDetailProductUpdateErr(e.toString()))),
+            SnackBar(
+              content: Text(l10n.storeDetailProductUpdateErr(e.toString())),
+            ),
           );
         }
       }
@@ -109,7 +112,9 @@ class StoreDetailScreen extends ConsumerWidget {
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.storeDetailProductDeleteErr(e.toString()))),
+            SnackBar(
+              content: Text(l10n.storeDetailProductDeleteErr(e.toString())),
+            ),
           );
         }
       }
@@ -121,8 +126,14 @@ class StoreDetailScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(l10n.storeDetailTitle),
-        foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF1B4332),
-        iconTheme: IconThemeData(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF1B4332)),
+        foregroundColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : const Color(0xFF1B4332),
+        iconTheme: IconThemeData(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : const Color(0xFF1B4332),
+        ),
       ),
       body: ModernBackground(
         colors: AppPalette.storeBackground,
@@ -133,10 +144,8 @@ class StoreDetailScreen extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
                   child: storeAsync.when(
-                    data: (store) => _StoreHeader(
-                      store: store,
-                      isOwner: isOwner,
-                    ),
+                    data: (store) =>
+                        _StoreHeader(store: store, isOwner: isOwner),
                     loading: () => const _StoreHeaderSkeleton(),
                     error: (e, _) => _ErrorCard(
                       message: l10n.storeDetailLoadErr,
@@ -150,7 +159,8 @@ class StoreDetailScreen extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: productsAsync.when(
-                    data: (products) => _StoreStatsRow(productsCount: products.length),
+                    data: (products) =>
+                        _StoreStatsRow(productsCount: products.length),
                     loading: () => const SizedBox.shrink(),
                     error: (_, __) => const SizedBox.shrink(),
                   ),
@@ -164,30 +174,34 @@ class StoreDetailScreen extends ConsumerWidget {
                       return SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 60),
-                          child: Center(child: Text(l10n.storeDetailNoProducts)),
+                          child: Center(
+                            child: Text(l10n.storeDetailNoProducts),
+                          ),
                         ),
                       );
                     }
                     return SliverGrid(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        childAspectRatio: 0.75,
-                      ),
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final product = products[index];
-                          return _StoreProductTile(
-                            product: product,
-                            isOwner: isOwner,
-                            onEdit: isOwner ? () => openEdit(product) : null,
-                            onToggle: isOwner ? () => toggleProduct(product) : null,
-                            onDelete: isOwner ? () => deleteProduct(product) : null,
-                          );
-                        },
-                        childCount: products.length,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 0.75,
+                          ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final product = products[index];
+                        return _StoreProductTile(
+                          product: product,
+                          isOwner: isOwner,
+                          onEdit: isOwner ? () => openEdit(product) : null,
+                          onToggle: isOwner
+                              ? () => toggleProduct(product)
+                              : null,
+                          onDelete: isOwner
+                              ? () => deleteProduct(product)
+                              : null,
+                        );
+                      }, childCount: products.length),
                     );
                   },
                   loading: () => const _StoreProductsSkeletonSliver(),
@@ -211,15 +225,19 @@ class StoreDetailScreen extends ConsumerWidget {
   }
 }
 
-final _storeProvider = FutureProvider.family<StoreModel, String>((ref, id) async {
+final _storeProvider = FutureProvider.family<StoreModel, String>((
+  ref,
+  id,
+) async {
   final repo = ref.watch(storeRepositoryProvider);
   return repo.getStore(id);
 });
 
-final _storeProductsProvider = FutureProvider.family<List<ProductModel>, String>((ref, id) async {
-  final repo = ref.watch(storeRepositoryProvider);
-  return repo.getStoreProducts(id);
-});
+final _storeProductsProvider =
+    FutureProvider.family<List<ProductModel>, String>((ref, id) async {
+      final repo = ref.watch(storeRepositoryProvider);
+      return repo.getStoreProducts(id);
+    });
 
 class _StoreHeader extends ConsumerStatefulWidget {
   const _StoreHeader({required this.store, required this.isOwner});
@@ -245,10 +263,7 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
     try {
       final response = await ApiClient().dio.get(
         '/api/favorites/check',
-        queryParameters: {
-          'itemType': 'store',
-          'itemId': widget.store.id,
-        },
+        queryParameters: {'itemType': 'store', 'itemId': widget.store.id},
       );
       if (mounted && response.data['success'] == true) {
         setState(() => _isFavorite = response.data['isFavorite'] ?? false);
@@ -263,32 +278,41 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
 
     try {
       if (_isFavorite) {
-        await ApiClient().dio.delete('/api/favorites', data: {
-          'itemType': 'store',
-          'itemId': widget.store.id,
-        });
+        await ApiClient().dio.delete(
+          '/api/favorites',
+          data: {'itemType': 'store', 'itemId': widget.store.id},
+        );
         if (mounted) {
           setState(() => _isFavorite = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.storeDetailRemovedFav), backgroundColor: Colors.orange),
+            SnackBar(
+              content: Text(l10n.storeDetailRemovedFav),
+              backgroundColor: Colors.orange,
+            ),
           );
         }
       } else {
-        await ApiClient().dio.post('/api/favorites', data: {
-          'itemType': 'store',
-          'itemId': widget.store.id,
-        });
+        await ApiClient().dio.post(
+          '/api/favorites',
+          data: {'itemType': 'store', 'itemId': widget.store.id},
+        );
         if (mounted) {
           setState(() => _isFavorite = true);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.storeDetailAddedFav), backgroundColor: Colors.green),
+            SnackBar(
+              content: Text(l10n.storeDetailAddedFav),
+              backgroundColor: Colors.green,
+            ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.storeDetailFavError(e.toString())), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(l10n.storeDetailFavError(e.toString())),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -304,9 +328,13 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
     final l10n = AppLocalizations.of(context)!;
     final logoUrl = resolveImageUrl(store.logoUrl);
     final bannerUrl = resolveImageUrl(store.bannerUrl);
-    final hasContact = store.phone != null || store.website != null ||
-        store.instagram != null || store.twitter != null ||
-        store.facebook != null || store.workingHours != null;
+    final hasContact =
+        store.phone != null ||
+        store.website != null ||
+        store.instagram != null ||
+        store.twitter != null ||
+        store.facebook != null ||
+        store.workingHours != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,7 +385,8 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
                             width: 82,
                             height: 82,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _LogoFallback(name: store.name),
+                            errorBuilder: (_, __, ___) =>
+                                _LogoFallback(name: store.name),
                           )
                         : _LogoFallback(name: store.name),
                   ),
@@ -390,7 +419,11 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
                             padding: const EdgeInsets.only(top: 8),
                             child: Row(
                               children: [
-                                const Icon(Icons.storefront, color: Colors.white, size: 18),
+                                const Icon(
+                                  Icons.storefront,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
                                 const SizedBox(width: 6),
                                 Text(
                                   store.owner!.name,
@@ -401,7 +434,11 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
                                 ),
                                 if ((store.owner!.city ?? '').isNotEmpty) ...[
                                   const SizedBox(width: 8),
-                                  const Icon(Icons.location_on_outlined, color: Colors.white, size: 16),
+                                  const Icon(
+                                    Icons.location_on_outlined,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
                                   Text(
                                     store.owner!.city!,
                                     style: const TextStyle(color: Colors.white),
@@ -423,9 +460,15 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
                         ? () => context.pushNamed('store-add-product')
                         : (_isLoading ? null : _toggleFavorite),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _isFavorite ? Colors.red.shade50 : Theme.of(context).colorScheme.surface,
-                      foregroundColor: _isFavorite ? Colors.red : Theme.of(context).colorScheme.onSurface,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      backgroundColor: _isFavorite
+                          ? Colors.red.shade50
+                          : Theme.of(context).colorScheme.surface,
+                      foregroundColor: _isFavorite
+                          ? Colors.red
+                          : Theme.of(context).colorScheme.onSurface,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                     icon: _isLoading
                         ? const SizedBox(
@@ -433,8 +476,20 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
                             height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : Icon(isOwner ? Icons.add : (_isFavorite ? Icons.favorite : Icons.favorite_border)),
-                    label: Text(isOwner ? l10n.storeDetailAddProduct : (_isFavorite ? l10n.storeDetailFavorited : l10n.storeDetailAddToFavorites)),
+                        : Icon(
+                            isOwner
+                                ? Icons.add
+                                : (_isFavorite
+                                      ? Icons.favorite
+                                      : Icons.favorite_border),
+                          ),
+                    label: Text(
+                      isOwner
+                          ? l10n.storeDetailAddProduct
+                          : (_isFavorite
+                                ? l10n.storeDetailFavorited
+                                : l10n.storeDetailAddToFavorites),
+                    ),
                   ),
                   const SizedBox(width: 10),
                   OutlinedButton.icon(
@@ -462,14 +517,28 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (store.workingHours != null)
-                  _ContactRow(Icons.access_time_outlined, store.workingHours!, theme),
+                  _ContactRow(
+                    Icons.access_time_outlined,
+                    store.workingHours!,
+                    theme,
+                  ),
                 if (store.phone != null)
-                  _ContactRow(Icons.phone_outlined, store.phone!, theme,
-                      onTap: () => _launchUrl('tel:${store.phone}')),
+                  _ContactRow(
+                    Icons.phone_outlined,
+                    store.phone!,
+                    theme,
+                    onTap: () => _launchUrl('tel:${store.phone}'),
+                  ),
                 if (store.website != null)
-                  _ContactRow(Icons.language_outlined, store.website!, theme,
-                      onTap: () => _launchUrl(store.website!)),
-                if (store.instagram != null || store.twitter != null || store.facebook != null)
+                  _ContactRow(
+                    Icons.language_outlined,
+                    store.website!,
+                    theme,
+                    onTap: () => _launchUrl(store.website!),
+                  ),
+                if (store.instagram != null ||
+                    store.twitter != null ||
+                    store.facebook != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Row(
@@ -478,19 +547,25 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
                           IconButton(
                             icon: const Icon(Icons.camera_alt_outlined),
                             tooltip: 'Instagram',
-                            onPressed: () => _launchUrl('https://instagram.com/${store.instagram}'),
+                            onPressed: () => _launchUrl(
+                              'https://instagram.com/${store.instagram}',
+                            ),
                           ),
                         if (store.twitter != null)
                           IconButton(
                             icon: const Icon(Icons.alternate_email),
                             tooltip: 'Twitter/X',
-                            onPressed: () => _launchUrl('https://twitter.com/${store.twitter}'),
+                            onPressed: () => _launchUrl(
+                              'https://twitter.com/${store.twitter}',
+                            ),
                           ),
                         if (store.facebook != null)
                           IconButton(
                             icon: const Icon(Icons.facebook),
                             tooltip: 'Facebook',
-                            onPressed: () => _launchUrl('https://facebook.com/${store.facebook}'),
+                            onPressed: () => _launchUrl(
+                              'https://facebook.com/${store.facebook}',
+                            ),
                           ),
                       ],
                     ),
@@ -641,7 +716,7 @@ class _StoreHeaderSkeleton extends StatelessWidget {
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -710,10 +785,13 @@ class _StoreProductTile extends StatelessWidget {
         Expanded(
           child: StoreProductCard(
             product: product,
+            isOwnProduct: isOwner,
             showStoreName: false,
             badge: product.stock <= 0
                 ? l10n.storeDetailProductSoldOut
-                : (product.stock <= 3 ? l10n.storeDetailProductStock(product.stock) : null),
+                : (product.stock <= 3
+                      ? l10n.storeDetailProductStock(product.stock)
+                      : null),
             onTap: () => context.pushNamed(
               'store-new-product',
               pathParameters: {'id': product.id},
@@ -737,7 +815,10 @@ class _StoreProductTile extends StatelessWidget {
             if (isOwner) ...[
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: product.isActive
                       ? Colors.green.withOpacity(0.15)
@@ -745,7 +826,9 @@ class _StoreProductTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  product.isActive ? l10n.storeDetailProductActive : l10n.storeDetailProductInactive,
+                  product.isActive
+                      ? l10n.storeDetailProductActive
+                      : l10n.storeDetailProductInactive,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     color: product.isActive ? Colors.green : Colors.black54,
@@ -766,9 +849,18 @@ class _StoreProductTile extends StatelessWidget {
                   }
                 },
                 itemBuilder: (_) => [
-                  PopupMenuItem(value: 'edit', child: Text(l10n.storeDetailMenuEdit)),
-                  PopupMenuItem(value: 'toggle', child: Text(l10n.storeDetailMenuToggle)),
-                  PopupMenuItem(value: 'delete', child: Text(l10n.storeDetailMenuDelete)),
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Text(l10n.storeDetailMenuEdit),
+                  ),
+                  PopupMenuItem(
+                    value: 'toggle',
+                    child: Text(l10n.storeDetailMenuToggle),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text(l10n.storeDetailMenuDelete),
+                  ),
                 ],
                 child: Container(
                   padding: const EdgeInsets.all(8),
@@ -776,11 +868,14 @@ class _StoreProductTile extends StatelessWidget {
                     color: AppPalette.storePrimary.withOpacity(0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.more_horiz, color: AppPalette.storePrimary),
+                  child: const Icon(
+                    Icons.more_horiz,
+                    color: AppPalette.storePrimary,
+                  ),
                 ),
               ),
           ],
-        )
+        ),
       ],
     );
   }
@@ -808,17 +903,12 @@ class _LogoFallback extends StatelessWidget {
   }
 }
 
-
 class _ErrorCard extends StatelessWidget {
   final String message;
   final String? detail;
   final VoidCallback? onRetry;
 
-  const _ErrorCard({
-    required this.message,
-    this.detail,
-    this.onRetry,
-  });
+  const _ErrorCard({required this.message, this.detail, this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -845,19 +935,12 @@ class _ErrorCard extends StatelessWidget {
               color: Colors.red.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.error_outline,
-              color: Colors.red,
-              size: 32,
-            ),
+            child: const Icon(Icons.error_outline, color: Colors.red, size: 32),
           ),
           const SizedBox(height: 16),
           Text(
             message,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             textAlign: TextAlign.center,
           ),
           if (detail != null && detail!.isNotEmpty) ...[
