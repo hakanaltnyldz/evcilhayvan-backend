@@ -699,8 +699,11 @@ router.patch("/vet-claims/:id/review", async (req, res) => {
         userId: claim.userId,
         isVerified: true,
       });
-      // Kullanici rolünü vet yap
-      await User.findByIdAndUpdate(claim.userId, { role: "vet" });
+      // Admin kullaniciyi vet'e dusurme; diger hesaplar vet olabilir.
+      const claimantUser = await User.findById(claim.userId).select("role");
+      if (claimantUser && claimantUser.role !== "admin") {
+        await User.findByIdAndUpdate(claim.userId, { role: "vet" });
+      }
     }
 
     await recordAudit("admin.vet_claim.review", {
