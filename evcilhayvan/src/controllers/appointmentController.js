@@ -27,22 +27,27 @@ export async function createAppointment(req, res) {
       return sendError(res, 404, "Veteriner bulunamadi", "vet_not_found");
     }
 
+    // Kendi veterinerine randevu almayi engelle
+    if (vet.userId && String(vet.userId) === String(userId)) {
+      return sendError(res, 403, "Kendi kliniginize randevu alamazsiniz", "own_vet_forbidden");
+    }
+
     const appointmentDate = new Date(date);
     if (appointmentDate <= new Date()) {
       return sendError(res, 400, "Randevu tarihi gelecekte olmali", "validation_error");
     }
 
-    // Calisma saati kontrolu
+    // Calisma saati kontrolu — workingHours bossa default 09:00-18:00
     const jsDay = appointmentDate.getDay();
     const dayIndex = jsDay === 0 ? 6 : jsDay - 1;
     const wh = vet.workingHours?.find((h) => h.day === dayIndex);
-    if (!wh || wh.isClosed || !wh.open || !wh.close) {
-      return sendError(res, 400, "Veteriner bu gun kapali", "vet_closed");
+    let openH = 9, openM = 0, closeH = 18, closeM = 0;
+    if (wh && !wh.isClosed && wh.open && wh.close) {
+      [openH, openM] = wh.open.split(":").map(Number);
+      [closeH, closeM] = wh.close.split(":").map(Number);
     }
-    const [openH, openM] = wh.open.split(":").map(Number);
-    const [closeH, closeM] = wh.close.split(":").map(Number);
     const apptMinutes = appointmentDate.getHours() * 60 + appointmentDate.getMinutes();
-    const slotMin = vet.appointmentSlotMinutes || 30;
+    const slotMin = vet.appointmentSlotMinutes || 20;
     if (apptMinutes < openH * 60 + openM || apptMinutes + slotMin > closeH * 60 + closeM) {
       return sendError(res, 400, "Randevu calisma saatleri disinda", "outside_working_hours");
     }
@@ -234,14 +239,15 @@ export async function getAvailableSlots(req, res) {
     const dayIndex = jsDay === 0 ? 6 : jsDay - 1;
 
     const hours = vet.workingHours.find((wh) => wh.day === dayIndex);
-    if (!hours || hours.isClosed || !hours.open || !hours.close) {
-      return sendOk(res, 200, { slots: [], message: "Bu gun kapali" });
+
+    // workingHours bossa veya bu gun tanimli degilse: default 09:00-18:00
+    let openH = 9, openM = 0, closeH = 18, closeM = 0;
+    if (hours && !hours.isClosed && hours.open && hours.close) {
+      [openH, openM] = hours.open.split(":").map(Number);
+      [closeH, closeM] = hours.close.split(":").map(Number);
     }
 
-    // Slotlari olustur
-    const [openH, openM] = hours.open.split(":").map(Number);
-    const [closeH, closeM] = hours.close.split(":").map(Number);
-    const slotMinutes = vet.appointmentSlotMinutes || 30;
+    const slotMinutes = vet.appointmentSlotMinutes || 20;
 
     const slots = [];
     let current = openH * 60 + openM;
