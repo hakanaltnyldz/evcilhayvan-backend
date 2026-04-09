@@ -53,7 +53,10 @@ class ProfileScreen extends ConsumerWidget {
                   ref.invalidate(matingPaginatedProvider);
                   Navigator.of(dialogContext).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.profileDeleteSuccess), backgroundColor: Colors.green),
+                    SnackBar(
+                      content: Text(l10n.profileDeleteSuccess),
+                      backgroundColor: Colors.green,
+                    ),
                   );
                 } catch (e) {
                   Navigator.of(dialogContext).pop();
@@ -69,14 +72,21 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _logout(BuildContext context, WidgetRef ref, AppLocalizations l10n) async {
+  Future<void> _logout(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.profileLogoutTitle),
         content: Text(l10n.profileLogoutContent),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
           TextButton(
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             onPressed: () => Navigator.pop(ctx, true),
@@ -115,7 +125,11 @@ class ProfileScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.lock_outline, size: 64, color: Colors.white70),
+                  const Icon(
+                    Icons.lock_outline,
+                    size: 64,
+                    color: Colors.white70,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     l10n.profileLoginRequired,
@@ -136,12 +150,12 @@ class ProfileScreen extends ConsumerWidget {
     }
 
     final adoptionAsync = ref.watch(myAdvertsProvider('adoption'));
-    final matingAsync   = ref.watch(myAdvertsProvider('mating'));
+    final matingAsync = ref.watch(myAdvertsProvider('mating'));
     final adoptionCount = adoptionAsync.valueOrNull?.length ?? 0;
-    final matingCount   = matingAsync.valueOrNull?.length ?? 0;
-    final totalViews    = [
+    final matingCount = matingAsync.valueOrNull?.length ?? 0;
+    final totalViews = [
       ...adoptionAsync.valueOrNull ?? [],
-      ...matingAsync.valueOrNull   ?? [],
+      ...matingAsync.valueOrNull ?? [],
     ].fold<int>(0, (s, pet) => s + (pet.viewCount as int));
 
     return DefaultTabController(
@@ -188,7 +202,10 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
 
-                _ProfileCompletionCard(user: currentUser, onEdit: () => context.pushNamed('edit-profile')),
+                _ProfileCompletionCard(
+                  user: currentUser,
+                  onEdit: () => context.pushNamed('edit-profile'),
+                ),
 
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
@@ -196,9 +213,15 @@ class ProfileScreen extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: FilledButton.icon(
-                          onPressed: () => context.pushNamed('create-pet', extra: {'advertType': 'adoption'}),
+                          onPressed: () => context.pushNamed(
+                            'create-pet',
+                            extra: {'advertType': 'adoption'},
+                          ),
                           icon: const Icon(Icons.add, size: 16),
-                          label: Text(l10n.profileNewAdoption, overflow: TextOverflow.ellipsis),
+                          label: Text(
+                            l10n.profileNewAdoption,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                           style: FilledButton.styleFrom(
                             backgroundColor: const Color(0xFF2D6A4F),
                             padding: const EdgeInsets.symmetric(vertical: 7),
@@ -208,9 +231,15 @@ class ProfileScreen extends ConsumerWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: FilledButton.icon(
-                          onPressed: () => context.pushNamed('create-pet', extra: {'advertType': 'mating'}),
+                          onPressed: () => context.pushNamed(
+                            'create-pet',
+                            extra: {'advertType': 'mating'},
+                          ),
                           icon: const Icon(Icons.favorite, size: 16),
-                          label: Text(l10n.profileNewMating, overflow: TextOverflow.ellipsis),
+                          label: Text(
+                            l10n.profileNewMating,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                           style: FilledButton.styleFrom(
                             backgroundColor: const Color(0xFF52B788),
                             padding: const EdgeInsets.symmetric(vertical: 7),
@@ -221,23 +250,6 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
 
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => context.pushNamed('become-sitter'),
-                      icon: const Icon(Icons.pets, size: 16),
-                      label: Text(l10n.sitterBecomeSitter),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF52B788),
-                        side: const BorderSide(color: Color(0xFF52B788)),
-                        padding: const EdgeInsets.symmetric(vertical: 7),
-                      ),
-                    ),
-                  ),
-                ),
-
                 const SizedBox(height: 4),
 
                 Expanded(
@@ -245,13 +257,31 @@ class ProfileScreen extends ConsumerWidget {
                     children: [
                       _AdvertsTab(
                         advertType: 'adoption',
-                        onEdit: (pet) => context.pushNamed('create-pet', extra: {'pet': pet}),
-                        onDelete: (pet) => _showDeleteDialog(context, ref, pet.id, 'adoption', l10n),
+                        onEdit: (pet) => context.pushNamed(
+                          'create-pet',
+                          extra: {'pet': pet},
+                        ),
+                        onDelete: (pet) => _showDeleteDialog(
+                          context,
+                          ref,
+                          pet.id,
+                          'adoption',
+                          l10n,
+                        ),
                       ),
                       _AdvertsTab(
                         advertType: 'mating',
-                        onEdit: (pet) => context.pushNamed('create-pet', extra: {'pet': pet}),
-                        onDelete: (pet) => _showDeleteDialog(context, ref, pet.id, 'mating', l10n),
+                        onEdit: (pet) => context.pushNamed(
+                          'create-pet',
+                          extra: {'pet': pet},
+                        ),
+                        onDelete: (pet) => _showDeleteDialog(
+                          context,
+                          ref,
+                          pet.id,
+                          'mating',
+                          l10n,
+                        ),
                       ),
                     ],
                   ),
@@ -319,15 +349,27 @@ class _ProfileHeader extends StatelessWidget {
                 child: Stack(
                   children: [
                     CircleAvatar(
-                      radius: 28,
-                      backgroundColor: const Color(0xFF2D6A4F).withOpacity(0.15),
-                      backgroundImage: avatarUrl != null ? CachedNetworkImageProvider(avatarUrl) : null,
-                      child: avatarUrl == null
-                          ? Text(initial, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold))
-                          : null,
-                    )
+                          radius: 28,
+                          backgroundColor: const Color(
+                            0xFF2D6A4F,
+                          ).withOpacity(0.15),
+                          backgroundImage: avatarUrl != null
+                              ? CachedNetworkImageProvider(avatarUrl)
+                              : null,
+                          child: avatarUrl == null
+                              ? Text(
+                                  initial,
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              : null,
+                        )
                         .animate(
-                          onPlay: (ctrl) => ctrl.repeat(reverse: true, period: const Duration(seconds: 3)),
+                          onPlay: (ctrl) => ctrl.repeat(
+                            reverse: true,
+                            period: const Duration(seconds: 3),
+                          ),
                         )
                         .scale(
                           begin: const Offset(1, 1),
@@ -340,8 +382,15 @@ class _ProfileHeader extends StatelessWidget {
                       right: 0,
                       child: Container(
                         padding: const EdgeInsets.all(3),
-                        decoration: const BoxDecoration(color: Color(0xFF2D6A4F), shape: BoxShape.circle),
-                        child: const Icon(Icons.edit, size: 10, color: Colors.white),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF2D6A4F),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.edit,
+                          size: 10,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
@@ -357,21 +406,30 @@ class _ProfileHeader extends StatelessWidget {
                         Expanded(
                           child: Text(
                             user.name,
-                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (user.role != null && user.role != 'user') ...[
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: _roleColor(user.role).withOpacity(0.15),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               _roleLabel(user.role, l10n),
-                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _roleColor(user.role)),
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: _roleColor(user.role),
+                              ),
                             ),
                           ),
                         ],
@@ -379,7 +437,9 @@ class _ProfileHeader extends StatelessWidget {
                     ),
                     Text(
                       user.email,
-                      style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.7)),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
@@ -396,15 +456,42 @@ class _ProfileHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Divider(height: 1, thickness: 1, color: theme.colorScheme.outline.withOpacity(0.25)),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: theme.colorScheme.outline.withOpacity(0.25),
+          ),
           const SizedBox(height: 10),
           Row(
             children: [
-              _StatItem(icon: Icons.pets, color: const Color(0xFF2D6A4F), intValue: adoptionCount, label: l10n.profileAdoptionCount),
-              Container(width: 1, height: 36, color: theme.colorScheme.outline.withOpacity(0.25)),
-              _StatItem(icon: Icons.favorite, color: const Color(0xFF52B788), intValue: matingCount, label: l10n.profileMatingCount),
-              Container(width: 1, height: 36, color: theme.colorScheme.outline.withOpacity(0.25)),
-              _StatItem(icon: Icons.remove_red_eye_outlined, color: const Color(0xFF40916C), intValue: totalViews, label: l10n.profileViewCount),
+              _StatItem(
+                icon: Icons.pets,
+                color: const Color(0xFF2D6A4F),
+                intValue: adoptionCount,
+                label: l10n.profileAdoptionCount,
+              ),
+              Container(
+                width: 1,
+                height: 36,
+                color: theme.colorScheme.outline.withOpacity(0.25),
+              ),
+              _StatItem(
+                icon: Icons.favorite,
+                color: const Color(0xFF52B788),
+                intValue: matingCount,
+                label: l10n.profileMatingCount,
+              ),
+              Container(
+                width: 1,
+                height: 36,
+                color: theme.colorScheme.outline.withOpacity(0.25),
+              ),
+              _StatItem(
+                icon: Icons.remove_red_eye_outlined,
+                color: const Color(0xFF40916C),
+                intValue: totalViews,
+                label: l10n.profileViewCount,
+              ),
             ],
           ),
         ],
@@ -414,19 +501,27 @@ class _ProfileHeader extends StatelessWidget {
 
   Color _roleColor(String? role) {
     switch (role) {
-      case 'seller': return const Color(0xFF2D6A4F);
-      case 'sitter': return const Color(0xFF40916C);
-      case 'admin':  return Colors.red;
-      default:       return Colors.grey;
+      case 'seller':
+        return const Color(0xFF2D6A4F);
+      case 'sitter':
+        return const Color(0xFF40916C);
+      case 'admin':
+        return Colors.red;
+      default:
+        return Colors.grey;
     }
   }
 
   String _roleLabel(String? role, AppLocalizations l10n) {
     switch (role) {
-      case 'seller': return l10n.profileRoleSeller;
-      case 'sitter': return l10n.profileRoleSitter;
-      case 'admin':  return l10n.profileRoleAdmin;
-      default:       return role ?? '';
+      case 'seller':
+        return l10n.profileRoleSeller;
+      case 'sitter':
+        return l10n.profileRoleSitter;
+      case 'admin':
+        return l10n.profileRoleAdmin;
+      default:
+        return role ?? '';
     }
   }
 }
@@ -437,7 +532,11 @@ class _StatsRow extends StatelessWidget {
   final int matingCount;
   final int totalViews;
 
-  const _StatsRow({required this.adoptionCount, required this.matingCount, required this.totalViews});
+  const _StatsRow({
+    required this.adoptionCount,
+    required this.matingCount,
+    required this.totalViews,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -449,15 +548,37 @@ class _StatsRow extends StatelessWidget {
         color: theme.colorScheme.surface.withOpacity(0.95),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: theme.colorScheme.primary.withOpacity(0.06), blurRadius: 16, offset: const Offset(0, 6)),
+          BoxShadow(
+            color: theme.colorScheme.primary.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       child: Row(
         children: [
-          _StatItem(icon: Icons.pets, color: const Color(0xFF2D6A4F), intValue: adoptionCount, label: l10n.profileAdoptionCount),
-          Container(width: 1, height: 40, color: Theme.of(context).dividerColor),
-          _StatItem(icon: Icons.favorite, color: const Color(0xFF52B788), intValue: matingCount, label: l10n.profileMatingCount),
-          Container(width: 1, height: 40, color: Theme.of(context).dividerColor),
+          _StatItem(
+            icon: Icons.pets,
+            color: const Color(0xFF2D6A4F),
+            intValue: adoptionCount,
+            label: l10n.profileAdoptionCount,
+          ),
+          Container(
+            width: 1,
+            height: 40,
+            color: Theme.of(context).dividerColor,
+          ),
+          _StatItem(
+            icon: Icons.favorite,
+            color: const Color(0xFF52B788),
+            intValue: matingCount,
+            label: l10n.profileMatingCount,
+          ),
+          Container(
+            width: 1,
+            height: 40,
+            color: Theme.of(context).dividerColor,
+          ),
           _StatItem(
             icon: Icons.remove_red_eye_outlined,
             color: const Color(0xFF40916C),
@@ -476,9 +597,15 @@ class _StatItem extends StatelessWidget {
   final int intValue;
   final String label;
 
-  const _StatItem({required this.icon, required this.color, required this.intValue, required this.label});
+  const _StatItem({
+    required this.icon,
+    required this.color,
+    required this.intValue,
+    required this.label,
+  });
 
-  String _formatValue(int v) => v > 999 ? '${(v / 1000).toStringAsFixed(1)}K' : v.toString();
+  String _formatValue(int v) =>
+      v > 999 ? '${(v / 1000).toStringAsFixed(1)}K' : v.toString();
 
   @override
   Widget build(BuildContext context) {
@@ -495,12 +622,16 @@ class _StatItem extends StatelessWidget {
             curve: Curves.easeOut,
             builder: (_, v, __) => Text(
               _formatValue(v),
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           Text(
             label,
-            style: theme.textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -526,18 +657,47 @@ class _QuickLinksCard extends StatelessWidget {
         color: theme.colorScheme.surface.withOpacity(0.95),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: theme.colorScheme.primary.withOpacity(0.06), blurRadius: 16, offset: const Offset(0, 6)),
+          BoxShadow(
+            color: theme.colorScheme.primary.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _QuickLinkBtn(icon: Icons.favorite_outline,      label: l10n.profileFavorites,     color: Colors.red,                   onTap: () => context.pushNamed('favorites')),
-          _QuickLinkBtn(icon: Icons.shopping_bag_outlined, label: l10n.profileOrders,         color: Colors.orange,                onTap: () => context.push('/store/orders')),
-          _QuickLinkBtn(icon: Icons.pets_outlined,         label: l10n.profileSitterBtn,      color: const Color(0xFF40916C),      onTap: () => context.pushNamed('sitter-bookings')),
-          _QuickLinkBtn(icon: Icons.notifications_outlined,label: l10n.profileNotifications,  color: const Color(0xFF2D6A4F),      onTap: () => context.pushNamed('notifications')),
+          _QuickLinkBtn(
+            icon: Icons.favorite_outline,
+            label: l10n.profileFavorites,
+            color: Colors.red,
+            onTap: () => context.pushNamed('favorites'),
+          ),
+          _QuickLinkBtn(
+            icon: Icons.shopping_bag_outlined,
+            label: l10n.profileOrders,
+            color: Colors.orange,
+            onTap: () => context.push('/store/orders'),
+          ),
+          _QuickLinkBtn(
+            icon: Icons.pets_outlined,
+            label: l10n.profileSitterBtn,
+            color: const Color(0xFF40916C),
+            onTap: () => context.pushNamed('sitter-bookings'),
+          ),
+          _QuickLinkBtn(
+            icon: Icons.notifications_outlined,
+            label: l10n.profileNotifications,
+            color: const Color(0xFF2D6A4F),
+            onTap: () => context.pushNamed('notifications'),
+          ),
           if (isSeller)
-            _QuickLinkBtn(icon: Icons.store_outlined, label: l10n.profileMyStore, color: const Color(0xFF52B788), onTap: () => context.pushNamed('seller-dashboard')),
+            _QuickLinkBtn(
+              icon: Icons.store_outlined,
+              label: l10n.profileMyStore,
+              color: const Color(0xFF52B788),
+              onTap: () => context.pushNamed('seller-dashboard'),
+            ),
         ],
       ),
     );
@@ -550,7 +710,12 @@ class _QuickLinkBtn extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
 
-  const _QuickLinkBtn({required this.icon, required this.label, required this.color, required this.onTap});
+  const _QuickLinkBtn({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -564,11 +729,17 @@ class _QuickLinkBtn extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: color.withOpacity(0.12), shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
               child: Icon(icon, color: color, size: 22),
             ),
             const SizedBox(height: 4),
-            Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500)),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+            ),
           ],
         ),
       ),
@@ -582,7 +753,11 @@ class _AdvertsTab extends ConsumerWidget {
   final void Function(Pet) onEdit;
   final void Function(Pet) onDelete;
 
-  const _AdvertsTab({required this.advertType, required this.onEdit, required this.onDelete});
+  const _AdvertsTab({
+    required this.advertType,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -591,13 +766,16 @@ class _AdvertsTab extends ConsumerWidget {
 
     Future<void> refresh() async {
       ref.invalidate(myAdvertsProvider(advertType));
-      try { await ref.read(myAdvertsProvider(advertType).future); } catch (_) {}
+      try {
+        await ref.read(myAdvertsProvider(advertType).future);
+      } catch (_) {}
     }
 
     String mapError(Object error) {
       if (error is ApiError && error.message.isNotEmpty) return error.message;
       final lower = error.toString().toLowerCase();
-      if (lower.contains('auth') || lower.contains('token')) return l10n.profileAuthErr;
+      if (lower.contains('auth') || lower.contains('token'))
+        return l10n.profileAuthErr;
       return l10n.profileAdsLoadErr(error.toString());
     }
 
@@ -626,7 +804,10 @@ class _AdvertsTab extends ConsumerWidget {
                   children: [
                     PetCard(
                       pet: pet,
-                      onTap: () => context.pushNamed('pet-detail', pathParameters: {'id': pet.id}),
+                      onTap: () => context.pushNamed(
+                        'pet-detail',
+                        pathParameters: {'id': pet.id},
+                      ),
                     ),
                     Positioned(
                       top: 16,
@@ -635,13 +816,17 @@ class _AdvertsTab extends ConsumerWidget {
                         children: [
                           IconButton(
                             icon: const Icon(Icons.edit, color: Colors.white),
-                            style: IconButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.5)),
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.black.withOpacity(0.5),
+                            ),
                             onPressed: () => onEdit(pet),
                           ),
                           const SizedBox(width: 8),
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.white),
-                            style: IconButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.5)),
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.black.withOpacity(0.5),
+                            ),
                             onPressed: () => onDelete(pet),
                           ),
                         ],
@@ -659,7 +844,10 @@ class _AdvertsTab extends ConsumerWidget {
         onRefresh: refresh,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          children: [const SizedBox(height: 48), ErrorView(message: mapError(e), onRetry: refresh)],
+          children: [
+            const SizedBox(height: 48),
+            ErrorView(message: mapError(e), onRetry: refresh),
+          ],
         ),
       ),
     );
@@ -680,13 +868,23 @@ class _NoPetsCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search_off, size: 64, color: theme.colorScheme.outlineVariant),
+            Icon(
+              Icons.search_off,
+              size: 64,
+              color: theme.colorScheme.outlineVariant,
+            ),
             const SizedBox(height: 12),
-            Text(l10n.profileNoPetsTitle, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
+            Text(
+              l10n.profileNoPetsTitle,
+              style: theme.textTheme.titleMedium,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 8),
             Text(
               l10n.profileNoPetsDesc,
-              style: theme.textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -705,7 +903,10 @@ class _NotificationBellButton extends ConsumerWidget {
     return IconButton(
       icon: Badge(
         isLabelVisible: unreadCount > 0,
-        label: Text(unreadCount > 99 ? '99+' : unreadCount.toString(), style: const TextStyle(fontSize: 10)),
+        label: Text(
+          unreadCount > 99 ? '99+' : unreadCount.toString(),
+          style: const TextStyle(fontSize: 10),
+        ),
         child: const Icon(Icons.notifications_outlined),
       ),
       tooltip: l10n.profileNotifications,
@@ -713,7 +914,6 @@ class _NotificationBellButton extends ConsumerWidget {
     );
   }
 }
-
 
 // ─── Profile Completion Card ──────────────────────────────────────────────────
 
@@ -751,7 +951,9 @@ class _ProfileCompletionCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: theme.colorScheme.primaryContainer.withOpacity(0.5),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: theme.colorScheme.primary.withOpacity(0.25)),
+            border: Border.all(
+              color: theme.colorScheme.primary.withOpacity(0.25),
+            ),
           ),
           child: Row(
             children: [
@@ -759,7 +961,9 @@ class _ProfileCompletionCard extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 l10n.profileCompletePercent((percent * 100).round()),
-                style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -769,12 +973,18 @@ class _ProfileCompletionCard extends StatelessWidget {
                     value: percent,
                     minHeight: 5,
                     backgroundColor: theme.colorScheme.surface,
-                    valueColor: AlwaysStoppedAnimation(theme.colorScheme.primary),
+                    valueColor: AlwaysStoppedAnimation(
+                      theme.colorScheme.primary,
+                    ),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(Icons.chevron_right, size: 18, color: theme.colorScheme.primary),
+              Icon(
+                Icons.chevron_right,
+                size: 18,
+                color: theme.colorScheme.primary,
+              ),
             ],
           ),
         ),
@@ -801,7 +1011,14 @@ class _MissingChip extends StatelessWidget {
         children: [
           const Icon(Icons.add_circle_outline, size: 12, color: Colors.orange),
           const SizedBox(width: 4),
-          Text(label, style: const TextStyle(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.w600)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              color: Colors.orange,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );

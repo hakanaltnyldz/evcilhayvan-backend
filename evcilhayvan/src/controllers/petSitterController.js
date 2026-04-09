@@ -41,6 +41,7 @@ export async function listSitters(req, res) {
   try {
     const { lat, lng, radiusKm = 20, service, species, minRating = 0, page = 1, limit = 20 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
+    const numericLimit = Number(limit);
 
     if (lat && lng) {
       const latNum = Number(lat);
@@ -67,7 +68,7 @@ export async function listSitters(req, res) {
       pipeline.push({ $match: match });
       pipeline.push({ $sort: { distanceMeters: 1 } });
       pipeline.push({ $skip: skip });
-      pipeline.push({ $limit: Number(limit) });
+      pipeline.push({ $limit: numericLimit });
       pipeline.push({ $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "user" } });
       pipeline.push({ $unwind: { path: "$user", preserveNullAndEmptyArrays: true } });
       pipeline.push({
@@ -81,7 +82,38 @@ export async function listSitters(req, res) {
       pipeline.push({ $project: { user: 0, __v: 0 } });
 
       const geoSitters = await PetSitter.aggregate(pipeline);
-      return sendOk(res, 200, { sitters: geoSitters });
+      const remaining = Math.max(0, numericLimit - geoSitters.length);
+      if (remaining === 0) {
+        return sendOk(res, 200, { sitters: geoSitters });
+      }
+
+      const fallbackFilter = {
+        isActive: true,
+        _id: { $nin: geoSitters.map((s) => s._id) },
+        $or: [
+          { location: { $exists: false } },
+          { "location.coordinates": { $exists: false } },
+          { "location.coordinates.0": { $exists: false } },
+          { "location.coordinates.1": { $exists: false } },
+          { "location.coordinates.0": 0, "location.coordinates.1": 0 },
+        ],
+      };
+      if (service) fallbackFilter["services.type"] = service;
+      if (species) fallbackFilter.speciesServed = species;
+      if (Number(minRating) > 0) fallbackFilter.rating = { $gte: Number(minRating) };
+
+      const fallbackSitters = await PetSitter.find(fallbackFilter)
+        .sort({ rating: -1, createdAt: -1 })
+        .limit(remaining)
+        .populate("userId", "name avatarUrl")
+        .lean();
+
+      return sendOk(res, 200, {
+        sitters: [
+          ...geoSitters,
+          ...fallbackSitters.map((s) => ({ ...s, id: s._id, distanceKm: null })),
+        ],
+      });
     }
 
     // Normal query
@@ -93,7 +125,7 @@ export async function listSitters(req, res) {
     const sitters = await PetSitter.find(filter)
       .sort({ rating: -1 })
       .skip(skip)
-      .limit(Number(limit))
+      .limit(numericLimit)
       .populate("userId", "name avatarUrl")
       .lean();
 

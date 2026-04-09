@@ -7,6 +7,39 @@ import { sendError, sendOk } from "../utils/apiResponse.js";
 import { recordAudit } from "../utils/audit.js";
 import { io } from "../../server.js";
 
+const DEFAULT_APPOINTMENT_SLOT_MINUTES = 30;
+
+function getAppointmentSlotMinutes(vet) {
+  const slotMinutes = Number(vet?.appointmentSlotMinutes);
+  return Number.isFinite(slotMinutes) && slotMinutes > 0
+    ? slotMinutes
+    : DEFAULT_APPOINTMENT_SLOT_MINUTES;
+}
+
+function getWorkingWindow(vet, targetDate) {
+  const jsDay = targetDate.getDay();
+  const dayIndex = jsDay === 0 ? 6 : jsDay - 1;
+  const workingHours = Array.isArray(vet?.workingHours) ? vet.workingHours : [];
+
+  if (workingHours.length === 0) {
+    return { isAvailable: true, openH: 9, openM: 0, closeH: 18, closeM: 0 };
+  }
+
+  const hours = workingHours.find((wh) => wh.day === dayIndex);
+  if (!hours || hours.isClosed || !hours.open || !hours.close) {
+    return { isAvailable: false };
+  }
+
+  const [openH, openM] = hours.open.split(":").map(Number);
+  const [closeH, closeM] = hours.close.split(":").map(Number);
+
+  if ([openH, openM, closeH, closeM].some((value) => Number.isNaN(value))) {
+    return { isAvailable: false };
+  }
+
+  return { isAvailable: true, openH, openM, closeH, closeM };
+}
+
 // POST /api/appointments
 export async function createAppointment(req, res) {
   try {
@@ -33,27 +66,26 @@ export async function createAppointment(req, res) {
     }
 
     const appointmentDate = new Date(date);
+    if (Number.isNaN(appointmentDate.getTime())) {
+      return sendError(res, 400, "Gecersiz randevu tarihi", "validation_error");
+    }
     if (appointmentDate <= new Date()) {
       return sendError(res, 400, "Randevu tarihi gelecekte olmali", "validation_error");
     }
 
-    // Calisma saati kontrolu — workingHours bossa default 09:00-18:00
-    const jsDay = appointmentDate.getDay();
-    const dayIndex = jsDay === 0 ? 6 : jsDay - 1;
-    const wh = vet.workingHours?.find((h) => h.day === dayIndex);
-    let openH = 9, openM = 0, closeH = 18, closeM = 0;
-    if (wh && !wh.isClosed && wh.open && wh.close) {
-      [openH, openM] = wh.open.split(":").map(Number);
-      [closeH, closeM] = wh.close.split(":").map(Number);
+    const workingWindow = getWorkingWindow(vet, appointmentDate);
+    if (!workingWindow.isAvailable) {
+      return sendError(res, 400, "Bu gun icin randevu kabul edilmiyor", "outside_working_hours");
     }
+
+    const { openH, openM, closeH, closeM } = workingWindow;
     const apptMinutes = appointmentDate.getHours() * 60 + appointmentDate.getMinutes();
-    const slotMin = vet.appointmentSlotMinutes || 20;
-    if (apptMinutes < openH * 60 + openM || apptMinutes + slotMin > closeH * 60 + closeM) {
+    const slotMinutes = getAppointmentSlotMinutes(vet);
+    if (apptMinutes < openH * 60 + openM || apptMinutes + slotMinutes > closeH * 60 + closeM) {
       return sendError(res, 400, "Randevu calisma saatleri disinda", "outside_working_hours");
     }
 
     // Slot cakisma kontrolu
-    const slotMinutes = vet.appointmentSlotMinutes || 30;
     const endDate = new Date(appointmentDate.getTime() + slotMinutes * 60000);
 
     const conflict = await Appointment.findOne({
@@ -234,20 +266,17 @@ export async function getAvailableSlots(req, res) {
     }
 
     const targetDate = new Date(date);
-    // Pazartesi=0, Pazar=6 formatina cevir (JS Date: Pazar=0)
-    const jsDay = targetDate.getDay();
-    const dayIndex = jsDay === 0 ? 6 : jsDay - 1;
-
-    const hours = vet.workingHours.find((wh) => wh.day === dayIndex);
-
-    // workingHours bossa veya bu gun tanimli degilse: default 09:00-18:00
-    let openH = 9, openM = 0, closeH = 18, closeM = 0;
-    if (hours && !hours.isClosed && hours.open && hours.close) {
-      [openH, openM] = hours.open.split(":").map(Number);
-      [closeH, closeM] = hours.close.split(":").map(Number);
+    if (Number.isNaN(targetDate.getTime())) {
+      return sendError(res, 400, "Gecersiz tarih", "validation_error");
     }
 
-    const slotMinutes = vet.appointmentSlotMinutes || 20;
+    const workingWindow = getWorkingWindow(vet, targetDate);
+    if (!workingWindow.isAvailable) {
+      return sendOk(res, 200, { slots: [], allSlots: [], bookedCount: 0 });
+    }
+
+    const { openH, openM, closeH, closeM } = workingWindow;
+    const slotMinutes = getAppointmentSlotMinutes(vet);
 
     const slots = [];
     let current = openH * 60 + openM;
