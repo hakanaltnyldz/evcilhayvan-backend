@@ -60,7 +60,7 @@ export async function listSitters(req, res) {
         },
       });
 
-      const match = { isActive: true, availability: true };
+      const match = { isActive: true };
       if (service) match["services.type"] = service;
       if (species) match.speciesServed = species;
       if (Number(minRating) > 0) match.rating = { $gte: Number(minRating) };
@@ -85,7 +85,7 @@ export async function listSitters(req, res) {
     }
 
     // Normal query
-    const filter = { isActive: true, availability: true };
+    const filter = { isActive: true };
     if (service) filter["services.type"] = service;
     if (species) filter.speciesServed = species;
     if (Number(minRating) > 0) filter.rating = { $gte: Number(minRating) };
