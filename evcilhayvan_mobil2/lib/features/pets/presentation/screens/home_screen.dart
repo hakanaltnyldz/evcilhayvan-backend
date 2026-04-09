@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -26,38 +27,66 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _nearbyActive = false;
   bool _locLoading = false;
-  String? _selectedSpecies;
-  String? _selectedBreed;
+  _HomeAdvertFilters _filters = const _HomeAdvertFilters();
 
-  static const _speciesValues = ['dog', 'cat', 'bird', 'fish', 'rodent', 'other'];
-  static const _speciesEmojis = ['🐶', '🐱', '🐦', '🐟', '🐹', '🐾'];
-
-  void _applyFilter({String? species, String? breed}) {
-    setState(() {
-      _selectedSpecies = species;
-      _selectedBreed = breed;
-    });
-    ref.read(adoptionPaginatedProvider.notifier).setFilter(species: species, breed: breed);
-    ref.read(matingPaginatedProvider.notifier).setFilter(species: species, breed: breed);
+  void _applyFilter(_HomeAdvertFilters nextFilters) {
+    setState(() => _filters = nextFilters);
+    ref
+        .read(adoptionPaginatedProvider.notifier)
+        .setFilter(
+          species: nextFilters.species,
+          breed: nextFilters.breed,
+          gender: nextFilters.gender,
+          vaccinated: nextFilters.vaccinated,
+          startsWith: nextFilters.startsWith,
+          minAgeMonths: nextFilters.minAgeMonths,
+          maxAgeMonths: nextFilters.maxAgeMonths,
+        );
+    ref
+        .read(matingPaginatedProvider.notifier)
+        .setFilter(
+          species: nextFilters.species,
+          breed: nextFilters.breed,
+          gender: nextFilters.gender,
+          vaccinated: nextFilters.vaccinated,
+          startsWith: nextFilters.startsWith,
+          minAgeMonths: nextFilters.minAgeMonths,
+          maxAgeMonths: nextFilters.maxAgeMonths,
+        );
     ref.read(adoptionPaginatedProvider.notifier).refresh();
     ref.read(matingPaginatedProvider.notifier).refresh();
   }
 
   void _pickBreed() {
-    if (_selectedSpecies == null) return;
-    final breeds = breedsFor(_selectedSpecies!);
+    if (_filters.species == null) return;
+    final breeds = breedsFor(_filters.species!);
     showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => _BreedPickerSheet(breeds: breeds, selected: _selectedBreed),
+      builder: (_) =>
+          _BreedPickerSheet(breeds: breeds, selected: _filters.breed),
     ).then((picked) {
       if (picked != null) {
-        _applyFilter(species: _selectedSpecies, breed: picked == '__clear__' ? null : picked);
+        _applyFilter(
+          _filters.copyWith(breed: picked == '__clear__' ? null : picked),
+        );
       }
     });
+  }
+
+  void _showAdvancedFilters() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) =>
+          _HomeAdvancedFilterSheet(initial: _filters, onApply: _applyFilter),
+    );
   }
 
   Future<void> _toggleNearby() async {
@@ -75,10 +104,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (perm == LocationPermission.denied) {
         perm = await Geolocator.requestPermission();
       }
-      if (perm == LocationPermission.deniedForever || perm == LocationPermission.denied) {
+      if (perm == LocationPermission.deniedForever ||
+          perm == LocationPermission.denied) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.homeLocationPermErr)),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.homeLocationPermErr),
+            ),
           );
         }
         return;
@@ -87,15 +119,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         desiredAccuracy: LocationAccuracy.medium,
         timeLimit: const Duration(seconds: 10),
       );
-      ref.read(adoptionPaginatedProvider.notifier).setLocation(pos.latitude, pos.longitude);
-      ref.read(matingPaginatedProvider.notifier).setLocation(pos.latitude, pos.longitude);
+      ref
+          .read(adoptionPaginatedProvider.notifier)
+          .setLocation(pos.latitude, pos.longitude);
+      ref
+          .read(matingPaginatedProvider.notifier)
+          .setLocation(pos.latitude, pos.longitude);
       ref.read(adoptionPaginatedProvider.notifier).refresh();
       ref.read(matingPaginatedProvider.notifier).refresh();
       if (mounted) setState(() => _nearbyActive = true);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.homeLocationErr(e.toString()))),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.homeLocationErr(e.toString()),
+            ),
+          ),
         );
       }
     } finally {
@@ -134,6 +174,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               tooltip: l10n.homeLostFoundTooltip,
               onPressed: () => context.pushNamed('lost-found'),
             ),
+            IconButton(
+              icon: Badge(
+                isLabelVisible: _filters.activeCount > 0,
+                label: Text('${_filters.activeCount}'),
+                child: const Icon(Icons.tune),
+              ),
+              tooltip: l10n.filterTitle,
+              onPressed: _showAdvancedFilters,
+            ),
             _NotificationBell(),
           ],
           flexibleSpace: Container(
@@ -147,8 +196,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           bottom: TabBar(
             tabs: [
-              Tab(text: AppLocalizations.of(context)?.homeAdoptionTab ?? 'Sahiplendirme'),
-              Tab(text: AppLocalizations.of(context)?.homeMatingTab ?? 'Eşleştirme'),
+              Tab(
+                text:
+                    AppLocalizations.of(context)?.homeAdoptionTab ??
+                    'Sahiplendirme',
+              ),
+              Tab(
+                text:
+                    AppLocalizations.of(context)?.homeMatingTab ?? 'Eşleştirme',
+              ),
             ],
           ),
         ),
@@ -168,7 +224,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _AnimatedHeader(firstName: firstName.isEmpty ? null : firstName),
+                  _AnimatedHeader(
+                    firstName: firstName.isEmpty ? null : firstName,
+                  ),
                   const SizedBox(height: 12),
                   const _QuickShortcutsRow(),
                   const SizedBox(height: 8),
@@ -183,7 +241,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           label: Text(l10n.homeNearbyAds),
                           avatar: const Icon(Icons.near_me_rounded, size: 16),
                           onPressed: () => context.pushNamed('nearby-ads'),
-                          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.1),
                           labelStyle: TextStyle(
                             color: Theme.of(context).colorScheme.primary,
                             fontWeight: FontWeight.w500,
@@ -191,7 +251,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                         const SizedBox(width: 8),
                         ...speciesList.map((s) {
-                          final selected = _selectedSpecies == s.$2;
+                          final selected = _filters.species == s.$2;
                           return Padding(
                             padding: const EdgeInsets.only(right: 6),
                             child: FilterChip(
@@ -199,20 +259,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               selected: selected,
                               onSelected: (_) {
                                 if (selected) {
-                                  _applyFilter(species: null, breed: null);
+                                  _applyFilter(
+                                    _filters.copyWith(
+                                      species: null,
+                                      breed: null,
+                                    ),
+                                  );
                                 } else {
-                                  _applyFilter(species: s.$2, breed: null);
+                                  _applyFilter(
+                                    _filters.copyWith(
+                                      species: s.$2,
+                                      breed: null,
+                                    ),
+                                  );
                                 }
                               },
-                              selectedColor: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-                              checkmarkColor: Theme.of(context).colorScheme.primary,
+                              selectedColor: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.15),
+                              checkmarkColor: Theme.of(
+                                context,
+                              ).colorScheme.primary,
                               labelStyle: TextStyle(
-                                color: selected ? Theme.of(context).colorScheme.primary : null,
+                                color: selected
+                                    ? Theme.of(context).colorScheme.primary
+                                    : null,
                                 fontWeight: selected ? FontWeight.bold : null,
                                 fontSize: 12,
                               ),
                               visualDensity: VisualDensity.compact,
-                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
                             ),
                           );
                         }),
@@ -220,7 +298,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                   // Cins filtresi (tür seçiliyse)
-                  if (_selectedSpecies != null) ...[
+                  if (_filters.species != null) ...[
                     const SizedBox(height: 4),
                     Row(
                       children: [
@@ -228,29 +306,81 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           onPressed: _pickBreed,
                           icon: const Icon(Icons.pets, size: 14),
                           label: Text(
-                            _selectedBreed ?? l10n.homeBreedSelect,
+                            _filters.breed ?? l10n.homeBreedSelect,
                             style: const TextStyle(fontSize: 12),
                           ),
                           style: OutlinedButton.styleFrom(
                             visualDensity: VisualDensity.compact,
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                           ),
                         ),
-                        if (_selectedBreed != null) ...[
+                        if (_filters.breed != null) ...[
                           const SizedBox(width: 6),
                           GestureDetector(
-                            onTap: () => _applyFilter(species: _selectedSpecies, breed: null),
-                            child: const Icon(Icons.cancel, size: 18, color: Colors.grey),
+                            onTap: () =>
+                                _applyFilter(_filters.copyWith(breed: null)),
+                            child: const Icon(
+                              Icons.cancel,
+                              size: 18,
+                              color: Colors.grey,
+                            ),
                           ),
                         ],
                         const Spacer(),
                         TextButton(
-                          onPressed: () => _applyFilter(species: null, breed: null),
+                          onPressed: () =>
+                              _applyFilter(const _HomeAdvertFilters()),
                           style: TextButton.styleFrom(
                             visualDensity: VisualDensity.compact,
                             foregroundColor: Colors.red,
                           ),
-                          child: Text(l10n.homeClearFilter, style: const TextStyle(fontSize: 12)),
+                          child: Text(
+                            l10n.homeClearFilter,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (_filters.activeCount > 0) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text(
+                          '${_filters.activeCount} aktif filtre',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        if (_filters.startsWith != null &&
+                            _filters.startsWith!.isNotEmpty)
+                          Text(
+                            'A-Z: ${_filters.startsWith}',
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                              fontSize: 12,
+                            ),
+                          ),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () =>
+                              _applyFilter(const _HomeAdvertFilters()),
+                          style: TextButton.styleFrom(
+                            visualDensity: VisualDensity.compact,
+                            foregroundColor: Colors.red,
+                          ),
+                          child: Text(
+                            l10n.filterReset,
+                            style: const TextStyle(fontSize: 12),
+                          ),
                         ),
                       ],
                     ),
@@ -269,6 +399,332 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+const _homeFilterSentinel = Object();
+
+class _HomeAdvertFilters {
+  final String? species;
+  final String? breed;
+  final String? gender;
+  final bool? vaccinated;
+  final String? startsWith;
+  final int? minAgeMonths;
+  final int? maxAgeMonths;
+
+  const _HomeAdvertFilters({
+    this.species,
+    this.breed,
+    this.gender,
+    this.vaccinated,
+    this.startsWith,
+    this.minAgeMonths,
+    this.maxAgeMonths,
+  });
+
+  _HomeAdvertFilters copyWith({
+    Object? species = _homeFilterSentinel,
+    Object? breed = _homeFilterSentinel,
+    Object? gender = _homeFilterSentinel,
+    Object? vaccinated = _homeFilterSentinel,
+    Object? startsWith = _homeFilterSentinel,
+    Object? minAgeMonths = _homeFilterSentinel,
+    Object? maxAgeMonths = _homeFilterSentinel,
+  }) {
+    return _HomeAdvertFilters(
+      species: species == _homeFilterSentinel
+          ? this.species
+          : species as String?,
+      breed: breed == _homeFilterSentinel ? this.breed : breed as String?,
+      gender: gender == _homeFilterSentinel ? this.gender : gender as String?,
+      vaccinated: vaccinated == _homeFilterSentinel
+          ? this.vaccinated
+          : vaccinated as bool?,
+      startsWith: startsWith == _homeFilterSentinel
+          ? this.startsWith
+          : startsWith as String?,
+      minAgeMonths: minAgeMonths == _homeFilterSentinel
+          ? this.minAgeMonths
+          : minAgeMonths as int?,
+      maxAgeMonths: maxAgeMonths == _homeFilterSentinel
+          ? this.maxAgeMonths
+          : maxAgeMonths as int?,
+    );
+  }
+
+  int get activeCount {
+    var count = 0;
+    if (species != null) count++;
+    if (breed != null) count++;
+    if (gender != null) count++;
+    if (vaccinated != null) count++;
+    if (startsWith != null && startsWith!.isNotEmpty) count++;
+    if (minAgeMonths != null || maxAgeMonths != null) count++;
+    return count;
+  }
+}
+
+class _AgePreset {
+  final String key;
+  final String label;
+  final int? minAgeMonths;
+  final int? maxAgeMonths;
+
+  const _AgePreset(this.key, this.label, this.minAgeMonths, this.maxAgeMonths);
+}
+
+const _homeAgePresets = [
+  _AgePreset('all', 'Tümü', null, null),
+  _AgePreset('baby', '0-12 ay', 0, 12),
+  _AgePreset('young', '13-36 ay', 13, 36),
+  _AgePreset('adult', '37+ ay', 37, null),
+];
+
+class _HomeAdvancedFilterSheet extends StatefulWidget {
+  final _HomeAdvertFilters initial;
+  final ValueChanged<_HomeAdvertFilters> onApply;
+
+  const _HomeAdvancedFilterSheet({
+    required this.initial,
+    required this.onApply,
+  });
+
+  @override
+  State<_HomeAdvancedFilterSheet> createState() =>
+      _HomeAdvancedFilterSheetState();
+}
+
+class _HomeAdvancedFilterSheetState extends State<_HomeAdvancedFilterSheet> {
+  late String? _gender;
+  late bool? _vaccinated;
+  late int? _minAgeMonths;
+  late int? _maxAgeMonths;
+  late final TextEditingController _startsWithController;
+
+  @override
+  void initState() {
+    super.initState();
+    _gender = widget.initial.gender;
+    _vaccinated = widget.initial.vaccinated;
+    _minAgeMonths = widget.initial.minAgeMonths;
+    _maxAgeMonths = widget.initial.maxAgeMonths;
+    _startsWithController = TextEditingController(
+      text: widget.initial.startsWith ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _startsWithController.dispose();
+    super.dispose();
+  }
+
+  String get _selectedAgeKey {
+    for (final preset in _homeAgePresets) {
+      if (preset.minAgeMonths == _minAgeMonths &&
+          preset.maxAgeMonths == _maxAgeMonths) {
+        return preset.key;
+      }
+    }
+    return 'all';
+  }
+
+  void _selectAgePreset(_AgePreset preset) {
+    setState(() {
+      _minAgeMonths = preset.minAgeMonths;
+      _maxAgeMonths = preset.maxAgeMonths;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(
+        24,
+        16,
+        24,
+        MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Theme.of(context).dividerColor,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                l10n.filterTitle,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _gender = null;
+                    _vaccinated = null;
+                    _minAgeMonths = null;
+                    _maxAgeMonths = null;
+                    _startsWithController.clear();
+                  });
+                },
+                child: Text(
+                  l10n.filterReset,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+          const Divider(),
+          Text('Cinsiyet', style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            children: [
+              _filterChip(
+                label: l10n.filterAll,
+                selected: _gender == null,
+                onTap: () => setState(() => _gender = null),
+              ),
+              _filterChip(
+                label: l10n.genderMale,
+                selected: _gender == 'male',
+                onTap: () => setState(() => _gender = 'male'),
+              ),
+              _filterChip(
+                label: l10n.genderFemale,
+                selected: _gender == 'female',
+                onTap: () => setState(() => _gender = 'female'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            l10n.filterVaccine,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            children: [
+              _filterChip(
+                label: l10n.filterVaccineAny,
+                selected: _vaccinated == null,
+                onTap: () => setState(() => _vaccinated = null),
+              ),
+              _filterChip(
+                label: l10n.filterVaccinated,
+                selected: _vaccinated == true,
+                onTap: () => setState(() => _vaccinated = true),
+              ),
+              _filterChip(
+                label: l10n.filterUnvaccinated,
+                selected: _vaccinated == false,
+                onTap: () => setState(() => _vaccinated = false),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            l10n.createPetAge,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final preset in _homeAgePresets)
+                _filterChip(
+                  label: preset.label,
+                  selected: _selectedAgeKey == preset.key,
+                  onTap: () => _selectAgePreset(preset),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'İsim Baş Harfi',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _startsWithController,
+            textCapitalization: TextCapitalization.characters,
+            inputFormatters: [
+              LengthLimitingTextInputFormatter(1),
+              FilteringTextInputFormatter.allow(
+                RegExp(r'[a-zA-ZçğıöşüÇĞİÖŞÜ]'),
+              ),
+            ],
+            decoration: InputDecoration(
+              hintText: 'A-Z',
+              prefixIcon: const Icon(Icons.sort_by_alpha),
+              filled: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: () {
+                final startsWith = _startsWithController.text
+                    .trim()
+                    .toUpperCase();
+                widget.onApply(
+                  widget.initial.copyWith(
+                    gender: _gender,
+                    vaccinated: _vaccinated,
+                    startsWith: startsWith.isEmpty ? null : startsWith,
+                    minAgeMonths: _minAgeMonths,
+                    maxAgeMonths: _maxAgeMonths,
+                  ),
+                );
+                Navigator.of(context).pop();
+              },
+              child: Text(l10n.filterApply),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _filterChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return FilterChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onTap(),
+      selectedColor: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+      checkmarkColor: Theme.of(context).colorScheme.primary,
+      labelStyle: TextStyle(
+        color: selected ? Theme.of(context).colorScheme.primary : null,
+        fontWeight: selected ? FontWeight.bold : null,
       ),
     );
   }
@@ -347,18 +803,20 @@ class _AnimatedHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    firstName != null ? '$greeting, $firstName!' : l10n.homeWelcome,
+                    firstName != null
+                        ? '$greeting, $firstName!'
+                        : l10n.homeWelcome,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     l10n.homeHeaderDesc,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.white.withOpacity(0.85),
-                        ),
+                      color: Colors.white.withOpacity(0.85),
+                    ),
                   ),
                 ],
               ),
@@ -368,7 +826,6 @@ class _AnimatedHeader extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _QuickShortcutsRow extends StatelessWidget {
@@ -378,13 +835,48 @@ class _QuickShortcutsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final shortcuts = [
-      (label: l10n.homeShortcutMating, icon: Icons.favorite_rounded, colors: const [Color(0xFFFF6B6B), Color(0xFFFF8E8E)], route: 'mating'),
-      (label: l10n.homeShortcutSitterFull, icon: Icons.pets_rounded, colors: const [Color(0xFF2D6A4F), Color(0xFF52B788)], route: 'sitters'),
-      (label: l10n.homeShortcutEvents, icon: Icons.event_rounded, colors: const [Color(0xFF40916C), Color(0xFF52B788)], route: 'events'),
-      (label: l10n.homeShortcutLostFull, icon: Icons.location_searching_rounded, colors: const [Color(0xFFF2994A), Color(0xFFEB5757)], route: 'lost-found'),
-      (label: l10n.homeShortcutMap, icon: Icons.map_rounded, colors: const [Color(0xFF1B4332), Color(0xFF40916C)], route: 'map'),
-      (label: l10n.homeShortcutFeed, icon: Icons.dynamic_feed_rounded, colors: const [Color(0xFF2D6A4F), Color(0xFF74C69D)], route: 'feed'),
-      (label: l10n.homeShortcutAiFull, icon: Icons.smart_toy_rounded, colors: const [Color(0xFF52B788), Color(0xFF74C69D)], route: 'ai-assistant'),
+      (
+        label: l10n.homeShortcutMating,
+        icon: Icons.favorite_rounded,
+        colors: const [Color(0xFFFF6B6B), Color(0xFFFF8E8E)],
+        route: 'mating',
+      ),
+      (
+        label: l10n.homeShortcutSitterFull,
+        icon: Icons.pets_rounded,
+        colors: const [Color(0xFF2D6A4F), Color(0xFF52B788)],
+        route: 'sitters',
+      ),
+      (
+        label: l10n.homeShortcutEvents,
+        icon: Icons.event_rounded,
+        colors: const [Color(0xFF40916C), Color(0xFF52B788)],
+        route: 'events',
+      ),
+      (
+        label: l10n.homeShortcutLostFull,
+        icon: Icons.location_searching_rounded,
+        colors: const [Color(0xFFF2994A), Color(0xFFEB5757)],
+        route: 'lost-found',
+      ),
+      (
+        label: l10n.homeShortcutMap,
+        icon: Icons.map_rounded,
+        colors: const [Color(0xFF1B4332), Color(0xFF40916C)],
+        route: 'map',
+      ),
+      (
+        label: l10n.homeShortcutFeed,
+        icon: Icons.dynamic_feed_rounded,
+        colors: const [Color(0xFF2D6A4F), Color(0xFF74C69D)],
+        route: 'feed',
+      ),
+      (
+        label: l10n.homeShortcutAiFull,
+        icon: Icons.smart_toy_rounded,
+        colors: const [Color(0xFF52B788), Color(0xFF74C69D)],
+        route: 'ai-assistant',
+      ),
     ];
     return SizedBox(
       height: 90,
@@ -395,11 +887,11 @@ class _QuickShortcutsRow extends StatelessWidget {
         itemBuilder: (context, i) {
           final s = shortcuts[i];
           return _ShortcutCard(
-            label: s.label,
-            icon: s.icon,
-            gradient: LinearGradient(colors: s.colors),
-            onTap: () => context.pushNamed(s.route),
-          )
+                label: s.label,
+                icon: s.icon,
+                gradient: LinearGradient(colors: s.colors),
+                onTap: () => context.pushNamed(s.route),
+              )
               .animate(delay: Duration(milliseconds: 80 + i * 60))
               .fadeIn(duration: 300.ms)
               .slideX(begin: 0.15, duration: 300.ms, curve: Curves.easeOut);
@@ -465,7 +957,8 @@ class _ShortcutCard extends StatelessWidget {
 
 class _AdvertsList extends ConsumerStatefulWidget {
   const _AdvertsList({required this.provider});
-  final StateNotifierProvider<PaginatedAdvertsNotifier, PaginatedAdvertsState> provider;
+  final StateNotifierProvider<PaginatedAdvertsNotifier, PaginatedAdvertsState>
+  provider;
 
   @override
   ConsumerState<_AdvertsList> createState() => _AdvertsListState();
@@ -525,7 +1018,9 @@ class _AdvertsListState extends ConsumerState<_AdvertsList> {
       child: ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.only(bottom: 80),
-        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
         itemCount: state.items.length + (showBottomLoader ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == state.items.length) {
@@ -536,12 +1031,12 @@ class _AdvertsListState extends ConsumerState<_AdvertsList> {
           }
           final pet = state.items[index];
           return PetCard(
-            pet: pet,
-            onTap: () => context.pushNamed(
-              'pet-detail',
-              pathParameters: {'id': pet.id},
-            ),
-          )
+                pet: pet,
+                onTap: () => context.pushNamed(
+                  'pet-detail',
+                  pathParameters: {'id': pet.id},
+                ),
+              )
               .animate(
                 key: ValueKey(pet.id),
                 delay: Duration(milliseconds: (index * 55).clamp(0, 440)),
@@ -560,8 +1055,11 @@ class _NotificationBell extends ConsumerWidget {
     final unreadCount = ref.watch(unreadCountProvider);
     final bellIcon = unreadCount > 0
         ? const Icon(Icons.notifications_outlined)
-            .animate(onPlay: (ctrl) => ctrl.repeat(period: const Duration(seconds: 4)))
-            .shake(hz: 4, duration: 500.ms, curve: Curves.easeInOut)
+              .animate(
+                onPlay: (ctrl) =>
+                    ctrl.repeat(period: const Duration(seconds: 4)),
+              )
+              .shake(hz: 4, duration: 500.ms, curve: Curves.easeInOut)
         : const Icon(Icons.notifications_outlined);
     return IconButton(
       icon: Badge(
@@ -611,9 +1109,10 @@ class _PetCardSkeletonState extends State<_PetCardSkeleton>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
-    _anim = Tween(begin: 0.4, end: 0.85).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
-    );
+    _anim = Tween(
+      begin: 0.4,
+      end: 0.85,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -627,7 +1126,9 @@ class _PetCardSkeletonState extends State<_PetCardSkeleton>
     return AnimatedBuilder(
       animation: _anim,
       builder: (context, _) {
-        final c = Theme.of(context).colorScheme.onSurface.withOpacity(_anim.value * 0.15);
+        final c = Theme.of(
+          context,
+        ).colorScheme.onSurface.withOpacity(_anim.value * 0.15);
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 8),
           padding: const EdgeInsets.all(12),
@@ -644,14 +1145,31 @@ class _PetCardSkeletonState extends State<_PetCardSkeleton>
           ),
           child: Row(
             children: [
-              Container(width: 80, height: 80, decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(16))),
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: c,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(height: 16, width: 140, color: c, margin: const EdgeInsets.only(bottom: 8)),
-                    Container(height: 12, width: 100, color: c, margin: const EdgeInsets.only(bottom: 6)),
+                    Container(
+                      height: 16,
+                      width: 140,
+                      color: c,
+                      margin: const EdgeInsets.only(bottom: 8),
+                    ),
+                    Container(
+                      height: 12,
+                      width: 100,
+                      color: c,
+                      margin: const EdgeInsets.only(bottom: 6),
+                    ),
                     Container(height: 12, width: 80, color: c),
                   ],
                 ),
@@ -707,13 +1225,19 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
       initialChildSize: 0.6,
       maxChildSize: 0.9,
       builder: (_, scrollCtrl) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
         child: Column(
           children: [
             const SizedBox(height: 12),
             Container(
-              width: 40, height: 4,
-              decoration: BoxDecoration(color: Theme.of(context).dividerColor, borderRadius: BorderRadius.circular(2)),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Theme.of(context).dividerColor,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
             const SizedBox(height: 12),
             Padding(
@@ -744,7 +1268,9 @@ class _BreedPickerSheetState extends State<_BreedPickerSheet> {
                   final isSelected = breed == widget.selected;
                   return ListTile(
                     title: Text(breed),
-                    trailing: isSelected ? Icon(Icons.check, color: theme.colorScheme.primary) : null,
+                    trailing: isSelected
+                        ? Icon(Icons.check, color: theme.colorScheme.primary)
+                        : null,
                     selected: isSelected,
                     onTap: () => Navigator.of(context).pop(breed),
                   );
@@ -773,13 +1299,16 @@ class _UpcomingRemindersWidget extends ConsumerWidget {
       data: (appointments) {
         final now = DateTime.now();
         final twoDaysLater = now.add(const Duration(days: 2));
-        final upcoming = appointments
-            .where((a) =>
-                (a.status == 'pending' || a.status == 'confirmed') &&
-                a.date.isAfter(now.subtract(const Duration(hours: 1))) &&
-                a.date.isBefore(twoDaysLater))
-            .toList()
-          ..sort((a, b) => a.date.compareTo(b.date));
+        final upcoming =
+            appointments
+                .where(
+                  (a) =>
+                      (a.status == 'pending' || a.status == 'confirmed') &&
+                      a.date.isAfter(now.subtract(const Duration(hours: 1))) &&
+                      a.date.isBefore(twoDaysLater),
+                )
+                .toList()
+              ..sort((a, b) => a.date.compareTo(b.date));
 
         if (upcoming.isEmpty) return const SizedBox.shrink();
 
@@ -790,14 +1319,18 @@ class _UpcomingRemindersWidget extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 6),
               child: Row(
                 children: [
-                  const Icon(Icons.event_rounded, size: 14, color: Color(0xFF2D6A4F)),
+                  const Icon(
+                    Icons.event_rounded,
+                    size: 14,
+                    color: Color(0xFF2D6A4F),
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     AppLocalizations.of(context)!.homeUpcomingAppointments,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: const Color(0xFF2D6A4F),
-                          fontWeight: FontWeight.w700,
-                        ),
+                      color: const Color(0xFF2D6A4F),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),
@@ -811,14 +1344,23 @@ class _UpcomingRemindersWidget extends ConsumerWidget {
                 itemBuilder: (context, i) {
                   final a = upcoming[i];
                   final date = a.date;
-                  final isToday = date.day == now.day && date.month == now.month;
-                  final label = isToday ? AppLocalizations.of(context)!.today : AppLocalizations.of(context)!.tomorrow;
+                  final isToday =
+                      date.day == now.day && date.month == now.month;
+                  final label = isToday
+                      ? AppLocalizations.of(context)!.today
+                      : AppLocalizations.of(context)!.tomorrow;
                   final time =
                       '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
                   return GestureDetector(
-                    onTap: () => context.pushNamed('appointment-detail', pathParameters: {'id': a.id}),
+                    onTap: () => context.pushNamed(
+                      'appointment-detail',
+                      pathParameters: {'id': a.id},
+                    ),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFF2D6A4F), Color(0xFF52B788)],
@@ -837,14 +1379,21 @@ class _UpcomingRemindersWidget extends ConsumerWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.local_hospital_rounded, color: Colors.white, size: 20),
+                          const Icon(
+                            Icons.local_hospital_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                a.vet?.name ?? AppLocalizations.of(context)!.homeApptFallback,
+                                a.vet?.name ??
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.homeApptFallback,
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w700,

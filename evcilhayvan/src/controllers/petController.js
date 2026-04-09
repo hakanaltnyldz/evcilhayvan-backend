@@ -18,6 +18,10 @@ function buildLocation(bodyLocation) {
   return undefined;
 }
 
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 // GET /api/pets/feed
 export async function getPetFeed(req, res) {
   try {
@@ -209,10 +213,28 @@ export async function updatePet(req, res) {
 // GET /api/pets
 export async function listPets(req, res) {
   try {
-    const { species, breed, vaccinated, q, page = 1, limit = 10, type, lat, lng, radiusKm } = req.query;
+    const {
+      species,
+      breed,
+      gender,
+      vaccinated,
+      q,
+      startsWith,
+      minAgeMonths,
+      maxAgeMonths,
+      page = 1,
+      limit = 10,
+      type,
+      lat,
+      lng,
+      radiusKm,
+    } = req.query;
     const filter = { isActive: true };
     if (species) filter.species = species;
-    if (breed) filter.breed = { $regex: new RegExp(`^${breed}$`, 'i') };
+    if (breed) filter.breed = { $regex: new RegExp(`^${escapeRegex(breed)}$`, "i") };
+    if (gender && ["male", "female", "unknown"].includes(String(gender))) {
+      filter.gender = String(gender);
+    }
     if (type) {
       const normalizedType = String(type).toLowerCase();
       if (["adoption", "mating"].includes(normalizedType)) {
@@ -220,6 +242,16 @@ export async function listPets(req, res) {
       }
     }
     if (typeof vaccinated !== "undefined") filter.vaccinated = vaccinated === "true";
+    const minAge = Number(minAgeMonths);
+    const maxAge = Number(maxAgeMonths);
+    if (!Number.isNaN(minAge) || !Number.isNaN(maxAge)) {
+      filter.ageMonths = {};
+      if (!Number.isNaN(minAge)) filter.ageMonths.$gte = minAge;
+      if (!Number.isNaN(maxAge)) filter.ageMonths.$lte = maxAge;
+    }
+    if (startsWith) {
+      filter.name = { $regex: new RegExp(`^${escapeRegex(startsWith)}`, "i") };
+    }
     if (q) {
       filter.$text = { $search: String(q) };
     }

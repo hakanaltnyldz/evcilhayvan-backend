@@ -44,7 +44,9 @@ class PetsRepository {
     final raw = prefs.getString(key);
     if (raw == null || raw.isEmpty) return [];
     final List<dynamic> decoded = jsonDecode(raw) as List<dynamic>;
-    return decoded.map((json) => Pet.fromJson(Map<String, dynamic>.from(json))).toList();
+    return decoded
+        .map((json) => Pet.fromJson(Map<String, dynamic>.from(json)))
+        .toList();
   }
 
   Future<void> _writeCachedPets(String key, List<Pet> pets) async {
@@ -55,22 +57,26 @@ class PetsRepository {
 
   Future<List<Pet>> getCachedFeed() => _readCachedPets(_feedCacheKey);
 
-  Future<void> cacheFeed(List<Pet> pets) => _writeCachedPets(_feedCacheKey, pets);
+  Future<void> cacheFeed(List<Pet> pets) =>
+      _writeCachedPets(_feedCacheKey, pets);
 
   Future<List<Pet>> getPetFeed() {
     return _guard(() async {
       final response = await _dio.get('/api/pets/feed');
-      final List<dynamic> petListJson = (response.data['items'] ?? []) as List<dynamic>;
+      final List<dynamic> petListJson =
+          (response.data['items'] ?? []) as List<dynamic>;
       return petListJson.map((json) => Pet.fromJson(json)).toList();
     });
   }
 
   Future<List<Pet>> getPets({String? advertType}) {
     return _guard(() async {
-      final response = await _dio.get('/api/adverts', queryParameters: {
-        if (advertType != null) 'type': advertType,
-      });
-      final List<dynamic> petListJson = response.data['items'] ?? response.data['pets'] ?? [];
+      final response = await _dio.get(
+        '/api/adverts',
+        queryParameters: {if (advertType != null) 'type': advertType},
+      );
+      final List<dynamic> petListJson =
+          response.data['items'] ?? response.data['pets'] ?? [];
       return petListJson.map((json) => Pet.fromJson(json)).toList();
     });
   }
@@ -85,11 +91,14 @@ class PetsRepository {
 
   Future<List<Pet>> getMyAdverts({String? advertType}) {
     return _guard(() async {
-      final response = await _dio.get('/api/adverts/me', queryParameters: {
-        if (advertType != null) 'type': advertType,
-      });
-      final data = response.data as Map<String, dynamic>? ?? <String, dynamic>{};
-      final List<dynamic> petListJson = (data['result'] as List?) ??
+      final response = await _dio.get(
+        '/api/adverts/me',
+        queryParameters: {if (advertType != null) 'type': advertType},
+      );
+      final data =
+          response.data as Map<String, dynamic>? ?? <String, dynamic>{};
+      final List<dynamic> petListJson =
+          (data['result'] as List?) ??
           (data['pets'] as List?) ??
           (data['items'] as List?) ??
           (data['data'] as List?) ??
@@ -110,21 +119,33 @@ class PetsRepository {
     double? lng,
     double? radiusKm,
     String? species,
+    String? gender,
     bool? vaccinated,
     String? breed,
+    String? startsWith,
+    int? minAgeMonths,
+    int? maxAgeMonths,
   }) {
     return _guard(() async {
-      final response = await _dio.get('/api/adverts', queryParameters: {
-        if (advertType != null) 'type': advertType,
-        'page': page,
-        'limit': limit,
-        if (lat != null) 'lat': lat,
-        if (lng != null) 'lng': lng,
-        if (radiusKm != null) 'radiusKm': radiusKm,
-        if (species != null) 'species': species,
-        if (vaccinated != null) 'vaccinated': vaccinated.toString(),
-        if (breed != null) 'breed': breed,
-      });
+      final response = await _dio.get(
+        '/api/adverts',
+        queryParameters: {
+          if (advertType != null) 'type': advertType,
+          'page': page,
+          'limit': limit,
+          if (lat != null) 'lat': lat,
+          if (lng != null) 'lng': lng,
+          if (radiusKm != null) 'radiusKm': radiusKm,
+          if (species != null) 'species': species,
+          if (gender != null) 'gender': gender,
+          if (vaccinated != null) 'vaccinated': vaccinated.toString(),
+          if (breed != null) 'breed': breed,
+          if (startsWith != null && startsWith.trim().isNotEmpty)
+            'startsWith': startsWith.trim(),
+          if (minAgeMonths != null) 'minAgeMonths': minAgeMonths,
+          if (maxAgeMonths != null) 'maxAgeMonths': maxAgeMonths,
+        },
+      );
       final List<dynamic> raw = response.data['items'] ?? [];
       return (
         items: raw.map((j) => Pet.fromJson(j)).toList(),
@@ -139,7 +160,10 @@ class PetsRepository {
       try {
         final response = await _dio.get(
           '/api/pets/$petId',
-          options: Options(responseType: ResponseType.json, receiveDataWhenStatusError: true),
+          options: Options(
+            responseType: ResponseType.json,
+            receiveDataWhenStatusError: true,
+          ),
         );
         final petJson = response.data['pet'] ?? response.data;
         if (petJson is Map<String, dynamic>) {
@@ -151,11 +175,20 @@ class PetsRepository {
 
       final advertsRes = await _dio.get(
         '/api/adverts/$petId',
-        options: Options(responseType: ResponseType.json, receiveDataWhenStatusError: true),
+        options: Options(
+          responseType: ResponseType.json,
+          receiveDataWhenStatusError: true,
+        ),
       );
-      final advertsJson = advertsRes.data['pet'] ?? advertsRes.data['advert'] ?? advertsRes.data;
+      final advertsJson =
+          advertsRes.data['pet'] ??
+          advertsRes.data['advert'] ??
+          advertsRes.data;
       if (advertsJson is! Map<String, dynamic>) {
-        throw PetDetailException('Sunucudan beklenmeyen cevap alindi.', statusCode: advertsRes.statusCode);
+        throw PetDetailException(
+          'Sunucudan beklenmeyen cevap alindi.',
+          statusCode: advertsRes.statusCode,
+        );
       }
       return Pet.fromJson(Map<String, dynamic>.from(advertsJson));
     } on DioException catch (e) {
@@ -245,9 +278,15 @@ class PetsRepository {
     return _guard(() async {
       final fileName = imageFile.path.split('/').last;
       final formData = FormData.fromMap({
-        "file": await MultipartFile.fromFile(imageFile.path, filename: fileName),
+        "file": await MultipartFile.fromFile(
+          imageFile.path,
+          filename: fileName,
+        ),
       });
-      final response = await _dio.post('/api/pets/$petId/images', data: formData);
+      final response = await _dio.post(
+        '/api/pets/$petId/images',
+        data: formData,
+      );
       return response.data['url'];
     });
   }
@@ -256,9 +295,15 @@ class PetsRepository {
     return _guard(() async {
       final fileName = videoFile.path.split('/').last;
       final formData = FormData.fromMap({
-        "file": await MultipartFile.fromFile(videoFile.path, filename: fileName),
+        "file": await MultipartFile.fromFile(
+          videoFile.path,
+          filename: fileName,
+        ),
       });
-      final response = await _dio.post('/api/pets/$petId/videos', data: formData);
+      final response = await _dio.post(
+        '/api/pets/$petId/videos',
+        data: formData,
+      );
       return response.data['url'];
     });
   }
@@ -267,7 +312,10 @@ class PetsRepository {
     return _guard(() async {
       final fileName = imageFile.path.split('/').last;
       final formData = FormData.fromMap({
-        "file": await MultipartFile.fromFile(imageFile.path, filename: fileName),
+        "file": await MultipartFile.fromFile(
+          imageFile.path,
+          filename: fileName,
+        ),
       });
       final response = await _dio.post('/api/uploads/images', data: formData);
       return response.data['url'];
@@ -278,7 +326,10 @@ class PetsRepository {
     return _guard(() async {
       final fileName = videoFile.path.split('/').last;
       final formData = FormData.fromMap({
-        "file": await MultipartFile.fromFile(videoFile.path, filename: fileName),
+        "file": await MultipartFile.fromFile(
+          videoFile.path,
+          filename: fileName,
+        ),
       });
       final response = await _dio.post('/api/uploads/videos', data: formData);
       return response.data['url'];
@@ -288,7 +339,9 @@ class PetsRepository {
   Future<void> deletePet(String petId) {
     return _guard(() async {
       await _dio.delete('/api/pets/$petId');
-      await _updateCachedFeed((current) => current.where((p) => p.id != petId).toList());
+      await _updateCachedFeed(
+        (current) => current.where((p) => p.id != petId).toList(),
+      );
     });
   }
 
@@ -312,7 +365,9 @@ class PetsRepository {
 
   String? _extractMessage(DioException e) {
     final data = e.response?.data;
-    if (data is Map && data['message'] is String && (data['message'] as String).isNotEmpty) {
+    if (data is Map &&
+        data['message'] is String &&
+        (data['message'] as String).isNotEmpty) {
       return data['message'] as String;
     }
     if (e.message != null && e.message!.isNotEmpty) {
@@ -364,8 +419,9 @@ class _MyPetsNotifier extends AsyncNotifier<List<Pet>> {
       key: _cacheKey,
       ttl: const Duration(minutes: 30),
       fetch: () => repo.getMyPets(),
-      fromJson: (raw) =>
-          (raw as List).map((e) => Pet.fromJson(e as Map<String, dynamic>)).toList(),
+      fromJson: (raw) => (raw as List)
+          .map((e) => Pet.fromJson(e as Map<String, dynamic>))
+          .toList(),
       toJson: (list) => list.map((e) => e.toJson()).toList(),
       onUpdate: (fresh) => state = AsyncData(fresh),
     );
@@ -374,18 +430,24 @@ class _MyPetsNotifier extends AsyncNotifier<List<Pet>> {
   Future<void> refresh() async {
     await CacheService.invalidate(_cacheKey);
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => ref.read(petsRepositoryProvider).getMyPets());
+    state = await AsyncValue.guard(
+      () => ref.read(petsRepositoryProvider).getMyPets(),
+    );
   }
 }
 
-final myPetsProvider = AsyncNotifierProvider<_MyPetsNotifier, List<Pet>>(_MyPetsNotifier.new);
+final myPetsProvider = AsyncNotifierProvider<_MyPetsNotifier, List<Pet>>(
+  _MyPetsNotifier.new,
+);
 
-final myAdvertsProvider = FutureProvider.autoDispose.family<List<Pet>, String?>((ref, advertType) {
-  final repository = ref.watch(petsRepositoryProvider);
-  final user = ref.watch(authProvider);
-  if (user == null) return Future.value(<Pet>[]);
-  return repository.getMyAdverts(advertType: advertType);
-});
+final myAdvertsProvider = FutureProvider.autoDispose.family<List<Pet>, String?>(
+  (ref, advertType) {
+    final repository = ref.watch(petsRepositoryProvider);
+    final user = ref.watch(authProvider);
+    if (user == null) return Future.value(<Pet>[]);
+    return repository.getMyAdverts(advertType: advertType);
+  },
+);
 
 class PetFeedNotifier extends AsyncNotifier<List<Pet>> {
   late final PetsRepository _repository;
@@ -419,7 +481,9 @@ class PetFeedNotifier extends AsyncNotifier<List<Pet>> {
   }
 }
 
-final petFeedProvider = AsyncNotifierProvider<PetFeedNotifier, List<Pet>>(PetFeedNotifier.new);
+final petFeedProvider = AsyncNotifierProvider<PetFeedNotifier, List<Pet>>(
+  PetFeedNotifier.new,
+);
 
 class PaginatedAdvertsState {
   final List<Pet> items;
@@ -456,7 +520,7 @@ class PaginatedAdvertsState {
 
 class PaginatedAdvertsNotifier extends StateNotifier<PaginatedAdvertsState> {
   PaginatedAdvertsNotifier(this._repository, this._advertType)
-      : super(const PaginatedAdvertsState()) {
+    : super(const PaginatedAdvertsState()) {
     loadMore();
   }
 
@@ -468,6 +532,11 @@ class PaginatedAdvertsNotifier extends StateNotifier<PaginatedAdvertsState> {
   double? _lng;
   String? _species;
   String? _breed;
+  String? _gender;
+  bool? _vaccinated;
+  String? _startsWith;
+  int? _minAgeMonths;
+  int? _maxAgeMonths;
 
   void setLocation(double lat, double lng) {
     _lat = lat;
@@ -479,9 +548,22 @@ class PaginatedAdvertsNotifier extends StateNotifier<PaginatedAdvertsState> {
     _lng = null;
   }
 
-  void setFilter({String? species, String? breed}) {
+  void setFilter({
+    String? species,
+    String? breed,
+    String? gender,
+    bool? vaccinated,
+    String? startsWith,
+    int? minAgeMonths,
+    int? maxAgeMonths,
+  }) {
     _species = species;
     _breed = breed;
+    _gender = gender;
+    _vaccinated = vaccinated;
+    _startsWith = startsWith;
+    _minAgeMonths = minAgeMonths;
+    _maxAgeMonths = maxAgeMonths;
   }
 
   Future<void> loadMore() async {
@@ -498,6 +580,11 @@ class PaginatedAdvertsNotifier extends StateNotifier<PaginatedAdvertsState> {
         radiusKm: (_lat != null) ? 25 : null,
         species: _species,
         breed: _breed,
+        gender: _gender,
+        vaccinated: _vaccinated,
+        startsWith: _startsWith,
+        minAgeMonths: _minAgeMonths,
+        maxAgeMonths: _maxAgeMonths,
       );
       state = state.copyWith(
         items: [...state.items, ...result.items],
@@ -518,22 +605,26 @@ class PaginatedAdvertsNotifier extends StateNotifier<PaginatedAdvertsState> {
 
 final adoptionPaginatedProvider =
     StateNotifierProvider<PaginatedAdvertsNotifier, PaginatedAdvertsState>(
-  (ref) => PaginatedAdvertsNotifier(ref.read(petsRepositoryProvider), 'adoption'),
-);
+      (ref) => PaginatedAdvertsNotifier(
+        ref.read(petsRepositoryProvider),
+        'adoption',
+      ),
+    );
 
 final matingPaginatedProvider =
     StateNotifierProvider<PaginatedAdvertsNotifier, PaginatedAdvertsState>(
-  (ref) => PaginatedAdvertsNotifier(ref.read(petsRepositoryProvider), 'mating'),
-);
+      (ref) =>
+          PaginatedAdvertsNotifier(ref.read(petsRepositoryProvider), 'mating'),
+    );
 
 // ─── Yakındaki İlanlar ────────────────────────────────────────────────────────
 
 class NearbyAdsFilter {
-  final String? advertType;  // null = tümü
-  final String? species;     // null = tümü
-  final bool? vaccinated;    // null = fark etmez
+  final String? advertType; // null = tümü
+  final String? species; // null = tümü
+  final bool? vaccinated; // null = fark etmez
   final double radiusKm;
-  final String? breed;       // null = tümü
+  final String? breed; // null = tümü
 
   const NearbyAdsFilter({
     this.advertType,
@@ -551,9 +642,13 @@ class NearbyAdsFilter {
     Object? breed = _sentinel,
   }) {
     return NearbyAdsFilter(
-      advertType: advertType == _sentinel ? this.advertType : advertType as String?,
+      advertType: advertType == _sentinel
+          ? this.advertType
+          : advertType as String?,
       species: species == _sentinel ? this.species : species as String?,
-      vaccinated: vaccinated == _sentinel ? this.vaccinated : vaccinated as bool?,
+      vaccinated: vaccinated == _sentinel
+          ? this.vaccinated
+          : vaccinated as bool?,
       radiusKm: radiusKm ?? this.radiusKm,
       breed: breed == _sentinel ? this.breed : breed as String?,
     );
@@ -630,7 +725,8 @@ class NearbyAdsNotifier extends StateNotifier<NearbyAdsState> {
 
   void setLocationLoading(bool v) => state = state.copyWith(locationLoading: v);
 
-  void setError(String msg) => state = state.copyWith(error: msg, locationLoading: false);
+  void setError(String msg) =>
+      state = state.copyWith(error: msg, locationLoading: false);
 
   void applyFilter(NearbyAdsFilter filter) {
     state = state.copyWith(filter: filter);
@@ -675,5 +771,5 @@ class NearbyAdsNotifier extends StateNotifier<NearbyAdsState> {
 
 final nearbyAdsProvider =
     StateNotifierProvider<NearbyAdsNotifier, NearbyAdsState>(
-  (ref) => NearbyAdsNotifier(ref.read(petsRepositoryProvider)),
-);
+      (ref) => NearbyAdsNotifier(ref.read(petsRepositoryProvider)),
+    );

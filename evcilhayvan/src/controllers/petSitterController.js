@@ -80,16 +80,8 @@ export async function listSitters(req, res) {
       });
       pipeline.push({ $project: { user: 0, __v: 0 } });
 
-      const [geoSitters, noLocSitters] = await Promise.all([
-        PetSitter.aggregate(pipeline),
-        PetSitter.find({ isActive: true, availability: true, 'location.coordinates': [0, 0] })
-          .populate('userId', 'name avatarUrl').lean(),
-      ]);
-      const geoIds = new Set(geoSitters.map(s => s._id.toString()));
-      const extraSitters = noLocSitters
-        .filter(s => !geoIds.has(s._id.toString()))
-        .map(s => ({ ...s, id: s._id }));
-      return sendOk(res, 200, { sitters: [...geoSitters, ...extraSitters] });
+      const geoSitters = await PetSitter.aggregate(pipeline);
+      return sendOk(res, 200, { sitters: geoSitters });
     }
 
     // Normal query
