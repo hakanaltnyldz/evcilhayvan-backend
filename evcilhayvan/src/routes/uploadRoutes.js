@@ -66,13 +66,29 @@ const videoFilter = (_req, file, cb) => {
 const uploadImage = multer({ storage: memStorage, fileFilter: imageFilter, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB
 const uploadVideo = multer({ storage, fileFilter: videoFilter, limits: { fileSize: 100 * 1024 * 1024 } }); // 100MB
 
-router.post("/images", authRequired(), uploadImage.single("file"), async (req, res) => {
+// Multer hata yakalama — boyut limiti ve geçersiz dosya tipini kullanıcı dostu mesajla döner.
+function handleMulterError(err, req, res, next) {
+  if (err instanceof multer.MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return sendError(res, 413, "Dosya boyutu 10 MB sınırını aşıyor", "file_too_large");
+    }
+    return sendError(res, 400, `Yükleme hatası: ${err.message}`, "upload_error");
+  }
+  if (err) {
+    return sendError(res, 400, err.message ?? "Dosya yüklenemedi", "invalid_file");
+  }
+  next();
+}
+
+router.post("/images", authRequired(), (req, res, next) => {
+  uploadImage.single("file")(req, res, (err) => handleMulterError(err, req, res, next));
+}, async (req, res) => {
   if (!req.file) {
     return sendError(res, 400, "Dosya gerekli", "file_required");
   }
   // Magic bytes kontrolü — MIME/uzantı sahteciliğini önle
   if (!checkImageMagic(req.file.buffer)) {
-    return sendError(res, 400, "Geçersiz resim dosyası", "invalid_file");
+    return sendError(res, 400, "Geçersiz resim dosyası (desteklenmeyen format)", "invalid_file");
   }
   try {
     const publicPath = await storageService.saveBuffer(req.file.buffer, req.file.originalname);
@@ -83,10 +99,17 @@ router.post("/images", authRequired(), uploadImage.single("file"), async (req, r
   }
 });
 
-router.post("/videos", authRequired(), uploadVideo.single("file"), async (req, res) => {
+router.post("/videos", authRequired(), (req, res, next) => {
+  uploadVideo.single("file")(req, res, (err) => handleMulterError(err, req, res, next));
+}, async (req, res) => {
   if (!req.file) return sendError(res, 400, "Dosya gerekli", "file_required");
-  const publicPath = await storageService.save(req.file);
-  return sendOk(res, 201, { url: publicPath, type: "video" });
+  try {
+    const publicPath = await storageService.save(req.file);
+    return sendOk(res, 201, { url: publicPath, type: "video" });
+  } catch (err) {
+    console.error("[Upload] Error saving video:", err);
+    return sendError(res, 500, "Video kaydedilemedi", "upload_error");
+  }
 });
 
 export default router;

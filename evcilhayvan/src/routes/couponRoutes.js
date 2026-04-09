@@ -10,10 +10,58 @@ import { sendOk, sendError } from '../utils/apiResponse.js';
 
 const router = express.Router();
 
+// POST /api/coupons/validate — Flutter checkout uyumlu (body: { code, cartTotal })
+router.post('/coupons/validate', authRequired(), async (req, res) => {
+  try {
+    const { code, cartTotal } = req.body;
+    if (!code) return sendError(res, 400, 'Kupon kodu gerekli', 'validation_error');
+    if (!cartTotal) return sendError(res, 400, 'Sepet tutarı gerekli', 'validation_error');
+
+    const now = new Date();
+    const coupon = await Coupon.findOne({ code: code.toUpperCase().trim(), isActive: true });
+    if (!coupon) return sendError(res, 404, 'Kupon bulunamadı veya aktif değil', 'not_found');
+
+    if (coupon.validFrom > now || coupon.validUntil < now)
+      return sendError(res, 410, 'Kuponun geçerlilik süresi dolmuş', 'coupon_expired');
+
+    if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit)
+      return sendError(res, 400, 'Kupon kullanım limiti dolmuş', 'usage_limit_exceeded');
+
+    if (coupon.minPurchaseAmount && parseFloat(cartTotal) < coupon.minPurchaseAmount)
+      return sendError(res, 400, `Minimum ${coupon.minPurchaseAmount}₺ sepet tutarı gerekli`, 'min_amount_required');
+
+    const userId = req.user?.sub || req.user?._id;
+    if (userId && coupon.perUserLimit) {
+      const used = await CouponUsage.countDocuments({ couponId: coupon._id, userId });
+      if (used >= coupon.perUserLimit)
+        return sendError(res, 400, `Bu kuponu en fazla ${coupon.perUserLimit} kez kullanabilirsiniz`, 'usage_limit_exceeded');
+    }
+
+    let discountAmount = coupon.discountType === 'percentage'
+      ? (parseFloat(cartTotal) * coupon.discountValue) / 100
+      : coupon.discountValue;
+    if (coupon.maxDiscountAmount) discountAmount = Math.min(discountAmount, coupon.maxDiscountAmount);
+    discountAmount = Math.min(discountAmount, parseFloat(cartTotal));
+
+    return sendOk(res, 200, {
+      valid: true,
+      discountAmount: parseFloat(discountAmount.toFixed(2)),
+      couponId: coupon._id,
+      code: coupon.code,
+      description: coupon.description,
+      discountType: coupon.discountType,
+      discountValue: coupon.discountValue,
+      finalAmount: parseFloat((parseFloat(cartTotal) - discountAmount).toFixed(2)),
+    });
+  } catch (err) {
+    return sendError(res, 500, 'Kupon doğrulanırken hata oluştu', 'internal_error', err.message);
+  }
+});
+
 // Auth gerekli: kişi başı limit ve firstOrderOnly kontrolü için kullanıcı kimliği lazım
 router.get('/coupons/:code/validate', authRequired(), couponController.validateCoupon);
 
-// GET /api/coupons/available — platform geneli aktif kuponlar (satıcısız)
+// GET /api/coupons/available — tüm aktif kuponlar (hem platform hem satıcı kuponları)
 // Her kupon için kullanıcının kalan kullanım hakkı da döner
 router.get('/coupons/available', authRequired(), async (req, res) => {
   try {
@@ -23,7 +71,6 @@ router.get('/coupons/available', authRequired(), async (req, res) => {
       : null;
     const now = new Date();
     const coupons = await Coupon.find({
-      $or: [{ seller: null }, { seller: { $exists: false } }],
       isActive: true,
       validFrom: { $lte: now },
       validUntil: { $gte: now },

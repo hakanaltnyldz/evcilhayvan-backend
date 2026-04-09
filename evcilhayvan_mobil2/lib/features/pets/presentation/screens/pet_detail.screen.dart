@@ -51,7 +51,7 @@ class PetDetailScreen extends ConsumerWidget {
     final currentUser = ref.watch(authProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: petAsyncValue.when(
         data: (pet) {
           final bool isOwner = (currentUser?.id == pet.owner?.id);

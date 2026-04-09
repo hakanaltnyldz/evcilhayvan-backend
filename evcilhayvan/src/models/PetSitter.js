@@ -46,6 +46,7 @@ const PetSitterSchema = new mongoose.Schema(
     address: { type: String, trim: true, maxlength: 300 },
     availability: { type: Boolean, default: true },
     workingHours: { type: [WorkingHourSchema], default: [] },
+    blockedDates: { type: [Date], default: [] },
     rating: { type: Number, default: 0, min: 0, max: 5 },
     reviewCount: { type: Number, default: 0 },
     isVerified: { type: Boolean, default: false },

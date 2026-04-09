@@ -4,6 +4,7 @@ class SitterBookingModel {
   final String? ownerName;
   final String? ownerAvatar;
   final String? sitterId;
+  final String? sitterUserId;
   final String? sitterName;
   final String? sitterAvatar;
   final String? petId;
@@ -25,6 +26,7 @@ class SitterBookingModel {
     this.ownerName,
     this.ownerAvatar,
     this.sitterId,
+    this.sitterUserId,
     this.sitterName,
     this.sitterAvatar,
     this.petId,
@@ -117,6 +119,7 @@ class SitterBookingModel {
       ownerName: ownerName,
       ownerAvatar: ownerAvatar,
       sitterId: sitterId,
+      sitterUserId: json['sitterUserId']?.toString(),
       sitterName: sitterName,
       sitterAvatar: sitterAvatar,
       petId: petId,

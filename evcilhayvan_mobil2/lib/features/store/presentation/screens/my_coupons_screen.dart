@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 // ── Providers ──────────────────────────────────────────────────────────────
 
@@ -48,10 +49,11 @@ class _MyCouponsScreenState extends ConsumerState<MyCouponsScreen>
   }
 
   void _copyCoupon(String code) {
+    final l10n = AppLocalizations.of(context)!;
     Clipboard.setData(ClipboardData(text: code));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('"$code" kopyalandı'),
+        content: Text(l10n.couponsCopied(code)),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
       ),
@@ -60,16 +62,16 @@ class _MyCouponsScreenState extends ConsumerState<MyCouponsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kuponlarım'),
+        title: Text(l10n.couponsMyCouponsTitle),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Kullanılabilir'),
-            Tab(text: 'Kullanım Geçmişi'),
+          tabs: [
+            Tab(text: l10n.couponsAvailableTab),
+            Tab(text: l10n.couponsHistoryTab),
           ],
         ),
       ),
@@ -96,21 +98,25 @@ class _AvailableTab extends ConsumerWidget {
     final couponsAsync = ref.watch(availableCouponsProvider);
     return couponsAsync.when(
       loading: () => const Center(child: PawLoading()),
-      error: (e, _) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 8),
-            Text('Kuponlar yüklenemedi', style: Theme.of(context).textTheme.bodyMedium),
-            TextButton(
-              onPressed: () => ref.invalidate(availableCouponsProvider),
-              child: const Text('Tekrar Dene'),
-            ),
-          ],
-        ),
-      ),
+      error: (e, _) {
+        final l10n = AppLocalizations.of(context)!;
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const SizedBox(height: 8),
+              Text(l10n.couponsLoadError, style: Theme.of(context).textTheme.bodyMedium),
+              TextButton(
+                onPressed: () => ref.invalidate(availableCouponsProvider),
+                child: Text(l10n.couponsRetry),
+              ),
+            ],
+          ),
+        );
+      },
       data: (coupons) {
+        final l10n = AppLocalizations.of(context)!;
         if (coupons.isEmpty) {
           return Center(
             child: Column(
@@ -119,10 +125,10 @@ class _AvailableTab extends ConsumerWidget {
                 Icon(Icons.local_offer_outlined,
                     size: 64, color: AppPalette.primary.withOpacity(0.3)),
                 const SizedBox(height: 16),
-                const Text('Şu an kullanılabilir kupon yok'),
+                Text(l10n.couponsEmptyTitle),
                 const SizedBox(height: 8),
-                const Text('Yakında kampanyaları takip edin!',
-                    style: TextStyle(color: Colors.grey, fontSize: 13)),
+                Text(l10n.couponsEmptySubtitle,
+                    style: const TextStyle(color: Colors.grey, fontSize: 13)),
               ],
             ),
           );
@@ -296,7 +302,7 @@ class _CouponCard extends StatelessWidget {
               children: [
                 _InfoChip(
                   icon: Icons.calendar_today_outlined,
-                  label: '$validUntil\'e kadar',
+                  label: AppLocalizations.of(context)!.couponsValidUntil(validUntil),
                 ),
                 if (minPurchase > 0) ...[
                   const SizedBox(width: 8),

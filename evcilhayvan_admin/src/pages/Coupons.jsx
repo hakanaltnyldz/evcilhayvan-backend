@@ -14,6 +14,9 @@ const emptyForm = {
   usageLimit: '',
   perUserLimit: '1',
   firstOrderOnly: false,
+  scope: 'all',
+  storeId: '',
+  applicableCategories: [],
 }
 
 // İstemci tarafında rastgele kupon kodu üret — sıfır sunucu yükü
@@ -37,6 +40,7 @@ export default function Coupons() {
   const [deleting, setDeleting] = useState(null)
   const [usageModal, setUsageModal] = useState(null) // { coupon, usages, total, totalDiscountGiven }
   const [usageLoading, setUsageLoading] = useState(false)
+  const [stores, setStores] = useState([])
 
   useEffect(() => {
     setLoading(true)
@@ -49,6 +53,10 @@ export default function Coupons() {
       })
       .finally(() => setLoading(false))
   }, [page, statusFilter])
+
+  useEffect(() => {
+    api.get('/admin/stores').then((res) => setStores(res.data?.stores || [])).catch(() => {})
+  }, [])
 
   async function toggleCoupon(coupon) {
     setToggling(coupon._id)
@@ -85,6 +93,8 @@ export default function Coupons() {
   }
 
   function openEdit(coupon) {
+    const scope = coupon.store ? 'store'
+      : (coupon.applicableCategories?.length > 0 ? 'category' : 'all')
     setForm({
       code: coupon.code || '',
       description: coupon.description || '',
@@ -97,6 +107,9 @@ export default function Coupons() {
       usageLimit: String(coupon.usageLimit ?? ''),
       perUserLimit: String(coupon.perUserLimit ?? '1'),
       firstOrderOnly: coupon.firstOrderOnly || false,
+      scope,
+      storeId: coupon.store?._id || coupon.store || '',
+      applicableCategories: coupon.applicableCategories || [],
     })
     setEditCoupon(coupon)
     setShowModal(true)
@@ -124,13 +137,20 @@ export default function Coupons() {
     e.preventDefault()
     setSaving(true)
     const payload = {
-      ...form,
+      code: form.code,
+      description: form.description,
+      discountType: form.discountType,
       discountValue: Number(form.discountValue),
       minPurchaseAmount: form.minPurchaseAmount ? Number(form.minPurchaseAmount) : 0,
       maxDiscountAmount: form.maxDiscountAmount ? Number(form.maxDiscountAmount) : undefined,
+      validFrom: form.validFrom,
+      validUntil: form.validUntil,
       usageLimit: form.usageLimit ? Number(form.usageLimit) : undefined,
       perUserLimit: Number(form.perUserLimit) || 1,
       firstOrderOnly: form.firstOrderOnly,
+      store: form.scope === 'store' && form.storeId ? form.storeId : undefined,
+      applicableCategories: form.scope === 'category' && form.applicableCategories.length > 0
+        ? form.applicableCategories : undefined,
     }
     try {
       if (editCoupon) {
@@ -263,6 +283,16 @@ export default function Coupons() {
                         </div>
                       ) : (
                         <span className="text-indigo-500 font-medium">Platform</span>
+                      )}
+                      {c.store && (
+                        <div className="mt-0.5 px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-medium inline-block">
+                          {c.store.name || 'Mağaza'}
+                        </div>
+                      )}
+                      {c.applicableCategories?.length > 0 && (
+                        <div className="mt-0.5 text-purple-600 font-medium">
+                          {c.applicableCategories.slice(0, 2).join(', ')}{c.applicableCategories.length > 2 ? '...' : ''}
+                        </div>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -535,6 +565,58 @@ export default function Coupons() {
                     </div>
                   </label>
                 </div>
+
+                {/* Kapsam Seçimi */}
+                <div className="col-span-2">
+                  <label className="text-xs font-medium text-gray-600 mb-1 block">Kupon Kapsamı</label>
+                  <select
+                    value={form.scope}
+                    onChange={(e) => setForm({ ...form, scope: e.target.value, storeId: '', applicableCategories: [] })}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  >
+                    <option value="all">Tüm Ürünler (Platform Geneli)</option>
+                    <option value="store">Belirli Mağaza</option>
+                    <option value="category">Belirli Kategori</option>
+                  </select>
+                </div>
+
+                {form.scope === 'store' && (
+                  <div className="col-span-2">
+                    <label className="text-xs font-medium text-gray-600 mb-1 block">Mağaza Seç</label>
+                    <select
+                      value={form.storeId}
+                      onChange={(e) => setForm({ ...form, storeId: e.target.value })}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    >
+                      <option value="">Mağaza seçin...</option>
+                      {stores.map((s) => (
+                        <option key={s._id} value={s._id}>{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {form.scope === 'category' && (
+                  <div className="col-span-2">
+                    <label className="text-xs font-medium text-gray-600 mb-1 block">Kategoriler (virgülle ayırın)</label>
+                    <input
+                      value={form.applicableCategories.join(', ')}
+                      onChange={(e) => setForm({
+                        ...form,
+                        applicableCategories: e.target.value.split(',').map((s) => s.trim()).filter(Boolean),
+                      })}
+                      placeholder="Mama, Oyuncak, Bakım..."
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    />
+                    {form.applicableCategories.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {form.applicableCategories.map((cat) => (
+                          <span key={cat} className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-medium">{cat}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="flex gap-2 pt-2">
                 <button
@@ -549,7 +631,7 @@ export default function Coupons() {
                   disabled={saving}
                   className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50"
                 >
-                  {saving ? 'Oluşturuluyor...' : 'Kupon Oluştur'}
+                  {saving ? (editCoupon ? 'Kaydediliyor...' : 'Oluşturuluyor...') : (editCoupon ? 'Değişiklikleri Kaydet' : 'Kupon Oluştur')}
                 </button>
               </div>
             </form>

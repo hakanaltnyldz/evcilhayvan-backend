@@ -1080,16 +1080,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkoutErrNoAddress => 'Please select a delivery address';
 
   @override
-  String get checkoutErrCardNumber => 'Enter a valid card number';
+  String get checkoutErrCardNumber => 'Enter a valid 16-digit card number';
 
   @override
-  String get checkoutErrCardHolder => 'Enter cardholder name';
+  String get checkoutErrCardNumberInvalid => 'Card number is invalid';
 
   @override
-  String get checkoutErrExpiry => 'Enter a valid expiry date';
+  String get checkoutErrCardHolder =>
+      'Enter cardholder name using letters only';
 
   @override
-  String get checkoutErrCvv => 'Enter a valid CVV';
+  String get checkoutErrExpiry => 'Enter expiry date in MM/YY format';
+
+  @override
+  String get checkoutErrExpiryPast => 'Card expiry date has passed';
+
+  @override
+  String get checkoutErrCvv => 'Enter 3 or 4 digit CVV';
 
   @override
   String get checkoutErrEmptyCart => 'Your cart is empty';
@@ -1106,6 +1113,167 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get checkoutErrCouponFailed => 'Could not apply coupon';
+
+  @override
+  String get checkoutErrCouponExpired => 'This coupon has expired';
+
+  @override
+  String get checkoutErrCouponUsageLimit => 'Coupon usage limit reached';
+
+  @override
+  String get couponsMyCouponsTitle => 'My Coupons';
+
+  @override
+  String get couponsAvailableTab => 'Available';
+
+  @override
+  String get couponsHistoryTab => 'Usage History';
+
+  @override
+  String couponsCopied(String code) {
+    return '$code copied';
+  }
+
+  @override
+  String get couponsEmptyTitle => 'No coupons available right now';
+
+  @override
+  String get couponsEmptySubtitle => 'Stay tuned for upcoming deals!';
+
+  @override
+  String get couponsLoadError => 'Could not load coupons';
+
+  @override
+  String get couponsRetry => 'Retry';
+
+  @override
+  String couponsValidUntil(String date) {
+    return 'Until $date';
+  }
+
+  @override
+  String get sellerCouponManagementTitle => 'Coupon Management';
+
+  @override
+  String get sellerCouponNew => 'New Coupon';
+
+  @override
+  String get sellerCouponShowExpired => 'Show Expired';
+
+  @override
+  String get sellerCouponHideExpired => 'Hide Expired';
+
+  @override
+  String get sellerCouponLoadError => 'Could not load coupons';
+
+  @override
+  String get sellerCouponEmptyTitle => 'No coupons yet';
+
+  @override
+  String get sellerCouponEmptySubtitle => 'Tap the button below to create one';
+
+  @override
+  String get sellerCouponCreateDialogTitle => 'Create New Coupon';
+
+  @override
+  String get sellerCouponCodeLabel => 'Coupon Code';
+
+  @override
+  String get sellerCouponRandom => 'Random';
+
+  @override
+  String get sellerCouponDescLabel => 'Description (optional)';
+
+  @override
+  String get sellerCouponTypeLabel => 'Discount Type';
+
+  @override
+  String get sellerCouponPercent => 'Percentage (%)';
+
+  @override
+  String get sellerCouponFixed => 'Fixed (₺)';
+
+  @override
+  String get sellerCouponRateLabel => 'Discount Rate (%)';
+
+  @override
+  String get sellerCouponAmountLabel => 'Discount Amount (₺)';
+
+  @override
+  String get sellerCouponMinPurchase => 'Min. Cart Amount (₺)';
+
+  @override
+  String get sellerCouponMaxDiscount => 'Max Discount Amount ₺ (optional)';
+
+  @override
+  String get sellerCouponPerUserLimit => 'Per User Usage Limit';
+
+  @override
+  String get sellerCouponTotalLimit => 'Total Usage Limit (optional)';
+
+  @override
+  String get sellerCouponStartDate => 'Start';
+
+  @override
+  String get sellerCouponEndDate => 'End';
+
+  @override
+  String get sellerCouponFirstOrderOnly => 'First Order Only';
+
+  @override
+  String get sellerCouponCreate => 'Create';
+
+  @override
+  String get sellerCouponValidationError =>
+      'Code and discount value are required';
+
+  @override
+  String sellerCouponCreated(String code) {
+    return '$code coupon created';
+  }
+
+  @override
+  String get sellerCouponCreateFailed => 'Could not create coupon';
+
+  @override
+  String get sellerCouponToggleFailed => 'Could not change status';
+
+  @override
+  String get sellerCouponDeleteTitle => 'Delete Coupon';
+
+  @override
+  String sellerCouponDeleteConfirm(String code) {
+    return 'Are you sure you want to delete the $code coupon?';
+  }
+
+  @override
+  String sellerCouponDeleted(String code) {
+    return '$code deleted';
+  }
+
+  @override
+  String get sellerCouponDeleteFailed => 'Could not delete coupon';
+
+  @override
+  String sellerCouponValidUntil(String date) {
+    return 'Until $date';
+  }
+
+  @override
+  String sellerCouponUsageLimited(String count, String total) {
+    return '$count / $total uses';
+  }
+
+  @override
+  String sellerCouponUsage(String count) {
+    return '$count uses';
+  }
+
+  @override
+  String get sellerCouponFirstOrderLabel => 'First Order';
+
+  @override
+  String get sellerCouponExpiredLabel => 'Expired';
 
   @override
   String checkoutCouponApplied(String amount) {
@@ -2861,6 +3029,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storeHomeRetry => 'Retry';
 
   @override
+  String get storeMyCouponsLabel => 'My Coupons & Deals';
+
+  @override
+  String get productDetailSelectAllVariants => 'Please select all options';
+
+  @override
+  String get productVariantsTitle => 'Variants';
+
+  @override
+  String get productVariantsDesc => 'Options like size, color, dimension';
+
+  @override
+  String get productVariantAdd => 'Add';
+
+  @override
+  String get productVariantNameHint => 'Variant name (e.g. Size, Color)';
+
+  @override
+  String get productVariantLabelHint => 'Label (e.g. S, Red)';
+
+  @override
   String get storeHomeSoldOut => 'Sold Out';
 
   @override
@@ -3703,6 +3892,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String sitterLocationErr(String error) {
     return 'Could not get location: $error';
   }
+
+  @override
+  String get sitterAvailableNow => 'Available Now';
+
+  @override
+  String get sitterCurrentlyBusy => 'Currently Busy';
+
+  @override
+  String get sitterVerifiedLabel => 'Verified';
+
+  @override
+  String get sitterAboutSection => 'About';
+
+  @override
+  String get sitterServicesAndPrices => 'Services & Prices';
+
+  @override
+  String get sitterPhotosSection => 'Photos';
+
+  @override
+  String get sitterReviewsSection => 'Reviews';
+
+  @override
+  String sitterHourlyRate(int price) {
+    return '$price TL/hr';
+  }
+
+  @override
+  String sitterDailyRate(int price) {
+    return '$price TL/day';
+  }
+
+  @override
+  String get sitterErrorPrefix => 'Error: ';
 
   @override
   String get sitterProfileUpdated => 'Profile updated!';

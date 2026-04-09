@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:go_router/go_router.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -42,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1B4332),
+      backgroundColor: AppPalette.appBarDark,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

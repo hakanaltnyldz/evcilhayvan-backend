@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -27,10 +28,10 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     final currentUser = ref.watch(authProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Sosyal Feed', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [

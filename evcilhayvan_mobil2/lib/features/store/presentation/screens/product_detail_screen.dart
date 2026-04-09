@@ -102,8 +102,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
 
     if (!_allVariantsSelected(product)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Lütfen tüm seçenekleri belirleyin'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.productDetailSelectAllVariants),
           backgroundColor: Colors.orange,
         ),
       );
@@ -134,9 +134,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
     setState(() => _adding = true);
     try {
       final repo = ref.read(cartRepoProvider);
-      for (int i = 0; i < _quantity; i++) {
-        await repo.add(product.id);
-      }
+      await repo.add(product.id, quantity: _quantity);
       ref.invalidate(cartItemsProvider);
 
       if (mounted) {

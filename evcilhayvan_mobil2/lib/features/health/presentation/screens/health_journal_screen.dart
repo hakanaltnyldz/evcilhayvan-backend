@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:evcilhayvan_mobil2/features/health/data/repositories/health_repository.dart';
 import 'package:evcilhayvan_mobil2/features/health/domain/models/health_record_model.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 
@@ -199,24 +200,12 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen> {
                     : records.where((r) => r.type == _filterType).toList();
 
                 if (filtered.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.health_and_safety_outlined,
-                            size: 64,
-                            color: const Color(0xFF2D6A4F).withOpacity(0.3)),
-                        const SizedBox(height: 16),
-                        Text(
-                          _filterType == null
-                              ? l10n.healthNoRecords
-                              : l10n.healthNoFilterRecords(_filterType!),
-                          style: theme.textTheme.bodyLarge,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(l10n.healthAddHint),
-                      ],
-                    ),
+                  return AnimatedEmptyState(
+                    icon: Icons.health_and_safety_outlined,
+                    title: _filterType == null
+                        ? l10n.healthNoRecords
+                        : l10n.healthNoFilterRecords(_filterType!),
+                    subtitle: l10n.healthAddHint,
                   );
                 }
 

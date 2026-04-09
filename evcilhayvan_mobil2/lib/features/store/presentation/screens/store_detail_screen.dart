@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/utils/url_resolver.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -120,6 +121,8 @@ class StoreDetailScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(l10n.storeDetailTitle),
+        foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF1B4332),
+        iconTheme: IconThemeData(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF1B4332)),
       ),
       body: ModernBackground(
         colors: AppPalette.storeBackground,
@@ -299,8 +302,8 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
     final isOwner = widget.isOwner;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final logoUrl = _resolveMediaUrl(store.logoUrl);
-    final bannerUrl = _resolveMediaUrl(store.bannerUrl);
+    final logoUrl = resolveImageUrl(store.logoUrl);
+    final bannerUrl = resolveImageUrl(store.bannerUrl);
     final hasContact = store.phone != null || store.website != null ||
         store.instagram != null || store.twitter != null ||
         store.facebook != null || store.workingHours != null;
@@ -805,11 +808,6 @@ class _LogoFallback extends StatelessWidget {
   }
 }
 
-String? _resolveMediaUrl(String? path) {
-  if (path == null || path.isEmpty) return null;
-  if (path.startsWith('http')) return path;
-  return '$apiBaseUrl$path';
-}
 
 class _ErrorCard extends StatelessWidget {
   final String message;

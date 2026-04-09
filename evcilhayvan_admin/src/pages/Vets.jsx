@@ -22,11 +22,12 @@ export default function Vets() {
   }, [page])
 
   async function fetchPhotos(vet) {
-    setFetchingPhotos(vet._id)
+    const vid = vet.id || vet._id
+    setFetchingPhotos(vid)
     try {
-      const res = await api.post(`/veterinaries/${vet._id}/fetch-photos`)
+      const res = await api.post(`/veterinaries/${vid}/fetch-photos`)
       setVets((prev) =>
-        prev.map((v) => v._id === vet._id ? { ...v, photos: res.data?.photos || v.photos } : v)
+        prev.map((v) => (v.id || v._id) === vid ? { ...v, photos: res.data?.photos || v.photos } : v)
       )
       toast.success(res.data?.message || 'Fotoğraflar güncellendi')
     } catch (err) {
@@ -37,12 +38,13 @@ export default function Vets() {
   }
 
   async function toggleVerify(vet) {
-    setVerifying(vet._id)
+    const vid = vet.id || vet._id
+    setVerifying(vid)
     try {
-      const res = await api.patch(`/veterinaries/${vet._id}/verify`, { isVerified: !vet.isVerified })
+      const res = await api.patch(`/veterinaries/${vid}/verify`, { isVerified: !vet.isVerified })
       const updated = res.data?.vet
       setVets((prev) =>
-        prev.map((v) => v._id === vet._id ? { ...v, isVerified: updated?.isVerified } : v)
+        prev.map((v) => (v.id || v._id) === vid ? { ...v, isVerified: updated?.isVerified } : v)
       )
       toast.success(updated?.isVerified ? 'Veteriner doğrulandı' : 'Doğrulama kaldırıldı')
     } catch (err) {
@@ -66,7 +68,7 @@ export default function Vets() {
       ) : (
         <div className="space-y-3">
           {vets.map((vet) => (
-            <div key={vet._id} className="bg-white rounded-2xl shadow-sm p-4 flex items-center gap-4">
+            <div key={vet.id || vet._id} className="bg-white rounded-2xl shadow-sm p-4 flex items-center gap-4">
               {/* Fotoğraf */}
               <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                 {vet.photos?.[0] ? (
@@ -107,22 +109,22 @@ export default function Vets() {
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button
                   onClick={() => fetchPhotos(vet)}
-                  disabled={fetchingPhotos === vet._id}
+                  disabled={fetchingPhotos === (vet.id || vet._id)}
                   title="Google'dan fotoğraf çek"
                   className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition-colors disabled:opacity-50"
                 >
-                  {fetchingPhotos === vet._id ? '...' : '📷 Fotoğraf'}
+                  {fetchingPhotos === (vet.id || vet._id) ? '...' : '📷 Fotoğraf'}
                 </button>
                 <button
                   onClick={() => toggleVerify(vet)}
-                  disabled={verifying === vet._id}
+                  disabled={verifying === (vet.id || vet._id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 ${
                     vet.isVerified
                       ? 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600'
                       : 'bg-green-50 text-green-700 hover:bg-green-100'
                   }`}
                 >
-                  {verifying === vet._id ? '...' : vet.isVerified ? 'Doğrulamayı Kaldır' : 'Doğrula'}
+                  {verifying === (vet.id || vet._id) ? '...' : vet.isVerified ? 'Doğrulamayı Kaldır' : 'Doğrula'}
                 </button>
               </div>
             </div>

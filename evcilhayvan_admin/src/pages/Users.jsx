@@ -25,12 +25,13 @@ export default function Users() {
   }, [page, search])
 
   async function toggleBan(user) {
-    setBanning(user._id)
+    const uid = user.id || user._id
+    setBanning(uid)
     try {
-      const res = await api.patch(`/admin/users/${user._id}/ban`)
+      const res = await api.patch(`/admin/users/${uid}/ban`)
       const updated = res.data?.user
       setUsers((prev) =>
-        prev.map((u) => (u._id === user._id ? { ...u, role: updated.role } : u))
+        prev.map((u) => ((u.id || u._id) === uid ? { ...u, role: updated.role } : u))
       )
       toast.success(updated.role === 'banned' ? 'Kullanıcı banlandı' : 'Ban kaldırıldı')
     } catch (err) {
@@ -41,11 +42,12 @@ export default function Users() {
   }
 
   async function changeRole(user, role) {
-    setChangingRole(user._id)
+    const uid = user.id || user._id
+    setChangingRole(uid)
     try {
-      const res = await api.patch(`/admin/users/${user._id}/role`, { role })
+      const res = await api.patch(`/admin/users/${uid}/role`, { role })
       const updated = res.data?.user
-      setUsers((prev) => prev.map((u) => u._id === user._id ? { ...u, role: updated.role } : u))
+      setUsers((prev) => prev.map((u) => (u.id || u._id) === uid ? { ...u, role: updated.role } : u))
       toast.success(`Rol güncellendi: ${updated.role}`)
     } catch (err) {
       toast.error(err.response?.data?.message || 'İşlem başarısız')
@@ -55,11 +57,12 @@ export default function Users() {
   }
 
   async function deleteUser(user) {
+    const uid = user.id || user._id
     if (!window.confirm(`"${user.name}" kullanıcısını kalıcı olarak silmek istiyor musunuz?`)) return
-    setDeleting(user._id)
+    setDeleting(uid)
     try {
-      await api.delete(`/admin/users/${user._id}`)
-      setUsers((prev) => prev.filter((u) => u._id !== user._id))
+      await api.delete(`/admin/users/${uid}`)
+      setUsers((prev) => prev.filter((u) => (u.id || u._id) !== uid))
       setTotal((t) => t - 1)
       toast.success('Kullanıcı silindi')
     } catch (err) {
@@ -90,24 +93,26 @@ export default function Users() {
     { key: 'createdAt', label: 'Kayıt', render: (u) =>
       u.createdAt ? new Date(u.createdAt).toLocaleDateString('tr-TR') : '—'
     },
-    { key: 'actions', label: '', render: (u) => (
+    { key: 'actions', label: '', render: (u) => {
+      const uid = u.id || u._id
+      return (
       <div className="flex items-center gap-2">
         {u.role !== 'admin' && (
           <button
             onClick={() => toggleBan(u)}
-            disabled={banning === u._id}
+            disabled={banning === uid}
             className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
               u.role === 'banned'
                 ? 'bg-green-100 text-green-700 hover:bg-green-200'
                 : 'bg-red-100 text-red-700 hover:bg-red-200'
             }`}
           >
-            {banning === u._id ? '...' : u.role === 'banned' ? 'Ban Kaldır' : 'Banla'}
+            {banning === uid ? '...' : u.role === 'banned' ? 'Ban Kaldır' : 'Banla'}
           </button>
         )}
         <select
           value={u.role === 'banned' ? 'user' : u.role}
-          disabled={changingRole === u._id}
+          disabled={changingRole === uid}
           onChange={(e) => changeRole(u, e.target.value)}
           className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300 disabled:opacity-50"
         >
@@ -119,15 +124,16 @@ export default function Users() {
         {u.role !== 'admin' && (
           <button
             onClick={() => deleteUser(u)}
-            disabled={deleting === u._id}
+            disabled={deleting === uid}
             className="px-2 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-600 transition-colors disabled:opacity-50"
             title="Kalıcı sil"
           >
-            {deleting === u._id ? '...' : '🗑️'}
+            {deleting === uid ? '...' : '🗑️'}
           </button>
         )}
       </div>
-    )},
+      )
+    }},
   ]
 
   const totalPages = Math.ceil(total / 20)

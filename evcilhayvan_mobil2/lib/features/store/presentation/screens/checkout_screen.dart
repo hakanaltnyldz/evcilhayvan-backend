@@ -6,14 +6,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
+import 'package:dio/dio.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import '../../../store/domain/models/address_model.dart';
 import '../../../store/providers/address_providers.dart';
 import '../../../store/providers/cart_providers.dart';
+import '../../../store/providers/guest_cart_provider.dart';
 import 'add_address_screen.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -37,6 +40,65 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   double _discountAmount = 0;
   String? _couponError;
 
+  // Misafir formu
+  final _guestNameCtrl = TextEditingController();
+  final _guestPhoneCtrl = TextEditingController();
+  final _guestEmailCtrl = TextEditingController();
+  final _guestNationalIdCtrl = TextEditingController();
+  final _guestCityCtrl = TextEditingController();
+  final _guestDistrictCtrl = TextEditingController();
+  final _guestStreetCtrl = TextEditingController();
+
+  // ── Kart Validasyonu ─────────────────────────────────────────────────────
+
+  /// Tüm kart alanlarını validate eder. Hata varsa mesajı döner, geçerliyse null.
+  String? _validateCard(AppLocalizations l10n) {
+    final raw = _cardNumberController.text.replaceAll(' ', '');
+    if (raw.length != 16 || !RegExp(r'^\d{16}$').hasMatch(raw)) {
+      return l10n.checkoutErrCardNumber;
+    }
+    if (!_luhn(raw)) {
+      return l10n.checkoutErrCardNumberInvalid;
+    }
+    final holder = _cardHolderController.text.trim();
+    if (holder.isEmpty || !RegExp(r'^[a-zA-ZğüşıöçĞÜŞİÖÇ\s]+$').hasMatch(holder)) {
+      return l10n.checkoutErrCardHolder;
+    }
+    final expiry = _expiryController.text;
+    if (!RegExp(r'^\d{2}/\d{2}$').hasMatch(expiry)) {
+      return l10n.checkoutErrExpiry;
+    }
+    final parts = expiry.split('/');
+    final month = int.parse(parts[0]);
+    final year = int.parse(parts[1]) + 2000;
+    if (month < 1 || month > 12) return l10n.checkoutErrExpiry;
+    final now = DateTime.now();
+    if (year < now.year || (year == now.year && month < now.month)) {
+      return l10n.checkoutErrExpiryPast;
+    }
+    final cvv = _cvvController.text;
+    if (!RegExp(r'^\d{3,4}$').hasMatch(cvv)) {
+      return l10n.checkoutErrCvv;
+    }
+    return null;
+  }
+
+  /// Luhn algoritması — kart numarası checksum kontrolü.
+  bool _luhn(String number) {
+    int sum = 0;
+    bool alternate = false;
+    for (int i = number.length - 1; i >= 0; i--) {
+      int n = int.parse(number[i]);
+      if (alternate) {
+        n *= 2;
+        if (n > 9) n -= 9;
+      }
+      sum += n;
+      alternate = !alternate;
+    }
+    return sum % 10 == 0;
+  }
+
   @override
   void dispose() {
     _cardNumberController.dispose();
@@ -45,6 +107,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     _cvvController.dispose();
     _notesController.dispose();
     _couponController.dispose();
+    _guestNameCtrl.dispose();
+    _guestPhoneCtrl.dispose();
+    _guestEmailCtrl.dispose();
+    _guestNationalIdCtrl.dispose();
+    _guestCityCtrl.dispose();
+    _guestDistrictCtrl.dispose();
+    _guestStreetCtrl.dispose();
     super.dispose();
   }
 
@@ -62,8 +131,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     });
 
     try {
-      final cartState = ref.read(cartProvider);
-      final total = cartState.valueOrNull?.total ?? 0;
+      final isGuest = ref.read(authProvider) == null;
+      double total;
+      if (isGuest) {
+        final guestItems = ref.read(guestCartProvider);
+        total = guestItems.fold(0.0, (sum, item) => sum + item.price * item.quantity);
+      } else {
+        total = ref.read(cartProvider).valueOrNull?.total ?? 0;
+      }
+      if (total == 0) {
+        setState(() { _couponError = 'Sepet toplamı hesaplanamadı, lütfen sayfayı yenileyin'; _isApplyingCoupon = false; });
+        return;
+      }
 
       final response = await ApiClient().dio.post('/api/coupons/validate', data: {
         'code': code,
@@ -87,15 +166,24 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           );
         }
       }
-    } catch (e) {
+    } on DioException catch (e) {
       final l10n = AppLocalizations.of(context)!;
+      final statusCode = e.response?.statusCode;
+      final apiCode = ApiError.fromDio(e).code;
       String errorMessage = l10n.checkoutErrCouponFailed;
-      if (e.toString().contains('404')) {
+      if (apiCode == 'coupon_expired' || statusCode == 410) {
+        errorMessage = l10n.checkoutErrCouponExpired;
+      } else if (apiCode == 'usage_limit_exceeded' || statusCode == 409) {
+        errorMessage = l10n.checkoutErrCouponUsageLimit;
+      } else if (statusCode == 404 || apiCode == 'not_found') {
         errorMessage = l10n.checkoutErrCouponInvalid;
-      } else if (e.toString().contains('400')) {
+      } else if (statusCode == 400) {
         errorMessage = l10n.checkoutErrCouponNotApplicable;
       }
       setState(() => _couponError = errorMessage);
+    } catch (e) {
+      final l10n = AppLocalizations.of(context)!;
+      setState(() => _couponError = l10n.checkoutErrCouponFailed);
     } finally {
       if (mounted) setState(() => _isApplyingCoupon = false);
     }
@@ -111,35 +199,40 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   Future<void> _placeOrder() async {
     final l10n = AppLocalizations.of(context)!;
-    if (_selectedAddress == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.checkoutErrNoAddress), backgroundColor: Colors.red),
-      );
-      return;
+    final isGuest = ref.read(authProvider) == null;
+
+    // Misafir validasyon
+    if (isGuest) {
+      final name = _guestNameCtrl.text.trim();
+      final phone = _guestPhoneCtrl.text.trim();
+      final email = _guestEmailCtrl.text.trim();
+      final tc = _guestNationalIdCtrl.text.trim();
+      if (name.isEmpty || phone.isEmpty || email.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Ad, telefon ve email zorunludur'), backgroundColor: Colors.red),
+        );
+        return;
+      }
+      if (tc.isNotEmpty && (tc.length != 11 || !RegExp(r'^\d{11}$').hasMatch(tc))) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('TC Kimlik No 11 haneli olmalıdır'), backgroundColor: Colors.red),
+        );
+        return;
+      }
+    } else {
+      if (_selectedAddress == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.checkoutErrNoAddress), backgroundColor: Colors.red),
+        );
+        return;
+      }
     }
 
     if (_paymentMethod == 'credit_card') {
-      if (_cardNumberController.text.replaceAll(' ', '').length < 16) {
+      final cardError = _validateCard(l10n);
+      if (cardError != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.checkoutErrCardNumber), backgroundColor: Colors.red),
-        );
-        return;
-      }
-      if (_cardHolderController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.checkoutErrCardHolder), backgroundColor: Colors.red),
-        );
-        return;
-      }
-      if (_expiryController.text.length < 5) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.checkoutErrExpiry), backgroundColor: Colors.red),
-        );
-        return;
-      }
-      if (_cvvController.text.length < 3) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.checkoutErrCvv), backgroundColor: Colors.red),
+          SnackBar(content: Text(cardError), backgroundColor: Colors.red),
         );
         return;
       }
@@ -148,38 +241,77 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final cartState = ref.read(cartProvider);
-      final items = cartState.valueOrNull?.items ?? [];
-
-      if (items.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.checkoutErrEmptyCart), backgroundColor: Colors.red),
-        );
-        return;
+      List<Map<String, dynamic>> orderItems;
+      if (isGuest) {
+        final guestItems = ref.read(guestCartProvider);
+        if (guestItems.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.checkoutErrEmptyCart), backgroundColor: Colors.red),
+          );
+          return;
+        }
+        orderItems = guestItems.map((item) => {
+          'productId': item.productId,
+          'quantity': item.quantity,
+          if (item.variantName != null) 'variantName': item.variantName,
+          if (item.variantLabel != null) 'variantLabel': item.variantLabel,
+        }).toList();
+      } else {
+        final cartState = ref.read(cartProvider);
+        final items = cartState.valueOrNull?.items ?? [];
+        if (items.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.checkoutErrEmptyCart), backgroundColor: Colors.red),
+          );
+          return;
+        }
+        orderItems = items.map((item) => {
+          'productId': item.product.id,
+          'quantity': item.quantity,
+        }).toList();
       }
 
-      final orderItems = items.map((item) => {
-        'productId': item.product.id,
-        'quantity': item.quantity,
-      }).toList();
-
-      final response = await ApiClient().dio.post('/api/orders', data: {
+      final Map<String, dynamic> body = {
         'items': orderItems,
-        'shippingAddress': {
+        'paymentMethod': _paymentMethod,
+        'notes': _notesController.text.isNotEmpty ? _notesController.text : null,
+        if (_appliedCouponCode != null && !isGuest) 'couponCode': _appliedCouponCode,
+      };
+
+      if (isGuest) {
+        body['guestInfo'] = {
+          'name': _guestNameCtrl.text.trim(),
+          'phone': _guestPhoneCtrl.text.trim(),
+          'email': _guestEmailCtrl.text.trim(),
+          if (_guestNationalIdCtrl.text.trim().isNotEmpty)
+            'nationalId': _guestNationalIdCtrl.text.trim(),
+          'address': {
+            'city': _guestCityCtrl.text.trim(),
+            'district': _guestDistrictCtrl.text.trim(),
+            'street': _guestStreetCtrl.text.trim(),
+          },
+        };
+      } else {
+        body['shippingAddress'] = {
           'street': _selectedAddress!.street,
           'city': _selectedAddress!.city,
           'state': _selectedAddress!.district,
           'zipCode': _selectedAddress!.postalCode ?? '',
           'country': 'Türkiye',
-        },
-        'paymentMethod': _paymentMethod,
-        'notes': _notesController.text.isNotEmpty ? _notesController.text : null,
-        if (_appliedCouponCode != null) 'couponCode': _appliedCouponCode,
-      });
+        };
+      }
+
+      final response = await ApiClient().dio.post('/api/orders', data: body);
 
       if (response.statusCode == 201) {
-        // Sepeti temizle
-        await ref.read(cartProvider.notifier).clearCart();
+        final order = response.data['order'] as Map<String, dynamic>;
+        final trackingNumber = order['trackingNumber'] as String?;
+
+        if (isGuest) {
+          ref.read(guestCartProvider.notifier).clear();
+        } else {
+          await ref.read(cartProvider.notifier).clearCart();
+        }
 
         if (mounted) {
           showDialog(
@@ -209,21 +341,64 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                   ),
+                  if (trackingNumber != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD8F3DC),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        children: [
+                          const Text('Takip Numaranız', style: TextStyle(fontSize: 11, color: Color(0xFF2D6A4F))),
+                          Text(trackingNumber,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16,
+                                  color: Color(0xFF1B4332), letterSpacing: 1)),
+                        ],
+                      ),
+                    ),
+                    if (isGuest)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          'Takip linki ${_guestEmailCtrl.text.trim()} adresine gönderildi.',
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                  ],
                 ],
               ),
               actions: [
+                if (trackingNumber != null)
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        context.pushNamed('order-tracking', queryParameters: {'t': trackingNumber});
+                      },
+                      child: const Text('Siparişi Takip Et'),
+                    ),
+                  ),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.of(ctx).pop();
-                      context.go('/store/orders');
+                      if (isGuest) {
+                        context.go('/store');
+                      } else {
+                        context.goNamed('my-orders');
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppPalette.storePrimary,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: Text(l10n.checkoutGoToOrders),
+                    child: Text(isGuest ? 'Alışverişe Devam' : l10n.checkoutGoToOrders),
                   ),
                 ),
               ],
@@ -242,16 +417,91 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
   }
 
+  Widget _buildGuestForm() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _buildSectionCard(
+        title: 'Kişisel Bilgiler',
+        icon: Icons.person,
+        child: Column(
+          children: [
+            TextField(
+              controller: _guestNameCtrl,
+              decoration: const InputDecoration(labelText: 'Ad Soyad *', prefixIcon: Icon(Icons.person_outline)),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _guestPhoneCtrl,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(labelText: 'Telefon *', prefixIcon: Icon(Icons.phone_outlined)),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _guestEmailCtrl,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                  labelText: 'E-posta * (takip linki gönderilecek)',
+                  prefixIcon: Icon(Icons.email_outlined)),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _guestNationalIdCtrl,
+              keyboardType: TextInputType.number,
+              maxLength: 11,
+              decoration: const InputDecoration(
+                  labelText: 'TC Kimlik No (opsiyonel)',
+                  prefixIcon: Icon(Icons.badge_outlined),
+                  helperText: 'Şifreli olarak saklanır'),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 8),
+      _buildSectionCard(
+        title: 'Teslimat Adresi',
+        icon: Icons.location_on,
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _guestCityCtrl,
+                    decoration: const InputDecoration(labelText: 'Şehir', prefixIcon: Icon(Icons.location_city)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    controller: _guestDistrictCtrl,
+                    decoration: const InputDecoration(labelText: 'İlçe'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _guestStreetCtrl,
+              maxLines: 2,
+              decoration: const InputDecoration(labelText: 'Açık Adres', prefixIcon: Icon(Icons.home_outlined)),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isGuest = ref.watch(authProvider) == null;
     final cartState = ref.watch(cartProvider);
     final addressesAsync = ref.watch(addressNotifierProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
         title: Text(l10n.checkoutTitle),
@@ -261,8 +511,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Teslimat Adresi
-            _buildSectionCard(
+            // Misafir formu veya adres seçimi
+            if (isGuest) _buildGuestForm()
+            else _buildSectionCard(
               title: l10n.checkoutDeliveryAddress,
               icon: Icons.location_on,
               child: addressesAsync.when(
@@ -385,8 +636,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             _buildSectionCard(
               title: l10n.checkoutCoupon,
               icon: Icons.local_offer,
-              child: _appliedCouponCode != null
-                  ? Container(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Uygulanan kupon göstergesi
+                  if (_appliedCouponCode != null) ...[
+                    Container(
+                      width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.green.withOpacity(0.1),
@@ -419,50 +675,57 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           ),
                         ],
                       ),
-                    )
-                  : Column(
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _couponController,
-                                decoration: InputDecoration(
-                                  hintText: l10n.checkoutCouponHint,
-                                  border: const OutlineInputBorder(),
-                                  errorText: _couponError,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                                ),
-                                textCapitalization: TextCapitalization.characters,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            SizedBox(
-                              height: 48,
-                              child: ElevatedButton(
-                                onPressed: _isApplyingCoupon ? null : _applyCoupon,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppPalette.storePrimary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: _isApplyingCoupon
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation(Colors.white),
-                                        ),
-                                      )
-                                    : Text(l10n.checkoutApply),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
                     ),
+                    const SizedBox(height: 8),
+                  ],
+                  // Kupon giriş alanı
+                  if (_appliedCouponCode == null) ...[
+                    TextField(
+                      controller: _couponController,
+                      textCapitalization: TextCapitalization.characters,
+                      decoration: InputDecoration(
+                        hintText: l10n.checkoutCouponHint,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.shade400),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: AppPalette.storePrimary, width: 2),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.red),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.red, width: 2),
+                        ),
+                        errorText: _couponError,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: _isApplyingCoupon ? null : _applyCoupon,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF52B788),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: _isApplyingCoupon
+                            ? const SizedBox(
+                                width: 20, height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : Text(l10n.checkoutApply, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
             const SizedBox(height: 16),
 

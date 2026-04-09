@@ -11,6 +11,7 @@ import '../../../auth/data/repositories/auth_repository.dart';
 import '../../../messages/data/repositories/message_repository.dart';
 import '../../data/repositories/mating_repository.dart';
 import '../../domain/models/match_request.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 class MatchRequestsScreen extends ConsumerWidget {
@@ -59,7 +60,10 @@ class _RequestTab extends ConsumerWidget {
     return asyncValue.when(
       data: (items) {
         if (items.isEmpty) {
-          return Center(child: Text(AppLocalizations.of(context)!.matchReqNoRequests));
+          return AnimatedEmptyState(
+            icon: Icons.favorite_border_rounded,
+            title: AppLocalizations.of(context)!.matchReqNoRequests,
+          );
         }
         return ListView.builder(
           padding: const EdgeInsets.all(16),

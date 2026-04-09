@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,11 +10,15 @@ import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/premium_card.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/gradient_button.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/section_header.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/messages/data/repositories/message_repository.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
 import '../../domain/models/pet_sitter_model.dart';
+import 'availability_screen.dart';
 
 class SitterDetailScreen extends ConsumerWidget {
   final String sitterId;
@@ -40,20 +45,7 @@ class SitterDetailScreen extends ConsumerWidget {
 
   Widget _sectionTitle(String title, IconData icon) => Padding(
         padding: const EdgeInsets.only(bottom: 10),
-        child: Row(children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: const Color(0xFFD8F3DC),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: const Color(0xFF2D6A4F), size: 18),
-          ),
-          const SizedBox(width: 10),
-          Text(title,
-              style:
-                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        ]),
+        child: SectionHeader(title: title),
       );
 
   @override
@@ -63,9 +55,12 @@ class SitterDetailScreen extends ConsumerWidget {
 
     return async.when(
       loading: () => const Scaffold(body: Center(child: PawLoading())),
-      error: (e, _) =>
-          Scaffold(appBar: AppBar(), body: Center(child: Text('Hata: $e'))),
+      error: (e, _) {
+        final l10n = AppLocalizations.of(context)!;
+        return Scaffold(appBar: AppBar(), body: Center(child: Text('${l10n.sitterErrorPrefix}$e')));
+      },
       data: (data) {
+        final l10n = AppLocalizations.of(context)!;
         final sitter = data['sitter'] as PetSitterModel;
         final reviews = data['reviews'] as List<SitterReview>;
         final photo = sitter.avatar?.isNotEmpty == true
@@ -73,13 +68,13 @@ class SitterDetailScreen extends ConsumerWidget {
             : (sitter.photos.isNotEmpty ? sitter.photos.first : '');
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF4FAF6),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: CustomScrollView(
             slivers: [
               SliverAppBar(
                 expandedHeight: 260,
                 pinned: true,
-                backgroundColor: const Color(0xFF1B4332),
+                backgroundColor: AppPalette.appBarDark,
                 flexibleSpace: FlexibleSpaceBar(
                   background: Stack(
                     fit: StackFit.expand,
@@ -141,15 +136,15 @@ class SitterDetailScreen extends ConsumerWidget {
                                 border: Border.all(
                                     color: const Color(0xFF52B788)),
                               ),
-                              child: const Row(
+                              child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.verified,
+                                    const Icon(Icons.verified,
                                         size: 14,
                                         color: Color(0xFF2D6A4F)),
-                                    SizedBox(width: 4),
-                                    Text('Dogrulanmis',
-                                        style: TextStyle(
+                                    const SizedBox(width: 4),
+                                    Text(l10n.sitterVerifiedLabel,
+                                        style: const TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w600,
                                             color: Color(0xFF2D6A4F))),
@@ -214,8 +209,8 @@ class SitterDetailScreen extends ConsumerWidget {
                             const SizedBox(width: 8),
                             Text(
                               sitter.availability
-                                  ? 'Simdi Musait'
-                                  : 'Simdilik Dolu',
+                                  ? l10n.sitterAvailableNow
+                                  : l10n.sitterCurrentlyBusy,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: sitter.availability
@@ -243,14 +238,14 @@ class SitterDetailScreen extends ConsumerWidget {
 
                       // Bio
                       if (sitter.bio?.isNotEmpty == true) ...[
-                        _sectionTitle('Hakkinda', Icons.info_outline),
+                        _sectionTitle(l10n.sitterAboutSection, Icons.info_outline),
                         Text(sitter.bio!,
                             style: Theme.of(context).textTheme.bodyLarge),
                         const SizedBox(height: 16),
                       ],
 
                       // Services + Prices
-                      _sectionTitle('Hizmetler ve Fiyatlar', Icons.handyman),
+                      _sectionTitle(l10n.sitterServicesAndPrices, Icons.handyman),
                       ...sitter.services.asMap().entries.map((entry) {
                         final i = entry.key;
                         final s = entry.value;
@@ -283,13 +278,13 @@ class SitterDetailScreen extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     if (s.pricePerHour > 0)
-                                      Text('${s.pricePerHour.toInt()} TL/saat',
+                                      Text(l10n.sitterHourlyRate(s.pricePerHour.toInt()),
                                           style: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 14,
                                               color: Color(0xFF2D6A4F))),
                                     if (s.pricePerDay > 0)
-                                      Text('${s.pricePerDay.toInt()} TL/gun',
+                                      Text(l10n.sitterDailyRate(s.pricePerDay.toInt()),
                                           style: TextStyle(
                                               fontSize: 12,
                                               color: Colors.grey.shade600)),
@@ -312,6 +307,46 @@ class SitterDetailScreen extends ConsumerWidget {
                       Text(sitter.speciesLabel,
                           style: Theme.of(context).textTheme.bodyLarge),
                       const SizedBox(height: 16),
+
+                      // Portfolio Fotoğrafları
+                      if (sitter.photos.isNotEmpty) ...[
+                        _sectionTitle('Fotoğraflar (${sitter.photos.length})', Icons.photo_library),
+                        SizedBox(
+                          height: 100,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: sitter.photos.length,
+                            separatorBuilder: (_, __) => const SizedBox(width: 8),
+                            itemBuilder: (ctx, i) {
+                              final url = _r(sitter.photos[i]);
+                              return GestureDetector(
+                                onTap: () => showDialog(
+                                  context: ctx,
+                                  builder: (_) => Dialog.fullscreen(
+                                    child: Stack(
+                                      children: [
+                                        Center(child: InteractiveViewer(child: CachedNetworkImage(imageUrl: url))),
+                                        Positioned(
+                                          top: 40, right: 16,
+                                          child: IconButton(
+                                            icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                                            onPressed: () => Navigator.of(ctx).pop(),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: CachedNetworkImage(imageUrl: url, width: 100, height: 100, fit: BoxFit.cover),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
 
                       // Address
                       if (sitter.address?.isNotEmpty == true) ...[
@@ -399,33 +434,40 @@ class SitterDetailScreen extends ConsumerWidget {
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                     child: Row(
                       children: [
-                        if (sitter.userId != null &&
-                            sitter.userId != user.id) ...[
+                        // Kendi profili ise — müsaitlik takvimi butonu
+                        if (sitter.userId != null && sitter.userId == user.id) ...[
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => AvailabilityScreen(sitterId: sitter.id)),
+                              ),
+                              icon: const Icon(Icons.calendar_month),
+                              label: const Text('Müsaitlik'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF2D6A4F),
+                                side: const BorderSide(color: Color(0xFF2D6A4F)),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (sitter.userId != null && sitter.userId != user.id) ...[
                           Expanded(
                             child: _MessageSitterButton(
                                 sitter: sitter, userId: user.id),
                           ),
                           const SizedBox(width: 12),
                         ],
-                        if (sitter.availability)
+                        if (sitter.availability && sitter.userId != user.id)
                           Expanded(
-                            child: ElevatedButton.icon(
+                            child: GradientButton(
+                              label: l10n.sitterBook,
+                              icon: Icons.calendar_month_rounded,
                               onPressed: () => context.pushNamed(
-                                  'sitter-booking',
-                                  pathParameters: {'sitterId': sitter.id},
-                                  extra: sitter),
-                              icon: const Icon(Icons.calendar_month),
-                              label: const Text('Rezervasyon Yap',
-                                  style: TextStyle(fontSize: 16)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2D6A4F),
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                minimumSize: const Size.fromHeight(52),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14)),
+                                'sitter-booking',
+                                pathParameters: {'sitterId': sitter.id},
+                                extra: sitter,
                               ),
                             ),
                           ),

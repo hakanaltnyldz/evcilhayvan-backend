@@ -1,6 +1,7 @@
 // lib/features/auth/presentation/screens/privacy_policy_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
@@ -97,7 +98,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.privacyPolicyTitle),
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
       ),

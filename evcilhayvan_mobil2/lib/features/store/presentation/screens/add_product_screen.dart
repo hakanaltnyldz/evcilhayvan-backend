@@ -347,9 +347,9 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     final l10n = AppLocalizations.of(context)!;
     final categoriesAsync = ref.watch(categoriesProvider);
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
         title: Text(_isEditMode ? l10n.addProductEditTitle : l10n.addProductTitle),
@@ -858,17 +858,17 @@ class _VariantEditorSection extends StatelessWidget {
                 child: const Icon(Icons.tune, color: Colors.white, size: 20),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Varyantlar',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      AppLocalizations.of(context)!.productVariantsTitle,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      'Beden, renk, boyut gibi seçenekler',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                      AppLocalizations.of(context)!.productVariantsDesc,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -879,7 +879,7 @@ class _VariantEditorSection extends StatelessWidget {
                   onChanged();
                 },
                 icon: const Icon(Icons.add, size: 18),
-                label: const Text('Ekle'),
+                label: Text(AppLocalizations.of(context)!.productVariantAdd),
               ),
             ],
           ),
@@ -905,7 +905,7 @@ class _VariantEditorSection extends StatelessWidget {
                           controller: v.nameCtrl,
                           onChanged: (_) => onChanged(),
                           decoration: InputDecoration(
-                            hintText: 'Varyant adı (ör: Boyut, Renk)',
+                            hintText: AppLocalizations.of(context)!.productVariantNameHint,
                             hintStyle: const TextStyle(fontSize: 13),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -945,7 +945,7 @@ class _VariantEditorSection extends StatelessWidget {
                             flex: 3,
                             child: _SmallField(
                               controller: o.labelCtrl,
-                              hint: 'Etiket (ör: S, Kırmızı)',
+                              hint: AppLocalizations.of(context)!.productVariantLabelHint,
                               onChanged: (_) => onChanged(),
                             ),
                           ),

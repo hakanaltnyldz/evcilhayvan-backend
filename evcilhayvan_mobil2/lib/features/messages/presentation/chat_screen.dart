@@ -4,8 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
@@ -263,80 +263,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  void _onAttachmentTap() {
-    showModalBottomSheet<void>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2D6A4F).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.photo_library, color: Color(0xFF2D6A4F)),
-                ),
-                title: Text(AppLocalizations.of(ctx)!.chatSelectFromGallery),
-                subtitle: Text(AppLocalizations.of(ctx)!.chatSelectFromGallerySub),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _pickImage(ImageSource.gallery);
-                },
-              ),
-              ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.camera_alt, color: Colors.green),
-                ),
-                title: Text(AppLocalizations.of(ctx)!.chatCamera),
-                subtitle: Text(AppLocalizations.of(ctx)!.chatCameraSub),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _pickImage(ImageSource.camera);
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _pickImage(ImageSource source) async {
-    try {
-      final picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: source,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: kImageQualityHigh,
-      );
-
-      if (image == null) return;
-
-      final File imageFile = File(image.path);
-      await _sendImageMessage(imageFile);
-    } catch (e) {
-      _showInfoSnack(AppLocalizations.of(context)!.chatErrImagePick(e.toString()));
-    }
-  }
-
   Future<void> _startRecording() async {
     try {
-      final hasPermission = await _audioRecorder.hasPermission();
-      if (!hasPermission) {
+      // Zaten kayıt yapılıyorsa durdur
+      if (await _audioRecorder.isRecording()) {
+        await _stopAndSendRecording();
+        return;
+      }
+      // Runtime mikrofon izni iste
+      final status = await Permission.microphone.request();
+      if (!status.isGranted) {
         _showInfoSnack(AppLocalizations.of(context)!.chatErrMicPermission);
         return;
       }
@@ -421,78 +357,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  Future<void> _sendImageMessage(File imageFile) async {
-    if (_isSending) return;
-
-    final currentUser = ref.read(authProvider);
-    if (currentUser == null) {
-      _showInfoSnack(AppLocalizations.of(context)!.chatErrLoginRequiredImage);
-      return;
-    }
-
-    setState(() => _isSending = true);
-
-    // Optimistic UI: Geçici mesaj ekle
-    final pendingMessage = Message(
-      id: 'local-img-${DateTime.now().millisecondsSinceEpoch}',
-      conversationId: widget.conversationId,
-      sender: currentUser,
-      text: '',
-      type: 'IMAGE',
-      createdAt: DateTime.now(),
-      imageUrl: imageFile.path, // Geçici olarak local path
-    );
-
-    setState(() => _messages.add(pendingMessage));
-    _scrollToBottom();
-
-    try {
-      final repo = ref.read(messageRepositoryProvider);
-      final saved = await repo.sendImageMessage(
-        conversationId: widget.conversationId,
-        imageFile: imageFile,
-      );
-
-      setState(() {
-        final index = _messages.indexWhere((m) => m.id == pendingMessage.id);
-        if (index != -1) {
-          _messages[index] = saved;
-        } else {
-          _messages.add(saved);
-        }
-      });
-
-      // Socket üzerinden yayınla
-      _socketService.sendMessage(
-        conversationId: saved.conversationId,
-        message: {
-          '_id': saved.id,
-          'conversationId': saved.conversationId,
-          'text': saved.text,
-          'type': saved.type,
-          'imageUrl': saved.imageUrl,
-          'createdAt': saved.createdAt.toIso8601String(),
-          'sender': {
-            '_id': saved.sender.id,
-            'name': saved.sender.name,
-            'email': saved.sender.email,
-          },
-        },
-      );
-    } catch (e) {
-      setState(() {
-        _messages.removeWhere((m) => m.id == pendingMessage.id);
-      });
-      _showInfoSnack(AppLocalizations.of(context)!.chatErrImageSend(e.toString()));
-    } finally {
-      if (mounted) setState(() => _isSending = false);
-    }
-  }
-
-  void _onEmojiTap() {
-    // Emoji keyboard not yet implemented
-  }
-
   Widget _buildComposer(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -510,58 +374,59 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ),
         child: Row(
           children: [
-            IconButton(
-              onPressed: _onAttachmentTap,
-              icon: const Icon(Icons.add_photo_alternate_outlined),
-            ),
-            IconButton(
-              onPressed: _onEmojiTap,
-              icon: const Icon(Icons.emoji_emotions_outlined),
-            ),
-            Expanded(
-              child: TextField(
-                controller: _controller,
-                focusNode: _inputFocusNode,
-                textCapitalization: TextCapitalization.sentences,
-                minLines: 1,
-                maxLines: 5,
-                decoration: InputDecoration(
-                  hintText: AppLocalizations.of(context)!.chatMsgHint,
-                  border: InputBorder.none,
-                ),
-                onSubmitted: (_) => _sendMessage(),
+            // Kayıt göstergesi
+            if (_isRecording)
+              const Padding(
+                padding: EdgeInsets.only(left: 12),
+                child: Icon(Icons.fiber_manual_record, color: Colors.red, size: 16),
               ),
+            Expanded(
+              child: _isRecording
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        'Kayıt yapılıyor...',
+                        style: TextStyle(color: Colors.red.shade600, fontSize: 14),
+                      ),
+                    )
+                  : TextField(
+                      controller: _controller,
+                      focusNode: _inputFocusNode,
+                      textCapitalization: TextCapitalization.sentences,
+                      minLines: 1,
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context)!.chatMsgHint,
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                      onSubmitted: (_) => _sendMessage(),
+                    ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              child: _isRecording
+              child: _controller.text.isEmpty || _isRecording
                   ? GestureDetector(
-                      onLongPressEnd: (_) => _stopAndSendRecording(),
+                      onTap: _isRecording ? _stopAndSendRecording : _startRecording,
                       child: Container(
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: Colors.red.shade400,
+                          color: _isRecording ? Colors.red.shade400 : const Color(0xFF2D6A4F),
                           borderRadius: BorderRadius.circular(18),
                         ),
-                        child: const Icon(Icons.stop_rounded, color: Colors.white),
+                        child: Icon(
+                          _isRecording ? Icons.stop_rounded : Icons.mic_rounded,
+                          color: Colors.white,
+                        ),
                       ),
                     )
                   : DecoratedBox(
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [const Color(0xFF2D6A4F), const Color(0xFF52B788)]),
+                        gradient: const LinearGradient(colors: [Color(0xFF2D6A4F), Color(0xFF52B788)]),
                         borderRadius: BorderRadius.circular(18),
                       ),
-                      child: _controller.text.isEmpty
-                          ? GestureDetector(
-                              onLongPress: _startRecording,
-                              onLongPressEnd: (_) => _stopAndSendRecording(),
-                              child: const Padding(
-                                padding: EdgeInsets.all(10),
-                                child: Icon(Icons.mic_rounded, color: Colors.white),
-                              ),
-                            )
-                          : IconButton(
+                      child: IconButton(
                               onPressed: _isSending ? null : _sendMessage,
                               icon: _isSending
                                   ? const SizedBox(

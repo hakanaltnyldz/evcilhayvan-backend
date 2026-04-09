@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -66,7 +67,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF4FAF6),
       appBar: AppBar(
         title: Text(l10n.resetTitle),
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
       ),

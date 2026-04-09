@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
@@ -86,6 +87,26 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
     }
   }
 
+  Widget _buildFab(BuildContext context, AppLocalizations l10n) {
+    final myProfile = ref.watch(mySitterProfileProvider);
+    final existing = myProfile.valueOrNull;
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(colors: [Color(0xFF2D6A4F), Color(0xFF52B788)]),
+        boxShadow: [BoxShadow(color: Color(0xFF52B788).withOpacity(0.4), blurRadius: 20, spreadRadius: 2)],
+      ),
+      child: FloatingActionButton.extended(
+        onPressed: () => context.pushNamed('become-sitter', extra: existing),
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        icon: Icon(existing != null ? Icons.edit : Icons.add),
+        label: Text(existing != null ? l10n.sitterEditProfile : l10n.sitterBecomeSitterBtn),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -93,10 +114,10 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
     final services = _getServices(l10n);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(l10n.sitterFindTitle),
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -219,21 +240,7 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen> {
         ),
       ),
       floatingActionButton: user != null
-          ? Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: const LinearGradient(colors: [Color(0xFF2D6A4F), Color(0xFF52B788)]),
-                boxShadow: [BoxShadow(color: Color(0xFF52B788).withOpacity(0.4), blurRadius: 20, spreadRadius: 2)],
-              ),
-              child: FloatingActionButton.extended(
-                onPressed: () => context.pushNamed('become-sitter'),
-                backgroundColor: Colors.transparent,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                icon: const Icon(Icons.add),
-                label: Text(l10n.sitterBecomeSitterBtn),
-              ),
-            )
+          ? _buildFab(context, l10n)
           : null,
     );
   }

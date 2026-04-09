@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
+import 'package:evcilhayvan_mobil2/core/providers/guest_mode_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -59,6 +60,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       );
       if (mounted) {
         ref.read(authProvider.notifier).loginSuccess(user);
+        ref.read(guestModeProvider.notifier).state = false;
         context.go('/');
       }
     } on VerificationRequiredException {
@@ -245,7 +247,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 8),
+                  // Giriş yapmadan devam et
+                  TextButton.icon(
+                    onPressed: () {
+                      ref.read(guestModeProvider.notifier).state = true;
+                      context.go('/');
+                    },
+                    icon: const Icon(Icons.explore_outlined, size: 18),
+                    label: const Text('Giriş yapmadan devam et'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),

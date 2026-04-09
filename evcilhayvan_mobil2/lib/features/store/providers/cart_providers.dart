@@ -59,7 +59,6 @@ class CartNotifier extends StateNotifier<AsyncValue<CartState>> {
   Future<void> addItem(ProductModel product, int quantity) async {
     try {
       await ref.read(cartRepoProvider).add(product.id, quantity: quantity);
-      ref.invalidate(cartItemsProvider);
       await _loadCart();
     } catch (e) {
       rethrow;
@@ -69,7 +68,6 @@ class CartNotifier extends StateNotifier<AsyncValue<CartState>> {
   Future<void> removeItem(String itemId) async {
     try {
       await ref.read(cartRepoProvider).remove(itemId);
-      ref.invalidate(cartItemsProvider);
       await _loadCart();
     } catch (e) {
       rethrow;
@@ -79,7 +77,6 @@ class CartNotifier extends StateNotifier<AsyncValue<CartState>> {
   Future<void> updateQuantity(String itemId, int quantity) async {
     try {
       await ref.read(cartRepoProvider).updateQuantity(itemId, quantity);
-      ref.invalidate(cartItemsProvider);
       await _loadCart();
     } catch (e) {
       rethrow;
@@ -89,7 +86,6 @@ class CartNotifier extends StateNotifier<AsyncValue<CartState>> {
   Future<void> clearCart() async {
     try {
       await ref.read(cartRepoProvider).clear();
-      ref.invalidate(cartItemsProvider);
       await _loadCart();
     } catch (e) {
       rethrow;

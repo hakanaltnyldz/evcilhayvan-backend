@@ -59,7 +59,7 @@ export default function Orders() {
     setSavingTracking(true)
     try {
       const res = await api.patch(`/admin/orders/${trackingModal._id}/tracking`, trackingForm)
-      setOrders((prev) => prev.map((o) => o._id === trackingModal._id ? res.data.order : o))
+      setOrders((prev) => prev.map((o) => o._id === trackingModal._id ? (res.data.order ?? o) : o))
       setTrackingModal(null)
       toast.success('Kargo bilgisi kaydedildi')
     } catch (err) {
@@ -85,7 +85,20 @@ export default function Orders() {
     {
       key: 'user',
       label: 'Müşteri',
-      render: (r) => r.user?.name || r.user?.email || '—',
+      render: (r) => {
+        if (r.user?.name || r.user?.email) {
+          return <span>{r.user.name || r.user.email}</span>
+        }
+        if (r.guestInfo?.name) {
+          return (
+            <span className="flex items-center gap-1">
+              <span className="px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded font-semibold">Misafir</span>
+              <span className="text-sm">{r.guestInfo.name}</span>
+            </span>
+          )
+        }
+        return <span className="text-gray-400">—</span>
+      },
     },
     {
       key: 'totalAmount',

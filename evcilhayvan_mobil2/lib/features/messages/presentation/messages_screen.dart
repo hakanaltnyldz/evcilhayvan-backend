@@ -1,12 +1,14 @@
 // lib/features/messages/presentation/screens/messages_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/utils/url_resolver.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
@@ -44,9 +46,9 @@ class MessagesScreen extends ConsumerWidget {
       length: 2,
       initialIndex: safeIndex,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF4FAF6),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: const Color(0xFF1B4332),
+          backgroundColor: AppPalette.appBarDark,
           foregroundColor: Colors.white,
           elevation: 0,
           title: Text(l10n.messagesTitle),
@@ -174,7 +176,7 @@ class _ConversationsTab extends ConsumerWidget {
                           relatedPet: conv.relatedPet,
                           relatedPetId: conv.relatedPetId,
                           updatedAt: conv.updatedAt,
-                          avatarUrl: _resolveAvatarUrl(
+                          avatarUrl: resolveImageUrl(
                             conv.otherParticipant.avatarUrl,
                           ),
                           onTap: () async {
@@ -183,7 +185,7 @@ class _ConversationsTab extends ConsumerWidget {
                               pathParameters: {'conversationId': conv.id},
                               extra: {
                                 'name': conv.otherParticipant.name,
-                                'avatar': _resolveAvatarUrl(
+                                'avatar': resolveImageUrl(
                                   conv.otherParticipant.avatarUrl,
                                 ),
                               },
@@ -809,7 +811,7 @@ class _Header extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFFD8F3DC),
+        color: AppPalette.primary.withOpacity(context.isDark ? 0.15 : 0.12),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -887,24 +889,28 @@ class _ConversationCard extends ConsumerWidget {
       error: (_, __) => l10n.msgListingLoadErr,
     );
 
-    return Material(
-      color: theme.colorScheme.surface,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: Row(
-            children: [
-              Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 26,
+    return InteractiveScale(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Stack(
+              children: [
+                CircleAvatar(
+                  radius: 26,
                     backgroundColor: const Color(0xFFD8F3DC),
                     backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl!) : null,
                     child: avatarUrl == null
@@ -999,7 +1005,6 @@ class _ConversationCard extends ConsumerWidget {
             ],
           ),
         ),
-      ),
     );
   }
 }
@@ -1122,8 +1127,3 @@ String _formatUpdatedAt(DateTime time) {
   return '$hours:$minutes';
 }
 
-String? _resolveAvatarUrl(String? path) {
-  if (path == null || path.isEmpty) return null;
-  if (path.startsWith('http')) return path;
-  return '$apiBaseUrl$path';
-}

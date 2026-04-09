@@ -57,6 +57,7 @@ class PetSitterModel {
   final double? longitude;
   final String? address;
   final bool availability;
+  final List<DateTime>? blockedDates;
   final double rating;
   final int reviewCount;
   final bool isVerified;
@@ -77,6 +78,7 @@ class PetSitterModel {
     this.longitude,
     this.address,
     this.availability = true,
+    this.blockedDates,
     this.rating = 0,
     this.reviewCount = 0,
     this.isVerified = false,
@@ -132,6 +134,12 @@ class PetSitterModel {
       longitude: lng,
       address: json['address']?.toString(),
       availability: json['availability'] != false,
+      blockedDates: (json['blockedDates'] is List)
+          ? (json['blockedDates'] as List)
+              .map((d) => DateTime.tryParse(d.toString()))
+              .whereType<DateTime>()
+              .toList()
+          : null,
       rating: _pd(json['rating']),
       reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
       isVerified: json['isVerified'] == true,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -10,6 +11,7 @@ import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/premium_card.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/gradient_button.dart';
 
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import '../../data/repositories/veterinary_repository.dart';
@@ -38,7 +40,7 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: vetAsync.when(
         loading: () => const Center(child: PawLoading()),
         error: (e, _) => Center(child: Text('${l10n.error}: $e')),
@@ -51,7 +53,7 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
               SliverAppBar(
                 expandedHeight: 280,
                 pinned: true,
-                backgroundColor: const Color(0xFF1B4332),
+                backgroundColor: AppPalette.appBarDark,
                 foregroundColor: Colors.white,
                 flexibleSpace: FlexibleSpaceBar(
                   title: Text(
@@ -264,20 +266,10 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                   children: [
                     // PRIMARY: Randevu Al
                     if (vet.acceptsOnlineAppointments)
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () => context.pushNamed('appointment-create', extra: {'vetId': vet.id, 'vetName': vet.name}),
-                          icon: const Icon(Icons.calendar_today, size: 20),
-                          label: Text(l10n.vetAppointment, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2D6A4F),
-                            foregroundColor: Colors.white,
-                            minimumSize: const Size.fromHeight(52),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          ),
-                        ),
+                      GradientButton(
+                        label: l10n.vetAppointment,
+                        icon: Icons.calendar_today_rounded,
+                        onPressed: () => context.pushNamed('appointment-create', extra: {'vetId': vet.id, 'vetName': vet.name}),
                       ),
 
                     if (vet.acceptsOnlineAppointments) const SizedBox(height: 10),
@@ -826,12 +818,41 @@ class _MessageVetButtonState extends ConsumerState<_MessageVetButton> {
   bool _loading = false;
 
   Future<void> _startConversation() async {
+    // Auth gate
+    final currentUser = ref.read(authProvider);
+    if (currentUser == null) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Giriş Gerekli'),
+            content: const Text('Veterinerle iletişime geçmek için giriş yapmalısınız.'),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Vazgeç')),
+              FilledButton(
+                onPressed: () { Navigator.pop(context); context.pushNamed('login'); },
+                style: FilledButton.styleFrom(backgroundColor: const Color(0xFF2D6A4F)),
+                child: const Text('Giriş Yap'),
+              ),
+            ],
+          ),
+        );
+      }
+      return;
+    }
     setState(() => _loading = true);
     try {
       final repo = ref.read(veterinaryRepositoryProvider);
       final conversationId = await repo.startConversationWithVet(widget.vet.id);
       if (mounted) {
-        context.pushNamed('chat', pathParameters: {'conversationId': conversationId});
+        context.pushNamed(
+          'chat',
+          pathParameters: {'conversationId': conversationId},
+          extra: {
+            'name': widget.vet.name,
+            'avatar': widget.vet.photos.isNotEmpty ? widget.vet.photos.first : null,
+          },
+        );
       }
     } catch (e) {
       if (mounted) {

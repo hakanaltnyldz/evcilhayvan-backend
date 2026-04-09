@@ -114,6 +114,9 @@ class _NearbyAdsScreenState extends ConsumerState<NearbyAdsScreen> {
         title: Text(l10n.nearbyTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF1B4332),
+        iconTheme: IconThemeData(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF1B4332)),
+        actionsIconTheme: IconThemeData(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF1B4332)),
         actions: [
           IconButton(
             icon: Badge(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/utils/url_resolver.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -149,13 +150,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           l10n.cartTitle,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -286,7 +287,7 @@ class _CartItemCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final product = item.product;
-    final imageUrl = _resolveMediaUrl(product.photos.isNotEmpty ? product.photos.first : null);
+    final imageUrl = resolveImageUrl(product.photos.isNotEmpty ? product.photos.first : null);
     final subtotal = product.price * item.quantity;
 
     return Opacity(
@@ -697,8 +698,3 @@ class _EmptyCart extends StatelessWidget {
   }
 }
 
-String? _resolveMediaUrl(String? path) {
-  if (path == null || path.isEmpty) return null;
-  if (path.startsWith('http')) return path;
-  return '$apiBaseUrl$path';
-}

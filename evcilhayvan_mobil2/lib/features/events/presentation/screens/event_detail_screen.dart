@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -65,7 +66,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
         body: ErrorView(message: e.toString(), onRetry: () => ref.invalidate(eventDetailProvider(widget.eventId))),
       ),
       data: (event) => Scaffold(
-        backgroundColor: const Color(0xFFF4FAF6),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: CustomScrollView(
           slivers: [
             _buildSliverAppBar(event, theme),
@@ -196,7 +197,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     return SliverAppBar(
       expandedHeight: photos.isNotEmpty ? 260 : 0,
       pinned: true,
-      backgroundColor: const Color(0xFF1B4332),
+      backgroundColor: AppPalette.appBarDark,
       foregroundColor: Colors.white,
       flexibleSpace: photos.isNotEmpty
           ? FlexibleSpaceBar(

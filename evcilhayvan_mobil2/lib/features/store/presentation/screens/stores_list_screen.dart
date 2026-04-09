@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/utils/url_resolver.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -43,9 +44,9 @@ class _StoresListScreenState extends ConsumerState<StoresListScreen> {
 
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
         title: Text(
@@ -190,7 +191,7 @@ class _StoreCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final logoUrl = _resolveMediaUrl(store.logoUrl);
+    final logoUrl = resolveImageUrl(store.logoUrl);
 
     return InteractiveScale(
       onTap: onTap,
@@ -409,8 +410,3 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-String? _resolveMediaUrl(String? path) {
-  if (path == null || path.isEmpty) return null;
-  if (path.startsWith('http')) return path;
-  return '$apiBaseUrl$path';
-}

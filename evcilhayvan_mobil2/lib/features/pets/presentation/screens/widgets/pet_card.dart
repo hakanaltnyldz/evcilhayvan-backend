@@ -106,13 +106,13 @@ class _PetImage extends StatelessWidget {
           child: ClipRRect(
             borderRadius: borderRadius,
             child: SizedBox(
-              height: 210,
+              height: 170,
               width: double.infinity,
               child: pet.photos.isNotEmpty
                   ? CachedNetworkImage(
                       imageUrl: '${AppConfig.current.apiBaseUrl}${pet.photos[0]}',
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => const ShimmerBox(height: 210),
+                      placeholder: (context, url) => const ShimmerBox(height: 170),
                       errorWidget: (context, url, error) => _fallback(context),
                     )
                   : _fallback(context),

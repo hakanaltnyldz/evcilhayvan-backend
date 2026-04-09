@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../domain/models/appointment_model.dart';
 
@@ -32,9 +33,8 @@ class AppointmentCard extends StatelessWidget {
     final dateStr = '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
     final timeStr = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 
-    return InkWell(
+    return InteractiveScale(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:evcilhayvan_mobil2/core/http.dart';
+import 'package:evcilhayvan_mobil2/core/utils/url_resolver.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/shimmer_box.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
@@ -101,7 +101,7 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
     final badge = widget.badge;
     final title = product.title.trim();
     final displayTitle = title.isNotEmpty ? title : AppLocalizations.of(context)!.productCardNoTitle;
-    final imageUrl = hasImage ? _resolveImageUrl(product.photos.first) : null;
+    final imageUrl = hasImage ? resolveImageUrl(product.photos.first) : null;
     final isOutOfStock = product.stock <= 0;
 
     return AnimatedScale(
@@ -114,12 +114,17 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
         child: Container(
           decoration: BoxDecoration(
             color: context.cardColor,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+                color: AppPalette.storePrimary.withOpacity(context.isDark ? 0.12 : 0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -332,7 +337,3 @@ class _PlaceholderImage extends StatelessWidget {
   }
 }
 
-String _resolveImageUrl(String path) {
-  if (path.startsWith('http')) return path;
-  return '$apiBaseUrl$path';
-}

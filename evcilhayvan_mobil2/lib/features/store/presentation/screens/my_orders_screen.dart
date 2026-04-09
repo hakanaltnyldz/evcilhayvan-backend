@@ -17,7 +17,10 @@ import '../../data/order_repository.dart';
 import '../../../reviews/presentation/screens/add_review_screen.dart';
 import '../../../reviews/domain/models/review_model.dart';
 import '../../../auth/domain/user_model.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_refresh_indicator.dart';
 
 class MyOrdersScreen extends ConsumerWidget {
   const MyOrdersScreen({super.key});
@@ -28,9 +31,9 @@ class MyOrdersScreen extends ConsumerWidget {
     final ordersAsync = ref.watch(myOrdersProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
         title: Text(l10n.orderMyOrdersTitle),
@@ -38,33 +41,23 @@ class MyOrdersScreen extends ConsumerWidget {
       body: ordersAsync.when(
         data: (orders) {
           if (orders.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.shopping_bag_outlined, size: 80, color: Theme.of(context).colorScheme.outlineVariant),
-                  const SizedBox(height: 16),
-                  Text(
-                    l10n.orderNoOrders,
-                    style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.onSurface),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.orderNoOrdersDesc,
-                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  ),
-                ],
-              ),
+            return AnimatedEmptyState(
+              icon: Icons.shopping_bag_outlined,
+              title: l10n.orderNoOrders,
+              subtitle: l10n.orderNoOrdersDesc,
             );
           }
 
-          return RefreshIndicator(
+          return PawRefreshIndicator(
             onRefresh: () async => ref.invalidate(myOrdersProvider),
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: orders.length,
               itemBuilder: (context, index) {
-                return _OrderCard(order: orders[index]);
+                return _OrderCard(order: orders[index])
+                    .animate(delay: Duration(milliseconds: (index * 55).clamp(0, 440)))
+                    .fadeIn(duration: 280.ms, curve: Curves.easeOut)
+                    .slideY(begin: 0.06, duration: 280.ms, curve: Curves.easeOut);
               },
             ),
           );

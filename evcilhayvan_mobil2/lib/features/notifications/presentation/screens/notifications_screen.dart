@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../domain/models/app_notification.dart';
@@ -18,10 +19,10 @@ class NotificationsScreen extends ConsumerWidget {
     final unreadCount = ref.watch(unreadCountProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('${AppLocalizations.of(context)!.notificationsTitle}${unreadCount > 0 ? ' ($unreadCount)' : ''}'),
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -65,40 +66,10 @@ class NotificationsScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: notifications.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 96,
-                      height: 96,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFD8F3DC),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.notifications_none_rounded,
-                        size: 48,
-                        color: Color(0xFF2D6A4F),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      AppLocalizations.of(context)!.notificationsEmpty,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1B4332),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Yeni bildirimler burada görünecek.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                  ],
-                ),
+            ? AnimatedEmptyState(
+                icon: Icons.notifications_none_rounded,
+                title: AppLocalizations.of(context)!.notificationsEmpty,
+                subtitle: 'Yeni bildirimler burada görünecek.',
               )
             : ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

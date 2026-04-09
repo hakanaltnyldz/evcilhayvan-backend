@@ -24,6 +24,8 @@ import 'package:evcilhayvan_mobil2/features/pets/data/repositories/pets_reposito
 import 'package:evcilhayvan_mobil2/features/store/data/order_repository.dart';
 import 'package:evcilhayvan_mobil2/features/pet_sitter/data/repositories/pet_sitter_repository.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/birthday_celebration.dart';
+import 'package:evcilhayvan_mobil2/features/store/providers/cart_providers.dart';
+import 'package:evcilhayvan_mobil2/features/store/providers/guest_cart_provider.dart';
 
 class MainShell extends ConsumerStatefulWidget {
   final Widget child;
@@ -585,7 +587,46 @@ class _MainShellState extends ConsumerState<MainShell> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
-    return SafeArea(
+    final authState = ref.read(authProvider);
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        // Sepet uyarısı (hem kayıtlı hem misafir için)
+        int cartCount = 0;
+        try {
+          final cartAsync = ref.read(cartItemsProvider);
+          cartAsync.whenData((c) => cartCount += c.items.length);
+        } catch (_) {}
+        try {
+          final guestItems = ref.read(guestCartProvider);
+          cartCount += guestItems.length;
+        } catch (_) {}
+        final msg = cartCount > 0
+            ? 'Sepetinizde $cartCount ürün var. Yine de çıkmak istiyor musunuz?'
+            : 'Uygulamadan çıkmak istediğinize emin misiniz?';
+        final exit = await showDialog<bool>(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text(cartCount > 0 ? 'Sepetinizde ürün var!' : 'Çıkış'),
+            content: Text(msg),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(l10n.no, style: const TextStyle(color: Colors.grey)),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: FilledButton.styleFrom(backgroundColor: const Color(0xFF2D6A4F)),
+                child: Text(l10n.yes),
+              ),
+            ],
+          ),
+        );
+        if (exit == true) SystemNavigator.pop();
+      },
+      child: SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         // Rehber Pati — uygulama içi AI navigasyon asistanı
@@ -720,7 +761,8 @@ class _MainShellState extends ConsumerState<MainShell> {
           ),
         ),
       ),
-    );
+      ), // SafeArea
+    ); // PopScope
   }
 }
 

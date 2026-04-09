@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../api.js'
 import Table from '../components/Table.jsx'
+import toast from 'react-hot-toast'
 
 export default function Pets() {
   const [pets, setPets] = useState([])
@@ -28,8 +29,9 @@ export default function Pets() {
       setPets((prev) =>
         prev.map((p) => (p._id === pet._id ? { ...p, isActive: updated.isActive } : p))
       )
+      toast.success(updated.isActive ? 'İlan aktifleştirildi' : 'İlan devre dışı bırakıldı')
     } catch (err) {
-      alert(err.response?.data?.message || 'İşlem başarısız')
+      toast.error(err.response?.data?.message || 'İşlem başarısız')
     } finally {
       setToggling(null)
     }

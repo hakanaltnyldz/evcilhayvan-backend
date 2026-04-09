@@ -115,6 +115,34 @@ class ConversationCreatedEvent {
   }
 }
 
+class SitterLocationEvent {
+  final String bookingId;
+  final double lat;
+  final double lng;
+  final int updatedAt;
+
+  SitterLocationEvent({
+    required this.bookingId,
+    required this.lat,
+    required this.lng,
+    required this.updatedAt,
+  });
+
+  factory SitterLocationEvent.fromJson(Map<String, dynamic> json) => SitterLocationEvent(
+        bookingId: json['bookingId']?.toString() ?? '',
+        lat: (json['lat'] as num).toDouble(),
+        lng: (json['lng'] as num).toDouble(),
+        updatedAt: (json['updatedAt'] as num?)?.toInt() ?? 0,
+      );
+}
+
+class SitterWalkEvent {
+  final String bookingId;
+  final bool started; // true=walk_started, false=walk_ended
+
+  SitterWalkEvent({required this.bookingId, required this.started});
+}
+
 class SocketService {
   static final SocketService _instance = SocketService._internal();
   IO.Socket? _socket;
@@ -131,6 +159,8 @@ class SocketService {
   final _newMessageController = StreamController<NewMessageEvent>.broadcast();
   final _conversationCreatedController = StreamController<ConversationCreatedEvent>.broadcast();
   final _connectionStatusController = StreamController<bool>.broadcast();
+  final _sitterLocationController = StreamController<SitterLocationEvent>.broadcast();
+  final _sitterWalkController = StreamController<SitterWalkEvent>.broadcast();
 
   // Public streams
   Stream<MatchRequestEvent> get onMatchRequest => _matchRequestController.stream;
@@ -139,6 +169,8 @@ class SocketService {
   Stream<NewMessageEvent> get onNewMessage => _newMessageController.stream;
   Stream<ConversationCreatedEvent> get onConversationCreated => _conversationCreatedController.stream;
   Stream<bool> get onConnectionStatus => _connectionStatusController.stream;
+  Stream<SitterLocationEvent> get onSitterLocation => _sitterLocationController.stream;
+  Stream<SitterWalkEvent> get onSitterWalk => _sitterWalkController.stream;
 
   bool get isConnected => _socket?.connected ?? false;
   String? get currentUserId => _currentUserId;
@@ -298,6 +330,34 @@ class SocketService {
         print('Error parsing conversation:created: $e');
       }
     });
+
+    // Sitter location events
+    socket.on('sitter:location_update', (data) {
+      try {
+        final map = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data);
+        _sitterLocationController.add(SitterLocationEvent.fromJson(map));
+      } catch (e) {
+        print('Error parsing sitter:location_update: $e');
+      }
+    });
+
+    socket.on('sitter:walk_started', (data) {
+      try {
+        final map = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data);
+        _sitterWalkController.add(SitterWalkEvent(bookingId: map['bookingId']?.toString() ?? '', started: true));
+      } catch (e) {
+        print('Error parsing sitter:walk_started: $e');
+      }
+    });
+
+    socket.on('sitter:walk_ended', (data) {
+      try {
+        final map = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data);
+        _sitterWalkController.add(SitterWalkEvent(bookingId: map['bookingId']?.toString() ?? '', started: false));
+      } catch (e) {
+        print('Error parsing sitter:walk_ended: $e');
+      }
+    });
   }
 
   void joinUserRoom(String userId) {
@@ -356,6 +416,18 @@ class SocketService {
     final socket = _socket;
     if (socket == null) return;
     socket.off(event);
+  }
+
+  void emitSitterLocation(String bookingId, double lat, double lng) {
+    _socket?.emit('sitter:location_update', {'bookingId': bookingId, 'lat': lat, 'lng': lng});
+  }
+
+  void emitWalkStarted(String bookingId) {
+    _socket?.emit('sitter:walk_started', {'bookingId': bookingId});
+  }
+
+  void emitWalkEnded(String bookingId) {
+    _socket?.emit('sitter:walk_ended', {'bookingId': bookingId});
   }
 
   void sendMessage({

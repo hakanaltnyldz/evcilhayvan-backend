@@ -23,18 +23,23 @@ final addressNotifierProvider = StateNotifierProvider<AddressNotifier, AsyncValu
 
 class AddressNotifier extends StateNotifier<AsyncValue<List<AddressModel>>> {
   final Ref ref;
+  bool _loading = false;
 
   AddressNotifier(this.ref) : super(const AsyncValue.loading()) {
     loadAddresses();
   }
 
   Future<void> loadAddresses() async {
+    if (_loading) return;
+    _loading = true;
     state = const AsyncValue.loading();
     try {
       final addresses = await ref.read(addressServiceProvider).getAddresses();
-      state = AsyncValue.data(addresses);
+      if (mounted) state = AsyncValue.data(addresses);
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (mounted) state = AsyncValue.error(e, st);
+    } finally {
+      _loading = false;
     }
   }
 

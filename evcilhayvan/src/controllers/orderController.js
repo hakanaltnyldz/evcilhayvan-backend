@@ -5,14 +5,54 @@ import Coupon from "../models/Coupon.js";
 import CouponUsage from "../models/CouponUsage.js";
 import { sendError, sendOk } from "../utils/apiResponse.js";
 import { recordAudit } from "../utils/audit.js";
+import { encrypt } from "../utils/fieldCrypto.js";
+import { sendEmail } from "../utils/mail.js";
 
-// Sipariş oluştur (stok kontrolü ve düşümü ile)
+function generateTrackingNumber() {
+  return 'PAT' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase();
+}
+
+async function sendOrderConfirmationEmail(toEmail, trackingNumber, items, totalAmount) {
+  const appUrl = process.env.APP_URL || 'http://localhost:3000';
+  const itemRows = items.map(i => `<tr><td>${i.name || 'Ürün'}</td><td>${i.quantity}</td><td>${i.price.toFixed(2)} ₺</td></tr>`).join('');
+  const html = `
+    <div style="font-family:sans-serif;max-width:500px;margin:auto;padding:24px;border:1px solid #e0e0e0;border-radius:8px">
+      <h2 style="color:#1B4332">Siparişiniz Alındı! 🐾</h2>
+      <p>Merhaba,</p>
+      <p>Siparişiniz başarıyla oluşturuldu. Takip numaranız: <strong>${trackingNumber}</strong></p>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0">
+        <thead><tr style="background:#f5f5f5"><th style="text-align:left;padding:8px">Ürün</th><th style="padding:8px">Adet</th><th style="padding:8px">Fiyat</th></tr></thead>
+        <tbody>${itemRows}</tbody>
+      </table>
+      <p><strong>Toplam: ${totalAmount.toFixed(2)} ₺</strong></p>
+      <p>
+        <a href="${appUrl}/orders/track/${trackingNumber}" style="display:inline-block;padding:12px 24px;background:#2D6A4F;color:#fff;border-radius:8px;text-decoration:none">
+          Siparişimi Takip Et
+        </a>
+      </p>
+      <p style="color:#888;font-size:12px">Pati Arkadaşı — Evcil Hayvan Platformu</p>
+    </div>
+  `;
+  try {
+    await sendEmail(toEmail, `Siparişiniz Alındı — ${trackingNumber}`, html);
+  } catch (err) {
+    console.error('[createOrder] email error (non-critical)', err.message);
+  }
+}
+
+// Sipariş oluştur (stok kontrolü ve düşümü ile — kayıtlı + misafir kullanıcı desteği)
 export async function createOrder(req, res) {
   try {
-    const userId = req.user?.sub;
-    if (!userId) return sendError(res, 401, "Kimlik dogrulama gerekli", "auth_required");
+    const userId = req.user?.sub || null;  // misafir = null
 
-    const { items, shippingAddress, paymentMethod, notes, couponCode } = req.body || {};
+    const { items, shippingAddress, paymentMethod, notes, couponCode, guestInfo } = req.body || {};
+
+    // Misafir siparişi zorunlu alan kontrolü
+    if (!userId) {
+      if (!guestInfo?.name || !guestInfo?.phone || !guestInfo?.email) {
+        return sendError(res, 400, "Misafir sipariş için ad, telefon ve email zorunludur", "guest_info_required");
+      }
+    }
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return sendError(res, 400, "Siparis öğeleri gereklidir", "validation_error");
@@ -40,8 +80,8 @@ export async function createOrder(req, res) {
         return sendError(res, 400, `Ürün aktif değil: ${product.name || product.title}`, "product_inactive");
       }
 
-      // Kendi ürününü satın almayı engelle
-      if (product.seller && product.seller.toString() === userId) {
+      // Kendi ürününü satın almayı engelle (sadece kayıtlı kullanıcılar için)
+      if (userId && product.seller && product.seller.toString() === userId) {
         return sendError(res, 400, `Kendi urunlerinizi satin alamazsiniz: ${product.name || product.title}`, "self_purchase_denied");
       }
 
@@ -89,7 +129,7 @@ export async function createOrder(req, res) {
     let discountAmount = 0;
     let appliedCoupon = null;
 
-    if (couponCode) {
+    if (couponCode && userId) {
       const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
       if (coupon) {
         const validity = coupon.isValid();
@@ -155,16 +195,36 @@ export async function createOrder(req, res) {
         }
       }
 
+      // Misafir TC'sini şifrele
+      let encryptedGuestInfo;
+      if (!userId && guestInfo) {
+        encryptedGuestInfo = {
+          name: guestInfo.name,
+          phone: guestInfo.phone,
+          email: guestInfo.email,
+          nationalId: guestInfo.nationalId ? encrypt(guestInfo.nationalId) : undefined,
+          address: guestInfo.address || {},
+        };
+      }
+
+      const trackingNumber = generateTrackingNumber();
+
       [order] = await Order.create([{
-        user: userId,
+        user: userId || undefined,
+        guestInfo: encryptedGuestInfo,
         items: orderItems,
         totalAmount: finalAmount,
         originalAmount,
         discountAmount,
         couponCode: appliedCoupon ? appliedCoupon.code : undefined,
-        shippingAddress: shippingAddress || {},
+        shippingAddress: shippingAddress || (encryptedGuestInfo?.address ? {
+          street: encryptedGuestInfo.address.street,
+          city: encryptedGuestInfo.address.city,
+          state: encryptedGuestInfo.address.district,
+        } : {}),
         paymentMethod: paymentMethod || "credit_card",
         notes,
+        trackingNumber,
         status: "pending",
         paymentStatus: "pending",
         statusHistory: [{ status: "pending", note: "Sipariş oluşturuldu", updatedAt: new Date() }],
@@ -196,20 +256,41 @@ export async function createOrder(req, res) {
     // Audit log
     try {
       await recordAudit("order.create", {
-        userId,
+        userId: userId || 'guest',
         entityType: "order",
         entityId: order._id.toString(),
         metadata: {
           itemCount: orderItems.length,
-          totalAmount,
+          totalAmount: finalAmount,
+          isGuest: !userId,
         },
       });
     } catch (auditErr) {
       console.error("[createOrder] audit error (non-critical)", auditErr.message);
     }
 
-    // Populate product details
-    await order.populate("items.product", "name title images photos");
+    // Sipariş onay emaili gönder (kayıtlı veya misafir)
+    const recipientEmail = guestInfo?.email || null;
+    if (recipientEmail || userId) {
+      let toEmail = recipientEmail;
+      if (!toEmail && userId) {
+        try {
+          const User = (await import("../models/User.js")).default;
+          const user = await User.findById(userId).select('email');
+          toEmail = user?.email;
+        } catch (_) {}
+      }
+      if (toEmail) {
+        await sendOrderConfirmationEmail(toEmail, order.trackingNumber, orderItems, finalAmount);
+      }
+    }
+
+    // Populate product details with seller info
+    await order.populate({
+      path: "items.product",
+      select: "name title images photos price seller",
+      populate: { path: "seller", select: "name logoUrl" },
+    });
 
     return sendOk(res, 201, { order });
   } catch (err) {
@@ -226,7 +307,12 @@ export async function getMyOrders(req, res) {
 
     const orders = await Order.find({ user: userId })
       .sort({ createdAt: -1 })
-      .populate("items.product", "name title images photos");
+      .populate({
+        path: "items.product",
+        select: "name title images photos price seller",
+        populate: { path: "seller", select: "name logoUrl" },
+      })
+      .lean();
 
     // Kullanıcının tüm review'larını çek
     const Review = (await import("../models/Review.js")).default;
@@ -242,19 +328,14 @@ export async function getMyOrders(req, res) {
       };
     });
 
-    // Her siparişteki her ürüne review bilgisini ekle
-    const ordersWithReviews = orders.map(order => {
-      const orderObj = order.toObject();
-      orderObj.items = orderObj.items.map(item => {
+    // Her siparişteki her ürüne review bilgisini ekle (.lean() ile zaten plain object)
+    const ordersWithReviews = orders.map(order => ({
+      ...order,
+      items: order.items.map(item => {
         const productId = item.product?._id?.toString() || item.product?.toString();
-        const review = reviewMap[productId];
-        return {
-          ...item,
-          myReview: review || null,
-        };
-      });
-      return orderObj;
-    });
+        return { ...item, myReview: reviewMap[productId] || null };
+      }),
+    }));
 
     return sendOk(res, 200, { orders: ordersWithReviews });
   } catch (err) {
@@ -361,21 +442,24 @@ export async function getSellerOrders(req, res) {
       "items.product": { $in: productIds },
     })
       .sort({ createdAt: -1 })
-      .populate("user", "name email")
-      .populate("items.product", "name title images photos seller");
+      .populate("user", "name email avatarUrl")
+      .populate({
+        path: "items.product",
+        select: "name title images photos price seller",
+        populate: { path: "seller", select: "name logoUrl" },
+      })
+      .lean();
 
-    // Sadece satıcının ürünlerini filtrele
+    // Sadece satıcının ürünlerini filtrele (.lean() ile plain object)
     const filteredOrders = orders.map(order => {
-      const orderObj = order.toObject();
-      orderObj.items = orderObj.items.filter(item =>
+      const items = order.items.filter(item =>
         productIds.some(pid => pid.toString() === item.product?._id?.toString())
       );
-      // Satıcının ürünlerinin toplamını hesapla
-      orderObj.sellerTotal = orderObj.items.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0
-      );
-      return orderObj;
+      return {
+        ...order,
+        items,
+        sellerTotal: items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      };
     });
 
     return sendOk(res, 200, { orders: filteredOrders });

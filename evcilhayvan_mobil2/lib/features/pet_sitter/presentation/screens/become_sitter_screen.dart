@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
@@ -80,6 +81,7 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
     if (_services.isEmpty) {
       _services.add(_ServiceEntry(type: 'walking'));
     }
+    if (_lat == null) _getLocation();
   }
 
   @override
@@ -217,10 +219,10 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
     final speciesOptions = _getSpeciesOptions(l10n);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(isEdit ? l10n.sitterEditProfile : l10n.sitterBecomeSitterBtn),
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
       ),

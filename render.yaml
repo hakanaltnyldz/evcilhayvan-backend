@@ -4,8 +4,8 @@ services:
     env: node
     region: frankfurt
     plan: free
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: cd evcilhayvan && npm install
+    startCommand: cd evcilhayvan && node server.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV

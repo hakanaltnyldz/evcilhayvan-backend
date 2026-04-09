@@ -14,7 +14,8 @@ const SitterBookingSchema = new mongoose.Schema(
     petOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
     sitterId: { type: mongoose.Schema.Types.ObjectId, ref: "PetSitter", required: true },
     sitterUserId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
-    petId: { type: mongoose.Schema.Types.ObjectId, ref: "Pet", required: true },
+    petId: { type: mongoose.Schema.Types.ObjectId, ref: "Pet" }, // backward compat
+    pets: [{ type: mongoose.Schema.Types.ObjectId, ref: "Pet" }], // çoklu hayvan
     serviceType: {
       type: String,
       enum: ["walking", "home_sitting", "boarding", "daycare", "grooming"],
@@ -30,6 +31,14 @@ const SitterBookingSchema = new mongoose.Schema(
       default: "pending",
     },
     ownerReview: { type: ReviewSchema },
+    emergencyContact: {
+      name: { type: String, trim: true, maxlength: 100 },
+      phone: { type: String, trim: true, maxlength: 20 },
+    },
+    vetInfo: {
+      name: { type: String, trim: true, maxlength: 100 },
+      phone: { type: String, trim: true, maxlength: 20 },
+    },
     respondedAt: { type: Date },
     completedAt: { type: Date },
   },

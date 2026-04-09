@@ -46,6 +46,9 @@ class AppPalette {
     Color(0xFF74C69D),
   ];
 
+  /// AppBar koyu arka plan rengi — tüm ekranlarda tutarlı kullanım için.
+  static const Color appBarDark = Color(0xFF1B4332);
+
   /// Mağaza primary — yeşil.
   static const Color storePrimary = Color(0xFF2D6A4F);
 

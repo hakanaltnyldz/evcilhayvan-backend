@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'dart:math';
 
 // ── Providers ──────────────────────────────────────────────────────────────
@@ -37,6 +38,7 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
   }
 
   void _showCreateDialog() {
+    final l10n = AppLocalizations.of(context)!;
     final codeCtrl = TextEditingController(text: _generateCode());
     final descCtrl = TextEditingController();
     final valueCtrl = TextEditingController();
@@ -54,6 +56,7 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) {
+          final dl10n = AppLocalizations.of(ctx)!;
           Future<void> pickDate({required bool isFrom}) async {
             final picked = await showDatePicker(
               context: ctx,
@@ -73,7 +76,7 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
           }
 
           return AlertDialog(
-            title: const Text('Yeni Kupon Oluştur'),
+            title: Text(dl10n.sellerCouponCreateDialogTitle),
             contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
             content: SingleChildScrollView(
               child: Column(
@@ -86,8 +89,8 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: codeCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Kupon Kodu',
+                          decoration: InputDecoration(
+                            labelText: dl10n.sellerCouponCodeLabel,
                             isDense: true,
                           ),
                           textCapitalization: TextCapitalization.characters,
@@ -99,7 +102,7 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                         ),
-                        child: const Text('Rastgele', style: TextStyle(fontSize: 12)),
+                        child: Text(dl10n.sellerCouponRandom, style: const TextStyle(fontSize: 12)),
                       ),
                     ],
                   ),
@@ -107,19 +110,19 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                   // Description
                   TextFormField(
                     controller: descCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Açıklama (opsiyonel)',
+                    decoration: InputDecoration(
+                      labelText: dl10n.sellerCouponDescLabel,
                       isDense: true,
                     ),
                   ),
                   const SizedBox(height: 12),
                   // Discount type
-                  const Text('İndirim Türü', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(dl10n.sellerCouponTypeLabel, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                   const SizedBox(height: 4),
                   SegmentedButton<String>(
-                    segments: const [
-                      ButtonSegment(value: 'percentage', label: Text('Yüzde (%)')),
-                      ButtonSegment(value: 'fixed', label: Text('Sabit (₺)')),
+                    segments: [
+                      ButtonSegment(value: 'percentage', label: Text(dl10n.sellerCouponPercent)),
+                      ButtonSegment(value: 'fixed', label: Text(dl10n.sellerCouponFixed)),
                     ],
                     selected: {discountType},
                     onSelectionChanged: (v) => setS(() => discountType = v.first),
@@ -130,7 +133,9 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                     controller: valueCtrl,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
-                      labelText: discountType == 'percentage' ? 'İndirim Oranı (%)' : 'İndirim Tutarı (₺)',
+                      labelText: discountType == 'percentage'
+                          ? dl10n.sellerCouponRateLabel
+                          : dl10n.sellerCouponAmountLabel,
                       isDense: true,
                     ),
                   ),
@@ -139,8 +144,8 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                   TextFormField(
                     controller: minPurchaseCtrl,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Min. Sepet Tutarı (₺)',
+                    decoration: InputDecoration(
+                      labelText: dl10n.sellerCouponMinPurchase,
                       isDense: true,
                     ),
                   ),
@@ -150,8 +155,8 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                     TextFormField(
                       controller: maxDiscountCtrl,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: 'Maks. İndirim Tutarı ₺ (opsiyonel)',
+                      decoration: InputDecoration(
+                        labelText: dl10n.sellerCouponMaxDiscount,
                         isDense: true,
                       ),
                     ),
@@ -161,8 +166,8 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                   TextFormField(
                     controller: perUserCtrl,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Kişi Başı Kullanım Limiti',
+                    decoration: InputDecoration(
+                      labelText: dl10n.sellerCouponPerUserLimit,
                       isDense: true,
                     ),
                   ),
@@ -171,8 +176,8 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                   TextFormField(
                     controller: totalLimitCtrl,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Toplam Kullanım Limiti (opsiyonel)',
+                    decoration: InputDecoration(
+                      labelText: dl10n.sellerCouponTotalLimit,
                       isDense: true,
                     ),
                   ),
@@ -184,8 +189,8 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                         child: InkWell(
                           onTap: () => pickDate(isFrom: true),
                           child: InputDecorator(
-                            decoration: const InputDecoration(
-                              labelText: 'Başlangıç',
+                            decoration: InputDecoration(
+                              labelText: dl10n.sellerCouponStartDate,
                               isDense: true,
                             ),
                             child: Text(
@@ -200,8 +205,8 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                         child: InkWell(
                           onTap: () => pickDate(isFrom: false),
                           child: InputDecorator(
-                            decoration: const InputDecoration(
-                              labelText: 'Bitiş',
+                            decoration: InputDecoration(
+                              labelText: dl10n.sellerCouponEndDate,
                               isDense: true,
                             ),
                             child: Text(
@@ -218,7 +223,7 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                   CheckboxListTile(
                     value: firstOrderOnly,
                     onChanged: (v) => setS(() => firstOrderOnly = v ?? false),
-                    title: const Text('Yalnızca İlk Sipariş', style: TextStyle(fontSize: 13)),
+                    title: Text(dl10n.sellerCouponFirstOrderOnly, style: const TextStyle(fontSize: 13)),
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
                     dense: true,
@@ -229,7 +234,7 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('İptal'),
+                child: Text(dl10n.cancel),
               ),
               FilledButton(
                 onPressed: isSubmitting
@@ -239,7 +244,7 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                         final value = double.tryParse(valueCtrl.text.trim());
                         if (code.isEmpty || value == null || value <= 0) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Kod ve indirim değeri gereklidir')),
+                            SnackBar(content: Text(l10n.sellerCouponValidationError)),
                           );
                           return;
                         }
@@ -266,21 +271,21 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                           ref.invalidate(sellerCouponsProvider);
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('"$code" kuponu oluşturuldu')),
+                              SnackBar(content: Text(l10n.sellerCouponCreated(code))),
                             );
                           }
                         } catch (e) {
                           setS(() => isSubmitting = false);
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Kupon oluşturulamadı')),
+                              SnackBar(content: Text(l10n.sellerCouponCreateFailed)),
                             );
                           }
                         }
                       },
                 child: isSubmitting
                     ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Oluştur'),
+                    : Text(l10n.sellerCouponCreate),
               ),
             ],
           );
@@ -290,6 +295,7 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
   }
 
   Future<void> _toggleActive(String couponId, bool current) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final dio = ApiClient().dio;
       await dio.patch('/api/seller/coupons/$couponId/toggle');
@@ -297,26 +303,30 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Durum değiştirilemedi')),
+          SnackBar(content: Text(l10n.sellerCouponToggleFailed)),
         );
       }
     }
   }
 
   Future<void> _deleteCoupon(String couponId, String code) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Kuponu Sil'),
-        content: Text('"$code" kodlu kuponu silmek istediğinize emin misiniz?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('İptal')),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Sil', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      builder: (ctx) {
+        final dl10n = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+          title: Text(dl10n.sellerCouponDeleteTitle),
+          content: Text(dl10n.sellerCouponDeleteConfirm(code)),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(dl10n.cancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(dl10n.delete, style: const TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed != true) return;
     try {
@@ -325,13 +335,13 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
       ref.invalidate(sellerCouponsProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('"$code" silindi')),
+          SnackBar(content: Text(l10n.sellerCouponDeleted(code))),
         );
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Kupon silinemedi')),
+          SnackBar(content: Text(l10n.sellerCouponDeleteFailed)),
         );
       }
     }
@@ -339,16 +349,17 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final couponsAsync = ref.watch(sellerCouponsProvider);
     final now = DateTime.now();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kupon Yönetimi'),
+        title: Text(l10n.sellerCouponManagementTitle),
         actions: [
           IconButton(
             icon: Icon(_showExpired ? Icons.visibility : Icons.visibility_off_outlined),
-            tooltip: _showExpired ? 'Süresini Gizle' : 'Süresi Dolanları Göster',
+            tooltip: _showExpired ? l10n.sellerCouponHideExpired : l10n.sellerCouponShowExpired,
             onPressed: () => setState(() => _showExpired = !_showExpired),
           ),
         ],
@@ -356,7 +367,7 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showCreateDialog,
         icon: const Icon(Icons.add),
-        label: const Text('Yeni Kupon'),
+        label: Text(l10n.sellerCouponNew),
       ),
       body: couponsAsync.when(
         loading: () => const Center(child: PawLoading()),
@@ -366,10 +377,10 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
             children: [
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 8),
-              const Text('Kuponlar yüklenemedi'),
+              Text(l10n.sellerCouponLoadError),
               TextButton(
                 onPressed: () => ref.invalidate(sellerCouponsProvider),
-                child: const Text('Tekrar Dene'),
+                child: Text(l10n.retry),
               ),
             ],
           ),
@@ -388,10 +399,10 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                 children: [
                   Icon(Icons.discount_outlined, size: 64, color: AppPalette.primary.withOpacity(0.3)),
                   const SizedBox(height: 16),
-                  const Text('Henüz kupon oluşturmadınız'),
+                  Text(l10n.sellerCouponEmptyTitle),
                   const SizedBox(height: 8),
-                  const Text('FAB butonuna tıklayarak başlayın',
-                      style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text(l10n.sellerCouponEmptySubtitle,
+                      style: const TextStyle(color: Colors.grey, fontSize: 13)),
                 ],
               ),
             );
@@ -484,19 +495,19 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                           spacing: 8,
                           runSpacing: 4,
                           children: [
-                            _Chip(icon: Icons.calendar_today_outlined, label: '$until\'e kadar'),
+                            _Chip(icon: Icons.calendar_today_outlined, label: l10n.sellerCouponValidUntil(until)),
                             _Chip(
                               icon: Icons.bar_chart,
                               label: totalLimit != null
-                                  ? '$usageCount / $totalLimit kullanım'
-                                  : '$usageCount kullanım',
+                                  ? l10n.sellerCouponUsageLimited(usageCount.toString(), totalLimit.toString())
+                                  : l10n.sellerCouponUsage(usageCount.toString()),
                             ),
                             if (c['firstOrderOnly'] == true)
-                              _Chip(icon: Icons.star_outline, label: 'İlk Sipariş'),
+                              _Chip(icon: Icons.star_outline, label: l10n.sellerCouponFirstOrderLabel),
                             if (expired)
-                              const _Chip(
+                              _Chip(
                                 icon: Icons.timer_off_outlined,
-                                label: 'Süresi Doldu',
+                                label: l10n.sellerCouponExpiredLabel,
                                 color: Colors.red,
                               ),
                           ],
@@ -508,7 +519,7 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                             TextButton.icon(
                               onPressed: () => _deleteCoupon(couponId, code),
                               icon: const Icon(Icons.delete_outline, size: 16, color: Colors.red),
-                              label: const Text('Sil', style: TextStyle(color: Colors.red, fontSize: 12)),
+                              label: Text(l10n.delete, style: const TextStyle(color: Colors.red, fontSize: 12)),
                               style: TextButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(horizontal: 8),
                                 minimumSize: Size.zero,

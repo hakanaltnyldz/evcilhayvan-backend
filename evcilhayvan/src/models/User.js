@@ -17,6 +17,8 @@ const UserSchema = new mongoose.Schema(
     verificationTokenExpires: { type: Date, select: false },
     passwordResetToken: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
+    phone:      { type: String, trim: true },
+    nationalId: { type: String, select: false },   // AES-256-CBC şifreli TC
     isSeller: { type: Boolean, default: false },
     blockedUsers: { type: [mongoose.Schema.Types.ObjectId], ref: "User", default: [], select: false },
     refreshToken: { type: String, select: false },

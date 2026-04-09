@@ -1,12 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 
 
-import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_refresh_indicator.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/lost_found_repository.dart';
 import '../../domain/models/lost_found_model.dart';
@@ -94,10 +98,10 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.lostFoundTitle2),
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -161,8 +165,8 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            const SizedBox(height: 100),
-            EmptyState(
+            const SizedBox(height: 60),
+            AnimatedEmptyState(
               icon: Icons.search_off_outlined,
               title: AppLocalizations.of(context)!.lostFoundEmptyTitle,
               subtitle: AppLocalizations.of(context)!.lostFoundEmptySubtitle,
@@ -172,7 +176,7 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
       );
     }
 
-    return RefreshIndicator(
+    return PawRefreshIndicator(
       onRefresh: _loadReports,
       child: ListView.builder(
         padding: const EdgeInsets.only(top: 8, bottom: 80),
@@ -186,7 +190,10 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
               'lost-found-detail',
               pathParameters: {'id': report.id},
             ),
-          );
+          )
+              .animate(delay: Duration(milliseconds: (index * 55).clamp(0, 440)))
+              .fadeIn(duration: 280.ms, curve: Curves.easeOut)
+              .slideY(begin: 0.06, duration: 280.ms, curve: Curves.easeOut);
         },
       ),
     );

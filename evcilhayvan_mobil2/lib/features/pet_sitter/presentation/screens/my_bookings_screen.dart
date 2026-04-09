@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/premium_card.dart';
@@ -9,8 +11,13 @@ import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
+import 'package:evcilhayvan_mobil2/core/providers/socket_provider.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
 import '../../domain/models/sitter_booking_model.dart';
+import '../../domain/models/pet_sitter_model.dart';
+import 'live_tracking_screen.dart';
+import 'care_report_screen.dart';
+import 'booking_timeline_screen.dart';
 
 class MyBookingsScreen extends ConsumerStatefulWidget {
   const MyBookingsScreen({super.key});
@@ -37,10 +44,10 @@ class _MyBookingsScreenState extends ConsumerState<MyBookingsScreen> with Single
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(l10n.bookingsTitle),
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
         bottom: TabBar(
@@ -243,10 +250,19 @@ class _BookingCard extends StatelessWidget {
                 ],
               ),
             ),
+          // Action — walk controls (sitter) + live tracking (owner)
+          if (booking.isAccepted) ...[
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: isSitter
+                  ? _SitterWalkControls(booking: booking, ref: ref)
+                  : _OwnerTrackButton(booking: booking),
+            ),
+          ],
           // Action — mark complete (sitter)
           if (booking.isAccepted && isSitter)
             Padding(
-              padding: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsets.only(top: 8),
               child: SizedBox(
                 width: double.infinity,
                 height: 44,
@@ -260,6 +276,49 @@ class _BookingCard extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
+              ),
+            ),
+          // Action — care report + timeline (boarding/home_sitting)
+          if (booking.isAccepted &&
+              (booking.serviceType == 'boarding' || booking.serviceType == 'home_sitting'))
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Row(
+                children: [
+                  if (isSitter)
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final res = await Navigator.of(context).push<bool>(
+                            MaterialPageRoute(builder: (_) => CareReportScreen(booking: booking, dayNumber: 1)),
+                          );
+                          if (res == true) ref.invalidate(myBookingsProvider);
+                        },
+                        icon: const Icon(Icons.assignment_add, size: 18),
+                        label: const Text('Günlük Rapor'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF2D6A4F),
+                          side: const BorderSide(color: Color(0xFF2D6A4F)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ),
+                  if (isSitter) const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => BookingTimelineScreen(booking: booking)),
+                      ),
+                      icon: const Icon(Icons.timeline, size: 18),
+                      label: const Text('Bakım Günlüğü'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF52B788),
+                        side: const BorderSide(color: Color(0xFF52B788)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           // Action — review (owner)
@@ -412,6 +471,62 @@ class _BookingCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// Bakıcı: Gezi/Hizmet ekranına git
+class _SitterWalkControls extends StatelessWidget {
+  final SitterBookingModel booking;
+  final WidgetRef ref;
+  const _SitterWalkControls({required this.booking, required this.ref});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 44,
+      child: ElevatedButton.icon(
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => LiveTrackingScreen(booking: booking, isSitter: true),
+          ),
+        ),
+        icon: const Icon(Icons.directions_walk, size: 20),
+        label: const Text('Gezi Ekranına Geç'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF2D6A4F),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
+    );
+  }
+}
+
+// Sahip: Canlı Konum butonu
+class _OwnerTrackButton extends StatelessWidget {
+  final SitterBookingModel booking;
+  const _OwnerTrackButton({required this.booking});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 44,
+      child: ElevatedButton.icon(
+        onPressed: () => context.pushNamed(
+          'live-tracking',
+          extra: booking,
+        ),
+        icon: const Icon(Icons.location_on, size: 20),
+        label: const Text('Canlı Konum Takip'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF52B788),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
     );

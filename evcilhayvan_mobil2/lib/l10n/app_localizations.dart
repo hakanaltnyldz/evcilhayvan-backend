@@ -2147,25 +2147,37 @@ abstract class AppLocalizations {
   /// No description provided for @checkoutErrCardNumber.
   ///
   /// In tr, this message translates to:
-  /// **'Geçerli bir kart numarası girin'**
+  /// **'16 haneli geçerli bir kart numarası girin'**
   String get checkoutErrCardNumber;
+
+  /// No description provided for @checkoutErrCardNumberInvalid.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kart numarası geçersiz'**
+  String get checkoutErrCardNumberInvalid;
 
   /// No description provided for @checkoutErrCardHolder.
   ///
   /// In tr, this message translates to:
-  /// **'Kart sahibi adını girin'**
+  /// **'Kart sahibinin adını harflerle girin'**
   String get checkoutErrCardHolder;
 
   /// No description provided for @checkoutErrExpiry.
   ///
   /// In tr, this message translates to:
-  /// **'Geçerli bir son kullanma tarihi girin'**
+  /// **'Son kullanma tarihini AA/YY formatında girin'**
   String get checkoutErrExpiry;
+
+  /// No description provided for @checkoutErrExpiryPast.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kartın son kullanma tarihi geçmiş'**
+  String get checkoutErrExpiryPast;
 
   /// No description provided for @checkoutErrCvv.
   ///
   /// In tr, this message translates to:
-  /// **'Geçerli bir CVV girin'**
+  /// **'3 veya 4 haneli CVV girin'**
   String get checkoutErrCvv;
 
   /// No description provided for @checkoutErrEmptyCart.
@@ -2197,6 +2209,294 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Kupon uygulanamadı'**
   String get checkoutErrCouponFailed;
+
+  /// No description provided for @checkoutErrCouponExpired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu kuponun süresi dolmuş'**
+  String get checkoutErrCouponExpired;
+
+  /// No description provided for @checkoutErrCouponUsageLimit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kupon kullanım limitine ulaşıldı'**
+  String get checkoutErrCouponUsageLimit;
+
+  /// No description provided for @couponsMyCouponsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kuponlarım'**
+  String get couponsMyCouponsTitle;
+
+  /// No description provided for @couponsAvailableTab.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kullanılabilir'**
+  String get couponsAvailableTab;
+
+  /// No description provided for @couponsHistoryTab.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kullanım Geçmişi'**
+  String get couponsHistoryTab;
+
+  /// No description provided for @couponsCopied.
+  ///
+  /// In tr, this message translates to:
+  /// **'{code} kopyalandı'**
+  String couponsCopied(String code);
+
+  /// No description provided for @couponsEmptyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şu an kullanılabilir kupon yok'**
+  String get couponsEmptyTitle;
+
+  /// No description provided for @couponsEmptySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yakında kampanyaları takip edin!'**
+  String get couponsEmptySubtitle;
+
+  /// No description provided for @couponsLoadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kuponlar yüklenemedi'**
+  String get couponsLoadError;
+
+  /// No description provided for @couponsRetry.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tekrar Dene'**
+  String get couponsRetry;
+
+  /// No description provided for @couponsValidUntil.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date}\'e kadar'**
+  String couponsValidUntil(String date);
+
+  /// No description provided for @sellerCouponManagementTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kupon Yönetimi'**
+  String get sellerCouponManagementTitle;
+
+  /// No description provided for @sellerCouponNew.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni Kupon'**
+  String get sellerCouponNew;
+
+  /// No description provided for @sellerCouponShowExpired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Süresi Dolanları Göster'**
+  String get sellerCouponShowExpired;
+
+  /// No description provided for @sellerCouponHideExpired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Süresi Dolanları Gizle'**
+  String get sellerCouponHideExpired;
+
+  /// No description provided for @sellerCouponLoadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kuponlar yüklenemedi'**
+  String get sellerCouponLoadError;
+
+  /// No description provided for @sellerCouponEmptyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz kupon oluşturmadınız'**
+  String get sellerCouponEmptyTitle;
+
+  /// No description provided for @sellerCouponEmptySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aşağıdaki butona tıklayarak başlayın'**
+  String get sellerCouponEmptySubtitle;
+
+  /// No description provided for @sellerCouponCreateDialogTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni Kupon Oluştur'**
+  String get sellerCouponCreateDialogTitle;
+
+  /// No description provided for @sellerCouponCodeLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kupon Kodu'**
+  String get sellerCouponCodeLabel;
+
+  /// No description provided for @sellerCouponRandom.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rastgele'**
+  String get sellerCouponRandom;
+
+  /// No description provided for @sellerCouponDescLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıklama (opsiyonel)'**
+  String get sellerCouponDescLabel;
+
+  /// No description provided for @sellerCouponTypeLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'İndirim Türü'**
+  String get sellerCouponTypeLabel;
+
+  /// No description provided for @sellerCouponPercent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yüzde (%)'**
+  String get sellerCouponPercent;
+
+  /// No description provided for @sellerCouponFixed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sabit (₺)'**
+  String get sellerCouponFixed;
+
+  /// No description provided for @sellerCouponRateLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'İndirim Oranı (%)'**
+  String get sellerCouponRateLabel;
+
+  /// No description provided for @sellerCouponAmountLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'İndirim Tutarı (₺)'**
+  String get sellerCouponAmountLabel;
+
+  /// No description provided for @sellerCouponMinPurchase.
+  ///
+  /// In tr, this message translates to:
+  /// **'Min. Sepet Tutarı (₺)'**
+  String get sellerCouponMinPurchase;
+
+  /// No description provided for @sellerCouponMaxDiscount.
+  ///
+  /// In tr, this message translates to:
+  /// **'Maks. İndirim Tutarı ₺ (opsiyonel)'**
+  String get sellerCouponMaxDiscount;
+
+  /// No description provided for @sellerCouponPerUserLimit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kişi Başı Kullanım Limiti'**
+  String get sellerCouponPerUserLimit;
+
+  /// No description provided for @sellerCouponTotalLimit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplam Kullanım Limiti (opsiyonel)'**
+  String get sellerCouponTotalLimit;
+
+  /// No description provided for @sellerCouponStartDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başlangıç'**
+  String get sellerCouponStartDate;
+
+  /// No description provided for @sellerCouponEndDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bitiş'**
+  String get sellerCouponEndDate;
+
+  /// No description provided for @sellerCouponFirstOrderOnly.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yalnızca İlk Sipariş'**
+  String get sellerCouponFirstOrderOnly;
+
+  /// No description provided for @sellerCouponCreate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Oluştur'**
+  String get sellerCouponCreate;
+
+  /// No description provided for @sellerCouponValidationError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kod ve indirim değeri gereklidir'**
+  String get sellerCouponValidationError;
+
+  /// No description provided for @sellerCouponCreated.
+  ///
+  /// In tr, this message translates to:
+  /// **'{code} kuponu oluşturuldu'**
+  String sellerCouponCreated(String code);
+
+  /// No description provided for @sellerCouponCreateFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kupon oluşturulamadı'**
+  String get sellerCouponCreateFailed;
+
+  /// No description provided for @sellerCouponToggleFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Durum değiştirilemedi'**
+  String get sellerCouponToggleFailed;
+
+  /// No description provided for @sellerCouponDeleteTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kuponu Sil'**
+  String get sellerCouponDeleteTitle;
+
+  /// No description provided for @sellerCouponDeleteConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'{code} kodlu kuponu silmek istediğinize emin misiniz?'**
+  String sellerCouponDeleteConfirm(String code);
+
+  /// No description provided for @sellerCouponDeleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'{code} silindi'**
+  String sellerCouponDeleted(String code);
+
+  /// No description provided for @sellerCouponDeleteFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kupon silinemedi'**
+  String get sellerCouponDeleteFailed;
+
+  /// No description provided for @sellerCouponValidUntil.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date}\'e kadar'**
+  String sellerCouponValidUntil(String date);
+
+  /// No description provided for @sellerCouponUsageLimited.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} / {total} kullanım'**
+  String sellerCouponUsageLimited(String count, String total);
+
+  /// No description provided for @sellerCouponUsage.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} kullanım'**
+  String sellerCouponUsage(String count);
+
+  /// No description provided for @sellerCouponFirstOrderLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlk Sipariş'**
+  String get sellerCouponFirstOrderLabel;
+
+  /// No description provided for @sellerCouponExpiredLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Süresi Doldu'**
+  String get sellerCouponExpiredLabel;
 
   /// No description provided for @checkoutCouponApplied.
   ///
@@ -5336,6 +5636,48 @@ abstract class AppLocalizations {
   /// **'Yeniden dene'**
   String get storeHomeRetry;
 
+  /// No description provided for @storeMyCouponsLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kuponlarım & Fırsatlar'**
+  String get storeMyCouponsLabel;
+
+  /// No description provided for @productDetailSelectAllVariants.
+  ///
+  /// In tr, this message translates to:
+  /// **'Lütfen tüm seçenekleri belirleyin'**
+  String get productDetailSelectAllVariants;
+
+  /// No description provided for @productVariantsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Varyantlar'**
+  String get productVariantsTitle;
+
+  /// No description provided for @productVariantsDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Beden, renk, boyut gibi seçenekler'**
+  String get productVariantsDesc;
+
+  /// No description provided for @productVariantAdd.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ekle'**
+  String get productVariantAdd;
+
+  /// No description provided for @productVariantNameHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Varyant adı (ör: Boyut, Renk)'**
+  String get productVariantNameHint;
+
+  /// No description provided for @productVariantLabelHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Etiket (ör: S, Kırmızı)'**
+  String get productVariantLabelHint;
+
   /// No description provided for @storeHomeSoldOut.
   ///
   /// In tr, this message translates to:
@@ -6901,6 +7243,66 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Konum alınamadı: {error}'**
   String sitterLocationErr(String error);
+
+  /// No description provided for @sitterAvailableNow.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şimdi Müsait'**
+  String get sitterAvailableNow;
+
+  /// No description provided for @sitterCurrentlyBusy.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şimdilik Dolu'**
+  String get sitterCurrentlyBusy;
+
+  /// No description provided for @sitterVerifiedLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Doğrulanmış'**
+  String get sitterVerifiedLabel;
+
+  /// No description provided for @sitterAboutSection.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hakkında'**
+  String get sitterAboutSection;
+
+  /// No description provided for @sitterServicesAndPrices.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hizmetler ve Fiyatlar'**
+  String get sitterServicesAndPrices;
+
+  /// No description provided for @sitterPhotosSection.
+  ///
+  /// In tr, this message translates to:
+  /// **'Fotoğraflar'**
+  String get sitterPhotosSection;
+
+  /// No description provided for @sitterReviewsSection.
+  ///
+  /// In tr, this message translates to:
+  /// **'Değerlendirmeler'**
+  String get sitterReviewsSection;
+
+  /// No description provided for @sitterHourlyRate.
+  ///
+  /// In tr, this message translates to:
+  /// **'{price} TL/saat'**
+  String sitterHourlyRate(int price);
+
+  /// No description provided for @sitterDailyRate.
+  ///
+  /// In tr, this message translates to:
+  /// **'{price} TL/gün'**
+  String sitterDailyRate(int price);
+
+  /// No description provided for @sitterErrorPrefix.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: '**
+  String get sitterErrorPrefix;
 
   /// No description provided for @sitterProfileUpdated.
   ///

@@ -1,6 +1,7 @@
 // lib/features/reviews/presentation/screens/add_review_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
@@ -125,13 +126,13 @@ class _AddReviewScreenState extends ConsumerState<AddReviewScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           widget.existingReview != null ? AppLocalizations.of(context)!.reviewEditTitle : AppLocalizations.of(context)!.reviewAddTitle,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
       ),

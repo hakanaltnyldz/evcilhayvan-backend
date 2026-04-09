@@ -8,7 +8,10 @@ import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/order_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/order_model.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_refresh_indicator.dart';
 
 class SellerOrdersScreen extends ConsumerStatefulWidget {
   const SellerOrdersScreen({super.key});
@@ -41,9 +44,9 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
 
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
         title: Text(
@@ -245,34 +248,10 @@ class _StatItem extends StatelessWidget {
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.receipt_long_outlined,
-            size: 80,
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            AppLocalizations.of(context)!.sellerOrdersEmpty,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context)!.sellerOrdersEmptyDesc,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+    return AnimatedEmptyState(
+      icon: Icons.receipt_long_outlined,
+      title: AppLocalizations.of(context)!.sellerOrdersEmpty,
+      subtitle: AppLocalizations.of(context)!.sellerOrdersEmptyDesc,
     );
   }
 }
@@ -289,15 +268,13 @@ class _OrdersList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (orders.isEmpty) {
-      return Center(
-        child: Text(
-          AppLocalizations.of(context)!.sellerOrdersCategoryEmpty,
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-        ),
+      return AnimatedEmptyState(
+        icon: Icons.receipt_long_outlined,
+        title: AppLocalizations.of(context)!.sellerOrdersCategoryEmpty,
       );
     }
 
-    return RefreshIndicator(
+    return PawRefreshIndicator(
       onRefresh: () async {
         ref.invalidate(sellerOrdersProvider);
         ref.invalidate(sellerOrderStatsProvider);
@@ -320,6 +297,7 @@ class _OrdersList extends ConsumerWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(AppLocalizations.of(context)!.sellerOrdersStatusUpdated),
+
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -335,7 +313,10 @@ class _OrdersList extends ConsumerWidget {
                 }
               }
             },
-          );
+          )
+              .animate(delay: Duration(milliseconds: (index * 55).clamp(0, 440)))
+              .fadeIn(duration: 280.ms, curve: Curves.easeOut)
+              .slideY(begin: 0.06, duration: 280.ms, curve: Curves.easeOut);
         },
       ),
     );

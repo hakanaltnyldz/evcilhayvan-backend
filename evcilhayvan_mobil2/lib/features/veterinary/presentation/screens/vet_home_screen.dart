@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
@@ -11,6 +12,7 @@ import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/core/constants.dart';
+import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import '../../data/repositories/appointment_repository.dart';
 import '../../data/repositories/vaccination_repository.dart';
 import '../../data/repositories/veterinary_repository.dart';
@@ -44,11 +46,12 @@ class _VetHomeScreenState extends ConsumerState<VetHomeScreen> with SingleTicker
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isGuest = ref.watch(authProvider) == null;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
         title: Text(AppLocalizations.of(context)!.vetTitle, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: Colors.white)),
@@ -68,8 +71,8 @@ class _VetHomeScreenState extends ConsumerState<VetHomeScreen> with SingleTicker
         controller: _tabController,
         children: [
           _SearchTab(),
-          _AppointmentsTab(),
-          _VaccinationTab(),
+          isGuest ? const _GuestLockedTab() : _AppointmentsTab(),
+          isGuest ? const _GuestLockedTab() : _VaccinationTab(),
         ],
       ),
     );
@@ -105,8 +108,11 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
       }
       final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
       final repo = ref.read(veterinaryRepositoryProvider);
-      // Google Places ile yakın vets ara → DB'ye upsert et ve döndür
-      final vets = await repo.googleSearch(lat: pos.latitude, lng: pos.longitude, radiusKm: kDefaultVetRadiusKm);
+      final isGuest = ref.read(authProvider) == null;
+      // Guest modda public endpoint kullan; giriş yapılmışsa Google Places ile upsert et
+      final vets = isGuest
+          ? await repo.searchVets(lat: pos.latitude, lng: pos.longitude, radiusKm: kDefaultVetRadiusKm)
+          : await repo.googleSearch(lat: pos.latitude, lng: pos.longitude, radiusKm: kDefaultVetRadiusKm);
       if (mounted) setState(() { _nearbyVets = vets; _loadingVets = false; });
     } catch (_) {
       if (mounted) setState(() => _loadingVets = false);
@@ -448,6 +454,33 @@ class _VaccinationTab extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _GuestLockedTab extends StatelessWidget {
+  const _GuestLockedTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.lock_outline, size: 56, color: Colors.grey),
+          const SizedBox(height: 16),
+          Text(
+            'Bu özellik için giriş yapmalısın',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey[700]),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            onPressed: () => context.pushNamed('login'),
+            icon: const Icon(Icons.login, size: 18),
+            label: const Text('Giriş Yap'),
+          ),
+        ],
+      ),
     );
   }
 }

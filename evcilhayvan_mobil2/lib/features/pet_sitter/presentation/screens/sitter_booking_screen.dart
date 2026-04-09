@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -209,7 +210,7 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         title: Text('${widget.sitter.displayName} - Rezervasyon'),
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
       ),

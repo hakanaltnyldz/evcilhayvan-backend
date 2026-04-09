@@ -15,8 +15,10 @@ import SupportTicket from "../models/SupportTicket.js";
 import PetSitter from "../models/PetSitter.js";
 import VetClaimRequest from "../models/VetClaimRequest.js";
 import Veterinary from "../models/Veterinary.js";
+import Store from "../models/Store.js";
 import { sendPush } from "../utils/fcm.js";
 import { recordAudit } from "../utils/audit.js";
+import { decrypt, maskNationalId } from "../utils/fieldCrypto.js";
 
 const router = Router();
 
@@ -465,7 +467,8 @@ router.post("/coupons", async (req, res) => {
     const {
       code, description, discountType, discountValue,
       minPurchaseAmount, maxDiscountAmount, validFrom, validUntil,
-      usageLimit, perUserLimit,
+      usageLimit, perUserLimit, firstOrderOnly,
+      store, applicableCategories,
     } = req.body;
     if (!code || !discountType || !discountValue || !validFrom || !validUntil)
       return sendError(res, 400, "Zorunlu alanlar eksik.");
@@ -477,9 +480,13 @@ router.post("/coupons", async (req, res) => {
       minPurchaseAmount: minPurchaseAmount ? Number(minPurchaseAmount) : 0,
       maxDiscountAmount: maxDiscountAmount ? Number(maxDiscountAmount) : undefined,
       validFrom: new Date(validFrom),
-      validUntil: new Date(validUntil),
+      validUntil: (() => { const d = new Date(validUntil); d.setHours(23, 59, 59, 999); return d; })(),
       usageLimit: usageLimit ? Number(usageLimit) : undefined,
       perUserLimit: perUserLimit ? Number(perUserLimit) : 1,
+      firstOrderOnly: firstOrderOnly || false,
+      store: store || undefined,
+      applicableCategories: Array.isArray(applicableCategories) && applicableCategories.length > 0
+        ? applicableCategories : undefined,
     });
     return sendOk(res, 201, { coupon });
   } catch (err) {
@@ -495,12 +502,13 @@ router.patch("/coupons/:id", async (req, res) => {
     if (!id.match(/^[a-f\d]{24}$/i)) return sendError(res, 400, "Geçersiz kupon ID", "validation_error");
     const allowed = ["code", "description", "discountType", "discountValue",
       "minPurchaseAmount", "maxDiscountAmount", "validFrom", "validUntil",
-      "usageLimit", "perUserLimit", "firstOrderOnly"];
+      "usageLimit", "perUserLimit", "firstOrderOnly", "store", "applicableCategories"];
     const update = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) update[key] = req.body[key];
     }
     if (update.code) update.code = String(update.code).toUpperCase().trim();
+    if (update.validUntil) { const d = new Date(update.validUntil); d.setHours(23, 59, 59, 999); update.validUntil = d; }
     const coupon = await Coupon.findByIdAndUpdate(id, update, { new: true, runValidators: true });
     if (!coupon) return sendError(res, 404, "Kupon bulunamadı", "not_found");
     return sendOk(res, 200, { coupon });
@@ -530,6 +538,16 @@ router.delete("/coupons/:id", async (req, res) => {
     return sendOk(res, 200, { message: "Kupon silindi." });
   } catch (err) {
     return sendError(res, 500, "İşlem başarısız", "internal_error", err.message);
+  }
+});
+
+// GET /api/admin/stores — kupon formu için tüm mağaza listesi
+router.get("/stores", async (req, res) => {
+  try {
+    const stores = await Store.find({}).select("_id name").sort({ name: 1 }).limit(200);
+    return sendOk(res, 200, { stores });
+  } catch (err) {
+    return sendError(res, 500, "Mağazalar alınamadı", "internal_error", err.message);
   }
 });
 
@@ -736,6 +754,44 @@ router.patch("/pet-sitters/:id/verify", async (req, res) => {
     return sendOk(res, 200, { sitter });
   } catch (err) {
     return sendError(res, 500, "Guncellenemedi", "internal_error", err.message);
+  }
+});
+
+// GET /api/admin/users/:id/sensitive — TC + telefon şifre ile açılır
+router.get("/users/:id/sensitive", authRequired(["admin"]), async (req, res) => {
+  try {
+    const adminPass = req.headers["x-admin-data-password"];
+    if (!adminPass || adminPass !== process.env.ADMIN_DATA_PASSWORD) {
+      return sendError(res, 403, "Ek yetki gerekli", "extra_auth_required");
+    }
+    const user = await User.findById(req.params.id).select("+nationalId +phone");
+    if (!user) return sendError(res, 404, "Kullanici bulunamadi", "not_found");
+    return sendOk(res, 200, {
+      phone: user.phone || null,
+      nationalId: user.nationalId ? decrypt(user.nationalId) : null,
+    });
+  } catch (err) {
+    return sendError(res, 500, "Veriler alinamadi", "internal_error", err.message);
+  }
+});
+
+// GET /api/admin/orders/:id/guest-sensitive — misafir TC şifre ile açılır
+router.get("/orders/:id/guest-sensitive", authRequired(["admin"]), async (req, res) => {
+  try {
+    const adminPass = req.headers["x-admin-data-password"];
+    if (!adminPass || adminPass !== process.env.ADMIN_DATA_PASSWORD) {
+      return sendError(res, 403, "Ek yetki gerekli", "extra_auth_required");
+    }
+    const order = await Order.findById(req.params.id).select("guestInfo");
+    if (!order) return sendError(res, 404, "Siparis bulunamadi", "not_found");
+    return sendOk(res, 200, {
+      name: order.guestInfo?.name,
+      phone: order.guestInfo?.phone,
+      email: order.guestInfo?.email,
+      nationalId: order.guestInfo?.nationalId ? decrypt(order.guestInfo.nationalId) : null,
+    });
+  } catch (err) {
+    return sendError(res, 500, "Veriler alinamadi", "internal_error", err.message);
   }
 });
 

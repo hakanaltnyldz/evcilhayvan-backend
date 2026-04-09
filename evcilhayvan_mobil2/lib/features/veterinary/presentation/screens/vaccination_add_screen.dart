@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -98,8 +99,8 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
-      appBar: AppBar(title: const Text('Asi Kaydi Ekle'), backgroundColor: const Color(0xFF1B4332), foregroundColor: Colors.white, elevation: 0),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(title: const Text('Asi Kaydi Ekle'), backgroundColor: AppPalette.appBarDark, foregroundColor: Colors.white, elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(

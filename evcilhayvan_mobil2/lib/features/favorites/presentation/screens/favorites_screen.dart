@@ -7,7 +7,9 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_refresh_indicator.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/shimmer_box.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/features/favorites/domain/models/favorite_model.dart';
@@ -42,13 +44,13 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen>
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           AppLocalizations.of(context)!.favoritesTitle,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
         bottom: TabBar(
@@ -89,7 +91,7 @@ class _FavoritesTab extends ConsumerWidget {
         ? ref.watch(favoritesProvider)
         : ref.watch(favoritesByTypeProvider(type!));
 
-    return RefreshIndicator(
+    return PawRefreshIndicator(
       onRefresh: () async {
         if (type == null) {
           ref.invalidate(favoritesProvider);
@@ -398,75 +400,17 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final (String message, IconData icon) = switch (type) {
+      'pet'     => ('Henüz favori ilan yok', Icons.pets),
+      'product' => ('Henüz favori ürün yok', Icons.shopping_bag_outlined),
+      'store'   => ('Henüz favori mağaza yok', Icons.store_mall_directory_outlined),
+      _         => (AppLocalizations.of(context)!.favoritesEmpty, Icons.favorite_border),
+    };
+    final subtitle = 'Beğendiğiniz '
+        '${type == 'pet' ? 'ilanları' : type == 'product' ? 'ürünleri' : type == 'store' ? 'mağazaları' : 'öğeleri'}'
+        ' favorilere ekleyin';
 
-    String message;
-    IconData icon;
-
-    switch (type) {
-      case 'pet':
-        message = 'Henüz favori ilan yok';
-        icon = Icons.pets;
-        break;
-      case 'product':
-        message = 'Henüz favori ürün yok';
-        icon = Icons.shopping_bag_outlined;
-        break;
-      case 'store':
-        message = 'Henüz favori mağaza yok';
-        icon = Icons.store_mall_directory_outlined;
-        break;
-      default:
-        message = AppLocalizations.of(context)!.favoritesEmpty;
-        icon = Icons.favorite_border;
-    }
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: AppPalette.storeCardGradient,
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppPalette.storePrimary.withOpacity(0.3),
-                    blurRadius: 24,
-                    offset: const Offset(0, 12),
-                  ),
-                ],
-              ),
-              child: Icon(icon, size: 56, color: Colors.white),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              message,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w900,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Beğendiğiniz ${type == 'pet' ? 'ilanları' : type == 'product' ? 'ürünleri' : type == 'store' ? 'mağazaları' : 'öğeleri'} favorilere ekleyin',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: AppPalette.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
+    return AnimatedEmptyState(icon: icon, title: message, subtitle: subtitle);
   }
 }
 

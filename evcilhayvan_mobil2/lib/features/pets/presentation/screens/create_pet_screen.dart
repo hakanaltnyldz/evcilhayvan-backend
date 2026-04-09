@@ -278,6 +278,8 @@ class _CreatePetScreenState extends ConsumerState<CreatePetScreen> {
         title: Text(_isEditMode ? l10n.createPetEditTitle : l10n.createPetNewTitle),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF1B4332),
+        iconTheme: IconThemeData(color: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF1B4332)),
       ),
       body: ModernBackground(
         child: SafeArea(

@@ -1086,16 +1086,24 @@ class AppLocalizationsTr extends AppLocalizations {
   String get checkoutErrNoAddress => 'Lütfen bir teslimat adresi seçin';
 
   @override
-  String get checkoutErrCardNumber => 'Geçerli bir kart numarası girin';
+  String get checkoutErrCardNumber =>
+      '16 haneli geçerli bir kart numarası girin';
 
   @override
-  String get checkoutErrCardHolder => 'Kart sahibi adını girin';
+  String get checkoutErrCardNumberInvalid => 'Kart numarası geçersiz';
 
   @override
-  String get checkoutErrExpiry => 'Geçerli bir son kullanma tarihi girin';
+  String get checkoutErrCardHolder => 'Kart sahibinin adını harflerle girin';
 
   @override
-  String get checkoutErrCvv => 'Geçerli bir CVV girin';
+  String get checkoutErrExpiry =>
+      'Son kullanma tarihini AA/YY formatında girin';
+
+  @override
+  String get checkoutErrExpiryPast => 'Kartın son kullanma tarihi geçmiş';
+
+  @override
+  String get checkoutErrCvv => '3 veya 4 haneli CVV girin';
 
   @override
   String get checkoutErrEmptyCart => 'Sepetiniz boş';
@@ -1112,6 +1120,167 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get checkoutErrCouponFailed => 'Kupon uygulanamadı';
+
+  @override
+  String get checkoutErrCouponExpired => 'Bu kuponun süresi dolmuş';
+
+  @override
+  String get checkoutErrCouponUsageLimit => 'Kupon kullanım limitine ulaşıldı';
+
+  @override
+  String get couponsMyCouponsTitle => 'Kuponlarım';
+
+  @override
+  String get couponsAvailableTab => 'Kullanılabilir';
+
+  @override
+  String get couponsHistoryTab => 'Kullanım Geçmişi';
+
+  @override
+  String couponsCopied(String code) {
+    return '$code kopyalandı';
+  }
+
+  @override
+  String get couponsEmptyTitle => 'Şu an kullanılabilir kupon yok';
+
+  @override
+  String get couponsEmptySubtitle => 'Yakında kampanyaları takip edin!';
+
+  @override
+  String get couponsLoadError => 'Kuponlar yüklenemedi';
+
+  @override
+  String get couponsRetry => 'Tekrar Dene';
+
+  @override
+  String couponsValidUntil(String date) {
+    return '$date\'e kadar';
+  }
+
+  @override
+  String get sellerCouponManagementTitle => 'Kupon Yönetimi';
+
+  @override
+  String get sellerCouponNew => 'Yeni Kupon';
+
+  @override
+  String get sellerCouponShowExpired => 'Süresi Dolanları Göster';
+
+  @override
+  String get sellerCouponHideExpired => 'Süresi Dolanları Gizle';
+
+  @override
+  String get sellerCouponLoadError => 'Kuponlar yüklenemedi';
+
+  @override
+  String get sellerCouponEmptyTitle => 'Henüz kupon oluşturmadınız';
+
+  @override
+  String get sellerCouponEmptySubtitle =>
+      'Aşağıdaki butona tıklayarak başlayın';
+
+  @override
+  String get sellerCouponCreateDialogTitle => 'Yeni Kupon Oluştur';
+
+  @override
+  String get sellerCouponCodeLabel => 'Kupon Kodu';
+
+  @override
+  String get sellerCouponRandom => 'Rastgele';
+
+  @override
+  String get sellerCouponDescLabel => 'Açıklama (opsiyonel)';
+
+  @override
+  String get sellerCouponTypeLabel => 'İndirim Türü';
+
+  @override
+  String get sellerCouponPercent => 'Yüzde (%)';
+
+  @override
+  String get sellerCouponFixed => 'Sabit (₺)';
+
+  @override
+  String get sellerCouponRateLabel => 'İndirim Oranı (%)';
+
+  @override
+  String get sellerCouponAmountLabel => 'İndirim Tutarı (₺)';
+
+  @override
+  String get sellerCouponMinPurchase => 'Min. Sepet Tutarı (₺)';
+
+  @override
+  String get sellerCouponMaxDiscount => 'Maks. İndirim Tutarı ₺ (opsiyonel)';
+
+  @override
+  String get sellerCouponPerUserLimit => 'Kişi Başı Kullanım Limiti';
+
+  @override
+  String get sellerCouponTotalLimit => 'Toplam Kullanım Limiti (opsiyonel)';
+
+  @override
+  String get sellerCouponStartDate => 'Başlangıç';
+
+  @override
+  String get sellerCouponEndDate => 'Bitiş';
+
+  @override
+  String get sellerCouponFirstOrderOnly => 'Yalnızca İlk Sipariş';
+
+  @override
+  String get sellerCouponCreate => 'Oluştur';
+
+  @override
+  String get sellerCouponValidationError => 'Kod ve indirim değeri gereklidir';
+
+  @override
+  String sellerCouponCreated(String code) {
+    return '$code kuponu oluşturuldu';
+  }
+
+  @override
+  String get sellerCouponCreateFailed => 'Kupon oluşturulamadı';
+
+  @override
+  String get sellerCouponToggleFailed => 'Durum değiştirilemedi';
+
+  @override
+  String get sellerCouponDeleteTitle => 'Kuponu Sil';
+
+  @override
+  String sellerCouponDeleteConfirm(String code) {
+    return '$code kodlu kuponu silmek istediğinize emin misiniz?';
+  }
+
+  @override
+  String sellerCouponDeleted(String code) {
+    return '$code silindi';
+  }
+
+  @override
+  String get sellerCouponDeleteFailed => 'Kupon silinemedi';
+
+  @override
+  String sellerCouponValidUntil(String date) {
+    return '$date\'e kadar';
+  }
+
+  @override
+  String sellerCouponUsageLimited(String count, String total) {
+    return '$count / $total kullanım';
+  }
+
+  @override
+  String sellerCouponUsage(String count) {
+    return '$count kullanım';
+  }
+
+  @override
+  String get sellerCouponFirstOrderLabel => 'İlk Sipariş';
+
+  @override
+  String get sellerCouponExpiredLabel => 'Süresi Doldu';
 
   @override
   String checkoutCouponApplied(String amount) {
@@ -2866,6 +3035,28 @@ class AppLocalizationsTr extends AppLocalizations {
   String get storeHomeRetry => 'Yeniden dene';
 
   @override
+  String get storeMyCouponsLabel => 'Kuponlarım & Fırsatlar';
+
+  @override
+  String get productDetailSelectAllVariants =>
+      'Lütfen tüm seçenekleri belirleyin';
+
+  @override
+  String get productVariantsTitle => 'Varyantlar';
+
+  @override
+  String get productVariantsDesc => 'Beden, renk, boyut gibi seçenekler';
+
+  @override
+  String get productVariantAdd => 'Ekle';
+
+  @override
+  String get productVariantNameHint => 'Varyant adı (ör: Boyut, Renk)';
+
+  @override
+  String get productVariantLabelHint => 'Etiket (ör: S, Kırmızı)';
+
+  @override
   String get storeHomeSoldOut => 'Tükendi';
 
   @override
@@ -3709,6 +3900,40 @@ class AppLocalizationsTr extends AppLocalizations {
   String sitterLocationErr(String error) {
     return 'Konum alınamadı: $error';
   }
+
+  @override
+  String get sitterAvailableNow => 'Şimdi Müsait';
+
+  @override
+  String get sitterCurrentlyBusy => 'Şimdilik Dolu';
+
+  @override
+  String get sitterVerifiedLabel => 'Doğrulanmış';
+
+  @override
+  String get sitterAboutSection => 'Hakkında';
+
+  @override
+  String get sitterServicesAndPrices => 'Hizmetler ve Fiyatlar';
+
+  @override
+  String get sitterPhotosSection => 'Fotoğraflar';
+
+  @override
+  String get sitterReviewsSection => 'Değerlendirmeler';
+
+  @override
+  String sitterHourlyRate(int price) {
+    return '$price TL/saat';
+  }
+
+  @override
+  String sitterDailyRate(int price) {
+    return '$price TL/gün';
+  }
+
+  @override
+  String get sitterErrorPrefix => 'Hata: ';
 
   @override
   String get sitterProfileUpdated => 'Profil güncellendi!';

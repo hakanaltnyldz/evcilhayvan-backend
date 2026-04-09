@@ -1,6 +1,7 @@
 // lib/features/auth/presentation/screens/profile_screen.dart
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/utils/url_resolver.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -95,10 +96,18 @@ class ProfileScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final currentUser = ref.watch(authProvider);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appBarIconColor = isDark ? Colors.white : const Color(0xFF1B4332);
+
     if (currentUser == null) {
       return Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: AppBar(backgroundColor: Colors.transparent),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          foregroundColor: appBarIconColor,
+          iconTheme: IconThemeData(color: appBarIconColor),
+          actionsIconTheme: IconThemeData(color: appBarIconColor),
+        ),
         body: ModernBackground(
           child: Center(
             child: Padding(
@@ -141,6 +150,9 @@ class ProfileScreen extends ConsumerWidget {
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
+          foregroundColor: appBarIconColor,
+          iconTheme: IconThemeData(color: appBarIconColor),
+          actionsIconTheme: IconThemeData(color: appBarIconColor),
           actions: [
             _NotificationBellButton(),
             IconButton(
@@ -186,7 +198,7 @@ class ProfileScreen extends ConsumerWidget {
                         child: FilledButton.icon(
                           onPressed: () => context.pushNamed('create-pet', extra: {'advertType': 'adoption'}),
                           icon: const Icon(Icons.add, size: 16),
-                          label: const Text('Sahiplendir', overflow: TextOverflow.ellipsis),
+                          label: Text(l10n.profileNewAdoption, overflow: TextOverflow.ellipsis),
                           style: FilledButton.styleFrom(
                             backgroundColor: const Color(0xFF2D6A4F),
                             padding: const EdgeInsets.symmetric(vertical: 7),
@@ -198,7 +210,7 @@ class ProfileScreen extends ConsumerWidget {
                         child: FilledButton.icon(
                           onPressed: () => context.pushNamed('create-pet', extra: {'advertType': 'mating'}),
                           icon: const Icon(Icons.favorite, size: 16),
-                          label: const Text('Eşleştir', overflow: TextOverflow.ellipsis),
+                          label: Text(l10n.profileNewMating, overflow: TextOverflow.ellipsis),
                           style: FilledButton.styleFrom(
                             backgroundColor: const Color(0xFF52B788),
                             padding: const EdgeInsets.symmetric(vertical: 7),
@@ -206,6 +218,23 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                       ),
                     ],
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => context.pushNamed('become-sitter'),
+                      icon: const Icon(Icons.pets, size: 16),
+                      label: Text(l10n.sitterBecomeSitter),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF52B788),
+                        side: const BorderSide(color: Color(0xFF52B788)),
+                        padding: const EdgeInsets.symmetric(vertical: 7),
+                      ),
+                    ),
                   ),
                 ),
 
@@ -258,7 +287,7 @@ class _ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final avatarUrl = _resolveAvatarUrl(user.avatarUrl);
+    final avatarUrl = resolveImageUrl(user.avatarUrl);
     final initial = user.name.isNotEmpty ? user.name[0].toUpperCase() : '?';
 
     final isDark = theme.brightness == Brightness.dark;
@@ -685,11 +714,6 @@ class _NotificationBellButton extends ConsumerWidget {
   }
 }
 
-String? _resolveAvatarUrl(String? url) {
-  if (url == null || url.isEmpty) return null;
-  if (url.startsWith('http')) return url;
-  return '$apiBaseUrl$url';
-}
 
 // ─── Profile Completion Card ──────────────────────────────────────────────────
 

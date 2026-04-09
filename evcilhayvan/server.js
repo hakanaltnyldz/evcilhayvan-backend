@@ -321,6 +321,55 @@ io.on("connection", (socket) => {
     io.to(`conv:${conversationId}`).emit("message:new", payload?.message ?? payload);
   });
 
+  // === Bakıcı Canlı Konum Events ===
+  socket.on("sitter:location_update", async ({ bookingId, lat, lng }) => {
+    if (!connectedUserId || !bookingId) return;
+    try {
+      const SitterBooking = (await import("./src/models/SitterBooking.js")).default;
+      const booking = await SitterBooking.findById(bookingId).select("sitter user status");
+      if (!booking) return;
+      if (booking.sitter.toString() !== String(connectedUserId)) return; // sadece bakıcı emit edebilir
+      if (!['accepted', 'active'].includes(booking.status)) return;
+      // Pet sahibine konumu ilet
+      io.to(`user:${booking.user}`).emit("sitter:location_update", {
+        bookingId,
+        lat,
+        lng,
+        updatedAt: Date.now(),
+      });
+    } catch (err) {
+      console.error("[Socket] sitter:location_update error:", err.message);
+    }
+  });
+
+  socket.on("sitter:walk_started", async ({ bookingId }) => {
+    if (!connectedUserId || !bookingId) return;
+    try {
+      const SitterBooking = (await import("./src/models/SitterBooking.js")).default;
+      const booking = await SitterBooking.findById(bookingId).select("sitter user status");
+      if (!booking) return;
+      if (booking.sitter.toString() !== String(connectedUserId)) return;
+      // Durumu güncelle
+      await SitterBooking.findByIdAndUpdate(bookingId, { status: 'active' });
+      io.to(`user:${booking.user}`).emit("sitter:walk_started", { bookingId, startedAt: Date.now() });
+    } catch (err) {
+      console.error("[Socket] sitter:walk_started error:", err.message);
+    }
+  });
+
+  socket.on("sitter:walk_ended", async ({ bookingId }) => {
+    if (!connectedUserId || !bookingId) return;
+    try {
+      const SitterBooking = (await import("./src/models/SitterBooking.js")).default;
+      const booking = await SitterBooking.findById(bookingId).select("sitter user status");
+      if (!booking) return;
+      if (booking.sitter.toString() !== String(connectedUserId)) return;
+      io.to(`user:${booking.user}`).emit("sitter:walk_ended", { bookingId, endedAt: Date.now() });
+    } catch (err) {
+      console.error("[Socket] sitter:walk_ended error:", err.message);
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("Socket disconnected:", socket.id);
 

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:evcilhayvan_mobil2/main_shell.dart';
 import '../features/auth/data/repositories/auth_repository.dart';
+import '../core/providers/guest_mode_provider.dart';
 
 // Auth ekranlari
 import '../features/auth/presentation/screens/edit_profile_screen.dart';
@@ -38,6 +39,7 @@ import '../features/store/presentation/screens/product_management_screen.dart';
 import '../features/store/presentation/screens/seller_orders_screen.dart';
 import '../features/store/presentation/screens/checkout_screen.dart';
 import '../features/store/presentation/screens/my_orders_screen.dart';
+import '../features/store/presentation/screens/order_tracking_screen.dart';
 import '../features/store/presentation/screens/add_address_screen.dart';
 import '../features/favorites/presentation/screens/favorites_screen.dart';
 
@@ -69,6 +71,10 @@ import '../features/lost_found/presentation/screens/report_lost_found_screen.dar
 import '../features/pet_sitter/presentation/screens/sitter_home_screen.dart';
 import '../features/pet_sitter/presentation/screens/sitter_detail_screen.dart';
 import '../features/pet_sitter/presentation/screens/sitter_booking_screen.dart';
+import '../features/pet_sitter/presentation/screens/live_tracking_screen.dart';
+import '../features/pet_sitter/presentation/screens/booking_timeline_screen.dart';
+import '../features/pet_sitter/presentation/screens/availability_screen.dart';
+import '../features/pet_sitter/domain/models/sitter_booking_model.dart';
 import '../features/pet_sitter/presentation/screens/my_bookings_screen.dart';
 import '../features/pet_sitter/presentation/screens/become_sitter_screen.dart';
 import '../features/pet_sitter/domain/models/pet_sitter_model.dart';
@@ -123,6 +129,9 @@ const _guestBrowseRoutes = {
   '/events',
   '/sitters',
   '/search',
+  '/cart',
+  '/checkout',
+  '/order-tracking',
 };
 
 // Misafir redirect kontrolünde kullanılmak üzere
@@ -136,6 +145,7 @@ bool _isGuestBrowsable(String location) {
   if (location.startsWith('/lost-found/')) return true;
   if (location.startsWith('/store/')) return true;
   if (location.startsWith('/user/')) return true;
+  if (location.startsWith('/order-tracking')) return true;
   return false;
 }
 
@@ -218,6 +228,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
   final onboardingSeen = ref.watch(onboardingSeenProvider);
   final themeSelected = ref.watch(themeSelectedProvider);
+  final guestModeActive = ref.watch(guestModeProvider);
 
   return GoRouter(
     initialLocation: '/splash',
@@ -248,10 +259,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/';
       }
 
-      // Giris yapmamis kullanici korunmus sayfaya gitmeye calisirsa login'e yonlendir
-      // Ancak gezinme rotaları (home, vet, store, ilan detay) için yönlendirme yapma
-      if (!isLoggedIn && !isPublicRoute && !_isGuestBrowsable(state.matchedLocation)) {
-        return '/login';
+      // Giriş yapmamış kullanıcı: misafir modu aktif değilse login'e yönlendir
+      // Misafir modu aktifse gezinme rotalarına izin ver, korumalı sayfalara değil
+      if (!isLoggedIn && !isPublicRoute) {
+        if (!guestModeActive) {
+          // Misafir modu açık değil → her şey login'e
+          return '/login';
+        }
+        // Misafir modu açık → browsable olmayan sayfalara login'e yönlendir
+        if (!_isGuestBrowsable(state.matchedLocation)) {
+          return '/login';
+        }
       }
 
       return null;
@@ -490,6 +508,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       pageBuilder: (context, state) => _buildPage(state, const MyOrdersScreen()),
     ),
     GoRoute(
+      path: '/order-tracking',
+      name: 'order-tracking',
+      pageBuilder: (context, state) {
+        final tracking = state.uri.queryParameters['t'];
+        return _buildPage(state, OrderTrackingScreen(initialTrackingNumber: tracking));
+      },
+    ),
+    GoRoute(
       path: '/store/cart',
       name: 'store-cart',
       pageBuilder: (context, state) => _buildPage(state, const CartScreen()),
@@ -639,6 +665,36 @@ final routerProvider = Provider<GoRouter>((ref) {
       pageBuilder: (context, state) {
         final sitter = state.extra as PetSitterModel;
         return _buildModalPage(state, SitterBookingScreen(sitter: sitter));
+      },
+    ),
+    GoRoute(
+      path: '/live-tracking',
+      name: 'live-tracking',
+      pageBuilder: (context, state) {
+        final extra = state.extra;
+        if (extra is Map) {
+          return _buildPage(state, LiveTrackingScreen(
+            booking: extra['booking'] as SitterBookingModel,
+            isSitter: extra['isSitter'] as bool? ?? false,
+          ));
+        }
+        return _buildPage(state, LiveTrackingScreen(booking: extra as SitterBookingModel));
+      },
+    ),
+    GoRoute(
+      path: '/booking-timeline',
+      name: 'booking-timeline',
+      pageBuilder: (context, state) {
+        final booking = state.extra as SitterBookingModel;
+        return _buildPage(state, BookingTimelineScreen(booking: booking));
+      },
+    ),
+    GoRoute(
+      path: '/sitter-availability/:id',
+      name: 'sitter-availability',
+      pageBuilder: (context, state) {
+        final sitterId = state.pathParameters['id']!;
+        return _buildPage(state, AvailabilityScreen(sitterId: sitterId));
       },
     ),
 

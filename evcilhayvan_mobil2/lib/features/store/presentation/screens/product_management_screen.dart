@@ -9,6 +9,7 @@ import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/product_model.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 class ProductManagementScreen extends ConsumerStatefulWidget {
@@ -34,7 +35,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
           l10n.productMgmtTitle,
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -108,44 +109,21 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                 final filteredProducts = _filterProducts(products);
 
                 if (filteredProducts.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.inventory_2_outlined,
-                          size: 80,
-                          color: Theme.of(context).colorScheme.outlineVariant,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _filter == 'all' ? l10n.productMgmtNoProducts : l10n.productMgmtNoCategoryProducts,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        if (_filter == 'all') ...[
-                          const SizedBox(height: 24),
-                          ElevatedButton.icon(
+                  return AnimatedEmptyState(
+                    icon: Icons.inventory_2_outlined,
+                    title: _filter == 'all' ? l10n.productMgmtNoProducts : l10n.productMgmtNoCategoryProducts,
+                    action: _filter == 'all'
+                        ? ElevatedButton.icon(
                             onPressed: () => context.pushNamed('store-add-product'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppPalette.storePrimary,
                               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
                             icon: const Icon(Icons.add),
-                            label: Text(
-                              l10n.productMgmtAddFirst,
-                              style: const TextStyle(fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                            label: Text(l10n.productMgmtAddFirst, style: const TextStyle(fontWeight: FontWeight.w700)),
+                          )
+                        : null,
                   );
                 }
 

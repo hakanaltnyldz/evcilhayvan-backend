@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_refresh_indicator.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/event_repository.dart';
 import '../../domain/models/pet_event_model.dart';
@@ -63,10 +66,10 @@ class _EventsHomeScreenState extends ConsumerState<EventsHomeScreen> {
     final eventsAsync = ref.watch(eventListProvider(params));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(l10n.eventsTitle2),
-        backgroundColor: const Color(0xFF1B4332),
+        backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -137,13 +140,13 @@ class _EventsHomeScreenState extends ConsumerState<EventsHomeScreen> {
               ),
               data: (events) {
                 if (events.isEmpty) {
-                  return EmptyState(
+                  return AnimatedEmptyState(
                     icon: Icons.celebration_outlined,
                     title: l10n.eventsEmptyTitle,
                     subtitle: l10n.eventsEmptySubtitle,
                   );
                 }
-                return RefreshIndicator(
+                return PawRefreshIndicator(
                   onRefresh: () async => ref.invalidate(eventListProvider(params)),
                   child: ListView.builder(
                     padding: const EdgeInsets.fromLTRB(12, 4, 12, 100),

@@ -31,8 +31,21 @@ const orderSchema = new Schema(
     user: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      required: false,   // misafir siparişlerde null olabilir
       index: true,
+    },
+    // Misafir (giriş yapmamış) kullanıcı bilgileri
+    guestInfo: {
+      name:       { type: String },
+      phone:      { type: String },
+      email:      { type: String },      // takip maili için
+      nationalId: { type: String },      // AES-256-CBC şifreli TC
+      address: {
+        city:      String,
+        district:  String,
+        street:    String,
+        buildingNo: String,
+      },
     },
     items: [orderItemSchema],
     totalAmount: {

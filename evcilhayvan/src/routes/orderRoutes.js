@@ -12,14 +12,28 @@ import {
   getSellerOrderStats,
   getSellerRevenueChart,
 } from "../controllers/orderController.js";
+import Order from "../models/Order.js";
+import { sendOk, sendError } from "../utils/apiResponse.js";
 
 const router = Router();
 
+// === PUBLIC ENDPOINTS (auth gerekmez) ===
+// Takip numarasıyla sipariş sorgula
+router.get("/orders/track/:trackingNumber", async (req, res) => {
+  try {
+    const order = await Order.findOne({ trackingNumber: req.params.trackingNumber })
+      .select('status trackingNumber carrier estimatedDelivery statusHistory createdAt totalAmount guestInfo.name');
+    if (!order) return sendError(res, 404, "Sipariş bulunamadı", "order_not_found");
+    return sendOk(res, 200, { order });
+  } catch (err) {
+    return sendError(res, 500, "Sipariş sorgulanamadı", "internal_error", err.message);
+  }
+});
+
 // === CUSTOMER ENDPOINTS ===
-// Sipariş oluştur
+// Sipariş oluştur (kayıtlı veya misafir)
 router.post(
   "/orders",
-  authRequired(),
   [
     body("items").isArray({ min: 1 }).withMessage("En az 1 ürün gerekli"),
     body("items.*.productId").notEmpty().isMongoId().withMessage("Geçersiz ürün ID"),

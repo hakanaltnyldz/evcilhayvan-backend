@@ -36,7 +36,7 @@ class LostFoundDetailScreen extends ConsumerWidget {
         final isOwner = currentUser != null && currentUser.id == report.userId;
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF4FAF6),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: CustomScrollView(
             slivers: [
               // Photo gallery
@@ -44,7 +44,7 @@ class LostFoundDetailScreen extends ConsumerWidget {
                 expandedHeight: 300,
                 pinned: true,
                 foregroundColor: Colors.white,
-                backgroundColor: const Color(0xFF1B4332),
+                backgroundColor: AppPalette.appBarDark,
                 flexibleSpace: FlexibleSpaceBar(
                   background: report.photos.isNotEmpty
                       ? PageView.builder(

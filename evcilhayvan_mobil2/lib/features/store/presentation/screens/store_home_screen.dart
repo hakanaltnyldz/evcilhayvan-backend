@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:evcilhayvan_mobil2/core/utils/url_resolver.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -136,7 +137,7 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                           onFavoritesTap: () =>
                               context.pushNamed('favorites'),
                           onOrdersTap: () =>
-                              context.push('/store/orders'),
+                              context.pushNamed('my-orders'),
                         ),
                         const SizedBox(height: 14),
                         const _HeroCard(),
@@ -149,7 +150,10 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                             return StoreCategoryChips(
                               categories: categories,
                               selectedCategoryId: _selectedCategory,
-                              onSelected: (value) => setState(() => _selectedCategory = value),
+                              onSelected: (value) {
+                                setState(() => _selectedCategory = value);
+                                ref.invalidate(catalog.storeProductsProvider);
+                              },
                             );
                           },
                           loading: () => const _CategorySkeletonRow(),
@@ -182,9 +186,9 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                               children: [
                                 const Icon(Icons.local_offer, color: Colors.white, size: 18),
                                 const SizedBox(width: 10),
-                                const Text(
-                                  'Kuponlarım & Fırsatlar',
-                                  style: TextStyle(
+                                Text(
+                                  AppLocalizations.of(context)!.storeMyCouponsLabel,
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
@@ -199,7 +203,7 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                         if (user == null || user.role != 'seller')
                           _SellerCTA(onTap: () {
                             if (user == null) {
-                              context.goNamed('login');
+                              context.pushNamed('login');
                             } else {
                               context.pushNamed('store-apply');
                             }
@@ -276,7 +280,10 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                                   DropdownMenuItem(value: 'name_asc',   child: Text(AppLocalizations.of(context)!.storeNameAz)),
                                 ],
                                 onChanged: (v) {
-                                  if (v != null) setState(() => _sort = v);
+                                  if (v != null) {
+                                    setState(() => _sort = v);
+                                    ref.invalidate(catalog.storeProductsProvider);
+                                  }
                                 },
                               ),
                             ),
@@ -813,7 +820,7 @@ class _StoreCarousel extends StatelessWidget {
         itemBuilder: (context, index) {
           final store = stores[index];
           final description = (store.description ?? '').trim();
-          final logoUrl = _resolveMediaUrl(store.logoUrl);
+          final logoUrl = resolveImageUrl(store.logoUrl);
           return Container(
             width: 240,
             padding: const EdgeInsets.all(14),
@@ -1184,8 +1191,3 @@ class _ProductSkeletonCard extends StatelessWidget {
   }
 }
 
-String? _resolveMediaUrl(String? path) {
-  if (path == null || path.isEmpty) return null;
-  if (path.startsWith('http')) return path;
-  return '$apiBaseUrl$path';
-}
