@@ -48,7 +48,7 @@ export async function listSitters(req, res) {
       if (isNaN(latNum) || latNum < -90 || latNum > 90 || isNaN(lngNum) || lngNum < -180 || lngNum > 180) {
         return sendError(res, 400, "Gecersiz koordinatlar", "invalid_coords");
       }
-      const radiusM = Math.min(Number(radiusKm) || 20, 100) * 1000;
+      const radiusM = Math.min(Number(radiusKm) || 500, 1000) * 1000;
 
       const pipeline = [];
       pipeline.push({
