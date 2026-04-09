@@ -151,7 +151,15 @@ export async function googleSearchVets(req, res) {
     console.error("[googleSearchVets/OSM]", err);
     // Fallback: sadece DB'deki kayıtları döndür
     try {
-      const vets = await Veterinary.find({ isActive: true }).limit(50);
+      const vets = await Veterinary.find({
+        isActive: true,
+        location: {
+          $near: {
+            $geometry: { type: "Point", coordinates: [Number(req.query.lng), Number(req.query.lat)] },
+            $maxDistance: Number(req.query.radiusKm || 5) * 1000,
+          },
+        },
+      }).limit(50);
       return sendOk(res, 200, { vets, osmResultCount: 0 });
     } catch {
       return sendError(res, 500, "Veteriner arama basarisiz", "internal_error", err.message);

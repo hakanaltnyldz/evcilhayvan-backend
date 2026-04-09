@@ -171,6 +171,22 @@ export async function updateBookingStatus(req, res) {
     const isOwner = String(booking.petOwnerId) === userId;
     const isSitter = String(booking.sitterUserId) === userId;
 
+    if (
+      booking.status === "completed" &&
+      status === "completed" &&
+      isOwner &&
+      review?.rating &&
+      !booking.ownerReview
+    ) {
+      booking.ownerReview = {
+        rating: Math.min(5, Math.max(1, review.rating)),
+        comment: review.comment || "",
+      };
+      await booking.save();
+      await _updateSitterRating(booking.sitterId);
+      return sendOk(res, 200, { booking });
+    }
+
     // Durum gecis matrisi
     const validTransitions = {
       pending:   ["accepted", "rejected", "cancelled"],
