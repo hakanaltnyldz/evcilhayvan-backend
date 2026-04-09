@@ -164,7 +164,7 @@ class FcmService {
       final token = fcmToken ?? await _messaging.getToken();
       if (token == null) return;
       await ApiClient().dio.post(
-        '/api/notifications/register-token',
+        '/api/auth/fcm-token',
         data: {'token': token, 'platform': Platform.isAndroid ? 'android' : 'ios'},
       );
     } catch (_) {
@@ -178,7 +178,7 @@ class FcmService {
       final token = await _messaging.getToken();
       if (token == null) return;
       await ApiClient().dio.delete(
-        '/api/notifications/unregister-token',
+        '/api/auth/fcm-token',
         data: {'token': token},
       );
     } catch (_) {}

@@ -1,5 +1,5 @@
 // lib/features/auth/data/repositories/auth_repository.dart
-
+import 'package:evcilhayvan_mobil2/core/services/fcm_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -46,6 +46,7 @@ class AuthNotifier extends StateNotifier<User?> {
     try {
       final user = await ref.read(authRepositoryProvider).me();
       state = user;
+      await FcmService.registerToken();
     } catch (_) {
       await ApiClient().clearTokens();
       state = null;
@@ -57,6 +58,7 @@ class AuthNotifier extends StateNotifier<User?> {
   }
 
   Future<void> logout() async {
+    await FcmService.unregisterToken();
     await ref.read(authRepositoryProvider).logout();
     state = null;
   }
@@ -100,6 +102,7 @@ class AuthRepository {
     await _persistTokens(response.data as Map<String, dynamic>);
     final userJson = response.data['user'] as Map<String, dynamic>?;
     if (userJson == null) throw ApiError('Beklenmeyen yanit');
+    await FcmService.registerToken();
     return User.fromJson(userJson);
   }
 

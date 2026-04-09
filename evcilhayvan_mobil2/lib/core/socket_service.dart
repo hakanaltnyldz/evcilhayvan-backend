@@ -1,7 +1,6 @@
 // lib/core/socket_service.dart
 import 'dart:async';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'http.dart';
 
 // Event data models
@@ -196,9 +195,7 @@ class SocketService {
           ? '${backendUri.scheme}://${backendUri.host}:${backendUri.port}'
           : '${backendUri.scheme}://${backendUri.host}';
 
-      final prefs = await SharedPreferences.getInstance();
-      // accessToken veya token key'lerinden birini dene
-      final token = prefs.getString('accessToken') ?? prefs.getString('token');
+      final token = await ApiClient().tokenStorage.accessToken;
 
       final builder = IO.OptionBuilder()
           .setTransports(['websocket'])
