@@ -5,9 +5,11 @@ import 'package:evcilhayvan_mobil2/core/utils/url_resolver.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/shimmer_box.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
+import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/product_model.dart';
 import 'package:evcilhayvan_mobil2/features/favorites/presentation/widgets/favorite_button.dart';
 import 'package:evcilhayvan_mobil2/features/store/providers/cart_providers.dart';
+import 'package:evcilhayvan_mobil2/features/store/providers/guest_cart_provider.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class StoreProductCard extends ConsumerStatefulWidget {
@@ -52,7 +54,24 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
 
     setState(() => _addingToCart = true);
     try {
-      await ref.read(cartProvider.notifier).addItem(widget.product, 1);
+      final currentUser = ref.read(authProvider);
+      if (currentUser == null) {
+        ref
+            .read(guestCartProvider.notifier)
+            .add(
+              GuestCartItem(
+                productId: widget.product.id,
+                title: widget.product.displayName,
+                price: widget.product.price,
+                quantity: 1,
+                imageUrl: widget.product.photos.isNotEmpty
+                    ? widget.product.photos.first
+                    : null,
+              ),
+            );
+      } else {
+        await ref.read(cartProvider.notifier).addItem(widget.product, 1);
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -62,7 +81,9 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    AppLocalizations.of(context)!.productCardAddedToCart(widget.product.title),
+                    AppLocalizations.of(
+                      context,
+                    )!.productCardAddedToCart(widget.product.title),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -72,7 +93,9 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
             backgroundColor: AppPalette.storePrimary,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 2),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             margin: const EdgeInsets.all(16),
           ),
         );
@@ -82,7 +105,9 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.productCardAddErr(e.toString())),
+            content: Text(
+              AppLocalizations.of(context)!.productCardAddErr(e.toString()),
+            ),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
@@ -100,7 +125,9 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
     final hasImage = product.photos.isNotEmpty;
     final badge = widget.badge;
     final title = product.title.trim();
-    final displayTitle = title.isNotEmpty ? title : AppLocalizations.of(context)!.productCardNoTitle;
+    final displayTitle = title.isNotEmpty
+        ? title
+        : AppLocalizations.of(context)!.productCardNoTitle;
     final imageUrl = hasImage ? resolveImageUrl(product.photos.first) : null;
     final isOutOfStock = product.stock <= 0;
 
@@ -117,7 +144,9 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: AppPalette.storePrimary.withOpacity(context.isDark ? 0.12 : 0.08),
+                color: AppPalette.storePrimary.withOpacity(
+                  context.isDark ? 0.12 : 0.08,
+                ),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -143,7 +172,8 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
                         ? Image.network(
                             imageUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _PlaceholderImage(title: displayTitle),
+                            errorBuilder: (_, __, ___) =>
+                                _PlaceholderImage(title: displayTitle),
                             loadingBuilder: (context, child, loadingProgress) {
                               if (loadingProgress == null) return child;
                               return const ShimmerBox();
@@ -159,7 +189,9 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surface.withOpacity(0.9),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
@@ -184,7 +216,10 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
                         top: 8,
                         left: 8,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: isOutOfStock ? Colors.red : Colors.orange,
                             borderRadius: BorderRadius.circular(8),
@@ -212,14 +247,19 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
                             height: 36,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                colors: [AppPalette.storePrimary, AppPalette.storeSecondary],
+                                colors: [
+                                  AppPalette.storePrimary,
+                                  AppPalette.storeSecondary,
+                                ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
                               borderRadius: BorderRadius.circular(10),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppPalette.storePrimary.withOpacity(0.3),
+                                  color: AppPalette.storePrimary.withOpacity(
+                                    0.3,
+                                  ),
                                   blurRadius: 6,
                                   offset: const Offset(0, 3),
                                 ),
@@ -230,7 +270,9 @@ class _StoreProductCardState extends ConsumerState<StoreProductCard> {
                                     padding: EdgeInsets.all(8),
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation(Colors.white),
+                                      valueColor: AlwaysStoppedAnimation(
+                                        Colors.white,
+                                      ),
                                     ),
                                   )
                                 : const Icon(
@@ -322,7 +364,9 @@ class _PlaceholderImage extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            title.isNotEmpty ? title.substring(0, title.length > 10 ? 10 : title.length) : '',
+            title.isNotEmpty
+                ? title.substring(0, title.length > 10 ? 10 : title.length)
+                : '',
             style: TextStyle(
               fontWeight: FontWeight.w500,
               fontSize: 11,
@@ -336,4 +380,3 @@ class _PlaceholderImage extends StatelessWidget {
     );
   }
 }
-
