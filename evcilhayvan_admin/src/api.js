@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { clearSession, getSessionToken } from './lib/session.js'
 
 const rawBaseUrl =
   import.meta.env.VITE_API_URL || 'https://evcilhayvan-backend.onrender.com/api'
@@ -9,22 +10,22 @@ const BASE_URL = rawBaseUrl.endsWith('/api')
 
 const api = axios.create({ baseURL: BASE_URL })
 
-// Attach JWT token on every request
 api.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem('admin_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
+  const token = getSessionToken()
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
   return config
 })
 
-// Redirect to login on 401
 api.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    if (err.response?.status === 401) {
-      sessionStorage.removeItem('admin_token')
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      clearSession()
       window.location.href = '/login'
     }
-    return Promise.reject(err)
+    return Promise.reject(error)
   }
 )
 

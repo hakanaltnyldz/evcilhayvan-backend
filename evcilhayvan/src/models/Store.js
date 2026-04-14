@@ -11,7 +11,7 @@ const StoreSchema = new mongoose.Schema(
     instagram: { type: String, trim: true },
     twitter: { type: String, trim: true },
     facebook: { type: String, trim: true },
-    workingHours: { type: String, trim: true },
+    workingHours: { type: mongoose.Schema.Types.Mixed, default: {} },
     isActive: { type: Boolean, default: true },
     owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   },

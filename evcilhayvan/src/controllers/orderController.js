@@ -432,13 +432,12 @@ export async function getSellerOrders(req, res) {
   try {
     const sellerId = req.user?.sub;
     if (!sellerId) return sendError(res, 401, "Kimlik dogrulama gerekli", "auth_required");
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 100));
 
-    // Satıcının ürünlerini bul
     const sellerProducts = await Product.find({ seller: sellerId }).select("_id");
     const productIds = sellerProducts.map(p => p._id);
 
-    // Bu ürünleri içeren siparişleri bul
-    const orders = await Order.find({
+    const orderQuery = Order.find({
       "items.product": { $in: productIds },
     })
       .sort({ createdAt: -1 })
@@ -450,7 +449,12 @@ export async function getSellerOrders(req, res) {
       })
       .lean();
 
-    // Sadece satıcının ürünlerini filtrele (.lean() ile plain object)
+    if (Number.isFinite(limit)) {
+      orderQuery.limit(limit);
+    }
+
+    const orders = await orderQuery;
+
     const filteredOrders = orders.map(order => {
       const items = order.items.filter(item =>
         productIds.some(pid => pid.toString() === item.product?._id?.toString())
@@ -474,18 +478,16 @@ export async function updateOrderStatus(req, res) {
   try {
     const sellerId = req.user?.sub;
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, trackingNumber, carrier, estimatedDelivery } = req.body;
 
     const validStatuses = ["processing", "shipped", "delivered"];
     if (!validStatuses.includes(status)) {
       return sendError(res, 400, "Gecersiz durum", "invalid_status");
     }
 
-    // Satıcının ürünlerini bul
     const sellerProducts = await Product.find({ seller: sellerId }).select("_id");
     const productIds = sellerProducts.map(p => p._id);
 
-    // Siparişi bul ve satıcının ürünlerini içerdiğini doğrula
     const order = await Order.findOne({
       _id: id,
       "items.product": { $in: productIds },
@@ -510,6 +512,21 @@ export async function updateOrderStatus(req, res) {
     }
 
     order.status = status;
+    if (trackingNumber !== undefined) order.trackingNumber = trackingNumber;
+    if (carrier !== undefined) order.carrier = carrier;
+    if (estimatedDelivery !== undefined) {
+      order.estimatedDelivery = estimatedDelivery ? new Date(estimatedDelivery) : undefined;
+    }
+
+    order.statusHistory = order.statusHistory || [];
+    order.statusHistory.push({
+      status,
+      note: trackingNumber
+        ? `${carrier || "Kargo"} - Takip No: ${trackingNumber}`
+        : `Durum guncellendi: ${status}`,
+      updatedAt: new Date(),
+    });
+
     if (status === "delivered") {
       order.paymentStatus = "paid";
     }
@@ -534,14 +551,12 @@ export async function getSellerOrderStats(req, res) {
   try {
     const sellerId = req.user?.sub;
 
-    // Satıcının ürünlerini bul
     const sellerProducts = await Product.find({ seller: sellerId }).select("_id");
     const productIds = sellerProducts.map(p => p._id);
 
-    // Bu ürünleri içeren siparişleri bul
     const orders = await Order.find({
       "items.product": { $in: productIds },
-    });
+    }).populate("items.product", "name title");
 
     let totalRevenue = 0;
     let pendingOrders = 0;
@@ -550,11 +565,17 @@ export async function getSellerOrderStats(req, res) {
     let deliveredOrders = 0;
     let cancelledOrders = 0;
     let totalItemsSold = 0;
+    let revenueThisMonth = 0;
+    let ordersThisMonth = 0;
+    let completedOrderCount = 0;
+    const topProductMap = new Map();
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
 
     for (const order of orders) {
-      // Sadece satıcının ürünlerini hesapla
       const sellerItems = order.items.filter(item =>
-        productIds.some(pid => pid.toString() === item.product?.toString())
+        productIds.some(pid => pid.toString() === item.product?._id?.toString() || pid.toString() === item.product?.toString())
       );
 
       const sellerTotal = sellerItems.reduce(
@@ -565,6 +586,24 @@ export async function getSellerOrderStats(req, res) {
       if (order.status !== "cancelled") {
         totalRevenue += sellerTotal;
         totalItemsSold += sellerItems.reduce((sum, item) => sum + item.quantity, 0);
+        completedOrderCount += 1;
+        if (order.createdAt >= monthStart) {
+          revenueThisMonth += sellerTotal;
+          ordersThisMonth += 1;
+        }
+
+        for (const item of sellerItems) {
+          const productId = item.product?._id?.toString() || item.product?.toString() || item.name;
+          const existing = topProductMap.get(productId) || {
+            _id: productId,
+            name: item.product?.name || item.product?.title || item.name || "Urun",
+            totalSold: 0,
+            revenue: 0,
+          };
+          existing.totalSold += item.quantity || 0;
+          existing.revenue += (item.price || 0) * (item.quantity || 0);
+          topProductMap.set(productId, existing);
+        }
       }
 
       switch (order.status) {
@@ -586,17 +625,41 @@ export async function getSellerOrderStats(req, res) {
       }
     }
 
+    const averageOrderValue = completedOrderCount > 0
+      ? Math.round((totalRevenue / completedOrderCount) * 100) / 100
+      : 0;
+
+    const topProducts = Array.from(topProductMap.values())
+      .sort((a, b) => b.totalSold - a.totalSold)
+      .slice(0, 5)
+      .map((item) => ({
+        ...item,
+        revenue: Math.round(item.revenue * 100) / 100,
+      }));
+
+    const stats = {
+      totalOrders: orders.length,
+      pendingOrders,
+      processingOrders,
+      shippedOrders,
+      deliveredOrders,
+      cancelledOrders,
+      pending: pendingOrders,
+      processing: processingOrders,
+      shipped: shippedOrders,
+      delivered: deliveredOrders,
+      cancelled: cancelledOrders,
+      totalRevenue: Math.round(totalRevenue * 100) / 100,
+      totalItemsSold,
+      revenueThisMonth: Math.round(revenueThisMonth * 100) / 100,
+      ordersThisMonth,
+      averageOrderValue,
+      topProducts,
+    };
+
     return sendOk(res, 200, {
-      stats: {
-        totalOrders: orders.length,
-        pendingOrders,
-        processingOrders,
-        shippedOrders,
-        deliveredOrders,
-        cancelledOrders,
-        totalRevenue: Math.round(totalRevenue * 100) / 100,
-        totalItemsSold,
-      },
+      ...stats,
+      stats,
     });
   } catch (err) {
     console.error("[getSellerOrderStats] error", err);
@@ -645,7 +708,7 @@ export async function getSellerRevenueChart(req, res) {
       orders: data.orders,
     }));
 
-    return sendOk(res, 200, { chart });
+    return sendOk(res, 200, { chart, data: chart });
   } catch (err) {
     console.error("[getSellerRevenueChart] error", err);
     return sendError(res, 500, "Grafik verisi alinamadi", "internal_error", err.message);

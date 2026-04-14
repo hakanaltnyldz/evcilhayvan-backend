@@ -87,12 +87,27 @@ export async function updateSellerProduct(req, res) {
     if (price !== undefined) updates.price = Number(price);
     if (stock !== undefined) updates.stock = Number(stock) || 0;
     if (images !== undefined) { updates.images = images; updates.photos = images; }
-    if (category !== undefined) updates.category = category;
+    if (category !== undefined) updates.category = category || undefined;
     if (isActive !== undefined) updates.isActive = isActive;
 
+    const uploadedImages = req.files ? req.files.map((file) => `/uploads/products/${file.filename}`) : [];
+    if (uploadedImages.length > 0) {
+      updates.images = uploadedImages;
+      updates.photos = uploadedImages;
+    }
+
     if (variants !== undefined) {
-      updates.variants = Array.isArray(variants)
-        ? variants
+      let parsedVariants = variants;
+      if (typeof variants === "string") {
+        try {
+          parsedVariants = JSON.parse(variants);
+        } catch {
+          parsedVariants = [];
+        }
+      }
+
+      updates.variants = Array.isArray(parsedVariants)
+        ? parsedVariants
             .filter(v => v.name && Array.isArray(v.options) && v.options.length > 0)
             .map(v => ({
               name: String(v.name).trim(),
@@ -324,16 +339,19 @@ export async function getSellerStats(req, res) {
     const totalStock = products.reduce((sum, p) => sum + (p.stock || 0), 0);
     const totalValue = products.reduce((sum, p) => sum + ((p.price || 0) * (p.stock || 0)), 0);
 
+    const stats = {
+      totalProducts,
+      activeProducts,
+      inactiveProducts: totalProducts - activeProducts,
+      outOfStock,
+      lowStock,
+      totalStock,
+      totalValue: Math.round(totalValue * 100) / 100,
+    };
+
     return sendOk(res, 200, {
-      stats: {
-        totalProducts,
-        activeProducts,
-        inactiveProducts: totalProducts - activeProducts,
-        outOfStock,
-        lowStock,
-        totalStock,
-        totalValue: Math.round(totalValue * 100) / 100,
-      },
+      ...stats,
+      stats,
     });
   } catch (err) {
     console.error("[getSellerStats] error", err);

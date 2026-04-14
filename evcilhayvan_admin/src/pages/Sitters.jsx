@@ -1,18 +1,13 @@
-import { useState, useEffect, useCallback } from 'react'
-import api from '../api.js'
+import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
+import api from '../api.js'
 
-const SERVICE_LABELS = {
+const serviceLabels = {
   walking: 'Gezdirme',
-  home_sitting: 'Eve Bakım',
-  boarding: 'Pansiyona Alma',
-  daycare: 'Gündüz Bakım',
-  grooming: 'Tımar',
-}
-
-const VERIFIED_COLORS = {
-  true: 'bg-green-100 text-green-700',
-  false: 'bg-yellow-100 text-yellow-700',
+  home_sitting: 'Evde bakim',
+  boarding: 'Pansiyon',
+  daycare: 'Gunduz bakim',
+  grooming: 'Timar',
 }
 
 export default function Sitters() {
@@ -26,26 +21,44 @@ export default function Sitters() {
   const fetchSitters = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await api.get('/admin/pet-sitters', { params: { page, verified: filter } })
-      setSitters(res.data?.sitters || [])
-      setTotal(res.data?.total || 0)
-    } catch (e) {
-      toast.error(e.response?.data?.message || 'Bakıcılar yüklenemedi')
+      const response = await api.get('/admin/pet-sitters', { params: { page, verified: filter } })
+      setSitters(response.data?.sitters || [])
+      setTotal(response.data?.total || 0)
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Bakicilar yuklenemedi')
     } finally {
       setLoading(false)
     }
   }, [page, filter])
 
-  useEffect(() => { fetchSitters() }, [fetchSitters])
+  useEffect(() => {
+    fetchSitters()
+  }, [fetchSitters])
 
   async function toggleVerify(sitter) {
     setActionId(sitter._id)
     try {
       await api.patch(`/admin/pet-sitters/${sitter._id}/verify`, { isVerified: !sitter.isVerified })
-      toast.success(sitter.isVerified ? 'Doğrulama kaldırıldı' : 'Bakıcı doğrulandı')
+      toast.success(sitter.isVerified ? 'Dogrulama kaldirildi' : 'Bakici dogrulandi')
       fetchSitters()
-    } catch (e) {
-      toast.error(e.response?.data?.message || 'İşlem başarısız')
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Islem basarisiz')
+    } finally {
+      setActionId(null)
+    }
+  }
+
+  async function toggleBan(sitter) {
+    setActionId(sitter._id)
+    try {
+      await api.patch(`/admin/pet-sitters/${sitter._id}/ban`, {
+        isBanned: sitter.isActive,
+        reason: sitter.isActive ? 'Admin panelinden devre disi birakildi' : 'Admin panelinden tekrar aktif edildi',
+      })
+      toast.success(sitter.isActive ? 'Bakici devre disi birakildi' : 'Bakici tekrar aktif edildi')
+      fetchSitters()
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Islem basarisiz')
     } finally {
       setActionId(null)
     }
@@ -55,24 +68,27 @@ export default function Sitters() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Bakıcı Yönetimi</h1>
-          <p className="text-sm text-gray-500 mt-1">Toplam {total} bakıcı</p>
+          <h1 className="text-2xl font-bold text-gray-900">Bakici Yonetimi</h1>
+          <p className="mt-1 text-sm text-gray-500">Toplam {total} bakici</p>
         </div>
         <div className="flex gap-2">
           {[
-            { key: 'all', label: 'Tümü' },
-            { key: 'false', label: 'Bekliyor' },
-            { key: 'true', label: 'Doğrulandı' },
+            { key: 'all', label: 'Tumu' },
+            { key: 'false', label: 'Bekleyen' },
+            { key: 'true', label: 'Dogrulanmis' },
           ].map(({ key, label }) => (
             <button
               key={key}
-              onClick={() => { setFilter(key); setPage(1) }}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              onClick={() => {
+                setFilter(key)
+                setPage(1)
+              }}
+              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                 filter === key
                   ? 'bg-indigo-600 text-white'
-                  : 'bg-white text-gray-600 border hover:bg-gray-50'
+                  : 'border bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
               {label}
@@ -81,29 +97,31 @@ export default function Sitters() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
         {loading ? (
-          <div className="text-center py-16 text-gray-400">Yükleniyor...</div>
+          <div className="py-16 text-center text-gray-400">Yukleniyor...</div>
         ) : sitters.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">Bakıcı bulunamadı</div>
+          <div className="py-16 text-center text-gray-400">Bakici bulunamadi</div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
+            <thead className="border-b bg-gray-50">
               <tr>
-                {['Bakıcı', 'Hizmetler', 'Tür', 'Puan', 'Durum', 'İşlem'].map(h => (
-                  <th key={h} className="text-left px-4 py-3 font-semibold text-gray-600">{h}</th>
+                {['Bakici', 'Hizmetler', 'Tur', 'Puan', 'Durum', 'Islem'].map((header) => (
+                  <th key={header} className="px-4 py-3 text-left font-semibold text-gray-600">
+                    {header}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {sitters.map(sitter => (
-                <tr key={sitter._id} className="hover:bg-gray-50 transition-colors">
+              {sitters.map((sitter) => (
+                <tr key={sitter._id} className="transition-colors hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       {sitter.avatar ? (
-                        <img src={sitter.avatar} className="w-9 h-9 rounded-full object-cover" alt="" />
+                        <img src={sitter.avatar} className="h-9 w-9 rounded-full object-cover" alt="" />
                       ) : (
-                        <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-600">
                           {sitter.displayName?.[0]?.toUpperCase() || '?'}
                         </div>
                       )}
@@ -114,45 +132,63 @@ export default function Sitters() {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-1 max-w-[180px]">
-                      {(sitter.services || []).slice(0, 3).map(s => (
-                        <span key={s.type} className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">
-                          {SERVICE_LABELS[s.type] || s.type}
+                    <div className="flex max-w-[200px] flex-wrap gap-1">
+                      {(sitter.services || []).slice(0, 3).map((service) => (
+                        <span key={service.type} className="rounded bg-blue-50 px-1.5 py-0.5 text-xs text-blue-700">
+                          {serviceLabels[service.type] || service.type}
                         </span>
                       ))}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">
+                  <td className="px-4 py-3 text-xs text-gray-500">
                     {(sitter.speciesServed || []).join(', ') || '-'}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
                       <span className="text-yellow-500">★</span>
                       <span className="font-medium">{sitter.rating?.toFixed(1) || '0.0'}</span>
-                      <span className="text-gray-400 text-xs">({sitter.reviewCount || 0})</span>
+                      <span className="text-xs text-gray-400">({sitter.reviewCount || 0})</span>
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${VERIFIED_COLORS[String(sitter.isVerified)]}`}>
-                      {sitter.isVerified ? '✓ Doğrulandı' : '⏳ Bekliyor'}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      <span className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                        sitter.isVerified ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {sitter.isVerified ? 'Dogrulandi' : 'Bekliyor'}
+                      </span>
+                      <span className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                        sitter.isActive ? 'bg-blue-50 text-blue-700' : 'bg-red-50 text-red-600'
+                      }`}>
+                        {sitter.isActive ? 'Aktif' : 'Devre disi'}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => toggleVerify(sitter)}
-                      disabled={actionId === sitter._id}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                        sitter.isVerified
-                          ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                          : 'bg-green-50 text-green-700 hover:bg-green-100'
-                      }`}
-                    >
-                      {actionId === sitter._id
-                        ? '...'
-                        : sitter.isVerified
-                        ? 'Doğrulamayı Kaldır'
-                        : 'Doğrula'}
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => toggleVerify(sitter)}
+                        disabled={actionId === sitter._id}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                          sitter.isVerified
+                            ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                            : 'bg-green-50 text-green-700 hover:bg-green-100'
+                        }`}
+                      >
+                        {actionId === sitter._id ? '...' : sitter.isVerified ? 'Dogrulamayi Kaldir' : 'Dogrula'}
+                      </button>
+                      <button
+                        onClick={() => toggleBan(sitter)}
+                        disabled={actionId === sitter._id}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                          sitter.isActive
+                            ? 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+                            : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                        }`}
+                      >
+                        {actionId === sitter._id ? '...' : sitter.isActive ? 'Devre Disi Birak' : 'Yeniden Aktif Et'}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -161,25 +197,27 @@ export default function Sitters() {
         )}
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-4">
+      {totalPages > 1 ? (
+        <div className="mt-4 flex justify-center gap-2">
           <button
-            onClick={() => setPage(p => Math.max(1, p - 1))}
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
             disabled={page === 1}
-            className="px-3 py-1.5 rounded-lg border text-sm disabled:opacity-40"
+            className="rounded-lg border px-3 py-1.5 text-sm disabled:opacity-40"
           >
-            ← Önceki
+            ← Onceki
           </button>
-          <span className="px-3 py-1.5 text-sm text-gray-600">{page} / {totalPages}</span>
+          <span className="px-3 py-1.5 text-sm text-gray-600">
+            {page} / {totalPages}
+          </span>
           <button
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
             disabled={page === totalPages}
-            className="px-3 py-1.5 rounded-lg border text-sm disabled:opacity-40"
+            className="rounded-lg border px-3 py-1.5 text-sm disabled:opacity-40"
           >
             Sonraki →
           </button>
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

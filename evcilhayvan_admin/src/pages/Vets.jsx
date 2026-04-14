@@ -41,7 +41,7 @@ export default function Vets() {
     const vid = vet.id || vet._id
     setVerifying(vid)
     try {
-      const res = await api.patch(`/veterinaries/${vid}/verify`, { isVerified: !vet.isVerified })
+      const res = await api.patch(`/admin/vets/${vid}/verify`, { isVerified: !vet.isVerified })
       const updated = res.data?.vet
       setVets((prev) =>
         prev.map((v) => (v.id || v._id) === vid ? { ...v, isVerified: updated?.isVerified } : v)

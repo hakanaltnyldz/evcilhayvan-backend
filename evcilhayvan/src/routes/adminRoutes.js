@@ -15,6 +15,10 @@ import SupportTicket from "../models/SupportTicket.js";
 import PetSitter from "../models/PetSitter.js";
 import VetClaimRequest from "../models/VetClaimRequest.js";
 import Veterinary from "../models/Veterinary.js";
+import WalkUpdate from "../models/WalkUpdate.js";
+import CareReport from "../models/CareReport.js";
+import SitterBooking from "../models/SitterBooking.js";
+import SellerApplication from "../models/SellerApplication.js";
 import Store from "../models/Store.js";
 import { sendPush } from "../utils/fcm.js";
 import { recordAudit } from "../utils/audit.js";
@@ -38,6 +42,7 @@ router.get("/stats", async (req, res) => {
       pendingReports,
       totalActiveCoupons,
       openSupportTickets,
+      pendingSellerApplications,
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({
@@ -49,6 +54,7 @@ router.get("/stats", async (req, res) => {
       UserReport.countDocuments({ status: "pending" }),
       Coupon.countDocuments({ isActive: true, validUntil: { $gte: now } }).catch(() => 0),
       SupportTicket.countDocuments({ status: "open" }).catch(() => 0),
+      SellerApplication.countDocuments({ status: "pending" }).catch(() => 0),
     ]);
 
     return sendOk(res, 200, {
@@ -61,6 +67,7 @@ router.get("/stats", async (req, res) => {
         pendingReports,
         totalActiveCoupons,
         openSupportTickets,
+        pendingSellerApplications,
       },
     });
   } catch (err) {
@@ -757,6 +764,118 @@ router.patch("/pet-sitters/:id/verify", async (req, res) => {
     return sendOk(res, 200, { sitter });
   } catch (err) {
     return sendError(res, 500, "Guncellenemedi", "internal_error", err.message);
+  }
+});
+
+// PATCH /api/admin/vets/:id/verify — Veteriner onaylama/reddetme (KRİTİK: Admin paneli bunu çağırıyor)
+router.patch("/vets/:id/verify", async (req, res) => {
+  try {
+    const { isVerified } = req.body;
+    const vet = await Veterinary.findByIdAndUpdate(
+      req.params.id,
+      { isVerified: Boolean(isVerified) },
+      { new: true }
+    ).select("name address phone isVerified isActive userId");
+    if (!vet) return sendError(res, 404, "Veteriner bulunamadi", "not_found");
+
+    await recordAudit("admin.vet.verify", {
+      userId: req.user.sub,
+      entityType: "Veterinary",
+      entityId: vet._id.toString(),
+      metadata: { isVerified: Boolean(isVerified) },
+    });
+
+    return sendOk(res, 200, { vet });
+  } catch (err) {
+    return sendError(res, 500, "Guncellenemedi", "internal_error", err.message);
+  }
+});
+
+// PATCH /api/admin/pet-sitters/:id/ban — Bakıcı banlama
+router.patch("/pet-sitters/:id/ban", async (req, res) => {
+  try {
+    const { isBanned, reason } = req.body;
+    // isBanned=true → isActive=false (hesabı devre dışı bırak)
+    const sitter = await PetSitter.findByIdAndUpdate(
+      req.params.id,
+      { isActive: !Boolean(isBanned) },
+      { new: true }
+    ).populate("userId", "name email avatarUrl");
+    if (!sitter) return sendError(res, 404, "Bakici bulunamadi", "not_found");
+
+    await recordAudit("admin.sitter.ban", {
+      userId: req.user.sub,
+      entityType: "PetSitter",
+      entityId: sitter._id.toString(),
+      metadata: { isBanned: Boolean(isBanned), reason },
+    });
+
+    return sendOk(res, 200, { sitter });
+  } catch (err) {
+    return sendError(res, 500, "Guncellenemedi", "internal_error", err.message);
+  }
+});
+
+// GET /api/admin/walk-updates?page=1 — Yürüyüş güncellemelerini listele
+router.get("/walk-updates", async (req, res) => {
+  try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = 20;
+    const skip = (page - 1) * limit;
+    const [updates, total] = await Promise.all([
+      WalkUpdate.find()
+        .populate({ path: "bookingId", select: "serviceType startDate status petOwnerId", populate: { path: "petOwnerId", select: "name email" } })
+        .sort({ timestamp: -1 })
+        .skip(skip)
+        .limit(limit),
+      WalkUpdate.countDocuments(),
+    ]);
+    return sendOk(res, 200, { updates, total, page });
+  } catch (err) {
+    return sendError(res, 500, "Walk güncellemeleri alinamadi", "internal_error", err.message);
+  }
+});
+
+// GET /api/admin/care-reports?page=1 — Bakım raporlarını listele
+router.get("/care-reports", async (req, res) => {
+  try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = 20;
+    const skip = (page - 1) * limit;
+    const [reports, total] = await Promise.all([
+      CareReport.find()
+        .populate({ path: "bookingId", select: "serviceType startDate status petOwnerId", populate: { path: "petOwnerId", select: "name email" } })
+        .sort({ timestamp: -1 })
+        .skip(skip)
+        .limit(limit),
+      CareReport.countDocuments(),
+    ]);
+    return sendOk(res, 200, { reports, total, page });
+  } catch (err) {
+    return sendError(res, 500, "Bakim raporlari alinamadi", "internal_error", err.message);
+  }
+});
+
+// GET /api/admin/sitter-bookings?page=1&status= — Rezervasyonları listele
+router.get("/sitter-bookings", async (req, res) => {
+  try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = 20;
+    const skip = (page - 1) * limit;
+    const filter = {};
+    if (req.query.status) filter.status = req.query.status;
+    const [bookings, total] = await Promise.all([
+      SitterBooking.find(filter)
+        .populate("petOwnerId", "name email avatarUrl")
+        .populate("sitterUserId", "name email avatarUrl")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      SitterBooking.countDocuments(filter),
+    ]);
+    return sendOk(res, 200, { bookings, total, page });
+  } catch (err) {
+    return sendError(res, 500, "Rezervasyonlar alinamadi", "internal_error", err.message);
   }
 });
 

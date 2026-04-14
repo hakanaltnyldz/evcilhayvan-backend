@@ -66,7 +66,7 @@ router.post("/seller/products", authRequired(["seller", "admin"]), productValida
 router.post("/seller/products/with-images", authRequired(["seller", "admin"]), productUpload.array("images", 5), createSellerProductWithImages);
 router.post("/seller/products/:id/images", authRequired(["seller", "admin"]), productUpload.array("images", 5), uploadProductImages);
 router.get("/seller/products", authRequired(["seller", "admin"]), getSellerProducts);
-router.patch("/seller/products/:id", authRequired(["seller", "admin"]), updateSellerProduct);
+router.patch("/seller/products/:id", authRequired(["seller", "admin"]), productUpload.array("images", 5), updateSellerProduct);
 router.delete("/seller/products/:id", authRequired(["seller", "admin"]), deleteSellerProduct);
 
 // Stock & Status management
