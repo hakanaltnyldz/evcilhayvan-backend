@@ -13,7 +13,12 @@ import {
   forgotPassword,
   resetPassword,
   updateMe,
+  getMyStats,
   getAllUsers,
+  followUser,
+  unfollowUser,
+  getUserFollowers,
+  getUserFollowing,
   loginWithGoogle,
   loginWithFacebook,
   getUserPublicProfile,
@@ -99,6 +104,7 @@ router.post(
 
 // === GIRIS GEREKTIREN ISLEMLER ===
 router.get("/me", authRequired(), me);
+router.get("/me/stats", authRequired(), getMyStats);
 
 router.put(
   "/me",
@@ -111,6 +117,10 @@ router.post("/avatar", authRequired(), upload.single("avatar"), uploadAvatar);
 
 router.get("/users", authRequired(), getAllUsers);
 
+router.get("/users/:userId/followers", authRequired(), getUserFollowers);
+router.get("/users/:userId/following", authRequired(), getUserFollowing);
+router.post("/users/:userId/follow", authRequired(), followUser);
+router.delete("/users/:userId/follow", authRequired(), unfollowUser);
 router.get("/users/:userId", authRequired(), getUserPublicProfile);
 
 router.post("/fcm-token", authRequired(), registerFcmToken);

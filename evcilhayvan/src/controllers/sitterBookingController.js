@@ -72,8 +72,13 @@ export async function createBooking(req, res) {
     if (io) {
       io.to(`user:${sitter.userId}`).emit("sitter:new_booking", {
         bookingId: booking.id,
+        ownerName: req.user.name || "Pet sahibi",
+        petName: pet.name,
+        serviceType,
         serviceLabel: SERVICE_LABELS[serviceType],
         startDate,
+        endDate,
+        totalPrice,
       });
     }
 
@@ -81,7 +86,12 @@ export async function createBooking(req, res) {
     sendPush([String(sitter.userId)], {
       title: "Yeni Rezervasyon",
       body: `${SERVICE_LABELS[serviceType] || serviceType} rezervasyon istegi aldınız`,
-      data: { type: "sitter_booking", bookingId: String(booking._id) },
+      data: {
+        type: "sitter_booking",
+        bookingId: String(booking._id),
+        petName: pet.name,
+        serviceType,
+      },
     }).catch(() => {});
 
     await recordAudit("sitter_booking.create", {
@@ -165,10 +175,12 @@ export async function updateBookingStatus(req, res) {
       return sendError(res, 400, "Gecersiz durum", "invalid_status");
     }
 
-    const booking = await SitterBooking.findById(req.params.id);
+    const booking = await SitterBooking.findById(req.params.id)
+      .populate("petOwnerId", "name")
+      .populate("sitterId", "displayName");
     if (!booking) return sendError(res, 404, "Rezervasyon bulunamadi", "not_found");
 
-    const isOwner = String(booking.petOwnerId) === userId;
+    const isOwner = String(booking.petOwnerId?._id || booking.petOwnerId) === userId;
     const isSitter = String(booking.sitterUserId) === userId;
 
     if (
@@ -230,17 +242,24 @@ export async function updateBookingStatus(req, res) {
     // Socket bildirim
     const io = req.app.get("io");
     if (io) {
-      const targetUserId = isSitter ? String(booking.petOwnerId) : String(booking.sitterUserId);
+      const targetUserId = isSitter
+        ? String(booking.petOwnerId?._id || booking.petOwnerId)
+        : String(booking.sitterUserId);
       io.to(`user:${targetUserId}`).emit("sitter:booking_update", {
         bookingId: booking.id,
         status,
         serviceType: booking.serviceType,
+        serviceLabel: SERVICE_LABELS[booking.serviceType] || booking.serviceType,
+        sitterName: booking.sitterId?.displayName || "Bakici",
+        ownerName: booking.petOwnerId?.name || "Pet sahibi",
       });
     }
 
     // FCM push - karsi tarafa
     {
-      const targetUserId = isSitter ? String(booking.petOwnerId) : String(booking.sitterUserId);
+      const targetUserId = isSitter
+        ? String(booking.petOwnerId?._id || booking.petOwnerId)
+        : String(booking.sitterUserId);
       const statusLabels = {
         accepted: "Rezervasyonunuz kabul edildi",
         rejected: "Rezervasyonunuz reddedildi",
@@ -250,7 +269,12 @@ export async function updateBookingStatus(req, res) {
       sendPush([targetUserId], {
         title: "Rezervasyon Guncellendi",
         body: statusLabels[status] || `Durum: ${status}`,
-        data: { type: "sitter_booking_update", bookingId: String(booking._id), status },
+        data: {
+          type: "sitter_booking_update",
+          bookingId: String(booking._id),
+          status,
+          serviceType: booking.serviceType,
+        },
       }).catch(() => {});
     }
 

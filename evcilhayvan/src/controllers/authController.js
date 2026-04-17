@@ -2,12 +2,22 @@ import crypto from "crypto";
 import { validationResult } from "express-validator";
 import User from "../models/User.js";
 import Pet from "../models/Pet.js";
+import Post from "../models/Post.js";
+import Appointment from "../models/Appointment.js";
+import SitterBooking from "../models/SitterBooking.js";
 import { hashPassword, comparePassword } from "../utils/hash.js";
 import { issueTokens } from "../utils/tokens.js";
 import { sendEmail } from "../utils/mail.js";
 import { sendError, sendOk } from "../utils/apiResponse.js";
+import { sendPush } from "../utils/fcm.js";
 
-function buildUserPayload(user) {
+function buildUserPayload(user, viewerId = null) {
+  const followingIds = Array.isArray(user.following)
+    ? user.following.map((id) => String(id))
+    : [];
+  const followerIds = Array.isArray(user.followers)
+    ? user.followers.map((id) => String(id))
+    : [];
   return {
     id: user._id,
     name: user.name,
@@ -17,7 +27,29 @@ function buildUserPayload(user) {
     avatarUrl: user.avatarUrl,
     about: user.about,
     isSeller: user.isSeller === true || user.role === "seller",
+    points: user.points ?? 0,
+    badges: user.badges ?? [],
+    followingCount: followingIds.length,
+    followersCount: followerIds.length,
+    isFollowing: viewerId ? followerIds.includes(String(viewerId)) : false,
   };
+}
+
+async function emitUserEvent(userIds, event, payload) {
+  const ids = [
+    ...new Set(
+      (Array.isArray(userIds) ? userIds : [userIds])
+        .filter(Boolean)
+        .map((id) => String(id))
+    ),
+  ];
+  if (!ids.length) return;
+  try {
+    const { io } = await import("../../server.js");
+    ids.forEach((userId) => io.to(`user:${userId}`).emit(event, payload));
+  } catch (error) {
+    console.warn(`[${event}] socket emit skipped:`, error.message);
+  }
 }
 
 function validationFailure(res, errors) {
@@ -51,13 +83,63 @@ export async function refreshToken(req, res) {
 export async function getAllUsers(req, res) {
   try {
     const myId = req.user.sub;
+    const currentUser = await User.findById(myId).select("following");
     const users = await User.find({ _id: { $ne: myId } })
-      .select("name email city avatarUrl role createdAt isSeller")
+      .select("name email city avatarUrl role createdAt isSeller points badges followers following")
       .sort({ createdAt: -1 });
 
-    return sendOk(res, 200, { users });
+    return sendOk(res, 200, {
+      users: users.map((user) => ({
+        ...buildUserPayload(user, myId),
+        isFollowing:
+          currentUser?.following?.some((id) => String(id) === String(user._id)) ??
+          false,
+      })),
+    });
   } catch (err) {
     return sendError(res, 500, "Kullanıcılar alınamadı", "internal_error", err.message);
+  }
+}
+
+export async function getMyStats(req, res) {
+  try {
+    const userId = req.user.sub;
+
+    const [postCount, likesAgg, appointmentCount, bookingCount] =
+      await Promise.all([
+        Post.countDocuments({ userId, isActive: true }),
+        Post.aggregate([
+          { $match: { userId, isActive: true } },
+          {
+            $project: {
+              likeCount: { $size: { $ifNull: ["$likes", []] } },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              total: { $sum: "$likeCount" },
+            },
+          },
+        ]),
+        Appointment.countDocuments({ userId }),
+        SitterBooking.countDocuments({ petOwnerId: userId }),
+      ]);
+
+    return sendOk(res, 200, {
+      postCount,
+      totalLikes: likesAgg[0]?.total ?? 0,
+      appointmentCount,
+      bookingCount,
+    });
+  } catch (err) {
+    return sendError(
+      res,
+      500,
+      "Profil istatistikleri alinamadi",
+      "internal_error",
+      err.message
+    );
   }
 }
 
@@ -243,7 +325,9 @@ export async function login(req, res) {
 
 export async function me(req, res) {
   try {
-    const user = await User.findById(req.user.sub).select("name email role city about avatarUrl isSeller");
+    const user = await User.findById(req.user.sub).select(
+      "name email role city about avatarUrl isSeller points badges followers following"
+    );
     if (!user) {
       return sendError(res, 404, "Kullanıcı bulunamadı", "user_not_found");
     }
@@ -418,7 +502,9 @@ export async function loginWithFacebook(req, res) {
 export async function getUserPublicProfile(req, res) {
   try {
     const { userId } = req.params;
-    const user = await User.findById(userId).select("name city avatarUrl about createdAt isSeller role");
+    const user = await User.findById(userId).select(
+      "name city avatarUrl about createdAt isSeller role points badges followers following"
+    );
     if (!user) {
       return sendError(res, 404, "Kullanıcı bulunamadı", "user_not_found");
     }
@@ -437,11 +523,147 @@ export async function getUserPublicProfile(req, res) {
         about: user.about,
         isSeller: user.isSeller === true || user.role === "seller",
         memberSince: user.createdAt,
+        points: user.points ?? 0,
+        badges: user.badges ?? [],
+        followersCount: Array.isArray(user.followers) ? user.followers.length : 0,
+        followingCount: Array.isArray(user.following) ? user.following.length : 0,
+        isFollowing: Array.isArray(user.followers)
+          ? user.followers.some((id) => String(id) === String(req.user?.sub))
+          : false,
       },
       pets,
     });
   } catch (err) {
     return sendError(res, 500, "Kullanıcı profili alınamadı", "internal_error", err.message);
+  }
+}
+
+export async function followUser(req, res) {
+  try {
+    const currentUserId = req.user.sub;
+    const { userId } = req.params;
+
+    if (String(currentUserId) === String(userId)) {
+      return sendError(res, 400, "Kendini takip edemezsin", "validation_error");
+    }
+
+    const [currentUser, targetUser] = await Promise.all([
+      User.findById(currentUserId).select("name following"),
+      User.findById(userId).select(
+        "name followers following avatarUrl city about role isSeller points badges"
+      ),
+    ]);
+
+    if (!currentUser || !targetUser) {
+      return sendError(res, 404, "KullanÄ±cÄ± bulunamadÄ±", "user_not_found");
+    }
+
+    const alreadyFollowing = currentUser.following?.some(
+      (id) => String(id) === String(userId)
+    );
+
+    if (!alreadyFollowing) {
+      await Promise.all([
+        User.findByIdAndUpdate(currentUserId, { $addToSet: { following: userId } }),
+        User.findByIdAndUpdate(userId, { $addToSet: { followers: currentUserId } }),
+      ]);
+      targetUser.followers.push(currentUserId);
+
+      await sendPush(userId, {
+        title: "Yeni takipçi",
+        body: `${currentUser.name} seni takip etmeye başladı.`,
+        data: { type: "user_followed", userId: String(currentUserId) },
+      });
+      await emitUserEvent(userId, "user:followed", {
+        userId: String(currentUserId),
+        followerName: currentUser.name,
+      });
+    }
+
+    return sendOk(res, 200, {
+      message: "Takip edildi",
+      user: buildUserPayload(targetUser, currentUserId),
+    });
+  } catch (err) {
+    return sendError(res, 500, "Takip islemi basarisiz", "internal_error", err.message);
+  }
+}
+
+export async function unfollowUser(req, res) {
+  try {
+    const currentUserId = req.user.sub;
+    const { userId } = req.params;
+
+    if (String(currentUserId) === String(userId)) {
+      return sendError(res, 400, "Kendini takipten çıkaramazsın", "validation_error");
+    }
+
+    const targetUser = await User.findById(userId).select(
+      "name followers following avatarUrl city about role isSeller points badges"
+    );
+    if (!targetUser) {
+      return sendError(res, 404, "KullanÄ±cÄ± bulunamadÄ±", "user_not_found");
+    }
+
+    await Promise.all([
+      User.findByIdAndUpdate(currentUserId, { $pull: { following: userId } }),
+      User.findByIdAndUpdate(userId, { $pull: { followers: currentUserId } }),
+    ]);
+
+    targetUser.followers = (targetUser.followers ?? []).filter(
+      (id) => String(id) !== String(currentUserId)
+    );
+
+    await emitUserEvent(userId, "user:unfollowed", {
+      userId: String(currentUserId),
+    });
+
+    return sendOk(res, 200, {
+      message: "Takipten çıkıldı",
+      user: buildUserPayload(targetUser, currentUserId),
+    });
+  } catch (err) {
+    return sendError(res, 500, "Takipten çıkılamadı", "internal_error", err.message);
+  }
+}
+
+export async function getUserFollowers(req, res) {
+  try {
+    const user = await User.findById(req.params.userId).populate(
+      "followers",
+      "name email city avatarUrl role about isSeller points badges followers following"
+    );
+    if (!user) {
+      return sendError(res, 404, "KullanÄ±cÄ± bulunamadÄ±", "user_not_found");
+    }
+
+    return sendOk(res, 200, {
+      users: (user.followers ?? []).map((follower) =>
+        buildUserPayload(follower, req.user.sub)
+      ),
+    });
+  } catch (err) {
+    return sendError(res, 500, "Takipçiler alınamadı", "internal_error", err.message);
+  }
+}
+
+export async function getUserFollowing(req, res) {
+  try {
+    const user = await User.findById(req.params.userId).populate(
+      "following",
+      "name email city avatarUrl role about isSeller points badges followers following"
+    );
+    if (!user) {
+      return sendError(res, 404, "KullanÄ±cÄ± bulunamadÄ±", "user_not_found");
+    }
+
+    return sendOk(res, 200, {
+      users: (user.following ?? []).map((followedUser) =>
+        buildUserPayload(followedUser, req.user.sub)
+      ),
+    });
+  } catch (err) {
+    return sendError(res, 500, "Takip edilenler alınamadı", "internal_error", err.message);
   }
 }
 

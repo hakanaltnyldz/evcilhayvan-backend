@@ -20,6 +20,10 @@ const UserSchema = new mongoose.Schema(
     phone:      { type: String, trim: true },
     nationalId: { type: String, select: false },   // AES-256-CBC şifreli TC
     isSeller: { type: Boolean, default: false },
+    points: { type: Number, default: 0, min: 0 },
+    badges: { type: [String], default: [] },
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User", default: [] }],
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User", default: [] }],
     blockedUsers: { type: [mongoose.Schema.Types.ObjectId], ref: "User", default: [], select: false },
     refreshToken: { type: String, select: false },
     refreshTokenExpires: { type: Date, select: false },
