@@ -12,7 +12,7 @@ const conversationSchema = new Schema(
     ],
     contextType: {
       type: String,
-      enum: ["MATCHING", "ADOPTION", null],
+      enum: ["MATCHING", "ADOPTION", "VET", "SITTER_BOOKING", null],
       default: null,
       index: true,
     },

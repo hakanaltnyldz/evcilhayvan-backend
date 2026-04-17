@@ -1,6 +1,7 @@
 import Product from "../models/Product.js";
 import Store from "../models/Store.js";
 import Category from "../models/Category.js";
+import Order from "../models/Order.js";
 import { sendError, sendOk } from "../utils/apiResponse.js";
 import { recordAudit } from "../utils/audit.js";
 
@@ -338,6 +339,123 @@ export async function getSellerStats(req, res) {
     const lowStock = products.filter(p => p.stock > 0 && p.stock <= 5).length;
     const totalStock = products.reduce((sum, p) => sum + (p.stock || 0), 0);
     const totalValue = products.reduce((sum, p) => sum + ((p.price || 0) * (p.stock || 0)), 0);
+    const productIds = products.map((product) => product._id);
+
+    let orderStatusBreakdown = {
+      pending: 0,
+      processing: 0,
+      shipped: 0,
+      delivered: 0,
+      cancelled: 0,
+    };
+    let topProducts = [];
+    let avgOrderValue = 0;
+
+    if (productIds.length > 0) {
+      const [statusAgg, topProductsAgg, revenueAgg] = await Promise.all([
+        Order.aggregate([
+          { $match: { "items.product": { $in: productIds } } },
+          {
+            $group: {
+              _id: "$status",
+              count: { $sum: 1 },
+            },
+          },
+        ]),
+        Order.aggregate([
+          { $unwind: "$items" },
+          {
+            $match: {
+              "items.product": { $in: productIds },
+              status: { $ne: "cancelled" },
+            },
+          },
+          {
+            $group: {
+              _id: "$items.product",
+              quantitySold: { $sum: "$items.quantity" },
+              revenue: {
+                $sum: {
+                  $multiply: ["$items.price", "$items.quantity"],
+                },
+              },
+            },
+          },
+          { $sort: { quantitySold: -1, revenue: -1 } },
+          { $limit: 5 },
+          {
+            $lookup: {
+              from: "products",
+              localField: "_id",
+              foreignField: "_id",
+              as: "product",
+            },
+          },
+          {
+            $unwind: {
+              path: "$product",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              productId: "$_id",
+              name: { $ifNull: ["$product.name", "$product.title"] },
+              quantitySold: 1,
+              revenue: { $round: ["$revenue", 2] },
+            },
+          },
+        ]),
+        Order.aggregate([
+          { $unwind: "$items" },
+          {
+            $match: {
+              "items.product": { $in: productIds },
+              status: { $ne: "cancelled" },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              totalRevenue: {
+                $sum: {
+                  $multiply: ["$items.price", "$items.quantity"],
+                },
+              },
+              totalOrders: { $addToSet: "$_id" },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              totalRevenue: { $round: ["$totalRevenue", 2] },
+              totalOrders: { $size: "$totalOrders" },
+            },
+          },
+        ]),
+      ]);
+
+      orderStatusBreakdown = {
+        ...orderStatusBreakdown,
+        ...Object.fromEntries(
+          statusAgg.map((item) => [item._id, item.count])
+        ),
+      };
+
+      topProducts = topProductsAgg.map((item) => ({
+        productId: String(item.productId),
+        name: item.name || "Ürün",
+        quantitySold: item.quantitySold ?? 0,
+        revenue: Number(item.revenue ?? 0),
+      }));
+
+      const totalRevenueFromOrders = Number(revenueAgg[0]?.totalRevenue ?? 0);
+      const totalOrdersFromRevenue = Number(revenueAgg[0]?.totalOrders ?? 0);
+      avgOrderValue = totalOrdersFromRevenue > 0
+        ? Math.round((totalRevenueFromOrders / totalOrdersFromRevenue) * 100) / 100
+        : 0;
+    }
 
     const stats = {
       totalProducts,
@@ -351,7 +469,15 @@ export async function getSellerStats(req, res) {
 
     return sendOk(res, 200, {
       ...stats,
-      stats,
+      stats: {
+        ...stats,
+        orderStatusBreakdown,
+        topProducts,
+        avgOrderValue,
+      },
+      orderStatusBreakdown,
+      topProducts,
+      avgOrderValue,
     });
   } catch (err) {
     console.error("[getSellerStats] error", err);

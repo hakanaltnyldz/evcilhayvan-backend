@@ -4,6 +4,7 @@ import Pet from "../models/Pet.js";
 import AdoptionApplication from "../models/AdoptionApplication.js";
 import { ensureConversationWithSystemMessage } from "../services/conversationService.js";
 import { sendError, sendOk } from "../utils/apiResponse.js";
+import { awardPoints } from "../utils/points.js";
 import { io } from "../../server.js";
 import { sendPush } from "../utils/fcm.js";
 
@@ -176,6 +177,7 @@ export async function acceptAdoptionApplication(req, res) {
     application.status = "ACCEPTED";
     application.respondedAt = new Date();
     await application.save();
+    await awardPoints(application.applicantUserId, 20);
 
     // İlanı kapat
     await Pet.findByIdAndUpdate(application.adoptionListingId, { isActive: false });

@@ -4,6 +4,10 @@ import Pet from "../models/Pet.js";
 import Interaction from "../models/Interaction.js";
 import MatchRequest from "../models/MatchRequest.js";
 import Conversation from "../models/Conversation.js";
+import HealthRecord from "../models/HealthRecord.js";
+import Appointment from "../models/Appointment.js";
+import SitterBooking from "../models/SitterBooking.js";
+import VaccinationRecord from "../models/VaccinationRecord.js";
 import { sendError, sendOk } from "../utils/apiResponse.js";
 import { recordAudit } from "../utils/audit.js";
 import { storageService } from "../services/storageService.js";
@@ -20,6 +24,43 @@ function buildLocation(bodyLocation) {
 
 function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function buildHealthTimelineEvent(record) {
+  switch (record.type) {
+    case "weight":
+      return {
+        type: "health",
+        title: `Kilo kaydi${record.weightKg ? `: ${record.weightKg} kg` : ""}`,
+        icon: "monitor_weight",
+      };
+    case "medication":
+      return {
+        type: "health",
+        title: record.medicationName
+          ? `Ilac: ${record.medicationName}`
+          : "Ilac takibi",
+        icon: "medication",
+      };
+    case "vet_visit":
+      return {
+        type: "health",
+        title: record.vetName ? `Veteriner: ${record.vetName}` : "Veteriner ziyareti",
+        icon: "medical_services",
+      };
+    default:
+      return {
+        type: "health",
+        title: "Saglik notu",
+        icon: "notes",
+      };
+  }
+}
+
+function buildDaysUntilLabel(days) {
+  if (days <= 0) return "bugün";
+  if (days === 1) return "yarın";
+  return `${days} gün sonra`;
 }
 
 // GET /api/pets/feed
@@ -305,6 +346,166 @@ export async function getPet(req, res) {
   } catch (err) {
     console.error("[getPet]", err);
     return sendError(res, 500, "Ilan detayi alinamadi", "internal_error", err.message);
+  }
+}
+
+// GET /api/pets/:id/timeline
+export async function getPetTimeline(req, res) {
+  try {
+    const { id } = req.params;
+    const ownerId = req.user.sub;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return sendError(res, 400, "Gecersiz ilan ID", "validation_error");
+    }
+
+    const pet = await Pet.findOne({ _id: id, ownerId }).select("name");
+    if (!pet) {
+      return sendError(res, 404, "Pet bulunamadi veya size ait degil", "not_found");
+    }
+
+    const [healthRecords, appointments, bookings] = await Promise.all([
+      HealthRecord.find({ petId: id }).sort({ date: -1 }).limit(20).lean(),
+      Appointment.find({ petId: id }).sort({ date: -1 }).limit(10).lean(),
+      SitterBooking.find({ petId: id }).sort({ startDate: -1 }).limit(10).lean(),
+    ]);
+
+    const timeline = [
+      ...healthRecords.map((record) => {
+        const event = buildHealthTimelineEvent(record);
+        return {
+          id: String(record._id),
+          ...event,
+          date: record.date,
+          subtitle: record.notes || record.diagnosis || record.frequency || null,
+        };
+      }),
+      ...appointments.map((appointment) => ({
+        id: String(appointment._id),
+        type: "appointment",
+        title: appointment.reason?.trim()
+          ? `Randevu: ${appointment.reason.trim()}`
+          : "Veteriner randevusu",
+        date: appointment.date,
+        subtitle: appointment.notes || appointment.status || null,
+        icon: "event_available",
+      })),
+      ...bookings.map((booking) => ({
+        id: String(booking._id),
+        type: "booking",
+        title: `Bakici rezervasyonu: ${booking.serviceType}`,
+        date: booking.startDate,
+        subtitle: booking.status || null,
+        icon: "pets",
+      })),
+    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    return sendOk(res, 200, {
+      petName: pet.name,
+      timeline,
+    });
+  } catch (err) {
+    console.error("[getPetTimeline]", err);
+    return sendError(res, 500, "Zaman cizelgesi alinamadi", "internal_error", err.message);
+  }
+}
+
+// GET /api/pets/health-summary
+export async function getPetHealthSummary(req, res) {
+  try {
+    const ownerId = req.user.sub;
+    const now = new Date();
+    const thirtyDaysLater = new Date(now);
+    thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
+
+    const pets = await Pet.find({ ownerId, isActive: true })
+      .select("name photos images")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const summary = await Promise.all(
+      pets.map(async (pet) => {
+        const [vaccinations, nextAppointment, lastWeight] = await Promise.all([
+          VaccinationRecord.find({
+            petId: pet._id,
+            nextDueDate: { $gte: now, $lte: thirtyDaysLater },
+          })
+            .sort({ nextDueDate: 1 })
+            .limit(3)
+            .lean(),
+          Appointment.find({
+            petId: pet._id,
+            date: { $gte: now },
+            status: { $in: ["pending", "confirmed"] },
+          })
+            .sort({ date: 1 })
+            .limit(1)
+            .lean(),
+          HealthRecord.findOne({
+            petId: pet._id,
+            type: "weight",
+            weightKg: { $ne: null },
+          })
+            .sort({ date: -1 })
+            .lean(),
+        ]);
+
+        const alerts = [];
+        let healthStatus = "iyi";
+
+        vaccinations.forEach((record) => {
+          const daysUntil = Math.ceil(
+            (new Date(record.nextDueDate).getTime() - now.getTime()) /
+              (1000 * 60 * 60 * 24)
+          );
+          if (daysUntil <= 7) {
+            healthStatus = "acil";
+          } else if (healthStatus !== "acil") {
+            healthStatus = "dikkat";
+          }
+          alerts.push({
+            type: "vaccination",
+            text: `${record.vaccineName} aşısı ${buildDaysUntilLabel(daysUntil)}`,
+            date: record.nextDueDate,
+          });
+        });
+
+        if (nextAppointment) {
+          const appointmentDays = Math.ceil(
+            (new Date(nextAppointment.date).getTime() - now.getTime()) /
+              (1000 * 60 * 60 * 24)
+          );
+          if (healthStatus === "iyi" && appointmentDays <= 2) {
+            healthStatus = "dikkat";
+          }
+          alerts.push({
+            type: "appointment",
+            text: `Randevu ${buildDaysUntilLabel(appointmentDays)}`,
+            date: nextAppointment.date,
+          });
+        }
+
+        return {
+          petId: String(pet._id),
+          petName: pet.name,
+          photo: pet.photos?.[0] || pet.images?.[0] || null,
+          healthStatus,
+          alerts,
+          weightKg: lastWeight?.weightKg ?? null,
+        };
+      })
+    );
+
+    return sendOk(res, 200, { summary });
+  } catch (err) {
+    console.error("[getPetHealthSummary]", err);
+    return sendError(
+      res,
+      500,
+      "Saglik ozeti alinamadi",
+      "internal_error",
+      err.message
+    );
   }
 }
 

@@ -427,13 +427,13 @@ export async function startVetConversation(req, res) {
     // Mevcut conversation var mı?
     let conversation = await Conversation.findOne({
       participants: { $all: [myUserId, vetUserId], $size: 2 },
-      contextType: "vet",
+      contextType: { $in: ["VET", "vet"] },
     });
 
     if (!conversation) {
       conversation = await Conversation.create({
         participants: [myUserId, vetUserId],
-        contextType: "vet",
+        contextType: "VET",
         contextId: vet._id,
         lastMessage: "",
         lastMessageAt: new Date(),
