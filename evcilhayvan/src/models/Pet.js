@@ -30,6 +30,13 @@ const PetSchema = new mongoose.Schema(
     },
     isActive: { type: Boolean, default: true },
     viewCount: { type: Number, default: 0 },
+    currentWeight: { type: Number, min: 0 },
+    targetWeight: { type: Number, min: 0 },
+    feedingSchedule: [{
+      time: { type: String, trim: true, maxlength: 10 },
+      amount: { type: String, trim: true, maxlength: 50 },
+      foodType: { type: String, trim: true, maxlength: 100 },
+    }],
   },
   {
     timestamps: true,
@@ -57,6 +64,8 @@ PetSchema.index({ location: "2dsphere" });
 PetSchema.index({ ownerId: 1, isActive: 1 });
 PetSchema.index({ species: 1, vaccinated: 1 });
 PetSchema.index({ advertType: 1, isActive: 1 });
+PetSchema.index({ isActive: 1, createdAt: -1 });
+PetSchema.index({ isActive: 1, advertType: 1, createdAt: -1 });
 
 PetSchema.pre("save", function (next) {
   const loc = this.location && this.location.coordinates;

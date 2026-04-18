@@ -1,6 +1,7 @@
 // src/routes/messageRoutes.js
 import { Router } from "express";
 import { body, param } from "express-validator";
+import { randomBytes } from "crypto";
 import multer from "multer";
 import path from "path";
 import { authRequired } from "../middlewares/auth.js";
@@ -23,7 +24,7 @@ const router = Router();
 const _storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, storageService.uploadDir),
   filename: (_req, file, cb) => {
-    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const unique = Date.now() + "-" + randomBytes(8).toString("hex");
     cb(null, unique + path.extname(file.originalname || ""));
   },
 });

@@ -45,6 +45,26 @@ export default function Orders() {
   const [trackingModal, setTrackingModal] = useState(null)
   const [trackingForm, setTrackingForm] = useState({ carrier: 'Yurtiçi', trackingNumber: '', estimatedDelivery: '' })
   const [savingTracking, setSavingTracking] = useState(false)
+  const [exporting, setExporting] = useState(false)
+
+  async function exportCsv() {
+    setExporting(true)
+    try {
+      const params = {}
+      if (status !== 'all') params.status = status
+      const res = await api.get('/admin/orders/export', { params, responseType: 'blob' })
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'text/csv;charset=utf-8;' }))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `siparisler-${new Date().toISOString().slice(0, 10)}.csv`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast.error('Export başarısız')
+    } finally {
+      setExporting(false)
+    }
+  }
 
   function openTrackingModal(order) {
     setTrackingModal(order)
@@ -196,7 +216,16 @@ export default function Orders() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Siparişler</h1>
-        <span className="text-sm text-gray-500">{total} sipariş</span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={exportCsv}
+            disabled={exporting}
+            className="px-4 py-2 rounded-xl text-sm font-semibold bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 transition-colors disabled:opacity-50"
+          >
+            {exporting ? 'İndiriliyor...' : '⬇ CSV İndir'}
+          </button>
+          <span className="text-sm text-gray-500">{total} sipariş</span>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-6">

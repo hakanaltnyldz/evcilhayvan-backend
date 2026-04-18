@@ -41,6 +41,17 @@ const SitterBookingSchema = new mongoose.Schema(
     },
     respondedAt: { type: Date },
     completedAt: { type: Date },
+    walkPhotos: [{
+      url: { type: String, required: true },
+      caption: { type: String, trim: true, maxlength: 200, default: '' },
+      takenAt: { type: Date, default: Date.now },
+    }],
+    liveTracking: {
+      isActive: { type: Boolean, default: false },
+      lastLat: { type: Number },
+      lastLng: { type: Number },
+      lastUpdated: { type: Date },
+    },
   },
   {
     timestamps: true,
@@ -56,5 +67,6 @@ const SitterBookingSchema = new mongoose.Schema(
 
 SitterBookingSchema.index({ petOwnerId: 1, status: 1 });
 SitterBookingSchema.index({ sitterUserId: 1, status: 1 });
+SitterBookingSchema.index({ sitterId: 1, status: 1, startDate: 1, endDate: 1 });
 
 export default mongoose.model("SitterBooking", SitterBookingSchema);

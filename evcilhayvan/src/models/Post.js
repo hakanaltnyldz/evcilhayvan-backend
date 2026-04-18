@@ -1,12 +1,23 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
+const replySchema = new Schema(
+  {
+    userId:     { type: Schema.Types.ObjectId, ref: "User", required: true },
+    userName:   { type: String, required: true },
+    userAvatar: { type: String },
+    text:       { type: String, required: true, maxlength: 300 },
+  },
+  { timestamps: true, toJSON: { transform(_doc, ret) { ret.id = ret._id; delete ret._id; return ret; } } }
+);
+
 const commentSchema = new Schema(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    userName: { type: String, required: true },
+    userId:     { type: Schema.Types.ObjectId, ref: "User", required: true },
+    userName:   { type: String, required: true },
     userAvatar: { type: String },
-    text: { type: String, required: true, maxlength: 500 },
+    text:       { type: String, required: true, maxlength: 500 },
+    replies:    { type: [replySchema], default: [] },
   },
   { timestamps: true, toJSON: { transform(_doc, ret) { ret.id = ret._id; delete ret._id; return ret; } } }
 );
@@ -22,6 +33,9 @@ const postSchema = new Schema(
     petName: { type: String },
     likes: { type: [Schema.Types.ObjectId], ref: "User", default: [] },
     comments: { type: [commentSchema], default: [] },
+    saves: { type: [Schema.Types.ObjectId], ref: "User", default: [] },
+    saveCount: { type: Number, default: 0 },
+    hashtags: { type: [String], default: [] },
     isActive: { type: Boolean, default: true },
   },
   {

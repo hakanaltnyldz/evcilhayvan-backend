@@ -1,5 +1,6 @@
 // server.js
 import express from "express";
+import compression from "compression";
 import cors from "cors";
 import fs from "fs";
 import helmet from "helmet";
@@ -97,6 +98,7 @@ export function isUserOnline(userId) {
 
 // Middlewares
 app.use(cors({ origin: config.corsOrigins, credentials: true }));
+app.use(compression());
 app.use(express.json({ limit: "2mb" }));
 app.use(helmet());
 app.use(morgan("dev"));
@@ -112,7 +114,7 @@ const __dirname = path.resolve(path.dirname(""));
 const uploadStaticPath = path.isAbsolute(config.uploadDir)
   ? config.uploadDir
   : path.join(__dirname, config.uploadDir);
-app.use("/uploads", express.static(uploadStaticPath));
+app.use("/uploads", express.static(uploadStaticPath, { maxAge: '7d', etag: true }));
 
 // Health
 app.get("/api/health", (_req, res) => res.sendOk({ ok: true }));
@@ -167,12 +169,24 @@ app.use(errorHandler);
 // DB & Server
 export async function startServer() {
   try {
-    await mongoose.connect(config.mongoUri);
+    await mongoose.connect(config.mongoUri, {
+      maxPoolSize: 10,
+      minPoolSize: 2,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      maxIdleTimeMS: 30000,
+    });
     console.log("MongoDB connected");
     httpServer.listen(config.port, "0.0.0.0", () => {
       console.log(`Server listening on 0.0.0.0:${config.port}`);
-      // Asi hatirlatma cron job'ini baslat
       startVaccinationReminderJob(io);
+      // Keep-alive ping: Render free tier 15dk sonra uyumasın
+      setInterval(async () => {
+        try {
+          await fetch('https://evcilhayvan-backend.onrender.com/api/health');
+          console.log('[KeepAlive] ping ok');
+        } catch (_) {}
+      }, 14 * 60 * 1000);
     });
   } catch (err) {
     console.error("Mongo connection error:", err.message);

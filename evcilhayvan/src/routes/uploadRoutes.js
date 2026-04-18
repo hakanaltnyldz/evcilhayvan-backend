@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { randomBytes } from "crypto";
 import multer from "multer";
 import path from "path";
 import { authRequired } from "../middlewares/auth.js";
@@ -30,7 +31,7 @@ function checkImageMagic(buffer) {
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, uploadDir),
   filename: (_req, file, cb) => {
-    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const unique = Date.now() + "-" + randomBytes(8).toString("hex");
     const rawExt = path.extname(file.originalname || "").toLowerCase();
     // Uzantıyı whitelist ile sınırla; bilinmeyen uzantılara .bin ver
     const ext = ALLOWED_IMAGE_EXTS.has(rawExt) || ALLOWED_VIDEO_EXTS.has(rawExt) ? rawExt : ".bin";
@@ -80,9 +81,11 @@ function handleMulterError(err, req, res, next) {
   next();
 }
 
-router.post("/images", authRequired(), (req, res, next) => {
+const imageUploadMiddleware = (req, res, next) => {
   uploadImage.single("file")(req, res, (err) => handleMulterError(err, req, res, next));
-}, async (req, res) => {
+};
+
+async function handleImageUpload(req, res) {
   if (!req.file) {
     return sendError(res, 400, "Dosya gerekli", "file_required");
   }
@@ -97,7 +100,11 @@ router.post("/images", authRequired(), (req, res, next) => {
     console.error("[Upload] Error saving file:", err);
     return sendError(res, 500, "Dosya kaydedilemedi", "upload_error");
   }
-});
+}
+
+router.post("/images", authRequired(), imageUploadMiddleware, handleImageUpload);
+router.post("/image", authRequired(), imageUploadMiddleware, handleImageUpload);
+router.post("/single", authRequired(), imageUploadMiddleware, handleImageUpload);
 
 router.post("/videos", authRequired(), (req, res, next) => {
   uploadVideo.single("file")(req, res, (err) => handleMulterError(err, req, res, next));

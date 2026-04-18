@@ -90,6 +90,53 @@ router.patch("/:id/blocked-dates", authRequired(), async (req, res) => {
   }
 });
 
+// ─── Reviews ─────────────────────────────────────────────────────────────────
+
+// POST /api/pet-sitters/:id/reviews — bakıcıya yorum ekle (tamamlanmış booking gerekir)
+router.post("/:id/reviews", authRequired(), async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+    if (!rating || rating < 1 || rating > 5) {
+      return sendError(res, 400, "Geçerli bir puan girin (1-5)", "validation_error");
+    }
+
+    const userId = req.user.sub || req.user._id || req.user.id;
+    const { default: SitterBooking } = await import("../models/SitterBooking.js");
+
+    // Kullanıcının bu bakıcıyla tamamlanmış, henüz yorumsuz bookingini bul
+    const booking = await SitterBooking.findOne({
+      sitterId: req.params.id,
+      petOwnerId: userId,
+      status: "completed",
+      ownerReview: { $exists: false },
+    });
+
+    if (!booking) {
+      return sendError(res, 404, "Yorum yapılabilecek tamamlanmış bir rezervasyon bulunamadı", "not_found");
+    }
+
+    booking.ownerReview = {
+      rating: Math.min(5, Math.max(1, Number(rating))),
+      comment: comment || "",
+    };
+    await booking.save();
+
+    // Bakıcı ortalama puanını güncelle
+    const allReviewed = await SitterBooking.find({
+      sitterId: req.params.id,
+      status: "completed",
+      ownerReview: { $exists: true },
+    }).lean();
+    const total = allReviewed.reduce((s, b) => s + (b.ownerReview?.rating || 0), 0);
+    const avg = Number((total / allReviewed.length).toFixed(1));
+    await PetSitter.findByIdAndUpdate(req.params.id, { rating: avg, reviewCount: allReviewed.length });
+
+    return sendOk(res, 201, { message: "Yorum kaydedildi", rating: avg, reviewCount: allReviewed.length });
+  } catch (err) {
+    return sendError(res, 500, "Yorum kaydedilemedi", "internal_error", err.message);
+  }
+});
+
 // ─── Portfolio Fotoğraf Upload ────────────────────────────────────────────────
 
 // POST /api/pet-sitters/:id/photos — çoklu fotoğraf ekle

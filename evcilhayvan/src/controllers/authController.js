@@ -17,6 +17,8 @@ function buildUserPayload(user) {
     avatarUrl: user.avatarUrl,
     about: user.about,
     isSeller: user.isSeller === true || user.role === "seller",
+    points: user.points ?? 0,
+    badges: user.badges ?? [],
   };
 }
 
@@ -243,7 +245,7 @@ export async function login(req, res) {
 
 export async function me(req, res) {
   try {
-    const user = await User.findById(req.user.sub).select("name email role city about avatarUrl isSeller");
+    const user = await User.findById(req.user.sub).select("name email role city about avatarUrl isSeller points badges");
     if (!user) {
       return sendError(res, 404, "Kullanıcı bulunamadı", "user_not_found");
     }
@@ -418,7 +420,7 @@ export async function loginWithFacebook(req, res) {
 export async function getUserPublicProfile(req, res) {
   try {
     const { userId } = req.params;
-    const user = await User.findById(userId).select("name city avatarUrl about createdAt isSeller role");
+    const user = await User.findById(userId).select("name city avatarUrl about createdAt isSeller role points badges followers following");
     if (!user) {
       return sendError(res, 404, "Kullanıcı bulunamadı", "user_not_found");
     }
@@ -427,6 +429,11 @@ export async function getUserPublicProfile(req, res) {
       .sort({ createdAt: -1 })
       .limit(20)
       .lean();
+
+    const requesterId = req.user?.sub;
+    const isFollowing = requesterId
+      ? (user.followers || []).some(id => String(id) === String(requesterId))
+      : false;
 
     return sendOk(res, 200, {
       user: {
@@ -437,6 +444,11 @@ export async function getUserPublicProfile(req, res) {
         about: user.about,
         isSeller: user.isSeller === true || user.role === "seller",
         memberSince: user.createdAt,
+        points: user.points ?? 0,
+        badges: user.badges ?? [],
+        followersCount: (user.followers || []).length,
+        followingCount: (user.following || []).length,
+        isFollowing,
       },
       pets,
     });

@@ -1,4 +1,5 @@
 import fs from "fs";
+import { randomBytes } from "crypto";
 import multer from "multer";
 import path from "path";
 import { Router } from "express";
@@ -27,7 +28,7 @@ const storeStorage = multer.diskStorage({
     cb(null, dir);
   },
   filename: (_req, file, cb) => {
-    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const unique = Date.now() + "-" + randomBytes(8).toString("hex");
     cb(null, `store-${unique}${path.extname(file.originalname)}`);
   },
 });

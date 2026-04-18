@@ -1,6 +1,7 @@
 import Product from "../models/Product.js";
 import Store from "../models/Store.js";
 import Category from "../models/Category.js";
+import Order from "../models/Order.js";
 import { sendError, sendOk } from "../utils/apiResponse.js";
 import { recordAudit } from "../utils/audit.js";
 
@@ -332,12 +333,57 @@ export async function getSellerStats(req, res) {
     const sellerId = req.user?.sub;
 
     const products = await Product.find({ seller: sellerId });
+    const productIds = products.map(p => p._id);
+
     const totalProducts = products.length;
     const activeProducts = products.filter(p => p.isActive).length;
     const outOfStock = products.filter(p => p.stock <= 0).length;
     const lowStock = products.filter(p => p.stock > 0 && p.stock <= 5).length;
     const totalStock = products.reduce((sum, p) => sum + (p.stock || 0), 0);
     const totalValue = products.reduce((sum, p) => sum + ((p.price || 0) * (p.stock || 0)), 0);
+
+    // Sipariş istatistikleri
+    const [orderStatusAgg, topProductsAgg, totalOrdersAgg] = await Promise.all([
+      // Durum dağılımı
+      Order.aggregate([
+        { $match: { "items.product": { $in: productIds } } },
+        { $group: { _id: "$status", count: { $sum: 1 } } },
+      ]),
+      // Top 5 ürün (satış adedi)
+      Order.aggregate([
+        { $match: { "items.product": { $in: productIds }, status: { $ne: "cancelled" } } },
+        { $unwind: "$items" },
+        { $match: { "items.product": { $in: productIds } } },
+        { $group: {
+          _id: "$items.product",
+          soldCount: { $sum: "$items.quantity" },
+          revenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } },
+          name: { $first: "$items.name" },
+        }},
+        { $sort: { soldCount: -1 } },
+        { $limit: 5 },
+        { $project: { _id: 0, productId: "$_id", name: 1, soldCount: 1, revenue: { $round: ["$revenue", 2] } } },
+      ]),
+      // Toplam sipariş + gelir (ortalama için)
+      Order.aggregate([
+        { $match: { "items.product": { $in: productIds }, status: { $ne: "cancelled" } } },
+        { $group: { _id: null, total: { $sum: 1 }, totalRevenue: { $sum: "$totalAmount" } } },
+      ]),
+    ]);
+
+    const statusMap = {};
+    for (const s of orderStatusAgg) statusMap[s._id] = s.count;
+    const orderStatusBreakdown = {
+      pending: statusMap.pending || 0,
+      processing: statusMap.processing || 0,
+      shipped: statusMap.shipped || 0,
+      delivered: statusMap.delivered || 0,
+      cancelled: statusMap.cancelled || 0,
+    };
+
+    const totalOrders = totalOrdersAgg[0]?.total ?? 0;
+    const totalRevenue = totalOrdersAgg[0]?.totalRevenue ?? 0;
+    const avgOrderValue = totalOrders > 0 ? Math.round((totalRevenue / totalOrders) * 100) / 100 : 0;
 
     const stats = {
       totalProducts,
@@ -352,6 +398,9 @@ export async function getSellerStats(req, res) {
     return sendOk(res, 200, {
       ...stats,
       stats,
+      orderStatusBreakdown,
+      topProducts: topProductsAgg,
+      avgOrderValue,
     });
   } catch (err) {
     console.error("[getSellerStats] error", err);

@@ -3,9 +3,13 @@ import mongoose from "mongoose";
 import Appointment from "../models/Appointment.js";
 import Veterinary from "../models/Veterinary.js";
 import Pet from "../models/Pet.js";
+import User from "../models/User.js";
 import { sendError, sendOk } from "../utils/apiResponse.js";
 import { recordAudit } from "../utils/audit.js";
+import { sendEmail } from "../utils/mail.js";
+import { sendPush } from "../utils/fcm.js";
 import { io } from "../../server.js";
+import { awardPoints } from "../utils/points.js";
 
 const DEFAULT_APPOINTMENT_SLOT_MINUTES = 30;
 
@@ -44,7 +48,7 @@ function getWorkingWindow(vet, targetDate) {
 export async function createAppointment(req, res) {
   try {
     const userId = req.user.sub;
-    const { petId, veterinaryId, date, reason, notes } = req.body;
+    const { petId, veterinaryId, date, reason, notes, type = 'clinic' } = req.body;
 
     if (!petId || !veterinaryId || !date) {
       return sendError(res, 400, "petId, veterinaryId ve date gerekli", "validation_error");
@@ -99,6 +103,11 @@ export async function createAppointment(req, res) {
       return sendError(res, 409, "Bu saat dilimi dolu", "slot_conflict");
     }
 
+    const appointmentType = ['clinic', 'online'].includes(type) ? type : 'clinic';
+    const meetingUrl = appointmentType === 'online'
+      ? null // Onaylanınca üretilecek
+      : null;
+
     const appointment = await Appointment.create({
       userId,
       petId,
@@ -108,6 +117,8 @@ export async function createAppointment(req, res) {
       reason: reason || "",
       notes: notes || "",
       status: "pending",
+      type: appointmentType,
+      meetingUrl,
     });
 
     const populated = await Appointment.findById(appointment._id)
@@ -120,6 +131,25 @@ export async function createAppointment(req, res) {
       entityId: appointment._id.toString(),
     });
 
+    // N-1: Veterinere push bildirimi + socket
+    const vet = await Veterinary.findById(veterinaryId).select("userId name");
+    if (vet?.userId) {
+      const petName = populated.petId?.name || "Evcil hayvan";
+      sendPush([String(vet.userId)], {
+        title: "Yeni Randevu Talebi",
+        body: `${petName} için yeni bir randevu talebi aldınız.`,
+        data: { type: "appointment", appointmentId: appointment._id.toString() },
+      }).catch(() => {});
+      if (io?.to) {
+        io.to(`user:${String(vet.userId)}`).emit("appointment:new", {
+          appointmentId: appointment._id,
+          petName,
+          date: appointment.date,
+        });
+      }
+    }
+
+    awardPoints(userId, 10).catch(() => {});
     return sendOk(res, 201, { appointment: populated });
   } catch (err) {
     if (err.code === 11000) {
@@ -226,6 +256,9 @@ export async function updateAppointmentStatus(req, res) {
       appointment.cancelledBy = userId;
       appointment.cancelReason = cancelReason || "";
     }
+    if (status === "confirmed" && appointment.type === "online" && !appointment.meetingUrl) {
+      appointment.meetingUrl = `https://meet.google.com/lookup/${appointment._id.toString().slice(-8)}`;
+    }
     await appointment.save();
 
     // Socket.io bildirimi
@@ -236,6 +269,42 @@ export async function updateAppointmentStatus(req, res) {
         veterinaryName: appointment.veterinaryId?.name || "",
         date: appointment.date,
       });
+    }
+
+    // N-2: Kullanıcıya email bildirimi
+    const appointmentUser = await User.findById(appointment.userId).select("email name");
+    if (appointmentUser?.email) {
+      const vetName = appointment.veterinaryId?.name || "Veteriner";
+      const dateStr = new Date(appointment.date).toLocaleString("tr-TR", {
+        day: "2-digit", month: "long", year: "numeric",
+        hour: "2-digit", minute: "2-digit",
+      });
+      if (status === "confirmed") {
+        const meetingLine = appointment.meetingUrl
+          ? `<p><strong>🎥 Video Bağlantısı:</strong> <a href="${appointment.meetingUrl}">${appointment.meetingUrl}</a></p>`
+          : '';
+        sendEmail(
+          appointmentUser.email,
+          "Randevunuz Onaylandı ✓",
+          `<h2>Randevunuz onaylandı!</h2>
+           <p>Merhaba ${appointmentUser.name},</p>
+           <p><strong>Veteriner:</strong> ${vetName}</p>
+           <p><strong>Tarih:</strong> ${dateStr}</p>
+           ${meetingLine}
+           <p>Randevunuzu zamanında iptal etmek isterseniz uygulamamızı kullanabilirsiniz.</p>`
+        ).catch(() => {});
+      } else if (status === "cancelled") {
+        sendEmail(
+          appointmentUser.email,
+          "Randevunuz İptal Edildi",
+          `<h2>Randevunuz iptal edildi.</h2>
+           <p>Merhaba ${appointmentUser.name},</p>
+           <p><strong>Veteriner:</strong> ${vetName}</p>
+           <p><strong>Tarih:</strong> ${dateStr}</p>
+           ${cancelReason ? `<p><strong>Neden:</strong> ${cancelReason}</p>` : ""}
+           <p>Yeni bir randevu oluşturmak için uygulamamızı kullanabilirsiniz.</p>`
+        ).catch(() => {});
+      }
     }
 
     await recordAudit("appointment.status_update", {

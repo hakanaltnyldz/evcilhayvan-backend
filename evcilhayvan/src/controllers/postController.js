@@ -1,6 +1,9 @@
 import Post from "../models/Post.js";
 import User from "../models/User.js";
 import { sendOk, sendError } from "../utils/apiResponse.js";
+import { awardPoints } from "../utils/points.js";
+import { sendPush } from "../utils/fcm.js";
+import { io } from "../../server.js";
 
 // GET /api/posts?page=1&limit=20
 export async function getFeed(req, res) {
@@ -9,7 +12,19 @@ export async function getFeed(req, res) {
     const limit = Math.min(50, parseInt(req.query.limit) || 20);
     const skip = (page - 1) * limit;
 
-    const rawPosts = await Post.find({ isActive: true })
+    const filter = { isActive: true };
+    if (req.query.hashtag) {
+      filter.hashtags = req.query.hashtag.toLowerCase();
+    }
+
+    // Takip edilenler modu
+    if (req.query.mode === 'following' && req.user?.sub) {
+      const currentUser = await User.findById(req.user.sub).select('following').lean();
+      const followingIds = currentUser?.following || [];
+      filter.userId = { $in: followingIds };
+    }
+
+    const rawPosts = await Post.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -19,9 +34,14 @@ export async function getFeed(req, res) {
     // Populate'dan gelen güncel kullanıcı adı/avatarını stale denormalized alanlara yaz
     const posts = rawPosts.map(p => {
       const obj = p.toJSON();
-      // likes array yerine sadece count gönder (bant genişliği optimizasyonu)
+      // likes/saves array yerine sadece count gönder (bant genişliği optimizasyonu)
       obj.likeCount = (p.likes || []).length;
+      obj.saveCount = (p.saves || []).length;
+      const requestUserId = req.user?.sub || req.user?._id;
+      obj.isLiked = requestUserId ? (p.likes || []).some(id => String(id) === String(requestUserId)) : false;
+      obj.isSaved = requestUserId ? (p.saves || []).some(id => String(id) === String(requestUserId)) : false;
       delete obj.likes;
+      delete obj.saves;
       if (p.userId && typeof p.userId === 'object' && p.userId.name) {
         obj.userName = p.userId.name;
         obj.userAvatar = p.userId.avatarUrl || null;
@@ -39,7 +59,7 @@ export async function getFeed(req, res) {
       return obj;
     });
 
-    const total = await Post.countDocuments({ isActive: true });
+    const total = await Post.countDocuments(filter);
 
     return sendOk(res, 200, {
       posts,
@@ -59,11 +79,17 @@ export async function createPost(req, res) {
     const user = await User.findById(userId).lean();
     if (!user) return sendError(res, 404, "Kullanici bulunamadi", "not_found");
 
-    const { content, photos, petId, petName } = req.body;
+    const { content, photos, petId, petName, hashtags } = req.body;
 
     if (!content && (!photos || photos.length === 0)) {
       return sendError(res, 400, "Gonderi icerigi veya fotograf gerekli", "validation_error");
     }
+
+    // Otomatik hashtag çıkarma (içerikten #kelime)
+    const extractedTags = content
+      ? [...content.matchAll(/#(\w+)/g)].map(m => m[1].toLowerCase())
+      : [];
+    const allHashtags = [...new Set([...(hashtags || []), ...extractedTags])];
 
     const post = await Post.create({
       userId,
@@ -73,8 +99,10 @@ export async function createPost(req, res) {
       photos: photos || [],
       petId: petId || null,
       petName: petName || null,
+      hashtags: allHashtags,
     });
 
+    awardPoints(userId, 5).catch(() => {});
     return sendOk(res, 201, { post });
   } catch (err) {
     return sendError(res, 500, err.message, "internal_error");
@@ -161,7 +189,24 @@ export async function addComment(req, res) {
     post.comments.push(comment);
     await post.save();
 
-    return sendOk(res, 201, { comment: post.comments[post.comments.length - 1] });
+    const savedComment = post.comments[post.comments.length - 1];
+
+    // Bildirim: yorum sahibi ≠ gönderi sahibi
+    if (String(post.userId) !== String(userId)) {
+      sendPush([String(post.userId)], {
+        title: `${user.name} yorum yaptı`,
+        body: text.trim().substring(0, 80),
+        data: { type: "post_comment", postId: String(post._id) },
+      }).catch(() => {});
+      if (io?.to) {
+        io.to(`user:${String(post.userId)}`).emit("post:commented", {
+          postId: String(post._id),
+          comment: savedComment,
+        });
+      }
+    }
+
+    return sendOk(res, 201, { comment: savedComment });
   } catch (err) {
     return sendError(res, 500, err.message, "internal_error");
   }

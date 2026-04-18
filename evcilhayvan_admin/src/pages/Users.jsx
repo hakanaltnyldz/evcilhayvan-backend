@@ -26,6 +26,8 @@ export default function Users() {
 
   async function toggleBan(user) {
     const uid = user.id || user._id
+    const nextAction = user.role === 'banned' ? 'banini kaldirmak' : 'banlamak'
+    if (!window.confirm(`"${user.name}" kullanicisini ${nextAction} istiyor musunuz?`)) return
     setBanning(uid)
     try {
       const res = await api.patch(`/admin/users/${uid}/ban`)
@@ -43,6 +45,8 @@ export default function Users() {
 
   async function changeRole(user, role) {
     const uid = user.id || user._id
+    if (role === (user.role === 'banned' ? 'user' : user.role)) return
+    if (!window.confirm(`"${user.name}" kullanicisinin rolunu "${role}" yapmak istiyor musunuz?`)) return
     setChangingRole(uid)
     try {
       const res = await api.patch(`/admin/users/${uid}/role`, { role })

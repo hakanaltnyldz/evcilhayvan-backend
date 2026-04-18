@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { randomBytes } from "crypto";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import Coupon from "../models/Coupon.js";
@@ -7,9 +8,17 @@ import { sendError, sendOk } from "../utils/apiResponse.js";
 import { recordAudit } from "../utils/audit.js";
 import { encrypt } from "../utils/fieldCrypto.js";
 import { sendEmail } from "../utils/mail.js";
+import {
+  buildCouponItemsFromOrder,
+  evaluateCouponByCode,
+} from "../services/couponValidationService.js";
+import {
+  getPrimaryVariant,
+  resolveProductVariantSelection,
+} from "../utils/variantSelection.js";
 
 function generateTrackingNumber() {
-  return 'PAT' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase();
+  return 'PAT' + Date.now().toString(36).toUpperCase() + randomBytes(2).toString('hex').toUpperCase();
 }
 
 async function sendOrderConfirmationEmail(toEmail, trackingNumber, items, totalAmount) {
@@ -60,9 +69,10 @@ export async function createOrder(req, res) {
 
     // Ürünleri ve stokları kontrol et
     const productIds = items.map(item => item.productId);
-    const products = await Product.find({ _id: { $in: productIds } });
+    const uniqueProductIds = [...new Set(productIds.map((id) => id.toString()))];
+    const products = await Product.find({ _id: { $in: uniqueProductIds } });
 
-    if (products.length !== productIds.length) {
+    if (products.length !== uniqueProductIds.length) {
       return sendError(res, 400, "Bazı ürünler bulunamadı", "products_not_found");
     }
 
@@ -86,29 +96,21 @@ export async function createOrder(req, res) {
       }
 
       // Variant validasyonu
-      let itemPrice = product.price;
-      if (item.variantName && item.variantLabel) {
-        const variant = product.variants?.find((v) => v.name === item.variantName);
-        const option = variant?.options?.find((o) => o.label === item.variantLabel);
-        if (!variant || !option) {
-          return sendError(res, 400, `Gecersiz variant: ${item.variantName}/${item.variantLabel}`, "invalid_variant");
-        }
-        if (option.stock < item.quantity) {
-          return sendError(res, 400, `Variant stok yetersiz: ${option.label} (Mevcut: ${option.stock})`, "insufficient_stock");
-        }
-        itemPrice = product.price + (option.priceDiff || 0);
-      } else if (product.variants?.length > 0) {
-        return sendError(res, 400, `${product.name || product.title} icin variant secimi zorunludur`, "variant_required");
-      } else {
-        if (product.stock < item.quantity) {
-          return sendError(
-            res,
-            400,
-            `Yetersiz stok: ${product.name || product.title} (Mevcut: ${product.stock}, İstenen: ${item.quantity})`,
-            "insufficient_stock"
-          );
-        }
+      let variantSelection;
+      try {
+        variantSelection = resolveProductVariantSelection(product, item, item.quantity);
+      } catch (error) {
+        return sendError(
+          res,
+          error.statusCode || 400,
+          error.message,
+          error.code || "validation_error",
+          error.details
+        );
       }
+
+      const primaryVariant = getPrimaryVariant(variantSelection.selectedVariants);
+      const itemPrice = variantSelection.unitPrice;
 
       const itemTotal = itemPrice * item.quantity;
       totalAmount += itemTotal;
@@ -119,8 +121,9 @@ export async function createOrder(req, res) {
         price: itemPrice,
         name: product.name || product.title,
         image: product.images?.[0] || product.photos?.[0] || null,
-        variantName: item.variantName || null,
-        variantLabel: item.variantLabel || null,
+        selectedVariants: variantSelection.selectedVariants,
+        variantName: primaryVariant?.name || null,
+        variantLabel: primaryVariant?.label || null,
       });
     }
 
@@ -129,30 +132,28 @@ export async function createOrder(req, res) {
     let discountAmount = 0;
     let appliedCoupon = null;
 
+    if (couponCode && !userId) {
+      return sendError(res, 400, "Kupon kullanimi icin giris yapmalisiniz", "auth_required");
+    }
+
     if (couponCode && userId) {
-      const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
-      if (coupon) {
-        const validity = coupon.isValid();
-        if (validity.valid) {
-          // Kişi başı limit: bileşik index ile O(log n) sorgu
-          const userUsageCount = await CouponUsage.countDocuments({ couponId: coupon._id, userId });
-          const belowPerUserLimit = userUsageCount < (coupon.perUserLimit || 1);
-
-          // İlk sipariş kontrolü: sadece ücretli sipariş var mı bak
-          let passesFirstOrderCheck = true;
-          if (coupon.firstOrderOnly) {
-            const paidOrders = await Order.countDocuments({ user: userId, paymentStatus: 'paid' });
-            passesFirstOrderCheck = paidOrders === 0;
-          }
-
-          if (belowPerUserLimit && passesFirstOrderCheck) {
-            const calc = coupon.calculateDiscount(originalAmount);
-            if (!calc.error) {
-              discountAmount = calc.discount;
-              appliedCoupon = coupon;
-            }
-          }
-        }
+      try {
+        const couponResult = await evaluateCouponByCode({
+          code: couponCode,
+          userId,
+          totalAmount: originalAmount,
+          items: buildCouponItemsFromOrder(products, orderItems),
+        });
+        discountAmount = couponResult.discountAmount;
+        appliedCoupon = couponResult.coupon;
+      } catch (error) {
+        return sendError(
+          res,
+          error.statusCode || 400,
+          error.message,
+          error.code || "coupon_invalid",
+          error.details
+        );
       }
     }
 
@@ -163,34 +164,48 @@ export async function createOrder(req, res) {
     session.startTransaction();
     let order;
     try {
-      // Stokları atomik olarak düş (race condition koruması)
-      for (const item of items) {
-        if (item.variantName && item.variantLabel) {
-          // Variant stok düşümü
-          const updated = await Product.findOneAndUpdate(
-            {
-              _id: item.productId,
-              "variants.name": item.variantName,
-              "variants.options": { $elemMatch: { label: item.variantLabel, stock: { $gte: item.quantity } } },
-            },
-            { $inc: { "variants.$[v].options.$[o].stock": -item.quantity } },
-            { arrayFilters: [{ "v.name": item.variantName }, { "o.label": item.variantLabel }], new: true, session }
-          );
-          if (!updated) {
-            await session.abortTransaction();
-            return sendError(res, 400, `Variant stok yetersiz: ${item.variantLabel}`, "insufficient_stock");
+      // Stoklari atomik olarak dus (race condition korumasi)
+      for (const item of orderItems) {
+        if (Array.isArray(item.selectedVariants) && item.selectedVariants.length > 0) {
+          for (const selectedVariant of item.selectedVariants) {
+            const updated = await Product.findOneAndUpdate(
+              {
+                _id: item.product,
+                "variants.name": selectedVariant.name,
+                "variants.options": {
+                  $elemMatch: {
+                    label: selectedVariant.label,
+                    stock: { $gte: item.quantity },
+                  },
+                },
+              },
+              { $inc: { "variants.$[v].options.$[o].stock": -item.quantity } },
+              {
+                arrayFilters: [{ "v.name": selectedVariant.name }, { "o.label": selectedVariant.label }],
+                new: true,
+                session,
+              }
+            );
+            if (!updated) {
+              await session.abortTransaction();
+              return sendError(
+                res,
+                400,
+                `Variant stok yetersiz: ${selectedVariant.name}/${selectedVariant.label}`,
+                "insufficient_stock"
+              );
+            }
           }
         } else {
-          // Normal stok düşümü
           const updated = await Product.findOneAndUpdate(
-            { _id: item.productId, stock: { $gte: item.quantity } },
+            { _id: item.product, stock: { $gte: item.quantity } },
             { $inc: { stock: -item.quantity } },
             { new: true, session }
           );
           if (!updated) {
-            const product = products.find(p => p._id.toString() === item.productId);
+            const product = products.find(p => p._id.toString() === item.product.toString());
             await session.abortTransaction();
-            return sendError(res, 400, `Stok yetersiz: ${product?.name || product?.title || item.productId}`, "insufficient_stock");
+            return sendError(res, 400, `Stok yetersiz: ${product?.name || product?.title || item.product}`, "insufficient_stock");
           }
         }
       }
@@ -234,7 +249,7 @@ export async function createOrder(req, res) {
       if (appliedCoupon) {
         const usageDoc = await CouponUsage.findOneAndUpdate(
           { couponId: appliedCoupon._id, userId },
-          { $inc: { count: 1 }, $setOnInsert: { orderId: order._id, discountAmount, originalAmount, finalAmount } },
+          { $inc: { count: 1 }, $set: { orderId: order._id, discountAmount, originalAmount, finalAmount } },
           { upsert: true, new: true, session }
         );
         if (usageDoc.count > (appliedCoupon.perUserLimit || 1)) {
@@ -391,11 +406,34 @@ export async function cancelOrder(req, res) {
     cancelSession.startTransaction();
     try {
       for (const item of order.items) {
-        await Product.findByIdAndUpdate(
-          item.product,
-          { $inc: { stock: item.quantity } },
-          { session: cancelSession }
-        );
+        const selectedVariants =
+          Array.isArray(item.selectedVariants) && item.selectedVariants.length > 0
+            ? item.selectedVariants
+            : item.variantName && item.variantLabel
+              ? [{ name: item.variantName, label: item.variantLabel }]
+              : [];
+        if (selectedVariants.length > 0) {
+          for (const selectedVariant of selectedVariants) {
+            await Product.findOneAndUpdate(
+              {
+                _id: item.product,
+                "variants.name": selectedVariant.name,
+                "variants.options.label": selectedVariant.label,
+              },
+              { $inc: { "variants.$[v].options.$[o].stock": item.quantity } },
+              {
+                arrayFilters: [{ "v.name": selectedVariant.name }, { "o.label": selectedVariant.label }],
+                session: cancelSession,
+              }
+            );
+          }
+        } else {
+          await Product.findByIdAndUpdate(
+            item.product,
+            { $inc: { stock: item.quantity } },
+            { session: cancelSession }
+          );
+        }
       }
       order.status = "cancelled";
       order.paymentStatus = order.paymentStatus === "paid" ? "refunded" : "failed";
@@ -538,6 +576,40 @@ export async function updateOrderStatus(req, res) {
       entityId: order._id.toString(),
       metadata: { newStatus: status },
     });
+
+    // E-1: Müşteriye durum email bildirimi
+    if (status === "shipped" || status === "delivered") {
+      const customerEmail = order.userId
+        ? (await import("../models/User.js").then(m => m.default.findById(order.userId).select("email name")))
+        : null;
+      const toEmail = customerEmail?.email || order.guestInfo?.email;
+      const toName = customerEmail?.name || order.guestInfo?.name || "Müşteri";
+      if (toEmail) {
+        if (status === "shipped") {
+          const trackingLine = trackingNumber
+            ? `<p><strong>Kargo Takip No:</strong> ${trackingNumber} (${carrier || "Kargo"})</p>`
+            : "";
+          sendEmail(
+            toEmail,
+            "Siparişiniz Kargoya Verildi 🚚",
+            `<h2>Siparişiniz yola çıktı!</h2>
+             <p>Merhaba ${toName},</p>
+             <p><strong>Sipariş No:</strong> ${order._id}</p>
+             ${trackingLine}
+             <p>Siparişinizi uygulama üzerinden takip edebilirsiniz.</p>`
+          ).catch(() => {});
+        } else if (status === "delivered") {
+          sendEmail(
+            toEmail,
+            "Siparişiniz Teslim Edildi ✓",
+            `<h2>Siparişiniz teslim edildi!</h2>
+             <p>Merhaba ${toName},</p>
+             <p><strong>Sipariş No:</strong> ${order._id}</p>
+             <p>Alışverişiniz için teşekkür ederiz. Ürünü değerlendirmeyi unutmayın!</p>`
+          ).catch(() => {});
+        }
+      }
+    }
 
     return sendOk(res, 200, { order });
   } catch (err) {

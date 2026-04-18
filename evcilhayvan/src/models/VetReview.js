@@ -14,6 +14,11 @@ const VetReviewSchema = new mongoose.Schema(
     },
     rating: { type: Number, required: true, min: 1, max: 5 },
     comment: { type: String, trim: true, maxlength: 500 },
+    subRatings: {
+      cleanliness:   { type: Number, min: 1, max: 5 }, // Temizlik
+      communication: { type: Number, min: 1, max: 5 }, // İletişim
+      value:         { type: Number, min: 1, max: 5 }, // Fiyat/Performans
+    },
   },
   {
     timestamps: true,

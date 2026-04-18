@@ -4,6 +4,14 @@ import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
+const selectedVariantSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    label: { type: String, required: true, trim: true },
+  },
+  { _id: false }
+);
+
 const orderItemSchema = new Schema({
   product: {
     type: Schema.Types.ObjectId,
@@ -22,6 +30,7 @@ const orderItemSchema = new Schema({
   },
   name: String,
   image: String,
+  selectedVariants: { type: [selectedVariantSchema], default: [] },
   variantName: { type: String, default: null },
   variantLabel: { type: String, default: null },
 });
@@ -121,7 +130,27 @@ orderSchema.statics.hasPurchased = async function (userId, productId) {
 };
 
 // Ensure virtuals are included in JSON
-orderSchema.set('toJSON', { virtuals: true });
+orderSchema.set('toJSON', {
+  virtuals: true,
+  transform(_doc, ret) {
+    if (Array.isArray(ret.items)) {
+      ret.items = ret.items.map((item) => {
+        const selectedVariants = Array.isArray(item.selectedVariants)
+          ? item.selectedVariants
+          : [];
+        if (!selectedVariants.length && item.variantName && item.variantLabel) {
+          item.selectedVariants = [{ name: item.variantName, label: item.variantLabel }];
+        }
+        if (!item.variantName && selectedVariants[0]) {
+          item.variantName = selectedVariants[0].name;
+          item.variantLabel = selectedVariants[0].label;
+        }
+        return item;
+      });
+    }
+    return ret;
+  },
+});
 orderSchema.set('toObject', { virtuals: true });
 
 export default mongoose.model('Order', orderSchema);

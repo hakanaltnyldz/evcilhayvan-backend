@@ -33,19 +33,37 @@ const quickLinks = [
   },
 ]
 
+const PRESETS = [
+  { label: 'Tüm Zamanlar', from: '', to: '' },
+  { label: 'Bu Ay', from: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10), to: new Date().toISOString().slice(0, 10) },
+  { label: 'Son 7 Gün', from: new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10), to: new Date().toISOString().slice(0, 10) },
+  { label: 'Son 30 Gün', from: new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10), to: new Date().toISOString().slice(0, 10) },
+]
+
 export default function Dashboard() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [preset, setPreset] = useState(0)
+  const [customFrom, setCustomFrom] = useState('')
+  const [customTo, setCustomTo] = useState('')
 
   useEffect(() => {
-    api.get('/admin/stats')
+    setLoading(true)
+    setError('')
+    const { from, to } = preset === -1
+      ? { from: customFrom, to: customTo }
+      : PRESETS[preset]
+    const params = {}
+    if (from) params.from = from
+    if (to) params.to = to
+    api.get('/admin/stats', { params })
       .then((response) => setStats(response.data?.stats || null))
       .catch((requestError) => {
         setError(requestError.response?.data?.message || 'Istatistikler alinamadi')
       })
       .finally(() => setLoading(false))
-  }, [])
+  }, [preset, customFrom, customTo])
 
   if (error) {
     return (
@@ -117,14 +135,60 @@ export default function Dashboard() {
         </div>
       </section>
 
+      {/* Tarih Filtresi */}
+      <div className="flex flex-wrap items-center gap-3 bg-white rounded-2xl shadow-sm p-4">
+        <span className="text-sm font-semibold text-gray-600 mr-2">Dönem:</span>
+        {PRESETS.map((p, i) => (
+          <button
+            key={i}
+            onClick={() => setPreset(i)}
+            className={`px-4 py-1.5 rounded-xl text-sm font-semibold transition-colors ${
+              preset === i ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            {p.label}
+          </button>
+        ))}
+        <button
+          onClick={() => setPreset(-1)}
+          className={`px-4 py-1.5 rounded-xl text-sm font-semibold transition-colors ${
+            preset === -1 ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          Özel Aralık
+        </button>
+        {preset === -1 && (
+          <div className="flex items-center gap-2 ml-2">
+            <input
+              type="date"
+              value={customFrom}
+              onChange={(e) => setCustomFrom(e.target.value)}
+              className="border rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <span className="text-gray-400">→</span>
+            <input
+              type="date"
+              value={customTo}
+              onChange={(e) => setCustomTo(e.target.value)}
+              className="border rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        )}
+        {stats?.dateFilter && (
+          <span className="ml-auto text-xs text-gray-400 font-medium">
+            {stats.dateFilter.from} – {stats.dateFilter.to}
+          </span>
+        )}
+      </div>
+
       <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          title="Toplam Kullanici"
+          title="Kullanici"
           value={stats?.totalUsers}
           loading={loading}
           color="indigo"
           icon={<UserGroupIcon className="h-6 w-6" />}
-          subtitle="Tum aktif ve pasif hesaplar"
+          subtitle={stats?.newUsersInRange != null ? `Dönemde ${stats.newUsersInRange} yeni kayıt` : 'Tum aktif ve pasif hesaplar'}
         />
         <StatCard
           title="Bu Ay Yeni Uye"
@@ -135,12 +199,12 @@ export default function Dashboard() {
           subtitle="Ay basindan bugune yeni kayit"
         />
         <StatCard
-          title="Toplam Siparis"
+          title="Siparis"
           value={stats?.totalOrders}
           loading={loading}
           color="orange"
           icon={<ShoppingCartIcon className="h-6 w-6" />}
-          subtitle="Ticari akisin genel hacmi"
+          subtitle={stats?.ordersInRange != null ? `Dönemde ${stats.ordersInRange} sipariş` : 'Ticari akisin genel hacmi'}
         />
         <StatCard
           title="Aktif Kupon"

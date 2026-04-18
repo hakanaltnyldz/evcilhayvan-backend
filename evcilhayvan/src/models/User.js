@@ -34,6 +34,10 @@ const UserSchema = new mongoose.Schema(
       events:          { type: Boolean, default: true },
       birthdays:       { type: Boolean, default: true },
     },
+    points: { type: Number, default: 0 },
+    badges: { type: [String], default: [] },
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   {
     timestamps: true,

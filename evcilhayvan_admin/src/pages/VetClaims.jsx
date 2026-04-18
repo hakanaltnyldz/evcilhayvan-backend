@@ -38,11 +38,14 @@ export default function VetClaims() {
   async function submitReview() {
     if (!noteModal) return
     const { claimId, action } = noteModal
+    if (action === 'rejected' && !adminNote.trim()) {
+      toast.error('Reddetme icin admin notu zorunlu')
+      return
+    }
     setReviewing(claimId)
     setNoteModal(null)
     try {
-      const res = await api.patch(`/admin/vet-claims/${claimId}/review`, { action, adminNote })
-      const updated = res.data?.claim
+      await api.patch(`/admin/vet-claims/${claimId}/review`, { action, adminNote: adminNote.trim() })
       setClaims((prev) => prev.filter((c) => c._id !== claimId))
       setTotal((t) => t - 1)
       toast.success(action === 'approved' ? 'Talep onaylandı ✓' : 'Talep reddedildi')
@@ -194,7 +197,7 @@ export default function VetClaims() {
             <textarea
               value={adminNote}
               onChange={(e) => setAdminNote(e.target.value)}
-              placeholder="Admin notu (opsiyonel)..."
+              placeholder={noteModal.action === 'rejected' ? 'Reddetme nedenini yazin...' : 'Admin notu (opsiyonel)...'}
               rows={3}
               className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 mb-4 resize-none"
             />

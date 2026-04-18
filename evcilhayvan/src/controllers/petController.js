@@ -22,6 +22,35 @@ function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function pickPetFields(source, { allowIsActive = false } = {}) {
+  const allowedKeys = [
+    "name",
+    "species",
+    "breed",
+    "gender",
+    "ageMonths",
+    "birthDate",
+    "bio",
+    "advertType",
+    "photos",
+    "images",
+    "videos",
+    "vaccinated",
+    "location",
+  ];
+
+  if (allowIsActive) {
+    allowedKeys.push("isActive");
+  }
+
+  return allowedKeys.reduce((acc, key) => {
+    if (source[key] !== undefined) {
+      acc[key] = source[key];
+    }
+    return acc;
+  }, {});
+}
+
 // GET /api/pets/feed
 export async function getPetFeed(req, res) {
   try {
@@ -69,7 +98,7 @@ export async function createPet(req, res) {
     }
 
     const ownerId = req.user.sub;
-    const body = { ...req.body, ownerId };
+    const body = { ...pickPetFields(req.body), ownerId };
     const location = buildLocation(body.location);
     if (location) {
       body.location = location;
@@ -173,7 +202,7 @@ export async function updatePet(req, res) {
       return sendError(res, 403, "Bu ilan size ait degil", "forbidden");
     }
 
-    const update = { ...req.body };
+    const update = pickPetFields(req.body, { allowIsActive: isAdmin });
     const location = buildLocation(update.location);
     if (location) {
       update.location = location;

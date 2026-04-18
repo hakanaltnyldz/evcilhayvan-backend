@@ -12,13 +12,12 @@ const conversationSchema = new Schema(
     ],
     contextType: {
       type: String,
-      enum: ["MATCHING", "ADOPTION", null],
+      enum: ["MATCHING", "ADOPTION", "vet", "sitter", null],
       default: null,
       index: true,
     },
     contextId: {
       type: Schema.Types.ObjectId,
-      ref: "Pet",
       default: null,
       index: true,
     },

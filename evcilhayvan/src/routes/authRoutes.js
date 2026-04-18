@@ -1,8 +1,10 @@
 import { Router } from "express";
 import { body } from "express-validator";
+import { randomBytes } from "crypto";
 import fs from "fs";
 import path from "path";
 import multer from "multer";
+import rateLimit from "express-rate-limit";
 import {
   register,
   login,
@@ -25,13 +27,27 @@ import { config } from "../config/config.js";
 
 const router = Router();
 
+const emailVerificationLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 8,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  keyGenerator: (req) => `${req.ip}:${String(req.body?.email || "").toLowerCase()}`,
+  message: {
+    success: false,
+    message: "Cok fazla dogrulama denemesi. Lutfen daha sonra tekrar deneyin.",
+    code: "too_many_verification_attempts",
+  },
+});
+
 /* ---------- Multer (Avatar Upload) ---------- */
 const uploadDir = config.uploadDir || path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, uploadDir),
   filename: (_req, file, cb) => {
-    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const unique = Date.now() + "-" + randomBytes(8).toString("hex");
     const ext = path.extname(file.originalname || "");
     cb(null, "avatar-" + unique + ext);
   },
@@ -67,6 +83,7 @@ router.post(
 
 router.post(
   "/verify-email",
+  emailVerificationLimiter,
   [
     body("email").isEmail().withMessage("Gecerli email gerekli"),
     body("code").isLength({ min: 6, max: 6 }).withMessage("Dogrulama kodu 6 haneli olmali"),
@@ -113,6 +130,112 @@ router.get("/users", authRequired(), getAllUsers);
 
 router.get("/users/:userId", authRequired(), getUserPublicProfile);
 
+// === TAKİP SİSTEMİ ===
+
+// POST /api/auth/users/:userId/follow — takip et
+router.post("/users/:userId/follow", authRequired(), async (req, res) => {
+  try {
+    const { sendOk, sendError } = await import("../utils/apiResponse.js");
+    const User = (await import("../models/User.js")).default;
+    const { sendPush } = await import("../utils/fcm.js");
+    const { io } = await import("../../server.js");
+
+    const followerId = req.user.sub;
+    const { userId } = req.params;
+
+    if (String(followerId) === String(userId)) {
+      return sendError(res, 400, "Kendinizi takip edemezsiniz", "validation_error");
+    }
+
+    const [follower, target] = await Promise.all([
+      User.findById(followerId),
+      User.findById(userId),
+    ]);
+    if (!target) return sendError(res, 404, "Kullanıcı bulunamadı", "not_found");
+
+    await Promise.all([
+      User.findByIdAndUpdate(followerId, { $addToSet: { following: userId } }),
+      User.findByIdAndUpdate(userId, { $addToSet: { followers: followerId } }),
+    ]);
+
+    // Bildirim
+    sendPush([String(userId)], {
+      title: `${follower?.name || 'Biri'} sizi takip etmeye başladı`,
+      body: '',
+      data: { type: "new_follower", userId: String(followerId) },
+    }).catch(() => {});
+    if (io?.to) {
+      io.to(`user:${String(userId)}`).emit("user:followed", { followerId: String(followerId) });
+    }
+
+    const updatedTarget = await User.findById(userId).select("followers following");
+    return sendOk(res, 200, {
+      isFollowing: true,
+      followersCount: updatedTarget?.followers?.length ?? 0,
+    });
+  } catch (err) {
+    const { sendError } = await import("../utils/apiResponse.js");
+    return sendError(res, 500, "Takip işlemi başarısız", "internal_error", err.message);
+  }
+});
+
+// DELETE /api/auth/users/:userId/follow — takipten çık
+router.delete("/users/:userId/follow", authRequired(), async (req, res) => {
+  try {
+    const { sendOk, sendError } = await import("../utils/apiResponse.js");
+    const User = (await import("../models/User.js")).default;
+
+    const followerId = req.user.sub;
+    const { userId } = req.params;
+
+    await Promise.all([
+      User.findByIdAndUpdate(followerId, { $pull: { following: userId } }),
+      User.findByIdAndUpdate(userId, { $pull: { followers: followerId } }),
+    ]);
+
+    const updatedTarget = await User.findById(userId).select("followers");
+    return sendOk(res, 200, {
+      isFollowing: false,
+      followersCount: updatedTarget?.followers?.length ?? 0,
+    });
+  } catch (err) {
+    const { sendError } = await import("../utils/apiResponse.js");
+    return sendError(res, 500, "Takipten çıkma başarısız", "internal_error", err.message);
+  }
+});
+
+// GET /api/auth/users/:userId/followers
+router.get("/users/:userId/followers", authRequired(), async (req, res) => {
+  try {
+    const { sendOk, sendError } = await import("../utils/apiResponse.js");
+    const User = (await import("../models/User.js")).default;
+    const user = await User.findById(req.params.userId)
+      .populate("followers", "name avatarUrl city")
+      .lean();
+    if (!user) return sendError(res, 404, "Kullanıcı bulunamadı", "not_found");
+    return sendOk(res, 200, { followers: user.followers || [] });
+  } catch (err) {
+    const { sendError } = await import("../utils/apiResponse.js");
+    return sendError(res, 500, "Takipçiler alınamadı", "internal_error", err.message);
+  }
+});
+
+// GET /api/auth/users/:userId/following
+router.get("/users/:userId/following", authRequired(), async (req, res) => {
+  try {
+    const { sendOk, sendError } = await import("../utils/apiResponse.js");
+    const User = (await import("../models/User.js")).default;
+    const user = await User.findById(req.params.userId)
+      .populate("following", "name avatarUrl city")
+      .lean();
+    if (!user) return sendError(res, 404, "Kullanıcı bulunamadı", "not_found");
+    return sendOk(res, 200, { following: user.following || [] });
+  } catch (err) {
+    const { sendError } = await import("../utils/apiResponse.js");
+    return sendError(res, 500, "Takip edilenler alınamadı", "internal_error", err.message);
+  }
+});
+
 router.post("/fcm-token", authRequired(), registerFcmToken);
 router.delete("/fcm-token", authRequired(), unregisterFcmToken);
 
@@ -144,6 +267,40 @@ router.patch("/me/notification-preferences", authRequired(), async (req, res) =>
   } catch (err) {
     const { sendError } = await import("../utils/apiResponse.js");
     return sendError(res, 500, "Hata", "internal_error", err.message);
+  }
+});
+
+// === PROFİL İSTATİSTİKLERİ ===
+router.get("/me/stats", authRequired(), async (req, res) => {
+  try {
+    const { sendOk, sendError } = await import("../utils/apiResponse.js");
+    const Post = (await import("../models/Post.js")).default;
+    const Appointment = (await import("../models/Appointment.js")).default;
+    const SitterBooking = (await import("../models/SitterBooking.js")).default;
+    const mongoose = (await import("mongoose")).default;
+
+    const userId = req.user.sub;
+    const userObjId = new mongoose.Types.ObjectId(userId);
+
+    const [postCount, likeAgg, appointmentCount, bookingCount] = await Promise.all([
+      Post.countDocuments({ userId: userObjId, isActive: true }),
+      Post.aggregate([
+        { $match: { userId: userObjId } },
+        { $group: { _id: null, total: { $sum: "$likeCount" } } },
+      ]),
+      Appointment.countDocuments({ userId: userObjId }),
+      SitterBooking.countDocuments({ petOwnerId: userObjId }),
+    ]);
+
+    return sendOk(res, 200, {
+      postCount,
+      totalLikes: likeAgg[0]?.total ?? 0,
+      appointmentCount,
+      bookingCount,
+    });
+  } catch (err) {
+    const { sendError } = await import("../utils/apiResponse.js");
+    return sendError(res, 500, "İstatistikler alınamadı", "internal_error", err.message);
   }
 });
 

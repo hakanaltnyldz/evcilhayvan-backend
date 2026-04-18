@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 import CartItem from "../models/CartItem.js";
 import Product from "../models/Product.js";
 import { sendError, sendOk } from "../utils/apiResponse.js";
+import {
+  getPrimaryVariant,
+  resolveProductVariantSelection,
+} from "../utils/variantSelection.js";
 
 function parseQuantity(value) {
   const qty = Number(value);
@@ -24,10 +28,33 @@ async function buildCartResponse(userId) {
       await CartItem.deleteOne({ _id: item._id });
       continue;
     }
-    const price = Number(item.product.price || 0);
-    total += price * item.quantity;
+
+    let unitPrice = Number(item.product.price || 0);
+    try {
+      const variantPricing = resolveProductVariantSelection(
+        item.product,
+        { selectedVariants: item.selectedVariants },
+        item.quantity,
+        { skipStockCheck: true }
+      );
+      unitPrice = variantPricing.unitPrice;
+      item.selectedVariants = variantPricing.selectedVariants;
+      item.variantKey = variantPricing.variantKey;
+    } catch (error) {
+      if (error.code === "invalid_variant" || error.code === "variant_required") {
+        await CartItem.deleteOne({ _id: item._id });
+        continue;
+      }
+    }
+
+    total += unitPrice * item.quantity;
     itemCount += item.quantity;
-    validItems.push(item);
+    const serializedItem = item.toObject();
+    const primaryVariant = getPrimaryVariant(serializedItem.selectedVariants || []);
+    serializedItem.unitPrice = unitPrice;
+    serializedItem.variantName = primaryVariant?.name || null;
+    serializedItem.variantLabel = primaryVariant?.label || null;
+    validItems.push(serializedItem);
   }
 
   return {
@@ -41,7 +68,7 @@ export async function addToCart(req, res) {
     const userId = req.user?.sub;
     if (!userId) return sendError(res, 401, "Kimlik dogrulama gerekli", "auth_required");
 
-    const { productId, quantity } = req.body || {};
+    const { productId, quantity, selectedVariants, variantName, variantLabel } = req.body || {};
     const qty = Math.max(parseQuantity(quantity), 1);
     if (!productId) return sendError(res, 400, "productId gerekli", "validation_error");
 
@@ -55,12 +82,64 @@ export async function addToCart(req, res) {
       return sendError(res, 403, "Kendi urunlerinizi sepete ekleyemezsiniz", "self_purchase_denied");
     }
 
-    let item = await CartItem.findOne({ user: userId, product: productId });
-    if (item) {
-      item.quantity += qty;
-    } else {
-      item = new CartItem({ user: userId, product: productId, quantity: qty });
+    let variantSelection;
+    try {
+      variantSelection = resolveProductVariantSelection(
+        product,
+        { selectedVariants, variantName, variantLabel },
+        qty
+      );
+    } catch (error) {
+      return sendError(
+        res,
+        error.statusCode || 400,
+        error.message,
+        error.code || "validation_error",
+        error.details
+      );
     }
+
+    const itemQuery = {
+      user: userId,
+      product: productId,
+      variantKey: variantSelection.variantKey,
+    };
+    if (variantSelection.variantKey === "default") {
+      itemQuery.$or = [{ variantKey: "default" }, { variantKey: { $exists: false } }];
+      delete itemQuery.variantKey;
+    }
+
+    let item = await CartItem.findOne(itemQuery);
+    const nextQuantity = (item?.quantity || 0) + qty;
+    try {
+      variantSelection = resolveProductVariantSelection(
+        product,
+        { selectedVariants, variantName, variantLabel },
+        nextQuantity
+      );
+    } catch (error) {
+      return sendError(
+        res,
+        error.statusCode || 400,
+        error.message,
+        error.code || "validation_error",
+        error.details
+      );
+    }
+
+    if (item) {
+      item.quantity = nextQuantity;
+    } else {
+      item = new CartItem({
+        user: userId,
+        product: productId,
+        quantity: nextQuantity,
+        selectedVariants: variantSelection.selectedVariants,
+        variantKey: variantSelection.variantKey,
+      });
+    }
+    item.selectedVariants = variantSelection.selectedVariants;
+    item.variantKey = variantSelection.variantKey;
     await item.save();
 
     const cart = await buildCartResponse(userId);
@@ -93,6 +172,28 @@ export async function updateCartItem(req, res) {
     if (qty <= 0) {
       await item.deleteOne();
     } else {
+      const product = await Product.findById(item.product);
+      if (!product || product.isActive === false) {
+        await item.deleteOne();
+        return sendError(res, 404, "Urun bulunamadi", "product_not_found");
+      }
+      try {
+        const variantSelection = resolveProductVariantSelection(
+          product,
+          { selectedVariants: item.selectedVariants },
+          qty
+        );
+        item.selectedVariants = variantSelection.selectedVariants;
+        item.variantKey = variantSelection.variantKey;
+      } catch (error) {
+        return sendError(
+          res,
+          error.statusCode || 400,
+          error.message,
+          error.code || "validation_error",
+          error.details
+        );
+      }
       item.quantity = qty;
       await item.save();
     }
@@ -118,7 +219,7 @@ async function deleteCartItemInternal(userId, idOrProduct) {
 export async function removeFromCart(req, res) {
   try {
     const userId = req.user?.sub;
-    await deleteCartItemInternal(userId, req.params.productId);
+    await CartItem.deleteMany({ user: userId, product: req.params.productId });
     const cart = await buildCartResponse(userId);
     return sendOk(res, 200, { message: "Urun sepetten kaldirildi", ...cart });
   } catch (err) {

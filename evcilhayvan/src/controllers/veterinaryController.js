@@ -424,11 +424,20 @@ export async function startVetConversation(req, res) {
       return sendError(res, 400, "Kendinize mesaj atamazsiniz", "self_message");
     }
 
-    // Mevcut conversation var mı?
+    // Mevcut conversation var mı? (contextType="vet" VE aynı vet ile)
     let conversation = await Conversation.findOne({
-      participants: { $all: [myUserId, vetUserId], $size: 2 },
+      participants: { $all: [myUserId, vetUserId] },
       contextType: "vet",
+      contextId: vet._id,
     });
+
+    // Yoksa herhangi bir ortak konuşma var mı? (eski kayıtlar için fallback)
+    if (!conversation) {
+      conversation = await Conversation.findOne({
+        participants: { $all: [myUserId, vetUserId] },
+        contextType: null,
+      });
+    }
 
     if (!conversation) {
       conversation = await Conversation.create({

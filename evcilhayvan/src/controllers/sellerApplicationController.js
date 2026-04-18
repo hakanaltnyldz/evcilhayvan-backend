@@ -42,11 +42,16 @@ export async function listSellerApplications(_req, res) {
 async function updateApplicationStatus(req, res, status) {
   try {
     const { id } = req.params;
+    const rejectionReason = req.body?.rejectionReason?.trim();
     const application = await SellerApplication.findById(id);
     if (!application) return sendError(res, 404, "Basvuru bulunamadi", "application_not_found");
 
+    if (status === "rejected" && !rejectionReason) {
+      return sendError(res, 400, "Reddetme nedeni zorunlu", "validation_error");
+    }
+
     application.status = status;
-    application.rejectionReason = status === "rejected" ? req.body?.rejectionReason : undefined;
+    application.rejectionReason = status === "rejected" ? rejectionReason : undefined;
     await application.save();
 
     if (status === "approved") {

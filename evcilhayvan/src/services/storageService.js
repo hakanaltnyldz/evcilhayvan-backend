@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { randomBytes } from "crypto";
 import { config } from "../config/config.js";
 
 export class StorageService {
@@ -30,7 +31,7 @@ export class LocalStorageService extends StorageService {
 
   async saveBuffer(buffer, originalname) {
     const ext = path.extname(originalname || "").toLowerCase() || ".bin";
-    const filename = Date.now() + "-" + Math.round(Math.random() * 1e9) + ext;
+    const filename = Date.now() + "-" + randomBytes(8).toString("hex") + ext;
     const dest = path.join(this.uploadDir, filename);
     await fs.promises.writeFile(dest, buffer);
     return this.getPublicUrl(filename);

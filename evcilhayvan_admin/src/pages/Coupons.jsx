@@ -27,6 +27,46 @@ function generateCode() {
   return `${prefix}${suffix}`
 }
 
+function validateCouponForm(form) {
+  if (!form.code.trim()) return 'Kupon kodu zorunlu'
+  if (!form.validFrom || !form.validUntil) return 'Gecerlilik tarihleri zorunlu'
+
+  const discountValue = Number(form.discountValue)
+  if (!Number.isFinite(discountValue) || discountValue <= 0) {
+    return 'Indirim degeri 0\'dan buyuk olmali'
+  }
+  if (form.discountType === 'percentage' && discountValue > 100) {
+    return 'Yuzde indirimi 100\'u gecemez'
+  }
+
+  const from = new Date(form.validFrom)
+  const until = new Date(form.validUntil)
+  if (Number.isNaN(from.getTime()) || Number.isNaN(until.getTime()) || until < from) {
+    return 'Bitis tarihi baslangictan sonra olmali'
+  }
+
+  if (form.minPurchaseAmount && Number(form.minPurchaseAmount) < 0) {
+    return 'Minimum tutar negatif olamaz'
+  }
+  if (form.maxDiscountAmount && Number(form.maxDiscountAmount) < 0) {
+    return 'Maksimum indirim negatif olamaz'
+  }
+  if (form.usageLimit && Number(form.usageLimit) < 1) {
+    return 'Kullanim limiti en az 1 olmali'
+  }
+  if (Number(form.perUserLimit || 1) < 1) {
+    return 'Kisi basi limit en az 1 olmali'
+  }
+  if (form.scope === 'store' && !form.storeId) {
+    return 'Magaza secmeden store kuponu olusturamazsiniz'
+  }
+  if (form.scope === 'category' && form.applicableCategories.length === 0) {
+    return 'Kategori secmeden kategori kuponu olusturamazsiniz'
+  }
+
+  return null
+}
+
 export default function Coupons() {
   const [coupons, setCoupons] = useState([])
   const [total, setTotal] = useState(0)
@@ -135,6 +175,11 @@ export default function Coupons() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    const validationError = validateCouponForm(form)
+    if (validationError) {
+      toast.error(validationError)
+      return
+    }
     setSaving(true)
     const payload = {
       code: form.code,

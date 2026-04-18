@@ -41,6 +41,10 @@ export default function SellerApplications() {
 
   async function rejectApplication() {
     if (!rejectTarget) return
+    if (!rejectionReason.trim()) {
+      toast.error('Reddetme nedeni zorunlu')
+      return
+    }
     setActionId(rejectTarget._id || rejectTarget.id)
     try {
       await api.patch(`/admin/seller/applications/${rejectTarget._id || rejectTarget.id}/reject`, {
@@ -168,6 +172,7 @@ export default function SellerApplications() {
                 rows={4}
                 value={rejectionReason}
                 onChange={(event) => setRejectionReason(event.target.value)}
+                placeholder="Reddetme nedenini yazin"
                 className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
               />
               <div className="flex gap-3">

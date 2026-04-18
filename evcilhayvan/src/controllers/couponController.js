@@ -2,6 +2,10 @@
 
 import Coupon from '../models/Coupon.js';
 import Store from '../models/Store.js';
+import {
+  buildCouponContextFromUserCart,
+  evaluateCouponByCode,
+} from '../services/couponValidationService.js';
 import { sendOk, sendError } from '../utils/apiResponse.js';
 
 // Get all coupons for a seller
@@ -195,68 +199,34 @@ export const validateCoupon = async (req, res) => {
       return sendError(res, 400, 'Tutar belirtilmelidir', 'validation_error');
     }
 
-    const coupon = await Coupon.findOne({ code: code.toUpperCase(), isActive: true });
-    if (!coupon) {
-      return sendError(res, 404, 'Kupon bulunamadı veya aktif değil', 'not_found');
-    }
-
-    // Mağaza kısıtlaması
-    if (coupon.store && storeId && coupon.store.toString() !== storeId) {
-      return sendError(res, 400, 'Bu kupon bu mağaza için geçerli değil', 'store_mismatch');
-    }
-
-    const validity = coupon.isValid();
-    if (!validity.valid) {
-      return sendError(res, 400, validity.reason, 'coupon_invalid');
-    }
-
-    // Kişi başı limit kontrolü
-    if (userId && coupon.perUserLimit) {
-      const { default: CouponUsage } = await import('../models/CouponUsage.js');
-      const userUsageCount = await CouponUsage.countDocuments({ couponId: coupon._id, userId });
-      if (userUsageCount >= coupon.perUserLimit) {
-        return sendError(res, 400, `Bu kuponu en fazla ${coupon.perUserLimit} kez kullanabilirsiniz (kalan: 0)`, 'usage_limit_exceeded');
-      }
-    }
-
-    // İlk sipariş kuponu kontrolü
-    if (coupon.firstOrderOnly && userId) {
-      const { default: Order } = await import('../models/Order.js');
-      const pastPaidOrders = await Order.countDocuments({ user: userId, paymentStatus: 'paid' });
-      if (pastPaidOrders > 0) {
-        return sendError(res, 400, 'Bu kupon sadece ilk sipariş için geçerlidir', 'first_order_only');
-      }
-    }
-
-    const calculation = coupon.calculateDiscount(parseFloat(amount));
-    if (calculation.error) {
-      return sendError(res, 400, calculation.error, 'discount_error');
-    }
-
-    // Kişi başı kalan kullanım sayısı
-    let remainingUses = null;
-    if (userId && coupon.perUserLimit) {
-      const { default: CouponUsage } = await import('../models/CouponUsage.js');
-      const used = await CouponUsage.countDocuments({ couponId: coupon._id, userId });
-      remainingUses = coupon.perUserLimit - used;
-    }
+    const cartContext = await buildCouponContextFromUserCart(userId);
+    const result = await evaluateCouponByCode({
+      code,
+      userId,
+      totalAmount: cartContext.totalAmount > 0 ? cartContext.totalAmount : Number(amount),
+      items: cartContext.items,
+      storeId,
+    });
 
     return sendOk(res, 200, {
       valid: true,
       coupon: {
-        code: coupon.code,
-        description: coupon.description,
-        discountType: coupon.discountType,
-        discountValue: coupon.discountValue,
-        firstOrderOnly: coupon.firstOrderOnly,
+        code: result.coupon.code,
+        description: result.coupon.description,
+        discountType: result.coupon.discountType,
+        discountValue: result.coupon.discountValue,
+        firstOrderOnly: result.coupon.firstOrderOnly,
       },
-      discount: calculation.discount,
-      finalAmount: calculation.finalAmount,
-      remainingUses,
+      discount: result.discountAmount,
+      finalAmount: result.finalAmount,
+      remainingUses: result.remainingUses,
     });
   } catch (error) {
     console.error('Validate coupon error:', error);
-    return sendError(res, 500, 'Kupon doğrulanırken hata oluştu', 'internal_error', error.message);
+    if (error.statusCode) {
+      return sendError(res, error.statusCode, error.message, error.code || 'coupon_invalid', error.details);
+    }
+    return sendError(res, 500, 'Kupon dogrulanirken hata olustu', 'internal_error', error.message);
   }
 };
 

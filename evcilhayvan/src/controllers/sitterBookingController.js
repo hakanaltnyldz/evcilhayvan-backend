@@ -2,9 +2,11 @@ import { validationResult } from "express-validator";
 import SitterBooking from "../models/SitterBooking.js";
 import PetSitter from "../models/PetSitter.js";
 import Pet from "../models/Pet.js";
+import User from "../models/User.js";
 import { sendOk, sendError } from "../utils/apiResponse.js";
 import { recordAudit } from "../utils/audit.js";
 import { sendPush } from "../utils/fcm.js";
+import { sendEmail } from "../utils/mail.js";
 
 const SERVICE_LABELS = {
   walking: "Gezdirme",
@@ -36,6 +38,11 @@ export async function createBooking(req, res) {
     const serviceInfo = sitter.services.find(s => s.type === serviceType);
     if (!serviceInfo) return sendError(res, 400, "Bakici bu hizmeti sunmuyor", "service_not_offered");
 
+    // E-2: Fiyat tanımlı değilse hata dön
+    if (!serviceInfo.pricePerDay && !serviceInfo.pricePerHour) {
+      return sendError(res, 400, "Bu hizmet icin fiyat tanimlanmamis", "invalid_service_price");
+    }
+
     const start = new Date(startDate);
     const end = new Date(endDate);
     if (end <= start) return sendError(res, 400, "Bitis tarihi baslangictan once olamaz", "invalid_dates");
@@ -44,7 +51,7 @@ export async function createBooking(req, res) {
     const days = Math.ceil(hours / 24);
     const totalPrice = days >= 1 && serviceInfo.pricePerDay > 0
       ? days * serviceInfo.pricePerDay
-      : hours * serviceInfo.pricePerHour;
+      : hours * (serviceInfo.pricePerHour || 0);
 
     // Tarih cakisma kontrolu
     const overlap = await SitterBooking.findOne({
@@ -252,6 +259,26 @@ export async function updateBookingStatus(req, res) {
         body: statusLabels[status] || `Durum: ${status}`,
         data: { type: "sitter_booking_update", bookingId: String(booking._id), status },
       }).catch(() => {});
+    }
+
+    // N-3: Bakım tamamlandığında pet sahibine email
+    if (status === "completed") {
+      const petOwner = await User.findById(booking.petOwnerId).select("email name");
+      if (petOwner?.email) {
+        const sitterLabel = SERVICE_LABELS[booking.serviceType] || booking.serviceType;
+        const startStr = new Date(booking.startDate).toLocaleDateString("tr-TR", {
+          day: "2-digit", month: "long", year: "numeric",
+        });
+        sendEmail(
+          petOwner.email,
+          "Bakım Hizmeti Tamamlandı ✓",
+          `<h2>Bakım hizmetiniz tamamlandı!</h2>
+           <p>Merhaba ${petOwner.name},</p>
+           <p><strong>Hizmet:</strong> ${sitterLabel}</p>
+           <p><strong>Tarih:</strong> ${startStr}</p>
+           <p>Bakıcınızı değerlendirmek için uygulamayı ziyaret edebilirsiniz.</p>`
+        ).catch(() => {});
+      }
     }
 
     await recordAudit("sitter_booking.status", {

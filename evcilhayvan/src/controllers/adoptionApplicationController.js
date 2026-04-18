@@ -1,11 +1,14 @@
 import mongoose from "mongoose";
 
 import Pet from "../models/Pet.js";
+import User from "../models/User.js";
 import AdoptionApplication from "../models/AdoptionApplication.js";
 import { ensureConversationWithSystemMessage } from "../services/conversationService.js";
 import { sendError, sendOk } from "../utils/apiResponse.js";
 import { io } from "../../server.js";
 import { sendPush } from "../utils/fcm.js";
+import { sendEmail } from "../utils/mail.js";
+import { awardPoints } from "../utils/points.js";
 
 const applicationPopulate = [
   { path: "adoptionListingId", select: "name images photos ownerId species advertType" },
@@ -226,6 +229,21 @@ export async function acceptAdoptionApplication(req, res) {
       data: { type: "adoption_accepted", conversationId: conversationId || "" },
     }).catch(() => {});
 
+    // N-4: Kabul emaili
+    const applicantUser = await User.findById(application.applicantUserId).select("email name");
+    if (applicantUser?.email) {
+      sendEmail(
+        applicantUser.email,
+        "Sahiplendirme Başvurunuz Kabul Edildi! 🐾",
+        `<h2>Tebrikler! Başvurunuz kabul edildi.</h2>
+         <p>Merhaba ${applicantUser.name},</p>
+         <p><strong>${listingName}</strong> için yaptığınız sahiplendirme başvurusu kabul edildi.</p>
+         <p>İlan sahibiyle mesajlaşmaya başlamak için uygulamayı açabilirsiniz.</p>`
+      ).catch(() => {});
+    }
+
+    // Award points to applicant for successful adoption
+    awardPoints(String(application.applicantUserId), 20).catch(() => {});
     return sendOk(res, 200, { application: shaped, conversationId });
   } catch (err) {
     console.error("[acceptAdoptionApplication]", err);
@@ -275,6 +293,20 @@ export async function rejectAdoptionApplication(req, res) {
       body: "Sahiplendirme başvurunuz değerlendirildi",
       data: { type: "adoption_rejected" },
     }).catch(() => {});
+
+    // N-4: Ret emaili
+    const rejectedApplicant = await User.findById(application.applicantUserId).select("email name");
+    if (rejectedApplicant?.email) {
+      const rejectedListingName = application.adoptionListingId?.name || "Sahiplendirme";
+      sendEmail(
+        rejectedApplicant.email,
+        "Sahiplendirme Başvurunuz Hakkında",
+        `<h2>Başvurunuz değerlendirildi.</h2>
+         <p>Merhaba ${rejectedApplicant.name},</p>
+         <p><strong>${rejectedListingName}</strong> için yaptığınız sahiplendirme başvurusu bu sefer kabul edilmedi.</p>
+         <p>Diğer ilanları inceleyerek yeni bir başvuru yapabilirsiniz.</p>`
+      ).catch(() => {});
+    }
 
     return sendOk(res, 200, { application: shapedRejected });
   } catch (err) {

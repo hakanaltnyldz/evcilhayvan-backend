@@ -2,6 +2,7 @@
 import { Router } from "express";
 import { param, query } from "express-validator";
 import mongoose from "mongoose";
+import rateLimit from "express-rate-limit";
 import { authRequired } from "../middlewares/auth.js";
 import { sendOk, sendError } from "../utils/apiResponse.js";
 import User from "../models/User.js";
@@ -26,31 +27,95 @@ import { decrypt, maskNationalId } from "../utils/fieldCrypto.js";
 
 const router = Router();
 
+// Hassas PII endpoint'leri için rate limiter (15 dakikada 10 istek)
+const sensitiveDataLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, message: "Çok fazla istek. Lütfen 15 dakika sonra tekrar deneyin." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const DEFAULT_PAGE_SIZE = 20;
+const MAX_PAGE = 1000;
+const MAX_PAGE_SIZE = 100;
+
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function getPagination(req, res, { defaultLimit = DEFAULT_PAGE_SIZE, maxLimit = MAX_PAGE_SIZE } = {}) {
+  const rawPage = req.query.page;
+  const rawLimit = req.query.limit;
+
+  const page = rawPage === undefined ? 1 : Number(rawPage);
+  const limit = rawLimit === undefined ? defaultLimit : Number(rawLimit);
+
+  if (!Number.isInteger(page) || page < 1 || page > MAX_PAGE) {
+    sendError(res, 400, `page 1 ile ${MAX_PAGE} arasinda olmali`, "validation_error");
+    return null;
+  }
+
+  if (!Number.isInteger(limit) || limit < 1 || limit > maxLimit) {
+    sendError(res, 400, `limit 1 ile ${maxLimit} arasinda olmali`, "validation_error");
+    return null;
+  }
+
+  return { page, limit, skip: (page - 1) * limit };
+}
+
+function parseDateOnly(value, { endOfDay = false } = {}) {
+  if (!value) return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value))) return null;
+  const date = new Date(endOfDay ? `${value}T23:59:59.999Z` : `${value}T00:00:00.000Z`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 // Tüm admin endpointleri admin rolü gerektirir
 router.use(authRequired(["admin"]));
 
-// GET /api/admin/stats
+// GET /api/admin/stats?from=YYYY-MM-DD&to=YYYY-MM-DD
 router.get("/stats", async (req, res) => {
   try {
     const now = new Date();
+    // Tarih filtresi — from/to verilmezse all-time
+    const hasFrom = req.query.from !== undefined;
+    const hasTo = req.query.to !== undefined;
+    const fromDate = hasFrom ? parseDateOnly(req.query.from) : null;
+    const toDate = hasTo ? parseDateOnly(req.query.to, { endOfDay: true }) : null;
+    if ((hasFrom && !fromDate) || (hasTo && !toDate)) {
+      return sendError(res, 400, "from/to YYYY-MM-DD formatinda olmali", "validation_error");
+    }
+    if (fromDate && toDate && fromDate > toDate) {
+      return sendError(res, 400, "from tarihi to tarihinden sonra olamaz", "validation_error");
+    }
+    const dateFilter = {};
+    if (fromDate) dateFilter.$gte = fromDate;
+    if (toDate) dateFilter.$lte = toDate;
+    const hasDateFilter = fromDate || toDate;
+
     const [
       totalUsers,
       newUsersThisMonth,
+      newUsersInRange,
       totalPets,
       activePets,
       totalOrders,
+      ordersInRange,
       pendingReports,
       totalActiveCoupons,
       openSupportTickets,
       pendingSellerApplications,
     ] = await Promise.all([
-      User.countDocuments(),
+      User.countDocuments(hasDateFilter ? { createdAt: dateFilter } : {}),
       User.countDocuments({
         createdAt: { $gte: new Date(new Date().setDate(1)) },
       }),
-      Pet.countDocuments(),
+      hasDateFilter ? User.countDocuments({ createdAt: dateFilter }) : Promise.resolve(null),
+      Pet.countDocuments(hasDateFilter ? { createdAt: dateFilter } : {}),
       Pet.countDocuments({ isActive: true }),
-      Order.countDocuments().catch(() => 0),
+      Order.countDocuments(hasDateFilter ? { createdAt: dateFilter } : {}).catch(() => 0),
+      hasDateFilter ? Order.countDocuments({ createdAt: dateFilter }).catch(() => 0) : Promise.resolve(null),
       UserReport.countDocuments({ status: "pending" }),
       Coupon.countDocuments({ isActive: true, validUntil: { $gte: now } }).catch(() => 0),
       SupportTicket.countDocuments({ status: "open" }).catch(() => 0),
@@ -61,13 +126,16 @@ router.get("/stats", async (req, res) => {
       stats: {
         totalUsers,
         newUsersThisMonth,
+        ...(hasDateFilter && { newUsersInRange }),
         totalPets,
         activePets,
         totalOrders,
+        ...(hasDateFilter && { ordersInRange }),
         pendingReports,
         totalActiveCoupons,
         openSupportTickets,
         pendingSellerApplications,
+        dateFilter: hasDateFilter ? { from: req.query.from, to: req.query.to } : null,
       },
     });
   } catch (err) {
@@ -78,13 +146,18 @@ router.get("/stats", async (req, res) => {
 // GET /api/admin/users?page=1&q=
 router.get("/users", async (req, res) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = 20;
-    const skip = (page - 1) * limit;
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 20 });
+    if (!pagination) return;
+    const { page, limit, skip } = pagination;
     const q = req.query.q?.trim();
 
     const filter = q
-      ? { $or: [{ name: { $regex: q, $options: "i" } }, { email: { $regex: q, $options: "i" } }] }
+      ? {
+          $or: [
+            { name: { $regex: escapeRegex(q), $options: "i" } },
+            { email: { $regex: escapeRegex(q), $options: "i" } },
+          ],
+        }
       : {};
 
     const [users, total] = await Promise.all([
@@ -161,13 +234,32 @@ router.delete(
 // GET /api/admin/pets?page=1&type=adoption|mating|all
 router.get("/pets", async (req, res) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = 20;
-    const skip = (page - 1) * limit;
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 20 });
+    if (!pagination) return;
+    const { page, limit, skip } = pagination;
     const type = req.query.type;
 
     const filter = {};
     if (type && ["adoption", "mating"].includes(type)) filter.advertType = type;
+    if (req.query.q) {
+      const escaped = req.query.q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.$or = [
+        { name: { $regex: escaped, $options: "i" } },
+      ];
+    }
+
+    // Sahip adı/emailine göre arama — q varsa ownerId listesi çek
+    let ownerFilter = null;
+    if (req.query.q) {
+      const escaped = req.query.q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const matchingOwners = await (await import("../models/User.js")).default
+        .find({ $or: [{ name: { $regex: escaped, $options: "i" } }, { email: { $regex: escaped, $options: "i" } }] })
+        .select("_id");
+      const ownerIds = matchingOwners.map(u => u._id);
+      if (ownerIds.length) {
+        filter.$or = [...(filter.$or || []), { ownerId: { $in: ownerIds } }];
+      }
+    }
 
     const [pets, total] = await Promise.all([
       Pet.find(filter)
@@ -184,6 +276,31 @@ router.get("/pets", async (req, res) => {
     return sendError(res, 500, "İlanlar alınamadı", "internal_error", err.message);
   }
 });
+
+// PATCH /api/admin/pets/:id — Alan güncelleme (name, description, species, breed, gender, ageMonths, isActive)
+router.patch(
+  "/pets/:id",
+  [param("id").isMongoId().withMessage("Geçersiz ilan ID")],
+  async (req, res) => {
+    try {
+      const allowed = ["name", "description", "species", "breed", "gender", "ageMonths", "isActive"];
+      const update = {};
+      for (const key of allowed) {
+        if (req.body[key] !== undefined) update[key] = req.body[key];
+      }
+      if (Object.keys(update).length === 0) {
+        return sendError(res, 400, "Güncellenecek alan yok", "no_fields");
+      }
+      const pet = await Pet.findByIdAndUpdate(req.params.id, { $set: update }, { new: true })
+        .select("name species breed gender ageMonths advertType isActive createdAt")
+        .populate("ownerId", "name email");
+      if (!pet) return sendError(res, 404, "İlan bulunamadı", "pet_not_found");
+      return sendOk(res, 200, { pet, message: "İlan güncellendi" });
+    } catch (err) {
+      return sendError(res, 500, "Güncelleme başarısız", "internal_error", err.message);
+    }
+  }
+);
 
 // PATCH /api/admin/pets/:id/toggle
 router.patch(
@@ -207,17 +324,21 @@ router.patch(
   }
 );
 
-// GET /api/admin/reports?page=1&status=pending|reviewed|all
+// GET /api/admin/reports?page=1&status=pending|reviewed|all&reason=spam|harassment|...
 router.get("/reports", async (req, res) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = 20;
-    const skip = (page - 1) * limit;
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 20 });
+    if (!pagination) return;
+    const { page, limit, skip } = pagination;
     const status = req.query.status;
+    const reason = req.query.reason;
 
     const filter = {};
     if (status && ["pending", "reviewed", "dismissed"].includes(status)) filter.status = status;
     else filter.status = "pending"; // default: only pending
+    if (reason && ["spam", "harassment", "inappropriate_content", "fake_profile", "other"].includes(reason)) {
+      filter.reason = reason;
+    }
 
     const [reports, total] = await Promise.all([
       UserReport.find(filter)
@@ -258,12 +379,56 @@ router.patch(
   }
 );
 
+// GET /api/admin/orders/export?status=&format=csv
+router.get("/orders/export", async (req, res) => {
+  try {
+    const status = req.query.status;
+    const filter = {};
+    const validStatuses = ["pending", "processing", "shipped", "delivered", "cancelled"];
+    if (status && validStatuses.includes(status)) filter.status = status;
+
+    const orders = await Order.find(filter)
+      .populate("user", "name email")
+      .select("user totalAmount status paymentStatus trackingNumber carrier createdAt guestInfo")
+      .sort({ createdAt: -1 })
+      .limit(5000);
+
+    const rows = orders.map((o) => {
+      const userName = o.user?.name || o.guestInfo?.name || "—";
+      const userEmail = o.user?.email || o.guestInfo?.email || "—";
+      const date = new Date(o.createdAt).toLocaleDateString("tr-TR");
+      return [
+        `"${o._id}"`,
+        `"${userName.replace(/"/g, '""')}"`,
+        `"${userEmail.replace(/"/g, '""')}"`,
+        `"${o.totalAmount ?? 0}"`,
+        `"${o.status}"`,
+        `"${o.paymentStatus || "—"}"`,
+        `"${o.trackingNumber || "—"}"`,
+        `"${o.carrier || "—"}"`,
+        `"${date}"`,
+      ].join(",");
+    });
+
+    const csv = [
+      "Sipariş ID,Müşteri,Email,Tutar,Durum,Ödeme,Takip No,Kargo,Tarih",
+      ...rows,
+    ].join("\n");
+
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="orders-${Date.now()}.csv"`);
+    return res.send("\uFEFF" + csv); // BOM for Excel UTF-8
+  } catch (err) {
+    return sendError(res, 500, "Export başarısız", "internal_error", err.message);
+  }
+});
+
 // GET /api/admin/orders?page=1&status=all|pending|processing|shipped|delivered|cancelled
 router.get("/orders", async (req, res) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = 20;
-    const skip = (page - 1) * limit;
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 20 });
+    if (!pagination) return;
+    const { page, limit, skip } = pagination;
     const status = req.query.status;
 
     const filter = {};
@@ -289,9 +454,9 @@ router.get("/orders", async (req, res) => {
 // GET /api/admin/posts?page=1
 router.get("/posts", async (req, res) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = 20;
-    const skip = (page - 1) * limit;
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 20 });
+    if (!pagination) return;
+    const { page, limit, skip } = pagination;
 
     const [posts, total] = await Promise.all([
       Post.find()
@@ -448,8 +613,9 @@ router.patch("/orders/:id/tracking", async (req, res) => {
 // GET /api/admin/coupons?page=1&status=active|expired|all
 router.get("/coupons", async (req, res) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = 20;
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 20 });
+    if (!pagination) return;
+    const { page, limit, skip } = pagination;
     const filter = {};
     if (req.query.status === "active") filter.isActive = true;
     if (req.query.status === "expired") filter.validUntil = { $lt: new Date() };
@@ -458,11 +624,11 @@ router.get("/coupons", async (req, res) => {
         .populate("seller", "name email")
         .populate("store", "name")
         .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
+        .skip(skip)
         .limit(limit),
       Coupon.countDocuments(filter),
     ]);
-    return sendOk(res, 200, { coupons, total, page });
+    return sendOk(res, 200, { coupons, total, page, hasMore: skip + coupons.length < total });
   } catch (err) {
     return sendError(res, 500, "Kuponlar alınamadı", "internal_error", err.message);
   }
@@ -479,6 +645,32 @@ router.post("/coupons", async (req, res) => {
     } = req.body;
     if (!code || !discountType || !discountValue || !validFrom || !validUntil)
       return sendError(res, 400, "Zorunlu alanlar eksik.");
+    if (!["percentage", "fixed"].includes(discountType)) {
+      return sendError(res, 400, "Gecersiz indirim tipi", "validation_error");
+    }
+    if (Number(discountValue) <= 0) {
+      return sendError(res, 400, "Indirim degeri 0'dan buyuk olmali", "validation_error");
+    }
+    if (discountType === "percentage" && Number(discountValue) > 100) {
+      return sendError(res, 400, "Yuzde indirimi 100'u gecemez", "validation_error");
+    }
+    if (minPurchaseAmount !== undefined && Number(minPurchaseAmount) < 0) {
+      return sendError(res, 400, "Minimum tutar negatif olamaz", "validation_error");
+    }
+    if (maxDiscountAmount !== undefined && Number(maxDiscountAmount) < 0) {
+      return sendError(res, 400, "Maksimum indirim negatif olamaz", "validation_error");
+    }
+    if (usageLimit !== undefined && Number(usageLimit) < 1) {
+      return sendError(res, 400, "Kullanim limiti en az 1 olmali", "validation_error");
+    }
+    if (perUserLimit !== undefined && Number(perUserLimit) < 1) {
+      return sendError(res, 400, "Kisi basi limit en az 1 olmali", "validation_error");
+    }
+    const fromDate = new Date(validFrom);
+    const untilDate = new Date(validUntil);
+    if (Number.isNaN(fromDate.getTime()) || Number.isNaN(untilDate.getTime()) || untilDate < fromDate) {
+      return sendError(res, 400, "Bitis tarihi baslangictan sonra olmali", "validation_error");
+    }
     const coupon = await Coupon.create({
       code: code.toUpperCase(),
       description,
@@ -486,8 +678,8 @@ router.post("/coupons", async (req, res) => {
       discountValue: Number(discountValue),
       minPurchaseAmount: minPurchaseAmount ? Number(minPurchaseAmount) : 0,
       maxDiscountAmount: maxDiscountAmount ? Number(maxDiscountAmount) : undefined,
-      validFrom: new Date(validFrom),
-      validUntil: (() => { const d = new Date(validUntil); d.setHours(23, 59, 59, 999); return d; })(),
+      validFrom: fromDate,
+      validUntil: (() => { const d = new Date(untilDate); d.setHours(23, 59, 59, 999); return d; })(),
       usageLimit: usageLimit ? Number(usageLimit) : undefined,
       perUserLimit: perUserLimit ? Number(perUserLimit) : 1,
       firstOrderOnly: firstOrderOnly || false,
@@ -514,8 +706,35 @@ router.patch("/coupons/:id", async (req, res) => {
     for (const key of allowed) {
       if (req.body[key] !== undefined) update[key] = req.body[key];
     }
+    if (update.discountType && !["percentage", "fixed"].includes(update.discountType)) {
+      return sendError(res, 400, "Gecersiz indirim tipi", "validation_error");
+    }
+    if (update.discountValue !== undefined && Number(update.discountValue) <= 0) {
+      return sendError(res, 400, "Indirim degeri 0'dan buyuk olmali", "validation_error");
+    }
+    if (update.discountType === "percentage" && update.discountValue !== undefined && Number(update.discountValue) > 100) {
+      return sendError(res, 400, "Yuzde indirimi 100'u gecemez", "validation_error");
+    }
+    if (update.minPurchaseAmount !== undefined && Number(update.minPurchaseAmount) < 0) {
+      return sendError(res, 400, "Minimum tutar negatif olamaz", "validation_error");
+    }
+    if (update.maxDiscountAmount !== undefined && Number(update.maxDiscountAmount) < 0) {
+      return sendError(res, 400, "Maksimum indirim negatif olamaz", "validation_error");
+    }
+    if (update.usageLimit !== undefined && Number(update.usageLimit) < 1) {
+      return sendError(res, 400, "Kullanim limiti en az 1 olmali", "validation_error");
+    }
+    if (update.perUserLimit !== undefined && Number(update.perUserLimit) < 1) {
+      return sendError(res, 400, "Kisi basi limit en az 1 olmali", "validation_error");
+    }
     if (update.code) update.code = String(update.code).toUpperCase().trim();
     if (update.validUntil) { const d = new Date(update.validUntil); d.setHours(23, 59, 59, 999); update.validUntil = d; }
+    if (update.validFrom && Number.isNaN(new Date(update.validFrom).getTime())) {
+      return sendError(res, 400, "Gecersiz baslangic tarihi", "validation_error");
+    }
+    if (update.validUntil && Number.isNaN(new Date(update.validUntil).getTime())) {
+      return sendError(res, 400, "Gecersiz bitis tarihi", "validation_error");
+    }
     const coupon = await Coupon.findByIdAndUpdate(id, update, { new: true, runValidators: true });
     if (!coupon) return sendError(res, 404, "Kupon bulunamadı", "not_found");
     return sendOk(res, 200, { coupon });
@@ -541,10 +760,16 @@ router.patch("/coupons/:id/toggle", async (req, res) => {
 router.delete("/coupons/:id", async (req, res) => {
   try {
     const coupon = await Coupon.findByIdAndDelete(req.params.id);
-    if (!coupon) return sendError(res, 404, "Kupon bulunamadı.");
+    if (!coupon) return sendError(res, 404, "Kupon bulunamad?.");
+    await recordAudit("admin.coupon.delete", {
+      userId: req.user.sub,
+      entityType: "Coupon",
+      entityId: coupon._id.toString(),
+      metadata: { code: coupon.code },
+    });
     return sendOk(res, 200, { message: "Kupon silindi." });
   } catch (err) {
-    return sendError(res, 500, "İşlem başarısız", "internal_error", err.message);
+    return sendError(res, 500, "??lem ba?ar?s?z", "internal_error", err.message);
   }
 });
 
@@ -561,15 +786,16 @@ router.get("/stores", async (req, res) => {
 // GET /api/admin/support?page=1&status=open|reviewing|closed
 router.get("/support", async (req, res) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = 20;
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 20 });
+    if (!pagination) return;
+    const { page, limit, skip } = pagination;
     const filter = {};
     if (["open", "reviewing", "closed"].includes(req.query.status)) filter.status = req.query.status;
     const [tickets, total] = await Promise.all([
       SupportTicket.find(filter)
         .populate("userId", "name email avatarUrl")
         .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
+        .skip(skip)
         .limit(limit),
       SupportTicket.countDocuments(filter),
     ]);
@@ -584,15 +810,22 @@ router.patch("/support/:id", async (req, res) => {
   try {
     const { status, adminNote } = req.body;
     const allowed = ["open", "reviewing", "closed"];
-    if (status && !allowed.includes(status)) return sendError(res, 400, "Geçersiz durum.");
+    if (status && !allowed.includes(status)) return sendError(res, 400, "Ge?ersiz durum.");
+    if (adminNote !== undefined && typeof adminNote !== "string") {
+      return sendError(res, 400, "Admin notu metin olmali", "validation_error");
+    }
+    const trimmedAdminNote = typeof adminNote === "string" ? adminNote.trim() : adminNote;
+    if (typeof trimmedAdminNote === "string" && trimmedAdminNote.length > 500) {
+      return sendError(res, 400, "Admin notu en fazla 500 karakter olabilir", "validation_error");
+    }
     const ticket = await SupportTicket.findById(req.params.id);
-    if (!ticket) return sendError(res, 404, "Ticket bulunamadı.");
+    if (!ticket) return sendError(res, 404, "Ticket bulunamad?.");
     if (status) ticket.status = status;
-    if (adminNote !== undefined) ticket.adminNote = adminNote;
+    if (trimmedAdminNote !== undefined) ticket.adminNote = trimmedAdminNote;
     await ticket.save();
     return sendOk(res, 200, { ticket });
   } catch (err) {
-    return sendError(res, 500, "İşlem başarısız.", "internal_error", err.message);
+    return sendError(res, 500, "??lem ba?ar?s?z.", "internal_error", err.message);
   }
 });
 
@@ -600,8 +833,9 @@ router.patch("/support/:id", async (req, res) => {
 // Bir kuponu kim, ne zaman, hangi sipariş üzerinden kullandı?
 router.get("/coupons/:id/usage", async (req, res) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = 20;
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 20 });
+    if (!pagination) return;
+    const { page, limit, skip } = pagination;
     const couponId = req.params.id;
 
     const [usages, total, coupon] = await Promise.all([
@@ -609,13 +843,22 @@ router.get("/coupons/:id/usage", async (req, res) => {
         .populate("userId", "name email avatarUrl")
         .populate("orderId", "totalAmount originalAmount status createdAt")
         .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
+        .skip(skip)
         .limit(limit),
-      CouponUsage.countDocuments({ couponId }),
+      CouponUsage.aggregate([
+        { $match: { couponId: new mongoose.Types.ObjectId(couponId) } },
+        { $group: { _id: null, total: { $sum: "$count" } } },
+      ]),
       Coupon.findById(couponId).select("code discountType discountValue usageCount usageLimit"),
     ]);
 
     if (!coupon) return sendError(res, 404, "Kupon bulunamadı.");
+    await recordAudit("admin.coupon.delete", {
+      userId: req.user.sub,
+      entityType: "Coupon",
+      entityId: coupon._id.toString(),
+      metadata: { code: coupon.code },
+    });
 
     // Toplam kazandırılan indirim tutarı
     const totalDiscount = await CouponUsage.aggregate([
@@ -626,7 +869,7 @@ router.get("/coupons/:id/usage", async (req, res) => {
     return sendOk(res, 200, {
       coupon,
       usages,
-      total,
+      total: total[0]?.total ?? 0,
       page,
       totalDiscountGiven: totalDiscount[0]?.total ?? 0,
     });
@@ -640,9 +883,9 @@ router.get("/coupons/:id/usage", async (req, res) => {
 // GET /api/admin/vets?page=1
 router.get("/vets", async (req, res) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = 20;
-    const skip = (page - 1) * limit;
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 20 });
+    if (!pagination) return;
+    const { page, limit, skip } = pagination;
     const [vets, total] = await Promise.all([
       Veterinary.find()
         .select("name address phone photos googlePlaceId googleRating googleReviewCount isVerified isActive userId source createdAt")
@@ -660,8 +903,9 @@ router.get("/vets", async (req, res) => {
 // GET /api/admin/vet-claims?page=1&status=pending|approved|rejected
 router.get("/vet-claims", async (req, res) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = 20;
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 20 });
+    if (!pagination) return;
+    const { page, limit, skip } = pagination;
     const filter = {};
     if (["pending", "approved", "rejected"].includes(req.query.status)) filter.status = req.query.status;
     else filter.status = "pending";
@@ -670,7 +914,7 @@ router.get("/vet-claims", async (req, res) => {
         .populate("vetId", "name address phone isVerified")
         .populate("userId", "name email avatarUrl")
         .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
+        .skip(skip)
         .limit(limit),
       VetClaimRequest.countDocuments(filter),
     ]);
@@ -688,6 +932,10 @@ router.patch("/vet-claims/:id/review", async (req, res) => {
     if (!["approved", "rejected"].includes(action)) {
       return sendError(res, 400, "action 'approved' veya 'rejected' olmali", "validation_error");
     }
+    const trimmedAdminNote = typeof adminNote === "string" ? adminNote.trim() : "";
+    if (action === "rejected" && !trimmedAdminNote) {
+      return sendError(res, 400, "Reddetme icin admin notu zorunlu", "validation_error");
+    }
     const claim = await VetClaimRequest.findById(req.params.id);
     if (!claim) return sendError(res, 404, "Talep bulunamadi", "not_found");
     if (claim.status !== "pending") {
@@ -695,7 +943,7 @@ router.patch("/vet-claims/:id/review", async (req, res) => {
     }
 
     claim.status = action;
-    claim.adminNote = adminNote || "";
+    claim.adminNote = trimmedAdminNote;
     claim.reviewedBy = req.user.sub;
     claim.reviewedAt = new Date();
     await claim.save();
@@ -731,12 +979,13 @@ router.patch("/vet-claims/:id/review", async (req, res) => {
 // GET /api/admin/pet-sitters?page=1&verified=all|true|false
 router.get("/pet-sitters", async (req, res) => {
   try {
-    const { page = 1, verified = "all" } = req.query;
+    const { verified = "all" } = req.query;
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 20 });
+    if (!pagination) return;
+    const { page, limit, skip } = pagination;
     const filter = {};
     if (verified === "true") filter.isVerified = true;
     if (verified === "false") filter.isVerified = false;
-    const limit = 20;
-    const skip = (Number(page) - 1) * limit;
     const [sitters, total] = await Promise.all([
       PetSitter.find(filter)
         .populate("userId", "name email avatarUrl")
@@ -745,7 +994,7 @@ router.get("/pet-sitters", async (req, res) => {
         .limit(limit),
       PetSitter.countDocuments(filter),
     ]);
-    return sendOk(res, 200, { sitters, total, page: Number(page) });
+    return sendOk(res, 200, { sitters, total, page });
   } catch (err) {
     return sendError(res, 500, "Bakicilar alinamadi", "internal_error", err.message);
   }
@@ -819,9 +1068,9 @@ router.patch("/pet-sitters/:id/ban", async (req, res) => {
 // GET /api/admin/walk-updates?page=1 — Yürüyüş güncellemelerini listele
 router.get("/walk-updates", async (req, res) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = 20;
-    const skip = (page - 1) * limit;
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 20 });
+    if (!pagination) return;
+    const { page, limit, skip } = pagination;
     const [updates, total] = await Promise.all([
       WalkUpdate.find()
         .populate({ path: "bookingId", select: "serviceType startDate status petOwnerId", populate: { path: "petOwnerId", select: "name email" } })
@@ -839,9 +1088,9 @@ router.get("/walk-updates", async (req, res) => {
 // GET /api/admin/care-reports?page=1 — Bakım raporlarını listele
 router.get("/care-reports", async (req, res) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = 20;
-    const skip = (page - 1) * limit;
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 20 });
+    if (!pagination) return;
+    const { page, limit, skip } = pagination;
     const [reports, total] = await Promise.all([
       CareReport.find()
         .populate({ path: "bookingId", select: "serviceType startDate status petOwnerId", populate: { path: "petOwnerId", select: "name email" } })
@@ -859,9 +1108,9 @@ router.get("/care-reports", async (req, res) => {
 // GET /api/admin/sitter-bookings?page=1&status= — Rezervasyonları listele
 router.get("/sitter-bookings", async (req, res) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = 20;
-    const skip = (page - 1) * limit;
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 20 });
+    if (!pagination) return;
+    const { page, limit, skip } = pagination;
     const filter = {};
     if (req.query.status) filter.status = req.query.status;
     const [bookings, total] = await Promise.all([
@@ -880,7 +1129,7 @@ router.get("/sitter-bookings", async (req, res) => {
 });
 
 // GET /api/admin/users/:id/sensitive — TC + telefon şifre ile açılır
-router.get("/users/:id/sensitive", authRequired(["admin"]), async (req, res) => {
+router.get("/users/:id/sensitive", sensitiveDataLimiter, authRequired(["admin"]), async (req, res) => {
   try {
     const adminPass = req.headers["x-admin-data-password"];
     if (!adminPass || adminPass !== process.env.ADMIN_DATA_PASSWORD) {
@@ -898,7 +1147,7 @@ router.get("/users/:id/sensitive", authRequired(["admin"]), async (req, res) => 
 });
 
 // GET /api/admin/orders/:id/guest-sensitive — misafir TC şifre ile açılır
-router.get("/orders/:id/guest-sensitive", authRequired(["admin"]), async (req, res) => {
+router.get("/orders/:id/guest-sensitive", sensitiveDataLimiter, authRequired(["admin"]), async (req, res) => {
   try {
     const adminPass = req.headers["x-admin-data-password"];
     if (!adminPass || adminPass !== process.env.ADMIN_DATA_PASSWORD) {

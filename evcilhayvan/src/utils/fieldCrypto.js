@@ -2,6 +2,24 @@ import crypto from 'crypto';
 
 const ALGO = 'aes-256-cbc';
 
+// Startup validation — uygulama başlarken key eksikse açıklayıcı hata fırlat
+(function validateFieldEncryptKey() {
+  const hex = process.env.FIELD_ENCRYPT_KEY;
+  if (!hex) {
+    throw new Error(
+      '[fieldCrypto] FIELD_ENCRYPT_KEY ortam değişkeni tanımlanmamış. ' +
+      '.env dosyanıza 64 karakterlik hex bir anahtar ekleyin: ' +
+      'node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"'
+    );
+  }
+  if (hex.length !== 64) {
+    throw new Error(
+      `[fieldCrypto] FIELD_ENCRYPT_KEY geçersiz uzunluk: ${hex.length} karakter (64 gerekli). ` +
+      'AES-256 için tam olarak 32 bayt (64 hex karakter) gereklidir.'
+    );
+  }
+})();
+
 function getKey() {
   const hex = process.env.FIELD_ENCRYPT_KEY;
   if (!hex || hex.length !== 64) {

@@ -37,12 +37,14 @@ import reviewRoutes from "./src/routes/reviewRoutes.js";
 import couponRoutes from "./src/routes/couponRoutes.js";
 import orderRoutes from "./src/routes/orderRoutes.js";
 import addressRoutes from "./src/routes/addressRoutes.js";
+import CartItem from "./src/models/CartItem.js";
 import veterinaryRoutes from "./src/routes/veterinaryRoutes.js";
 import appointmentRoutes from "./src/routes/appointmentRoutes.js";
 import vaccinationRoutes from "./src/routes/vaccinationRoutes.js";
 import lostFoundRoutes from "./src/routes/lostFoundRoutes.js";
 import petSitterRoutes from "./src/routes/petSitterRoutes.js";
 import sitterBookingRoutes from "./src/routes/sitterBookingRoutes.js";
+import sitterRequestRoutes from "./src/routes/sitterRequestRoutes.js";
 import petEventRoutes from "./src/routes/petEventRoutes.js";
 import postRoutes from "./src/routes/postRoutes.js";
 import blockReportRoutes from "./src/routes/blockReportRoutes.js";
@@ -219,6 +221,7 @@ app.use("/api/vaccinations", vaccinationRoutes);
 app.use("/api/lost-found", lostFoundRoutes);
 app.use("/api/pet-sitters", petSitterRoutes);
 app.use("/api/sitter-bookings", sitterBookingRoutes);
+app.use("/api/sitter-requests", sitterRequestRoutes);
 app.use("/api/events", petEventRoutes);
 app.use("/api", postRoutes);
 app.use("/api/users", blockReportRoutes);
@@ -241,6 +244,7 @@ export async function startServer() {
       maxIdleTimeMS: 30000,
     });
     console.log("MongoDB connected");
+    await CartItem.syncIndexes();
     await seedVaccinationSchedules();
     httpServer.listen(config.port, "0.0.0.0", () => {
       console.log(`Server listening on 0.0.0.0:${config.port}`);
@@ -336,17 +340,23 @@ io.on("connection", (socket) => {
     io.to(`conv:${conversationId}`).emit("message:new", payload?.message ?? payload);
   });
 
+  // Booking room'una katıl (pet sahibi + bakıcı için)
+  socket.on("join:booking", async ({ bookingId }) => {
+    if (!connectedUserId || !bookingId) return;
+    socket.join(`booking:${bookingId}`);
+  });
+
   // === Bakıcı Canlı Konum Events ===
   socket.on("sitter:location_update", async ({ bookingId, lat, lng }) => {
     if (!connectedUserId || !bookingId) return;
     try {
       const SitterBooking = (await import("./src/models/SitterBooking.js")).default;
-      const booking = await SitterBooking.findById(bookingId).select("sitter user status");
+      const booking = await SitterBooking.findById(bookingId).select("sitterUserId petOwnerId status");
       if (!booking) return;
-      if (booking.sitter.toString() !== String(connectedUserId)) return; // sadece bakıcı emit edebilir
+      if (booking.sitterUserId.toString() !== String(connectedUserId)) return; // sadece bakıcı emit edebilir
       if (!['accepted', 'active'].includes(booking.status)) return;
       // Pet sahibine konumu ilet
-      io.to(`user:${booking.user}`).emit("sitter:location_update", {
+      io.to(`user:${booking.petOwnerId}`).emit("sitter:location_update", {
         bookingId,
         lat,
         lng,
@@ -361,12 +371,12 @@ io.on("connection", (socket) => {
     if (!connectedUserId || !bookingId) return;
     try {
       const SitterBooking = (await import("./src/models/SitterBooking.js")).default;
-      const booking = await SitterBooking.findById(bookingId).select("sitter user status");
+      const booking = await SitterBooking.findById(bookingId).select("sitterUserId petOwnerId status");
       if (!booking) return;
-      if (booking.sitter.toString() !== String(connectedUserId)) return;
+      if (booking.sitterUserId.toString() !== String(connectedUserId)) return;
       // Durumu güncelle
       await SitterBooking.findByIdAndUpdate(bookingId, { status: 'active' });
-      io.to(`user:${booking.user}`).emit("sitter:walk_started", { bookingId, startedAt: Date.now() });
+      io.to(`user:${booking.petOwnerId}`).emit("sitter:walk_started", { bookingId, startedAt: Date.now() });
     } catch (err) {
       console.error("[Socket] sitter:walk_started error:", err.message);
     }
@@ -376,10 +386,10 @@ io.on("connection", (socket) => {
     if (!connectedUserId || !bookingId) return;
     try {
       const SitterBooking = (await import("./src/models/SitterBooking.js")).default;
-      const booking = await SitterBooking.findById(bookingId).select("sitter user status");
+      const booking = await SitterBooking.findById(bookingId).select("sitterUserId petOwnerId status");
       if (!booking) return;
-      if (booking.sitter.toString() !== String(connectedUserId)) return;
-      io.to(`user:${booking.user}`).emit("sitter:walk_ended", { bookingId, endedAt: Date.now() });
+      if (booking.sitterUserId.toString() !== String(connectedUserId)) return;
+      io.to(`user:${booking.petOwnerId}`).emit("sitter:walk_ended", { bookingId, endedAt: Date.now() });
     } catch (err) {
       console.error("[Socket] sitter:walk_ended error:", err.message);
     }

@@ -55,11 +55,24 @@ export default function Support() {
 
   const saveTicket = async () => {
     if (!selectedTicket) return
+    const trimmedNote = modalNote.trim()
+    if (modalStatus === 'closed' && !trimmedNote) {
+      toast.error('Kapatma durumunda admin notu zorunludur')
+      return
+    }
+    if (modalNote && !trimmedNote) {
+      toast.error('Admin notu sadece bosluk olamaz')
+      return
+    }
+    if (trimmedNote.length > 500) {
+      toast.error('Admin notu en fazla 500 karakter olabilir')
+      return
+    }
     setSaving(true)
     try {
       await api.patch(`/admin/support/${selectedTicket._id}`, {
         status: modalStatus,
-        adminNote: modalNote,
+        adminNote: trimmedNote,
       })
       closeModal()
       fetchTickets(page, statusFilter)

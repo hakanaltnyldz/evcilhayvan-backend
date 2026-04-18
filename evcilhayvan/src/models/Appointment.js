@@ -36,6 +36,9 @@ const AppointmentSchema = new mongoose.Schema(
     vetNotes: { type: String, trim: true, maxlength: 2000 },
 
     reminderSent: { type: Boolean, default: false },
+
+    type: { type: String, enum: ['clinic', 'online'], default: 'clinic' },
+    meetingUrl: { type: String, default: null },
   },
   {
     timestamps: true,
