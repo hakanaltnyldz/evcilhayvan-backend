@@ -9,7 +9,6 @@ import { awardPoints } from "../utils/points.js";
 import { io } from "../../server.js";
 import { sendPush } from "../utils/fcm.js";
 import { sendEmail } from "../utils/mail.js";
-import { awardPoints } from "../utils/points.js";
 
 const applicationPopulate = [
   { path: "adoptionListingId", select: "name images photos ownerId species advertType" },
