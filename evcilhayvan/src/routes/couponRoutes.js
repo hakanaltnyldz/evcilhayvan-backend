@@ -111,14 +111,11 @@ router.get('/coupon-usage/my', authRequired(), async (req, res) => {
   }
 });
 
-// Protected routes
-router.use(protect);
-
 // Seller routes - manage coupons
-router.get('/seller/coupons', couponController.getSellerCoupons);
-router.post('/seller/coupons', couponController.createCoupon);
-router.put('/seller/coupons/:couponId', couponController.updateCoupon);
-router.delete('/seller/coupons/:couponId', couponController.deleteCoupon);
-router.patch('/seller/coupons/:couponId/toggle', couponController.toggleCouponStatus);
+router.get('/seller/coupons', protect, couponController.getSellerCoupons);
+router.post('/seller/coupons', protect, couponController.createCoupon);
+router.put('/seller/coupons/:couponId', protect, couponController.updateCoupon);
+router.delete('/seller/coupons/:couponId', protect, couponController.deleteCoupon);
+router.patch('/seller/coupons/:couponId/toggle', protect, couponController.toggleCouponStatus);
 
 export default router;
