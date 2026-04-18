@@ -12,6 +12,8 @@ import {
   updatePet,
   listPets,
   getPet,
+  getPetTimeline,
+  getPetHealthSummary,
   deletePet,
   uploadPetImage,
   uploadPetVideo,
@@ -49,6 +51,8 @@ const videoUpload = multer({
 router.get("/feed", authRequired(), getPetFeed);
 router.get("/", listPets);
 router.get("/me", authRequired(), [query("type").optional().isIn(["adoption", "mating"])], myAdverts);
+router.get("/health-summary", authRequired(), getPetHealthSummary);
+router.get("/:id/timeline", authRequired(), [param("id").isMongoId()], getPetTimeline);
 router.get("/:id", [param("id").isMongoId()], getPet);
 
 // Protected

@@ -1,6 +1,7 @@
 import { validationResult } from "express-validator";
 import mongoose from "mongoose";
 import Appointment from "../models/Appointment.js";
+import Prescription from "../models/Prescription.js";
 import Veterinary from "../models/Veterinary.js";
 import Pet from "../models/Pet.js";
 import User from "../models/User.js";
@@ -44,6 +45,150 @@ function getWorkingWindow(vet, targetDate) {
   return { isAvailable: true, openH, openM, closeH, closeM };
 }
 
+function formatMinutes(minutes) {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+}
+
+function getAppointmentViewerRole(user, appointment) {
+  const currentUserId = String(user?.sub || "");
+  const ownerId = String(appointment?.userId?._id || appointment?.userId || "");
+  const vetUserId = String(appointment?.veterinaryId?.userId || "");
+
+  if (user?.role === "admin") return "admin";
+  if (currentUserId && ownerId === currentUserId) return "owner";
+  if (currentUserId && vetUserId && vetUserId === currentUserId) return "vet";
+  return null;
+}
+
+function getAppointmentStatusLabel(status) {
+  switch (status) {
+    case "pending":
+      return "Beklemede";
+    case "confirmed":
+      return "Onaylandi";
+    case "cancelled":
+      return "Iptal edildi";
+    case "completed":
+      return "Tamamlandi";
+    case "no_show":
+      return "Gelmedi";
+    default:
+      return status;
+  }
+}
+
+async function loadAppointmentWithRelations(id) {
+  return Appointment.findById(id)
+    .populate("userId", "name avatarUrl")
+    .populate("petId", "name species photos")
+    .populate(
+      "veterinaryId",
+      "name address phone email photos workingHours userId appointmentSlotMinutes"
+    );
+}
+
+async function emitAppointmentNotification({
+  appointment,
+  eventName,
+  socketPayload,
+  title,
+  body,
+  pushType,
+  excludeUserId = null,
+}) {
+  const ownerId = String(appointment?.userId?._id || appointment?.userId || "");
+  const vetUserId = String(appointment?.veterinaryId?.userId || "");
+
+  const recipients = [...new Set([ownerId, vetUserId].filter(Boolean))].filter(
+    (id) => !excludeUserId || String(id) !== String(excludeUserId)
+  );
+
+  if (!recipients.length) return;
+
+  if (io?.to) {
+    recipients.forEach((userId) => {
+      io.to(`user:${userId}`).emit(eventName, socketPayload);
+    });
+  }
+
+  await sendPush(recipients, {
+    title,
+    body,
+    data: {
+      type: pushType,
+      appointmentId: String(appointment._id),
+      ...(socketPayload || {}),
+    },
+  }).catch(() => {});
+}
+
+async function ensureAppointmentSlotAvailable({
+  veterinaryId,
+  appointmentDate,
+  endDate,
+  excludeAppointmentId = null,
+}) {
+  const query = {
+    veterinaryId,
+    status: { $in: ["pending", "confirmed"] },
+    date: { $lt: endDate },
+    endDate: { $gt: appointmentDate },
+  };
+
+  if (excludeAppointmentId && mongoose.Types.ObjectId.isValid(excludeAppointmentId)) {
+    query._id = { $ne: excludeAppointmentId };
+  }
+
+  return Appointment.findOne(query);
+}
+
+function parseFutureAppointmentDate(value) {
+  const appointmentDate = new Date(value);
+  if (Number.isNaN(appointmentDate.getTime())) {
+    return { error: "Gecersiz randevu tarihi" };
+  }
+  if (appointmentDate <= new Date()) {
+    return { error: "Randevu tarihi gelecekte olmali" };
+  }
+  return { appointmentDate };
+}
+
+function validateAppointmentWindow(vet, appointmentDate) {
+  const workingWindow = getWorkingWindow(vet, appointmentDate);
+  if (!workingWindow.isAvailable) {
+    return { error: "Bu gun icin randevu kabul edilmiyor", code: "outside_working_hours" };
+  }
+
+  const { openH, openM, closeH, closeM } = workingWindow;
+  const slotMinutes = getAppointmentSlotMinutes(vet);
+  const appointmentMinutes = appointmentDate.getHours() * 60 + appointmentDate.getMinutes();
+
+  if (
+    appointmentMinutes < openH * 60 + openM ||
+    appointmentMinutes + slotMinutes > closeH * 60 + closeM
+  ) {
+    return { error: "Randevu calisma saatleri disinda", code: "outside_working_hours" };
+  }
+
+  return { slotMinutes, workingWindow };
+}
+
+function normalizeMedications(input) {
+  if (!Array.isArray(input)) return [];
+
+  return input
+    .map((item) => ({
+      name: item?.name?.toString().trim() || "",
+      dosage: item?.dosage?.toString().trim() || "",
+      frequency: item?.frequency?.toString().trim() || "",
+      durationDays: Number(item?.durationDays) || null,
+      instructions: item?.instructions?.toString().trim() || "",
+    }))
+    .filter((item) => item.name);
+}
+
 // POST /api/appointments
 export async function createAppointment(req, res) {
   try {
@@ -54,49 +199,33 @@ export async function createAppointment(req, res) {
       return sendError(res, 400, "petId, veterinaryId ve date gerekli", "validation_error");
     }
 
-    // Pet kontrolu
     const pet = await Pet.findOne({ _id: petId, ownerId: userId });
     if (!pet) return sendError(res, 404, "Pet bulunamadi veya size ait degil", "pet_not_found");
 
-    // Veteriner kontrolu
     const vet = await Veterinary.findById(veterinaryId);
     if (!vet || !vet.isActive) {
       return sendError(res, 404, "Veteriner bulunamadi", "vet_not_found");
     }
 
-    // Kendi veterinerine randevu almayi engelle
     if (vet.userId && String(vet.userId) === String(userId)) {
       return sendError(res, 403, "Kendi kliniginize randevu alamazsiniz", "own_vet_forbidden");
     }
 
-    const appointmentDate = new Date(date);
-    if (Number.isNaN(appointmentDate.getTime())) {
-      return sendError(res, 400, "Gecersiz randevu tarihi", "validation_error");
-    }
-    if (appointmentDate <= new Date()) {
-      return sendError(res, 400, "Randevu tarihi gelecekte olmali", "validation_error");
+    const { appointmentDate, error: dateError } = parseFutureAppointmentDate(date);
+    if (dateError) {
+      return sendError(res, 400, dateError, "validation_error");
     }
 
-    const workingWindow = getWorkingWindow(vet, appointmentDate);
-    if (!workingWindow.isAvailable) {
-      return sendError(res, 400, "Bu gun icin randevu kabul edilmiyor", "outside_working_hours");
+    const { slotMinutes, error: windowError, code } = validateAppointmentWindow(vet, appointmentDate);
+    if (windowError) {
+      return sendError(res, 400, windowError, code);
     }
 
-    const { openH, openM, closeH, closeM } = workingWindow;
-    const apptMinutes = appointmentDate.getHours() * 60 + appointmentDate.getMinutes();
-    const slotMinutes = getAppointmentSlotMinutes(vet);
-    if (apptMinutes < openH * 60 + openM || apptMinutes + slotMinutes > closeH * 60 + closeM) {
-      return sendError(res, 400, "Randevu calisma saatleri disinda", "outside_working_hours");
-    }
-
-    // Slot cakisma kontrolu
     const endDate = new Date(appointmentDate.getTime() + slotMinutes * 60000);
-
-    const conflict = await Appointment.findOne({
+    const conflict = await ensureAppointmentSlotAvailable({
       veterinaryId,
-      status: { $in: ["pending", "confirmed"] },
-      date: { $lt: endDate },
-      endDate: { $gt: appointmentDate },
+      appointmentDate,
+      endDate,
     });
 
     if (conflict) {
@@ -121,9 +250,7 @@ export async function createAppointment(req, res) {
       meetingUrl,
     });
 
-    const populated = await Appointment.findById(appointment._id)
-      .populate("petId", "name species photos")
-      .populate("veterinaryId", "name address phone");
+    const populated = await loadAppointmentWithRelations(appointment._id);
 
     await recordAudit("appointment.create", {
       userId,
@@ -165,7 +292,14 @@ export async function getMyAppointments(req, res) {
   try {
     const userId = req.user.sub;
     const { status, petId, page = 1, limit = 20 } = req.query;
-    const filter = { userId };
+    const filter = {};
+
+    if (req.user.role === "vet") {
+      const vetIds = await Veterinary.find({ userId, isActive: true }).distinct("_id");
+      filter.veterinaryId = { $in: vetIds };
+    } else {
+      filter.userId = userId;
+    }
 
     if (status) filter.status = status;
     if (petId) filter.petId = petId;
@@ -173,8 +307,9 @@ export async function getMyAppointments(req, res) {
     const skip = (Number(page) - 1) * Number(limit);
     const [items, total] = await Promise.all([
       Appointment.find(filter)
+        .populate("userId", "name avatarUrl")
         .populate("petId", "name species photos")
-        .populate("veterinaryId", "name address phone photos")
+        .populate("veterinaryId", "name address phone photos userId")
         .sort({ date: -1 })
         .skip(skip)
         .limit(Number(limit)),
@@ -199,15 +334,16 @@ export async function getAppointment(req, res) {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
-    const userId = req.user.sub;
-    const { id } = req.params;
 
-    const appointment = await Appointment.findOne({ _id: id, userId })
-      .populate("petId", "name species breed photos ageMonths")
-      .populate("veterinaryId", "name address phone email photos workingHours");
+    const appointment = await loadAppointmentWithRelations(req.params.id);
 
     if (!appointment) {
       return sendError(res, 404, "Randevu bulunamadi", "appointment_not_found");
+    }
+
+    const viewerRole = getAppointmentViewerRole(req.user, appointment);
+    if (!viewerRole) {
+      return sendError(res, 403, "Bu randevuyu gorme yetkiniz yok", "forbidden");
     }
 
     return sendOk(res, 200, { appointment });
@@ -222,33 +358,45 @@ export async function updateAppointmentStatus(req, res) {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
+
     const userId = req.user.sub;
     const { id } = req.params;
-    const { status, cancelReason } = req.body;
+    const { status, cancelReason, vetNotes } = req.body;
 
     const validStatuses = ["confirmed", "cancelled", "completed", "no_show"];
     if (!validStatuses.includes(status)) {
       return sendError(res, 400, "Gecersiz durum", "validation_error");
     }
 
-    const appointment = await Appointment.findById(id)
-      .populate("veterinaryId", "name");
+    const appointment = await loadAppointmentWithRelations(id);
     if (!appointment) {
       return sendError(res, 404, "Randevu bulunamadi", "appointment_not_found");
     }
 
-    // Kullanici sadece kendi randevusunu iptal edebilir
-    if (String(appointment.userId) !== String(userId) && req.user.role !== "admin") {
+    const viewerRole = getAppointmentViewerRole(req.user, appointment);
+    if (!viewerRole) {
       return sendError(res, 403, "Bu randevuyu guncelleme yetkiniz yok", "forbidden");
     }
 
-    // Kullanici yalnizca iptal edebilir; diger durumlar admin yetkisi ister
-    if (req.user.role !== "admin" && status !== "cancelled") {
-      return sendError(res, 403, "Sadece admin bu durumu ayarlayabilir", "forbidden");
+    if (viewerRole === "owner" && status !== "cancelled") {
+      return sendError(res, 403, "Sahip tarafinda sadece iptal islemi yapilabilir", "forbidden");
     }
 
-    if (appointment.status === "cancelled") {
-      return sendError(res, 400, "Iptal edilmis randevu guncellenemez", "already_cancelled");
+    const validTransitions = {
+      pending: ["confirmed", "cancelled"],
+      confirmed: ["cancelled", "completed", "no_show"],
+      cancelled: [],
+      completed: [],
+      no_show: [],
+    };
+
+    if (!validTransitions[appointment.status]?.includes(status)) {
+      return sendError(
+        res,
+        400,
+        `${appointment.status} durumundan ${status} durumuna gecilemez`,
+        "invalid_transition"
+      );
     }
 
     appointment.status = status;
@@ -270,6 +418,32 @@ export async function updateAppointmentStatus(req, res) {
         date: appointment.date,
       });
     }
+    if (status !== "cancelled") {
+      appointment.cancelledBy = appointment.cancelledBy || undefined;
+      if (status !== "cancelled") appointment.cancelReason = appointment.cancelReason || "";
+    }
+
+    await appointment.save();
+    const updatedAppointment = await loadAppointmentWithRelations(id);
+    const statusLabel = getAppointmentStatusLabel(status);
+
+    await emitAppointmentNotification({
+      appointment: updatedAppointment,
+      eventName: "appointment:updated",
+      socketPayload: {
+        appointmentId: String(updatedAppointment._id),
+        status,
+        statusLabel,
+        veterinaryName: updatedAppointment.veterinaryId?.name || "",
+        petName: updatedAppointment.petId?.name || "",
+        date: updatedAppointment.date,
+        action: "status_changed",
+      },
+      title: "Randevu Guncellendi",
+      body: `${updatedAppointment.veterinaryId?.name || "Veteriner"} randevusu ${statusLabel.toLowerCase()}.`,
+      pushType: "appointment_updated",
+      excludeUserId: userId,
+    });
 
     // N-2: Kullanıcıya email bildirimi
     const appointmentUser = await User.findById(appointment.userId).select("email name");
@@ -314,10 +488,120 @@ export async function updateAppointmentStatus(req, res) {
       metadata: { newStatus: status },
     });
 
-    return sendOk(res, 200, { appointment });
+    return sendOk(res, 200, { appointment: updatedAppointment });
   } catch (err) {
     console.error("[updateAppointmentStatus]", err);
     return sendError(res, 500, "Randevu durumu guncellenemedi", "internal_error", err.message);
+  }
+}
+
+// PATCH /api/appointments/:id/reschedule
+export async function rescheduleAppointment(req, res) {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
+
+    const userId = req.user.sub;
+    const { id } = req.params;
+    const { date, reason } = req.body;
+
+    if (!date) {
+      return sendError(res, 400, "Yeni randevu tarihi gerekli", "validation_error");
+    }
+
+    const appointment = await loadAppointmentWithRelations(id);
+    if (!appointment) {
+      return sendError(res, 404, "Randevu bulunamadi", "appointment_not_found");
+    }
+
+    const viewerRole = getAppointmentViewerRole(req.user, appointment);
+    if (!viewerRole) {
+      return sendError(res, 403, "Bu randevuyu yeniden planlama yetkiniz yok", "forbidden");
+    }
+
+    if (["cancelled", "completed", "no_show"].includes(appointment.status)) {
+      return sendError(res, 400, "Bu randevu yeniden planlanamaz", "invalid_status");
+    }
+
+    const { appointmentDate, error: dateError } = parseFutureAppointmentDate(date);
+    if (dateError) {
+      return sendError(res, 400, dateError, "validation_error");
+    }
+
+    const vet = await Veterinary.findById(appointment.veterinaryId?._id || appointment.veterinaryId);
+    if (!vet || !vet.isActive) {
+      return sendError(res, 404, "Veteriner bulunamadi", "vet_not_found");
+    }
+
+    const { slotMinutes, error: windowError, code } = validateAppointmentWindow(vet, appointmentDate);
+    if (windowError) {
+      return sendError(res, 400, windowError, code);
+    }
+
+    const endDate = new Date(appointmentDate.getTime() + slotMinutes * 60000);
+    const conflict = await ensureAppointmentSlotAvailable({
+      veterinaryId: vet._id,
+      appointmentDate,
+      endDate,
+      excludeAppointmentId: appointment._id,
+    });
+
+    if (conflict) {
+      return sendError(res, 409, "Bu saat dilimi dolu", "slot_conflict");
+    }
+
+    appointment.date = appointmentDate;
+    appointment.endDate = endDate;
+    appointment.rescheduledAt = new Date();
+    appointment.rescheduledBy = userId;
+    appointment.rescheduleReason = reason?.toString().trim() || "";
+    appointment.reminderSent = false;
+    appointment.status = viewerRole === "owner" ? "pending" : "confirmed";
+
+    await appointment.save();
+
+    const updatedAppointment = await loadAppointmentWithRelations(id);
+    const dateLabel = updatedAppointment.date.toLocaleString("tr-TR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    await emitAppointmentNotification({
+      appointment: updatedAppointment,
+      eventName: "appointment:updated",
+      socketPayload: {
+        appointmentId: String(updatedAppointment._id),
+        status: updatedAppointment.status,
+        statusLabel: getAppointmentStatusLabel(updatedAppointment.status),
+        veterinaryName: updatedAppointment.veterinaryId?.name || "",
+        petName: updatedAppointment.petId?.name || "",
+        date: updatedAppointment.date,
+        action: "rescheduled",
+        rescheduleReason: updatedAppointment.rescheduleReason || "",
+      },
+      title: "Randevu Yeniden Planlandi",
+      body: `${updatedAppointment.veterinaryId?.name || "Veteriner"} randevusu ${dateLabel} icin guncellendi.`,
+      pushType: "appointment_rescheduled",
+      excludeUserId: userId,
+    });
+
+    await recordAudit("appointment.reschedule", {
+      userId,
+      entityType: "appointment",
+      entityId: id,
+      metadata: { newDate: updatedAppointment.date },
+    });
+
+    return sendOk(res, 200, { appointment: updatedAppointment });
+  } catch (err) {
+    if (err.code === 11000) {
+      return sendError(res, 409, "Bu saat dilimi dolu", "slot_conflict");
+    }
+    console.error("[rescheduleAppointment]", err);
+    return sendError(res, 500, "Randevu yeniden planlanamadi", "internal_error", err.message);
   }
 }
 
@@ -325,7 +609,7 @@ export async function updateAppointmentStatus(req, res) {
 export async function getAvailableSlots(req, res) {
   try {
     const { veterinaryId } = req.params;
-    const { date } = req.query;
+    const { date, excludeAppointmentId } = req.query;
 
     if (!date) return sendError(res, 400, "date parametresi gerekli", "validation_error");
 
@@ -341,47 +625,174 @@ export async function getAvailableSlots(req, res) {
 
     const workingWindow = getWorkingWindow(vet, targetDate);
     if (!workingWindow.isAvailable) {
-      return sendOk(res, 200, { slots: [], allSlots: [], bookedCount: 0 });
+      return sendOk(res, 200, {
+        slots: [],
+        allSlots: [],
+        bookedCount: 0,
+        slotMinutes: getAppointmentSlotMinutes(vet),
+      });
     }
 
     const { openH, openM, closeH, closeM } = workingWindow;
     const slotMinutes = getAppointmentSlotMinutes(vet);
 
-    const slots = [];
+    const allSlots = [];
     let current = openH * 60 + openM;
     const end = closeH * 60 + closeM;
-
     while (current + slotMinutes <= end) {
-      const h = Math.floor(current / 60);
-      const m = current % 60;
-      slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+      allSlots.push(formatMinutes(current));
       current += slotMinutes;
     }
 
-    // Dolu slotlari cikar
     const dayStart = new Date(targetDate);
     dayStart.setHours(0, 0, 0, 0);
     const dayEnd = new Date(targetDate);
     dayEnd.setHours(23, 59, 59, 999);
 
-    const booked = await Appointment.find({
+    const query = {
       veterinaryId,
       status: { $in: ["pending", "confirmed"] },
       date: { $gte: dayStart, $lte: dayEnd },
-    }).select("date");
+    };
+    if (
+      excludeAppointmentId &&
+      mongoose.Types.ObjectId.isValid(String(excludeAppointmentId))
+    ) {
+      query._id = { $ne: excludeAppointmentId };
+    }
 
+    const booked = await Appointment.find(query).select("date");
     const bookedTimes = new Set(
-      booked.map((a) => {
-        const d = new Date(a.date);
-        return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+      booked.map((item) => {
+        const bookedDate = new Date(item.date);
+        return formatMinutes(bookedDate.getHours() * 60 + bookedDate.getMinutes());
       })
     );
 
-    const availableSlots = slots.filter((s) => !bookedTimes.has(s));
+    const now = new Date();
+    const isToday =
+      now.getFullYear() === targetDate.getFullYear() &&
+      now.getMonth() === targetDate.getMonth() &&
+      now.getDate() === targetDate.getDate();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-    return sendOk(res, 200, { slots: availableSlots, allSlots: slots, bookedCount: bookedTimes.size });
+    const availableSlots = allSlots.filter((slot) => {
+      const [hours, minutes] = slot.split(":").map(Number);
+      const slotMinutesFromStart = hours * 60 + minutes;
+      if (isToday && slotMinutesFromStart <= currentMinutes) return false;
+      return !bookedTimes.has(slot);
+    });
+
+    return sendOk(res, 200, {
+      slots: availableSlots,
+      allSlots,
+      bookedCount: bookedTimes.size,
+      slotMinutes,
+    });
   } catch (err) {
     console.error("[getAvailableSlots]", err);
     return sendError(res, 500, "Musait saatler alinamadi", "internal_error", err.message);
+  }
+}
+
+// GET /api/appointments/:id/prescriptions
+export async function getAppointmentPrescriptions(req, res) {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
+
+    const appointment = await loadAppointmentWithRelations(req.params.id);
+    if (!appointment) {
+      return sendError(res, 404, "Randevu bulunamadi", "appointment_not_found");
+    }
+
+    const viewerRole = getAppointmentViewerRole(req.user, appointment);
+    if (!viewerRole) {
+      return sendError(res, 403, "Bu recetelere erisim yetkiniz yok", "forbidden");
+    }
+
+    const prescriptions = await Prescription.find({ appointmentId: appointment._id }).sort({
+      createdAt: -1,
+    });
+
+    return sendOk(res, 200, { prescriptions });
+  } catch (err) {
+    console.error("[getAppointmentPrescriptions]", err);
+    return sendError(res, 500, "Receteler yuklenemedi", "internal_error", err.message);
+  }
+}
+
+// POST /api/appointments/:id/prescriptions
+export async function createAppointmentPrescription(req, res) {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
+
+    const appointment = await loadAppointmentWithRelations(req.params.id);
+    if (!appointment) {
+      return sendError(res, 404, "Randevu bulunamadi", "appointment_not_found");
+    }
+
+    const viewerRole = getAppointmentViewerRole(req.user, appointment);
+    if (!["vet", "admin"].includes(viewerRole || "")) {
+      return sendError(res, 403, "Sadece veteriner veya admin recete olusturabilir", "forbidden");
+    }
+
+    const { diagnosis, medications, notes, followUpDate } = req.body;
+    const normalizedMedications = normalizeMedications(medications);
+
+    if (!diagnosis || !String(diagnosis).trim()) {
+      return sendError(res, 400, "Tani alani gerekli", "validation_error");
+    }
+    if (!normalizedMedications.length) {
+      return sendError(res, 400, "En az bir ilac bilgisi gerekli", "validation_error");
+    }
+
+    let parsedFollowUpDate;
+    if (followUpDate) {
+      parsedFollowUpDate = new Date(followUpDate);
+      if (Number.isNaN(parsedFollowUpDate.getTime())) {
+        return sendError(res, 400, "Gecersiz takip tarihi", "validation_error");
+      }
+    }
+
+    const prescription = await Prescription.create({
+      appointmentId: appointment._id,
+      petId: appointment.petId?._id || appointment.petId,
+      veterinaryId: appointment.veterinaryId?._id || appointment.veterinaryId,
+      vetUserId: appointment.veterinaryId?.userId || req.user.sub,
+      ownerUserId: appointment.userId?._id || appointment.userId,
+      diagnosis: String(diagnosis).trim(),
+      medications: normalizedMedications,
+      notes: notes?.toString().trim() || "",
+      followUpDate: parsedFollowUpDate || undefined,
+    });
+
+    await emitAppointmentNotification({
+      appointment,
+      eventName: "prescription:created",
+      socketPayload: {
+        appointmentId: String(appointment._id),
+        prescriptionId: String(prescription._id),
+        veterinaryName: appointment.veterinaryId?.name || "",
+        petName: appointment.petId?.name || "",
+      },
+      title: "Yeni Recete Hazirlandi",
+      body: `${appointment.petId?.name || "Petiniz"} icin yeni bir recete olusturuldu.`,
+      pushType: "prescription_created",
+      excludeUserId: req.user.sub,
+    });
+
+    await recordAudit("appointment.prescription.create", {
+      userId: req.user.sub,
+      entityType: "prescription",
+      entityId: prescription._id.toString(),
+      metadata: { appointmentId: appointment._id.toString() },
+    });
+
+    return sendOk(res, 201, { prescription });
+  } catch (err) {
+    console.error("[createAppointmentPrescription]", err);
+    return sendError(res, 500, "Recete olusturulamadi", "internal_error", err.message);
   }
 }

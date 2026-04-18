@@ -28,10 +28,12 @@ const postSchema = new Schema(
     userName: { type: String, required: true },
     userAvatar: { type: String },
     content: { type: String, maxlength: 1000 },
+    hashtags: { type: [String], default: [] },
     photos: { type: [String], default: [] },
     petId: { type: Schema.Types.ObjectId, ref: "Pet" },
     petName: { type: String },
     likes: { type: [Schema.Types.ObjectId], ref: "User", default: [] },
+    savedBy: { type: [Schema.Types.ObjectId], ref: "User", default: [] },
     comments: { type: [commentSchema], default: [] },
     saves: { type: [Schema.Types.ObjectId], ref: "User", default: [] },
     saveCount: { type: Number, default: 0 },
@@ -54,5 +56,6 @@ const postSchema = new Schema(
 
 postSchema.index({ userId: 1, createdAt: -1 });
 postSchema.index({ isActive: 1, createdAt: -1 });
+postSchema.index({ hashtags: 1, isActive: 1, createdAt: -1 });
 
 export default mongoose.model("Post", postSchema);
