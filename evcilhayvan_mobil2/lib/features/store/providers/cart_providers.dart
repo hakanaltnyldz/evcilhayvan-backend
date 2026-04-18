@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/data/repositories/auth_repository.dart';
 import '../domain/models/cart_state.dart';
 import '../domain/models/product_model.dart';
+import '../domain/models/selected_variant_model.dart';
 import '../repositories/cart_repository.dart';
 import '../services/cart_service.dart';
 import 'dio_provider.dart';
@@ -27,6 +28,7 @@ final addToCartProvider = FutureProvider.autoDispose.family<void, String>((
   productId,
 ) async {
   await ref.watch(cartRepoProvider).add(productId);
+  await ref.read(cartProvider.notifier).refresh();
   ref.invalidate(cartItemsProvider);
 });
 
@@ -35,11 +37,13 @@ final updateCartQuantityProvider = FutureProvider.autoDispose
       await ref
           .watch(cartRepoProvider)
           .updateQuantity(payload.itemId, payload.quantity);
+      await ref.read(cartProvider.notifier).refresh();
       ref.invalidate(cartItemsProvider);
     });
 
 final clearCartProvider = FutureProvider.autoDispose<void>((ref) async {
   await ref.watch(cartRepoProvider).clear();
+  await ref.read(cartProvider.notifier).refresh();
   ref.invalidate(cartItemsProvider);
 });
 
@@ -48,6 +52,7 @@ final removeFromCartProvider = FutureProvider.autoDispose.family<void, String>((
   itemId,
 ) async {
   await ref.watch(cartRepoProvider).remove(itemId);
+  await ref.read(cartProvider.notifier).refresh();
   ref.invalidate(cartItemsProvider);
 });
 
@@ -91,10 +96,20 @@ class CartNotifier extends StateNotifier<AsyncValue<CartState>> {
     }
   }
 
-  Future<void> addItem(ProductModel product, int quantity) async {
+  Future<void> addItem(
+    ProductModel product,
+    int quantity, {
+    List<SelectedVariantModel> selectedVariants = const [],
+  }) async {
     _ensureAuthenticated();
     try {
-      await ref.read(cartRepoProvider).add(product.id, quantity: quantity);
+      await ref
+          .read(cartRepoProvider)
+          .add(
+            product.id,
+            quantity: quantity,
+            selectedVariants: selectedVariants,
+          );
       await _loadCart();
       ref.invalidate(cartItemsProvider);
     } catch (e) {

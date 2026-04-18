@@ -10,6 +10,8 @@ class AppointmentModel {
   final String status;
   final String? vetNotes;
   final DateTime? createdAt;
+  final String type; // 'clinic' | 'online'
+  final String? meetingUrl;
 
   // Populated
   final AppointmentPet? pet;
@@ -27,6 +29,8 @@ class AppointmentModel {
     this.status = 'pending',
     this.vetNotes,
     this.createdAt,
+    this.type = 'clinic',
+    this.meetingUrl,
     this.pet,
     this.vet,
   });
@@ -44,6 +48,8 @@ class AppointmentModel {
       status: json['status'] ?? 'pending',
       vetNotes: json['vetNotes'] as String?,
       createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
+      type: json['type'] as String? ?? 'clinic',
+      meetingUrl: json['meetingUrl'] as String?,
       pet: json['petId'] is Map<String, dynamic> ? AppointmentPet.fromJson(json['petId']) : null,
       vet: json['veterinaryId'] is Map<String, dynamic> ? AppointmentVet.fromJson(json['veterinaryId']) : null,
     );

@@ -24,20 +24,30 @@ import '../../../favorites/presentation/widgets/favorite_button.dart';
 import '../../../adoption/data/repositories/adoption_repository.dart';
 import 'package:evcilhayvan_mobil2/core/utils/auth_guard.dart';
 
-final petDetailProvider = FutureProvider.autoDispose.family<Pet, String>((ref, petId) {
+final petDetailProvider = FutureProvider.autoDispose.family<Pet, String>((
+  ref,
+  petId,
+) {
   final repository = ref.watch(petsRepositoryProvider);
   return repository.getPetById(petId);
 });
 
 String _resolveSpecies(String species, AppLocalizations l10n) {
   switch (species) {
-    case 'dog':    return l10n.speciesDog;
-    case 'cat':    return l10n.speciesCat;
-    case 'bird':   return l10n.speciesBird;
-    case 'fish':   return l10n.speciesFish;
-    case 'rodent': return l10n.speciesHamster;
-    case 'other':  return l10n.speciesOther;
-    default:       return species;
+    case 'dog':
+      return l10n.speciesDog;
+    case 'cat':
+      return l10n.speciesCat;
+    case 'bird':
+      return l10n.speciesBird;
+    case 'fish':
+      return l10n.speciesFish;
+    case 'rodent':
+      return l10n.speciesHamster;
+    case 'other':
+      return l10n.speciesOther;
+    default:
+      return species;
   }
 }
 
@@ -62,7 +72,7 @@ class PetDetailScreen extends ConsumerWidget {
                 physics: const BouncingScrollPhysics(),
                 slivers: [
                   // Hero Image with App Bar
-                  _buildSliverAppBar(context, pet),
+                  _buildSliverAppBar(context, pet, isOwner: isOwner),
 
                   // Content
                   SliverToBoxAdapter(
@@ -73,41 +83,55 @@ class PetDetailScreen extends ConsumerWidget {
                         children: [
                           // Pet Name and Type Badge
                           _buildNameSection(context, pet)
-                              .animate().fadeIn(duration: 250.ms).slideY(begin: 0.05, duration: 250.ms),
+                              .animate()
+                              .fadeIn(duration: 250.ms)
+                              .slideY(begin: 0.05, duration: 250.ms),
                           const SizedBox(height: 20),
 
                           // Quick Info Cards
                           _buildQuickInfoCards(context, pet)
-                              .animate(delay: 60.ms).fadeIn(duration: 260.ms).slideY(begin: 0.05, duration: 260.ms),
+                              .animate(delay: 60.ms)
+                              .fadeIn(duration: 260.ms)
+                              .slideY(begin: 0.05, duration: 260.ms),
                           const SizedBox(height: 24),
 
                           // Bio Section
                           if (pet.bio?.isNotEmpty == true) ...[
                             _buildBioSection(context, pet)
-                                .animate(delay: 120.ms).fadeIn(duration: 260.ms).slideY(begin: 0.05, duration: 260.ms),
+                                .animate(delay: 120.ms)
+                                .fadeIn(duration: 260.ms)
+                                .slideY(begin: 0.05, duration: 260.ms),
                             const SizedBox(height: 24),
                           ],
 
                           // Details Grid
                           _buildDetailsSection(context, pet)
-                              .animate(delay: 160.ms).fadeIn(duration: 260.ms).slideY(begin: 0.05, duration: 260.ms),
+                              .animate(delay: 160.ms)
+                              .fadeIn(duration: 260.ms)
+                              .slideY(begin: 0.05, duration: 260.ms),
                           const SizedBox(height: 24),
 
                           // Health Info
                           _buildHealthSection(context, pet)
-                              .animate(delay: 200.ms).fadeIn(duration: 260.ms).slideY(begin: 0.05, duration: 260.ms),
+                              .animate(delay: 200.ms)
+                              .fadeIn(duration: 260.ms)
+                              .slideY(begin: 0.05, duration: 260.ms),
                           const SizedBox(height: 24),
 
                           // Location Section
-                          if (pet.latitude != null && pet.longitude != null) ...[
-                            _LocationSection(pet: pet)
-                                .animate(delay: 240.ms).fadeIn(duration: 260.ms),
+                          if (pet.latitude != null &&
+                              pet.longitude != null) ...[
+                            _LocationSection(
+                              pet: pet,
+                            ).animate(delay: 240.ms).fadeIn(duration: 260.ms),
                             const SizedBox(height: 24),
                           ],
 
                           // Owner Section
                           _buildOwnerSection(context, pet)
-                              .animate(delay: 280.ms).fadeIn(duration: 260.ms).slideY(begin: 0.05, duration: 260.ms),
+                              .animate(delay: 280.ms)
+                              .fadeIn(duration: 260.ms)
+                              .slideY(begin: 0.05, duration: 260.ms),
                           const SizedBox(height: 16),
 
                           // Owner Banner (if owner)
@@ -121,14 +145,23 @@ class PetDetailScreen extends ConsumerWidget {
                                 pathParameters: {'petId': pet.id},
                                 extra: {'petName': pet.name},
                               ),
-                              icon: const Icon(Icons.health_and_safety_outlined),
-                              label: Text(AppLocalizations.of(context)!.petDetailHealthJournal),
+                              icon: const Icon(
+                                Icons.health_and_safety_outlined,
+                              ),
+                              label: Text(
+                                AppLocalizations.of(
+                                  context,
+                                )!.petDetailHealthJournal,
+                              ),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFF2D6A4F),
-                                side: const BorderSide(color: Color(0xFF2D6A4F)),
+                                side: const BorderSide(
+                                  color: Color(0xFF2D6A4F),
+                                ),
                                 minimumSize: const Size.fromHeight(48),
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14)),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -154,20 +187,14 @@ class PetDetailScreen extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, s) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: Colors.red.shade300,
-                ),
+                Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
                 const SizedBox(height: 16),
                 Text(
                   AppLocalizations.of(context)!.petDetailLoadError,
@@ -218,20 +245,38 @@ class PetDetailScreen extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: AppPalette.accentGradient),
+                      gradient: LinearGradient(
+                        colors: AppPalette.accentGradient,
+                      ),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(Icons.pets, color: Colors.white, size: 22),
+                    child: const Icon(
+                      Icons.pets,
+                      color: Colors.white,
+                      size: 22,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(pet.name,
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                        Text('${_resolveSpecies(pet.species, l10n)} • ${pet.breed}',
-                            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
+                        Text(
+                          pet.name,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '${_resolveSpecies(pet.species, l10n)} • ${pet.breed}',
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                            fontSize: 13,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -250,7 +295,11 @@ class PetDetailScreen extends ConsumerWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 16, offset: const Offset(0, 6)),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
                   ],
                 ),
                 child: QrImageView(
@@ -258,27 +307,46 @@ class PetDetailScreen extends ConsumerWidget {
                   version: QrVersions.auto,
                   size: 200,
                   gapless: false,
-                  eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Color(0xFF2D6A4F)),
-                  dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.circle, color: Colors.black87),
+                  eyeStyle: const QrEyeStyle(
+                    eyeShape: QrEyeShape.square,
+                    color: Color(0xFF2D6A4F),
+                  ),
+                  dataModuleStyle: const QrDataModuleStyle(
+                    dataModuleShape: QrDataModuleShape.circle,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               // Bilgiler
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: context.subtleBackground,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Column(
                   children: [
-                    _QrInfoRow(label: l10n.petDetailQrAge, value: ageLabel, icon: Icons.cake_outlined),
+                    _QrInfoRow(
+                      label: l10n.petDetailQrAge,
+                      value: ageLabel,
+                      icon: Icons.cake_outlined,
+                    ),
                     const SizedBox(height: 6),
-                    _QrInfoRow(label: l10n.petDetailQrGender, value: pet.gender, icon: Icons.wc_outlined),
+                    _QrInfoRow(
+                      label: l10n.petDetailQrGender,
+                      value: pet.gender,
+                      icon: Icons.wc_outlined,
+                    ),
                     const SizedBox(height: 6),
                     _QrInfoRow(
                       label: l10n.petDetailQrVaccine,
-                      value: pet.vaccinated ? l10n.petDetailQrVaccineFull : l10n.petDetailQrVaccinePartial,
+                      value: pet.vaccinated
+                          ? l10n.petDetailQrVaccineFull
+                          : l10n.petDetailQrVaccinePartial,
                       icon: Icons.vaccines_outlined,
                       valueColor: pet.vaccinated ? Colors.green : Colors.orange,
                     ),
@@ -291,15 +359,40 @@ class PetDetailScreen extends ConsumerWidget {
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: pet.id));
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context)!.petDetailQrIdCopied), duration: const Duration(seconds: 2)),
+                    SnackBar(
+                      content: Text(
+                        AppLocalizations.of(context)!.petDetailQrIdCopied,
+                      ),
+                      duration: const Duration(seconds: 2),
+                    ),
                   );
                 },
                 icon: const Icon(Icons.copy, size: 16),
                 label: Text('ID: ${pet.id.substring(0, 8)}...'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
+                  foregroundColor: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant,
                   side: BorderSide(color: Theme.of(context).dividerColor),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Sağlık Kartı
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  context.pushNamed('health-card', pathParameters: {'petId': pet.id});
+                },
+                icon: const Icon(Icons.health_and_safety_outlined, size: 18),
+                label: const Text('Sağlık Kartını Aç'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF2D6A4F),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  minimumSize: const Size(double.infinity, 44),
                 ),
               ),
             ],
@@ -324,8 +417,13 @@ class PetDetailScreen extends ConsumerWidget {
                 child: CachedNetworkImage(
                   imageUrl: imageUrl,
                   fit: BoxFit.contain,
-                  placeholder: (_, __) => const CircularProgressIndicator(color: Colors.white),
-                  errorWidget: (_, __, ___) => const Icon(Icons.broken_image, color: Colors.white, size: 64),
+                  placeholder: (_, __) =>
+                      const CircularProgressIndicator(color: Colors.white),
+                  errorWidget: (_, __, ___) => const Icon(
+                    Icons.broken_image,
+                    color: Colors.white,
+                    size: 64,
+                  ),
                 ),
               ),
             ),
@@ -333,7 +431,11 @@ class PetDetailScreen extends ConsumerWidget {
               top: 48,
               right: 16,
               child: IconButton(
-                icon: const Icon(Icons.close_rounded, color: Colors.white, size: 30),
+                icon: const Icon(
+                  Icons.close_rounded,
+                  color: Colors.white,
+                  size: 30,
+                ),
                 style: IconButton.styleFrom(
                   backgroundColor: Colors.black45,
                   shape: const CircleBorder(),
@@ -347,7 +449,7 @@ class PetDetailScreen extends ConsumerWidget {
     );
   }
 
-    Widget _buildSliverAppBar(BuildContext context, Pet pet) {
+  Widget _buildSliverAppBar(BuildContext context, Pet pet, {bool isOwner = false}) {
     final heroTag = 'pet-image-${pet.id}';
 
     return SliverAppBar(
@@ -367,11 +469,7 @@ class PetDetailScreen extends ConsumerWidget {
         ),
       ),
       actions: [
-        FavoriteButton(
-          itemType: 'pet',
-          itemId: pet.id,
-          showBackground: true,
-        ),
+        FavoriteButton(itemType: 'pet', itemId: pet.id, showBackground: true),
         Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -403,6 +501,23 @@ class PetDetailScreen extends ConsumerWidget {
             onPressed: () => _showQrCard(context, pet),
           ),
         ),
+        if (isOwner)
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.3),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.history_rounded, color: Colors.white),
+              tooltip: 'Aktivite Geçmişi',
+              onPressed: () => context.pushNamed(
+                'pet-timeline',
+                pathParameters: {'id': pet.id},
+                extra: {'petName': pet.name},
+              ),
+            ),
+          ),
       ],
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
@@ -419,7 +534,8 @@ class PetDetailScreen extends ConsumerWidget {
             else
               GestureDetector(
                 onTap: pet.photos.isNotEmpty
-                    ? () => _showImageZoom(context, '$apiBaseUrl${pet.photos[0]}')
+                    ? () =>
+                          _showImageZoom(context, '$apiBaseUrl${pet.photos[0]}')
                     : null,
                 child: Hero(
                   tag: heroTag,
@@ -428,10 +544,17 @@ class PetDetailScreen extends ConsumerWidget {
                           imageUrl: '$apiBaseUrl${pet.photos[0]}',
                           fit: BoxFit.cover,
                           placeholder: (_, __) => Container(
-                            color: AppPalette.heroGradient.first.withOpacity(0.3),
-                            child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+                            color: AppPalette.heroGradient.first.withOpacity(
+                              0.3,
+                            ),
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
-                          errorWidget: (_, __, ___) => _buildPlaceholderImage(context),
+                          errorWidget: (_, __, ___) =>
+                              _buildPlaceholderImage(context),
                         )
                       : _buildPlaceholderImage(context),
                 ),
@@ -442,10 +565,7 @@ class PetDetailScreen extends ConsumerWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.7),
-                  ],
+                  colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
                   stops: const [0.5, 1.0],
                 ),
               ),
@@ -467,6 +587,7 @@ class PetDetailScreen extends ConsumerWidget {
       ),
     );
   }
+
   Widget _buildPlaceholderImage(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
@@ -572,9 +693,7 @@ class PetDetailScreen extends ConsumerWidget {
             color: Colors.white,
             fontSize: 32,
             fontWeight: FontWeight.bold,
-            shadows: [
-              Shadow(color: Colors.black54, blurRadius: 8),
-            ],
+            shadows: [Shadow(color: Colors.black54, blurRadius: 8)],
           ),
         ),
         const SizedBox(height: 8),
@@ -629,7 +748,9 @@ class PetDetailScreen extends ConsumerWidget {
                 ),
               ),
               Text(
-                pet.breed.isNotEmpty ? pet.breed : AppLocalizations.of(context)!.petDetailBreedUnspecified,
+                pet.breed.isNotEmpty
+                    ? pet.breed
+                    : AppLocalizations.of(context)!.petDetailBreedUnspecified,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: Colors.grey.shade600,
                 ),
@@ -677,7 +798,9 @@ class PetDetailScreen extends ConsumerWidget {
           child: _QuickInfoCard(
             icon: Icons.vaccines,
             label: l10n.petDetailVaccine,
-            value: pet.vaccinated ? l10n.petDetailVaccineFull : l10n.petDetailVaccineMissing,
+            value: pet.vaccinated
+                ? l10n.petDetailVaccineFull
+                : l10n.petDetailVaccineMissing,
             color: pet.vaccinated ? Colors.green : Colors.red,
           ),
         ),
@@ -796,7 +919,9 @@ class PetDetailScreen extends ConsumerWidget {
           _DetailRow(
             icon: Icons.badge,
             label: AppLocalizations.of(context)!.petDetailBreed,
-            value: pet.breed.isNotEmpty ? pet.breed : AppLocalizations.of(context)!.petDetailBreedUnspecified,
+            value: pet.breed.isNotEmpty
+                ? pet.breed
+                : AppLocalizations.of(context)!.petDetailBreedUnspecified,
           ),
           const Divider(height: 24),
           _DetailRow(
@@ -808,7 +933,9 @@ class PetDetailScreen extends ConsumerWidget {
           _DetailRow(
             icon: Icons.calendar_month,
             label: AppLocalizations.of(context)!.petDetailAge,
-            value: AppLocalizations.of(context)!.petDetailAgeMonths(pet.ageMonths),
+            value: AppLocalizations.of(
+              context,
+            )!.petDetailAgeMonths(pet.ageMonths),
           ),
           const Divider(height: 24),
           _DetailRow(
@@ -875,7 +1002,9 @@ class PetDetailScreen extends ConsumerWidget {
                 child: _HealthCard(
                   icon: Icons.vaccines,
                   title: l10n.petDetailVaccineStatus,
-                  value: pet.vaccinated ? l10n.petDetailVaccineComplete : l10n.petDetailVaccineNeeded,
+                  value: pet.vaccinated
+                      ? l10n.petDetailVaccineComplete
+                      : l10n.petDetailVaccineNeeded,
                   isPositive: pet.vaccinated,
                 ),
               ),
@@ -884,7 +1013,9 @@ class PetDetailScreen extends ConsumerWidget {
                 child: _HealthCard(
                   icon: Icons.verified,
                   title: l10n.petDetailListingStatus,
-                  value: pet.isActive ? l10n.petDetailActive : l10n.petDetailInactive,
+                  value: pet.isActive
+                      ? l10n.petDetailActive
+                      : l10n.petDetailInactive,
                   isPositive: pet.isActive,
                 ),
               ),
@@ -899,11 +1030,16 @@ class PetDetailScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final ownerName = pet.owner?.name ?? l10n.petDetailOwnerUnknown;
-    final avatarLetter = ownerName.isNotEmpty ? ownerName[0].toUpperCase() : '?';
+    final avatarLetter = ownerName.isNotEmpty
+        ? ownerName[0].toUpperCase()
+        : '?';
 
     return GestureDetector(
       onTap: pet.owner?.id != null && pet.owner!.id.isNotEmpty
-          ? () => context.pushNamed('user-profile', pathParameters: {'userId': pet.owner!.id})
+          ? () => context.pushNamed(
+              'user-profile',
+              pathParameters: {'userId': pet.owner!.id},
+            )
           : null,
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -979,10 +1115,7 @@ class PetDetailScreen extends ConsumerWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Colors.amber.shade100,
-            Colors.amber.shade50,
-          ],
+          colors: [Colors.amber.shade100, Colors.amber.shade50],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.amber.shade200),
@@ -1082,10 +1215,7 @@ class _QuickInfoCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
           ),
         ],
       ),
@@ -1120,10 +1250,7 @@ class _DetailRow extends StatelessWidget {
         const SizedBox(width: 12),
         Text(
           label,
-          style: TextStyle(
-            color: Colors.grey.shade600,
-            fontSize: 14,
-          ),
+          style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
         ),
         const Spacer(),
         Text(
@@ -1157,7 +1284,9 @@ class _HealthCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = isPositive ? const Color(0xFF2D6A4F) : Colors.red;
     final bgColor = isPositive ? const Color(0xFFD8F3DC) : Colors.red.shade50;
-    final borderColor = isPositive ? const Color(0xFF52B788).withOpacity(0.3) : Colors.red.withOpacity(0.2);
+    final borderColor = isPositive
+        ? const Color(0xFF52B788).withOpacity(0.3)
+        : Colors.red.withOpacity(0.2);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1172,10 +1301,7 @@ class _HealthCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             title,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
@@ -1203,7 +1329,9 @@ class _LocationSection extends StatelessWidget {
   Future<void> _openInMaps(BuildContext context) async {
     final lat = pet.latitude!;
     final lng = pet.longitude!;
-    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    final url = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+    );
 
     try {
       final canLaunch = await canLaunchUrl(url);
@@ -1212,7 +1340,11 @@ class _LocationSection extends StatelessWidget {
       } else {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.petDetailMapOpenError)),
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.petDetailMapOpenError,
+              ),
+            ),
           );
         }
       }
@@ -1232,7 +1364,8 @@ class _LocationSection extends StatelessWidget {
     final lng = pet.longitude!;
 
     // Static map image URL (Google Static Maps API)
-    final staticMapUrl = 'https://maps.googleapis.com/maps/api/staticmap'
+    final staticMapUrl =
+        'https://maps.googleapis.com/maps/api/staticmap'
         '?center=$lat,$lng'
         '&zoom=14'
         '&size=600x300'
@@ -1302,10 +1435,7 @@ class _LocationSection extends StatelessWidget {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      const Color(0xFFD8F3DC),
-                      const Color(0xFFD8F3DC),
-                    ],
+                    colors: [const Color(0xFFD8F3DC), const Color(0xFFD8F3DC)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -1319,7 +1449,9 @@ class _LocationSection extends StatelessWidget {
                           color: context.subtleBackground,
                         ),
                         child: CustomPaint(
-                          painter: _MapGridPainter(gridColor: Theme.of(context).dividerColor),
+                          painter: _MapGridPainter(
+                            gridColor: Theme.of(context).dividerColor,
+                          ),
                         ),
                       ),
                     ),
@@ -1335,7 +1467,9 @@ class _LocationSection extends StatelessWidget {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF2D6A4F).withOpacity(0.3),
+                                  color: const Color(
+                                    0xFF2D6A4F,
+                                  ).withOpacity(0.3),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
@@ -1349,7 +1483,10 @@ class _LocationSection extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: context.cardColor,
                               borderRadius: BorderRadius.circular(20),
@@ -1377,9 +1514,14 @@ class _LocationSection extends StatelessWidget {
                       left: 12,
                       right: 12,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface.withOpacity(0.95),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surface.withOpacity(0.95),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -1466,10 +1608,17 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).padding.bottom + 16),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        MediaQuery.of(context).padding.bottom + 16,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: const Color(0xFFD8F3DC), width: 1)),
+        border: Border(
+          top: BorderSide(color: const Color(0xFFD8F3DC), width: 1),
+        ),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF2D6A4F).withOpacity(0.08),
@@ -1499,7 +1648,10 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
                       icon: const Icon(Icons.message),
                       label: Text(
                         l10n.petDetailMessage,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
                       ),
                     ),
             ),
@@ -1522,7 +1674,10 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
                       icon: const Icon(Icons.pets),
                       label: Text(
                         l10n.petDetailAdoptBtn,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
                       ),
                     ),
             ),
@@ -1544,7 +1699,10 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
                       icon: const Icon(Icons.favorite),
                       label: Text(
                         l10n.petDetailMatingRequest,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
             ),
@@ -1560,7 +1718,10 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
     final owner = widget.pet.owner;
 
     if (currentUser == null) {
-      await showLoginRequired(context, reason: 'Mesaj göndermek için giriş yapman gerekiyor.');
+      await showLoginRequired(
+        context,
+        reason: 'Mesaj göndermek için giriş yapman gerekiyor.',
+      );
       return;
     }
 
@@ -1578,10 +1739,6 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
 
     try {
       // Debug: Log the request parameters
-      print('🔵 Creating conversation with:');
-      print('   participantId: ${owner.id}');
-      print('   currentUserId: ${currentUser.id}');
-      print('   relatedPetId: ${widget.pet.id}');
 
       // messageRepositoryProvider kullanıyoruz - bu endpoint mevcut conversation'ı döndürür veya yeni oluşturur
       final repo = ref.read(messageRepositoryProvider);
@@ -1590,8 +1747,6 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
         currentUserId: currentUser.id,
         relatedPetId: widget.pet.id,
       );
-
-      print('✅ Conversation created: ${conversation.id}');
 
       if (!mounted) return;
 
@@ -1606,9 +1761,6 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
       );
     } catch (e, stackTrace) {
       // Tüm hataları yakala ve detaylı log
-      print('❌ Error in _handleSendMessage:');
-      print('   Error: $e');
-      print('   Stack: $stackTrace');
 
       if (!mounted) return;
 
@@ -1623,9 +1775,11 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
 
       // Özel hata mesajları
       final l10n2 = AppLocalizations.of(context)!;
-      if (errorMessage.contains('not found') || errorMessage.contains('bulunamadi')) {
+      if (errorMessage.contains('not found') ||
+          errorMessage.contains('bulunamadi')) {
         errorMessage = l10n2.errorNotFound;
-      } else if (errorMessage.contains('network') || errorMessage.contains('SocketException')) {
+      } else if (errorMessage.contains('network') ||
+          errorMessage.contains('SocketException')) {
         errorMessage = l10n2.errorNetwork;
       }
 
@@ -1641,7 +1795,11 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
   Future<void> _handleAdoptionApply() async {
     final currentUser = ref.read(authProvider);
     if (currentUser == null) {
-      await showLoginRequired(context, reason: 'Sahiplendirme başvurusu yapabilmek için giriş yapman gerekiyor.');
+      await showLoginRequired(
+        context,
+        reason:
+            'Sahiplendirme başvurusu yapabilmek için giriş yapman gerekiyor.',
+      );
       return;
     }
     context.pushNamed('adoption-apply', extra: widget.pet);
@@ -1652,7 +1810,10 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
     final currentUser = ref.read(authProvider);
 
     if (currentUser == null) {
-      await showLoginRequired(context, reason: 'Çiftleşme isteği göndermek için giriş yapman gerekiyor.');
+      await showLoginRequired(
+        context,
+        reason: 'Çiftleşme isteği göndermek için giriş yapman gerekiyor.',
+      );
       return;
     }
 
@@ -1667,10 +1828,13 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
       setState(() => _isLoading = false);
 
       // Aynı türden ilanları filtrele
-      final sameSpeicesPets = myPets.where((p) =>
-        p.species.toLowerCase() == widget.pet.species.toLowerCase() &&
-        p.id != widget.pet.id
-      ).toList();
+      final sameSpeicesPets = myPets
+          .where(
+            (p) =>
+                p.species.toLowerCase() == widget.pet.species.toLowerCase() &&
+                p.id != widget.pet.id,
+          )
+          .toList();
 
       if (myPets.isEmpty) {
         // Hiç eşleştirme ilanı yok
@@ -1691,7 +1855,6 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
 
       // İsteği gönder
       await _sendMatchRequest(selectedPet.id);
-
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
@@ -1704,10 +1867,8 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _PetSelectionModal(
-        pets: pets,
-        targetSpecies: widget.pet.species,
-      ),
+      builder: (ctx) =>
+          _PetSelectionModal(pets: pets, targetSpecies: widget.pet.species),
     );
   }
 
@@ -1730,9 +1891,7 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
             Text(AppLocalizations.of(ctx)!.petDetailNoPetDialog),
           ],
         ),
-        content: Text(
-          AppLocalizations.of(ctx)!.petDetailNoPetContent,
-        ),
+        content: Text(AppLocalizations.of(ctx)!.petDetailNoPetContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -1745,7 +1904,9 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.pink,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: Text(AppLocalizations.of(ctx)!.petDetailCreateListing),
           ),
@@ -1774,7 +1935,9 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
           ],
         ),
         content: Text(
-          AppLocalizations.of(ctx)!.petDetailSameSpeciesContent(widget.pet.species),
+          AppLocalizations.of(
+            ctx,
+          )!.petDetailSameSpeciesContent(widget.pet.species),
         ),
         actions: [
           TextButton(
@@ -1784,14 +1947,16 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              context.pushNamed('create-pet', extra: {
-                'advertType': 'mating',
-                'species': widget.pet.species,
-              });
+              context.pushNamed(
+                'create-pet',
+                extra: {'advertType': 'mating', 'species': widget.pet.species},
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.pink,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: Text(AppLocalizations.of(ctx)!.petDetailCreateListing),
           ),
@@ -1822,7 +1987,9 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
       _showError(e.message);
     } catch (e) {
       if (!mounted) return;
-      _showError(AppLocalizations.of(context)!.petDetailMatingGenericError(e.toString()));
+      _showError(
+        AppLocalizations.of(context)!.petDetailMatingGenericError(e.toString()),
+      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -1846,7 +2013,11 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
               child: const Icon(Icons.check_circle, color: Colors.green),
             ),
             const SizedBox(width: 12),
-            Expanded(child: Text(AppLocalizations.of(ctx)!.petDetailSuccessDialogTitle)),
+            Expanded(
+              child: Text(
+                AppLocalizations.of(ctx)!.petDetailSuccessDialogTitle,
+              ),
+            ),
           ],
         ),
         content: Text(
@@ -1861,14 +2032,20 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
                 Navigator.pop(ctx);
                 context.pushNamed(
                   'chat',
-                  pathParameters: {'conversationId': result.request!.conversationId!},
+                  pathParameters: {
+                    'conversationId': result.request!.conversationId!,
+                  },
                 );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              child: Text(AppLocalizations.of(ctx)!.petDetailSuccessDialogStartChat),
+              child: Text(
+                AppLocalizations.of(ctx)!.petDetailSuccessDialogStartChat,
+              ),
             )
           else
             TextButton(
@@ -1903,10 +2080,7 @@ class _PetSelectionModal extends StatelessWidget {
   final List<Pet> pets;
   final String targetSpecies;
 
-  const _PetSelectionModal({
-    required this.pets,
-    required this.targetSpecies,
-  });
+  const _PetSelectionModal({required this.pets, required this.targetSpecies});
 
   @override
   Widget build(BuildContext context) {
@@ -1952,17 +2126,23 @@ class _PetSelectionModal extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            AppLocalizations.of(context)!.petDetailSelectPetTitle,
+                            AppLocalizations.of(
+                              context,
+                            )!.petDetailSelectPetTitle,
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
-                            AppLocalizations.of(context)!.petDetailSelectPetSubtitle(targetSpecies),
+                            AppLocalizations.of(
+                              context,
+                            )!.petDetailSelectPetSubtitle(targetSpecies),
                             style: TextStyle(
                               fontSize: 13,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -1999,10 +2179,7 @@ class _PetSelectionCard extends StatelessWidget {
   final Pet pet;
   final VoidCallback onTap;
 
-  const _PetSelectionCard({
-    required this.pet,
-    required this.onTap,
-  });
+  const _PetSelectionCard({required this.pet, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -2037,16 +2214,25 @@ class _PetSelectionCard extends StatelessWidget {
                         fit: BoxFit.cover,
                         placeholder: (_, __) => Container(
                           color: context.cardColor,
-                          child: Icon(Icons.pets, color: Theme.of(context).colorScheme.outlineVariant),
+                          child: Icon(
+                            Icons.pets,
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
                         ),
                         errorWidget: (_, __, ___) => Container(
                           color: context.cardColor,
-                          child: Icon(Icons.pets, color: Theme.of(context).colorScheme.outlineVariant),
+                          child: Icon(
+                            Icons.pets,
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
                         ),
                       )
                     : Container(
                         color: context.cardColor,
-                        child: Icon(Icons.pets, color: Theme.of(context).colorScheme.outlineVariant),
+                        child: Icon(
+                          Icons.pets,
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                        ),
                       ),
               ),
             ),
@@ -2099,7 +2285,9 @@ class _PetSelectionCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        AppLocalizations.of(context)!.petDetailAgeMonths(pet.ageMonths),
+                        AppLocalizations.of(
+                          context,
+                        )!.petDetailAgeMonths(pet.ageMonths),
                         style: TextStyle(
                           fontSize: 12,
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -2136,22 +2324,39 @@ class _QrInfoRow extends StatelessWidget {
   final IconData icon;
   final Color? valueColor;
 
-  const _QrInfoRow({required this.label, required this.value, required this.icon, this.valueColor});
+  const _QrInfoRow({
+    required this.label,
+    required this.value,
+    required this.icon,
+    this.valueColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+        Icon(
+          icon,
+          size: 16,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
         const SizedBox(width: 8),
-        Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
+        Text(
+          label,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontSize: 13,
+          ),
+        ),
         const Spacer(),
-        Text(value,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-              color: valueColor ?? Theme.of(context).colorScheme.onSurface,
-            )),
+        Text(
+          value,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+            color: valueColor ?? Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
       ],
     );
   }
@@ -2195,7 +2400,10 @@ class _PhotoGalleryState extends State<_PhotoGallery> {
               child: i == 0
                   ? Hero(
                       tag: widget.heroTag,
-                      child: CachedNetworkImage(imageUrl: url, fit: BoxFit.cover),
+                      child: CachedNetworkImage(
+                        imageUrl: url,
+                        fit: BoxFit.cover,
+                      ),
                     )
                   : CachedNetworkImage(imageUrl: url, fit: BoxFit.cover),
             );

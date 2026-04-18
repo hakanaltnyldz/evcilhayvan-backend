@@ -872,10 +872,10 @@ class _QuickShortcutsRow extends StatelessWidget {
         route: 'feed',
       ),
       (
-        label: l10n.homeShortcutAiFull,
-        icon: Icons.smart_toy_rounded,
-        colors: const [Color(0xFF52B788), Color(0xFF74C69D)],
-        route: 'ai-assistant',
+        label: 'Sağlık',
+        icon: Icons.health_and_safety_rounded,
+        colors: const [Color(0xFF52B788), Color(0xFF2D6A4F)],
+        route: 'pet-health-dashboard',
       ),
     ];
     return SizedBox(

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/premium_card.dart';
@@ -88,6 +89,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
   List<VeterinaryModel>? _nearbyVets;
   bool _loadingVets = false;
   bool _locationDenied = false;
+  bool _errorVets = false;
 
   @override
   void initState() {
@@ -96,7 +98,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
   }
 
   Future<void> _loadNearbyVets() async {
-    setState(() => _loadingVets = true);
+    setState(() { _loadingVets = true; _errorVets = false; });
     try {
       LocationPermission perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.denied) {
@@ -115,7 +117,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
           : await repo.googleSearch(lat: pos.latitude, lng: pos.longitude, radiusKm: kDefaultVetRadiusKm);
       if (mounted) setState(() { _nearbyVets = vets; _loadingVets = false; });
     } catch (_) {
-      if (mounted) setState(() => _loadingVets = false);
+      if (mounted) setState(() { _loadingVets = false; _errorVets = true; });
     }
   }
 
@@ -218,6 +220,23 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
           const SizedBox(height: 12),
           if (_loadingVets)
             const Center(child: PawLoading())
+          else if (_errorVets)
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                  const SizedBox(height: 8),
+                  Text(l10n.vetHomeNearbyEmpty),
+                  const SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    onPressed: _loadNearbyVets,
+                    icon: const Icon(Icons.refresh),
+                    label: Text(l10n.retry),
+                  ),
+                ],
+              ),
+            )
           else if (_locationDenied)
             AnimatedEmptyState(
               icon: Icons.location_searching,
@@ -326,42 +345,160 @@ Color _accentForStatus(String status) {
   }
 }
 
-class _AppointmentsTab extends ConsumerWidget {
+class _AppointmentsTab extends ConsumerStatefulWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_AppointmentsTab> createState() => _AppointmentsTabState();
+}
+
+class _AppointmentsTabState extends ConsumerState<_AppointmentsTab> {
+  DateTime _focusedDay = DateTime.now();
+  DateTime? _selectedDay;
+
+  DateTime _normalizeDay(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  @override
+  Widget build(BuildContext context) {
     final appointmentsAsync = ref.watch(myAppointmentsProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return appointmentsAsync.when(
       loading: () => const Center(child: PawLoading()),
-      error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.vetHomeLoadError(e.toString()))),
+      error: (e, _) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 8),
+            Text(l10n.vetHomeLoadError(e.toString())),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: () => ref.invalidate(myAppointmentsProvider),
+              icon: const Icon(Icons.refresh),
+              label: Text(l10n.retry),
+            ),
+          ],
+        ),
+      ),
       data: (appointments) {
-        if (appointments.isEmpty) {
-          return AnimatedEmptyState(
-            icon: Icons.calendar_today,
-            title: AppLocalizations.of(context)!.vetHomeApptsEmpty,
-            subtitle: AppLocalizations.of(context)!.vetHomeApptsEmptyDesc,
-          );
+        // Günlere göre grupla
+        final Map<DateTime, List<dynamic>> eventMap = {};
+        for (final apt in appointments) {
+          final day = _normalizeDay(apt.date);
+          eventMap.putIfAbsent(day, () => []).add(apt);
         }
+
+        List<dynamic> Function(DateTime) getEventsForDay =
+            (day) => eventMap[_normalizeDay(day)] ?? [];
+
+        final selectedDay = _selectedDay ?? _normalizeDay(DateTime.now());
+        final visibleAppointments = _selectedDay != null
+            ? getEventsForDay(_selectedDay!)
+            : appointments;
+
         return RefreshIndicator(
           onRefresh: () async => ref.invalidate(myAppointmentsProvider),
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: appointments.length,
-            itemBuilder: (context, index) {
-              final apt = appointments[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: PremiumCard(
-                  accentColor: _accentForStatus(apt.status),
-                  onTap: () => context.pushNamed('appointment-detail', pathParameters: {'id': apt.id}),
-                  padding: EdgeInsets.zero,
-                  child: AppointmentCard(appointment: apt, onTap: null),
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: TableCalendar(
+                  firstDay: DateTime.now().subtract(const Duration(days: 365)),
+                  lastDay: DateTime.now().add(const Duration(days: 365)),
+                  focusedDay: _focusedDay,
+                  selectedDayPredicate: (day) => _selectedDay != null &&
+                      _normalizeDay(day) == _normalizeDay(_selectedDay!),
+                  eventLoader: getEventsForDay,
+                  calendarFormat: CalendarFormat.month,
+                  availableCalendarFormats: const {CalendarFormat.month: 'Ay'},
+                  locale: 'tr_TR',
+                  onDaySelected: (selected, focused) {
+                    setState(() {
+                      _selectedDay = _normalizeDay(selected) == _normalizeDay(_selectedDay ?? DateTime(0))
+                          ? null  // ikinci tıklayınca seçimi kaldır
+                          : selected;
+                      _focusedDay = focused;
+                    });
+                  },
+                  onPageChanged: (focused) {
+                    setState(() => _focusedDay = focused);
+                  },
+                  calendarStyle: CalendarStyle(
+                    todayDecoration: BoxDecoration(
+                      color: const Color(0xFF52B788).withOpacity(0.4),
+                      shape: BoxShape.circle,
+                    ),
+                    selectedDecoration: const BoxDecoration(
+                      color: Color(0xFF2D6A4F),
+                      shape: BoxShape.circle,
+                    ),
+                    markerDecoration: const BoxDecoration(
+                      color: Color(0xFF52B788),
+                      shape: BoxShape.circle,
+                    ),
+                    markersMaxCount: 3,
+                  ),
+                  headerStyle: const HeaderStyle(
+                    formatButtonVisible: false,
+                    titleCentered: true,
+                    titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                 ),
-              )
-                  .animate(delay: Duration(milliseconds: index * 60))
-                  .fadeIn(duration: 280.ms)
-                  .slideY(begin: 0.05, duration: 280.ms, curve: Curves.easeOut);
-            },
+              ),
+              if (_selectedDay != null)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.filter_list, size: 16, color: Color(0xFF2D6A4F)),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${_selectedDay!.day}.${_selectedDay!.month}.${_selectedDay!.year} — ${visibleAppointments.length} randevu',
+                          style: const TextStyle(fontSize: 13, color: Color(0xFF2D6A4F), fontWeight: FontWeight.w600),
+                        ),
+                        const Spacer(),
+                        GestureDetector(
+                          onTap: () => setState(() => _selectedDay = null),
+                          child: const Text('Tümünü Göster', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              if (visibleAppointments.isEmpty)
+                SliverFillRemaining(
+                  child: AnimatedEmptyState(
+                    icon: Icons.calendar_today,
+                    title: _selectedDay != null
+                        ? 'Bu günde randevu yok'
+                        : l10n.vetHomeApptsEmpty,
+                    subtitle: _selectedDay == null ? l10n.vetHomeApptsEmptyDesc : null,
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final apt = visibleAppointments[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: PremiumCard(
+                            accentColor: _accentForStatus(apt.status),
+                            onTap: () => context.pushNamed('appointment-detail', pathParameters: {'id': apt.id}),
+                            padding: EdgeInsets.zero,
+                            child: AppointmentCard(appointment: apt, onTap: null),
+                          ),
+                        )
+                            .animate(delay: Duration(milliseconds: index * 60))
+                            .fadeIn(duration: 280.ms)
+                            .slideY(begin: 0.05, duration: 280.ms, curve: Curves.easeOut);
+                      },
+                      childCount: visibleAppointments.length,
+                    ),
+                  ),
+                ),
+            ],
           ),
         );
       },
@@ -377,7 +514,22 @@ class _VaccinationTab extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     return remindersAsync.when(
       loading: () => const Center(child: PawLoading()),
-      error: (e, _) => Center(child: Text(l10n.vetHomeLoadError(e.toString()))),
+      error: (e, _) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 8),
+            Text(l10n.vetHomeLoadError(e.toString())),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: () => ref.invalidate(vaccinationRemindersProvider),
+              icon: const Icon(Icons.refresh),
+              label: Text(l10n.retry),
+            ),
+          ],
+        ),
+      ),
       data: (reminders) {
         return Padding(
           padding: const EdgeInsets.all(16),

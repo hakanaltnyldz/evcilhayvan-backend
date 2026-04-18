@@ -18,6 +18,9 @@ import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/features/notifications/providers/notification_provider.dart';
 
 import '../../../pets/presentation/screens/widgets/pet_card.dart';
+import '../../../social/presentation/screens/saved_posts_screen.dart';
+import '../../data/repositories/auth_repository.dart' show myStatsProvider;
+import '../widgets/badge_chip.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -151,15 +154,17 @@ class ProfileScreen extends ConsumerWidget {
 
     final adoptionAsync = ref.watch(myAdvertsProvider('adoption'));
     final matingAsync = ref.watch(myAdvertsProvider('mating'));
+    final statsAsync = ref.watch(myStatsProvider);
     final adoptionCount = adoptionAsync.valueOrNull?.length ?? 0;
     final matingCount = matingAsync.valueOrNull?.length ?? 0;
     final totalViews = [
       ...adoptionAsync.valueOrNull ?? [],
       ...matingAsync.valueOrNull ?? [],
     ].fold<int>(0, (s, pet) => s + (pet.viewCount as int));
+    final stats = statsAsync.valueOrNull;
 
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
@@ -183,6 +188,7 @@ class ProfileScreen extends ConsumerWidget {
             tabs: [
               Tab(text: l10n.profileTabMyAds),
               Tab(text: l10n.profileTabMatingAds),
+              const Tab(icon: Icon(Icons.bookmark_rounded, size: 18), text: 'Kaydedilenler'),
             ],
           ),
         ),
@@ -199,6 +205,9 @@ class ProfileScreen extends ConsumerWidget {
                     adoptionCount: adoptionCount,
                     matingCount: matingCount,
                     totalViews: totalViews,
+                    postCount: stats?['postCount'] as int? ?? 0,
+                    totalLikes: stats?['totalLikes'] as int? ?? 0,
+                    appointmentCount: stats?['appointmentCount'] as int? ?? 0,
                   ),
                 ),
 
@@ -283,6 +292,7 @@ class ProfileScreen extends ConsumerWidget {
                           l10n,
                         ),
                       ),
+                      const SavedPostsScreen(),
                     ],
                   ),
                 ),
@@ -303,6 +313,9 @@ class _ProfileHeader extends StatelessWidget {
   final int adoptionCount;
   final int matingCount;
   final int totalViews;
+  final int postCount;
+  final int totalLikes;
+  final int appointmentCount;
 
   const _ProfileHeader({
     required this.user,
@@ -311,6 +324,9 @@ class _ProfileHeader extends StatelessWidget {
     required this.adoptionCount,
     required this.matingCount,
     required this.totalViews,
+    this.postCount = 0,
+    this.totalLikes = 0,
+    this.appointmentCount = 0,
   });
 
   @override
@@ -442,6 +458,32 @@ class _ProfileHeader extends StatelessWidget {
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
+                    if (user.points > 0) ...[
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFB300).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFFFB300).withOpacity(0.4)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.star_rounded, color: Color(0xFFFFB300), size: 13),
+                            const SizedBox(width: 3),
+                            Text(
+                              '${user.points} puan',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFFFB300),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -494,6 +536,49 @@ class _ProfileHeader extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 8),
+          Divider(height: 1, thickness: 1, color: theme.colorScheme.outline.withOpacity(0.18)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _StatItem(
+                icon: Icons.photo_camera_outlined,
+                color: const Color(0xFF74C69D),
+                intValue: postCount,
+                label: 'Gönderi',
+              ),
+              Container(width: 1, height: 36, color: theme.colorScheme.outline.withOpacity(0.25)),
+              _StatItem(
+                icon: Icons.thumb_up_alt_outlined,
+                color: const Color(0xFFF4A261),
+                intValue: totalLikes,
+                label: 'Beğeni',
+              ),
+              Container(width: 1, height: 36, color: theme.colorScheme.outline.withOpacity(0.25)),
+              _StatItem(
+                icon: Icons.calendar_today_outlined,
+                color: const Color(0xFF4895EF),
+                intValue: appointmentCount,
+                label: 'Randevu',
+              ),
+            ],
+          ),
+          if (user.badges.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Divider(height: 1, thickness: 1, color: theme.colorScheme.outline.withOpacity(0.18)),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: user.badges
+                    .map((b) => Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: BadgeChip(badge: b),
+                        ))
+                    .toList(),
+              ),
+            ),
+          ],
         ],
       ),
     );

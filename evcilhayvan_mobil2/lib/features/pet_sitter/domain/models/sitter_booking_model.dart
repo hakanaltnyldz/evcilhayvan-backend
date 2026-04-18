@@ -19,6 +19,14 @@ class SitterBookingModel {
   final double? reviewRating;
   final String? reviewComment;
   final DateTime? createdAt;
+  final bool liveTrackingActive;
+  final double? lastLat;
+  final double? lastLng;
+  final DateTime? lastLocationAt;
+  final DateTime? trackingGraceEndsAt;
+  final String earningsStatus;
+  final DateTime? earningsPausedAt;
+  final double payableAmount;
 
   const SitterBookingModel({
     required this.id,
@@ -41,6 +49,14 @@ class SitterBookingModel {
     this.reviewRating,
     this.reviewComment,
     this.createdAt,
+    this.liveTrackingActive = false,
+    this.lastLat,
+    this.lastLng,
+    this.lastLocationAt,
+    this.trackingGraceEndsAt,
+    this.earningsStatus = 'pending',
+    this.earningsPausedAt,
+    this.payableAmount = 0,
   });
 
   String get serviceLabel {
@@ -58,6 +74,7 @@ class SitterBookingModel {
     switch (status) {
       case 'pending': return 'Bekliyor';
       case 'accepted': return 'Kabul Edildi';
+      case 'active': return 'Bakim Aktif';
       case 'rejected': return 'Reddedildi';
       case 'cancelled': return 'Iptal';
       case 'completed': return 'Tamamlandi';
@@ -67,8 +84,12 @@ class SitterBookingModel {
 
   bool get isPending => status == 'pending';
   bool get isAccepted => status == 'accepted';
+  bool get isActive => status == 'active';
   bool get isCompleted => status == 'completed';
   bool get hasReview => reviewRating != null;
+  bool get canTrackLive => status == 'active' || liveTrackingActive;
+  bool get needsPickup => status == 'accepted';
+  bool get earningsPaused => earningsStatus == 'paused';
 
   factory SitterBookingModel.fromJson(Map<String, dynamic> json) {
     // Populate edilmis sitter
@@ -134,6 +155,22 @@ class SitterBookingModel {
       reviewRating: reviewRating,
       reviewComment: reviewComment,
       createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
+      liveTrackingActive: json['liveTracking']?['isActive'] == true,
+      lastLat: (json['liveTracking']?['lastLat'] as num?)?.toDouble(),
+      lastLng: (json['liveTracking']?['lastLng'] as num?)?.toDouble(),
+      lastLocationAt: json['liveTracking']?['lastUpdated'] != null
+          ? DateTime.tryParse(json['liveTracking']['lastUpdated'].toString())
+          : null,
+      trackingGraceEndsAt: json['liveTracking']?['graceEndsAt'] != null
+          ? DateTime.tryParse(json['liveTracking']['graceEndsAt'].toString())
+          : null,
+      earningsStatus: json['earnings']?['status']?.toString() ?? 'pending',
+      earningsPausedAt: json['earnings']?['pausedAt'] != null
+          ? DateTime.tryParse(json['earnings']['pausedAt'].toString())
+          : null,
+      payableAmount: (json['earnings']?['payableAmount'] as num?)?.toDouble() ??
+          (json['totalPrice'] as num?)?.toDouble() ??
+          0,
     );
   }
 }

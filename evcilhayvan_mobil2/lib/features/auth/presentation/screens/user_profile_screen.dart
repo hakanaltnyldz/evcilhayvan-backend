@@ -10,9 +10,18 @@ import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_reposito
 import 'package:evcilhayvan_mobil2/features/messages/data/repositories/message_repository.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
-class UserProfileScreen extends ConsumerWidget {
+class UserProfileScreen extends ConsumerStatefulWidget {
   const UserProfileScreen({super.key, required this.userId});
   final String userId;
+
+  @override
+  ConsumerState<UserProfileScreen> createState() => _UserProfileScreenState();
+}
+
+class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
+  bool? _isFollowing; // null = not yet loaded
+  int? _followersCount;
+  bool _followLoading = false;
 
   String _imgUrl(String? path) {
     if (path == null || path.isEmpty) return '';
@@ -20,9 +29,43 @@ class UserProfileScreen extends ConsumerWidget {
     return '${AppConfig.current.apiBaseUrl}/$path';
   }
 
+  Future<void> _toggleFollow(bool currentlyFollowing) async {
+    if (_followLoading) return;
+    setState(() {
+      _followLoading = true;
+      // Optimistic UI
+      _isFollowing = !currentlyFollowing;
+      _followersCount = (_followersCount ?? 0) + (currentlyFollowing ? -1 : 1);
+    });
+
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final result = currentlyFollowing
+          ? await repo.unfollowUser(widget.userId)
+          : await repo.followUser(widget.userId);
+
+      if (mounted) {
+        setState(() {
+          _isFollowing = result['isFollowing'] as bool? ?? !currentlyFollowing;
+          _followersCount = result['followersCount'] as int? ?? _followersCount;
+        });
+      }
+    } catch (_) {
+      // Revert optimistic update on error
+      if (mounted) {
+        setState(() {
+          _isFollowing = currentlyFollowing;
+          _followersCount = (_followersCount ?? 0) + (currentlyFollowing ? 1 : -1);
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _followLoading = false);
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final profileAsync = ref.watch(userPublicProfileProvider(userId));
+  Widget build(BuildContext context) {
+    final profileAsync = ref.watch(userPublicProfileProvider(widget.userId));
 
     return Scaffold(
       body: profileAsync.when(
@@ -33,9 +76,10 @@ class UserProfileScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 12),
-              Text(AppLocalizations.of(context)!.userProfileLoadErr, style: Theme.of(context).textTheme.titleMedium),
+              Text(AppLocalizations.of(context)!.userProfileLoadErr,
+                  style: Theme.of(context).textTheme.titleMedium),
               TextButton(
-                onPressed: () => ref.invalidate(userPublicProfileProvider(userId)),
+                onPressed: () => ref.invalidate(userPublicProfileProvider(widget.userId)),
                 child: Text(AppLocalizations.of(context)!.retry),
               ),
             ],
@@ -54,9 +98,33 @@ class UserProfileScreen extends ConsumerWidget {
           final memberSince = userJson['memberSince'] as String?;
           final year = memberSince != null ? DateTime.tryParse(memberSince)?.year : null;
 
+          // Initialize follow state from server response (only on first load)
+          final serverIsFollowing = userJson['isFollowing'] == true;
+          final serverFollowersCount =
+              (userJson['followersCount'] as num?)?.toInt() ?? 0;
+          final serverFollowingCount =
+              (userJson['followingCount'] as num?)?.toInt() ?? 0;
+
+          if (_isFollowing == null) {
+            _isFollowing = serverIsFollowing;
+            _followersCount = serverFollowersCount;
+          }
+
           return CustomScrollView(
             slivers: [
-              _buildAppBar(context, ref, name, avatarUrl, city, isSeller, year),
+              _buildAppBar(context, name, avatarUrl, city, isSeller, year),
+              // Follow stats row
+              SliverToBoxAdapter(
+                child: _FollowStatsRow(
+                  followersCount: _followersCount ?? serverFollowersCount,
+                  followingCount: serverFollowingCount,
+                  isFollowing: _isFollowing ?? serverIsFollowing,
+                  followLoading: _followLoading,
+                  isMe: ref.watch(authProvider)?.id == widget.userId,
+                  onToggleFollow: () =>
+                      _toggleFollow(_isFollowing ?? serverIsFollowing),
+                ),
+              ),
               if (about != null && about.isNotEmpty) ...[
                 SliverToBoxAdapter(
                   child: Padding(
@@ -70,7 +138,8 @@ class UserProfileScreen extends ConsumerWidget {
                                 .titleSmall
                                 ?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 6),
-                        Text(about, style: Theme.of(context).textTheme.bodyMedium),
+                        Text(about,
+                            style: Theme.of(context).textTheme.bodyMedium),
                       ],
                     ),
                   ),
@@ -93,7 +162,11 @@ class UserProfileScreen extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(32),
                     child: Center(
-                      child: Text(l10n.userProfileNoListings, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                      child: Text(l10n.userProfileNoListings,
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant)),
                     ),
                   ),
                 )
@@ -103,12 +176,14 @@ class UserProfileScreen extends ConsumerWidget {
                   sliver: SliverGrid(
                     delegate: SliverChildBuilderDelegate(
                       (context, i) {
-                        final pet = petsJson[i] as Map<String, dynamic>? ?? {};
+                        final pet =
+                            petsJson[i] as Map<String, dynamic>? ?? {};
                         return _PetMiniCard(pet: pet, imgUrl: _imgUrl);
                       },
                       childCount: petsJson.length,
                     ),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 10,
                       mainAxisSpacing: 10,
@@ -126,7 +201,6 @@ class UserProfileScreen extends ConsumerWidget {
 
   Widget _buildAppBar(
     BuildContext context,
-    WidgetRef ref,
     String name,
     String? avatarUrl,
     String? city,
@@ -134,7 +208,7 @@ class UserProfileScreen extends ConsumerWidget {
     int? year,
   ) {
     final currentUser = ref.watch(authProvider);
-    final isMe = currentUser?.id == userId;
+    final isMe = currentUser?.id == widget.userId;
 
     return SliverAppBar(
       expandedHeight: 220,
@@ -144,7 +218,6 @@ class UserProfileScreen extends ConsumerWidget {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            // Background gradient
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
@@ -154,7 +227,6 @@ class UserProfileScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            // Avatar + info
             Positioned(
               bottom: 24,
               left: 20,
@@ -164,13 +236,14 @@ class UserProfileScreen extends ConsumerWidget {
                 children: [
                   CircleAvatar(
                     radius: 40,
-                    backgroundColor: const Color(0xFF2D6A4F).withOpacity(0.15),
-                    backgroundImage:
-                        avatarUrl != null && avatarUrl.isNotEmpty
-                            ? NetworkImage(_imgUrl(avatarUrl))
-                            : null,
+                    backgroundColor:
+                        const Color(0xFF2D6A4F).withOpacity(0.15),
+                    backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
+                        ? NetworkImage(_imgUrl(avatarUrl))
+                        : null,
                     child: avatarUrl == null || avatarUrl.isEmpty
-                        ? const Icon(Icons.person, size: 40, color: Color(0xFF2D6A4F))
+                        ? const Icon(Icons.person,
+                            size: 40, color: Color(0xFF2D6A4F))
                         : null,
                   ),
                   const SizedBox(width: 14),
@@ -195,14 +268,16 @@ class UserProfileScreen extends ConsumerWidget {
                             if (isSeller) ...[
                               const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 7, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: Colors.amber.shade600,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  AppLocalizations.of(context)!.profileRoleSeller,
-                                  style: TextStyle(
+                                  AppLocalizations.of(context)!
+                                      .profileRoleSeller,
+                                  style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
@@ -216,17 +291,23 @@ class UserProfileScreen extends ConsumerWidget {
                           const SizedBox(height: 3),
                           Row(
                             children: [
-                              const Icon(Icons.location_on, size: 13, color: Colors.white70),
+                              const Icon(Icons.location_on,
+                                  size: 13, color: Colors.white70),
                               const SizedBox(width: 2),
                               Text(city,
-                                  style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                                  style: const TextStyle(
+                                      color: Colors.white70, fontSize: 13)),
                             ],
                           ),
                         ],
                         if (year != null) ...[
                           const SizedBox(height: 2),
-                          Text(AppLocalizations.of(context)!.userProfileMemberSince(year!),
-                              style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                          Text(
+                            AppLocalizations.of(context)!
+                                .userProfileMemberSince(year),
+                            style: const TextStyle(
+                                color: Colors.white60, fontSize: 12),
+                          ),
                         ],
                       ],
                     ),
@@ -241,33 +322,134 @@ class UserProfileScreen extends ConsumerWidget {
         if (!isMe)
           IconButton(
             icon: const Icon(Icons.message_rounded, color: Colors.white),
-            tooltip: AppLocalizations.of(context)!.userProfileMessageTooltip,
-            onPressed: () => _openChat(context, ref),
+            tooltip:
+                AppLocalizations.of(context)!.userProfileMessageTooltip,
+            onPressed: () => _openChat(context),
           ),
       ],
     );
   }
 
-  Future<void> _openChat(BuildContext context, WidgetRef ref) async {
+  Future<void> _openChat(BuildContext context) async {
     final currentUser = ref.read(authProvider);
     if (currentUser == null) return;
     try {
-      final conv = await ref.read(messageRepositoryProvider).createOrGetConversation(
-            participantId: userId,
+      final conv = await ref
+          .read(messageRepositoryProvider)
+          .createOrGetConversation(
+            participantId: widget.userId,
             currentUserId: currentUser.id,
           );
       if (!context.mounted) return;
       context.pushNamed(
         'chat',
         pathParameters: {'conversationId': conv.id},
-        extra: {'name': conv.otherParticipant.name, 'avatar': conv.otherParticipant.avatarUrl},
+        extra: {
+          'name': conv.otherParticipant.name,
+          'avatar': conv.otherParticipant.avatarUrl
+        },
       );
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.userProfileChatErr(e.toString()))),
+        SnackBar(
+            content: Text(AppLocalizations.of(context)!
+                .userProfileChatErr(e.toString()))),
       );
     }
+  }
+}
+
+class _FollowStatsRow extends StatelessWidget {
+  const _FollowStatsRow({
+    required this.followersCount,
+    required this.followingCount,
+    required this.isFollowing,
+    required this.followLoading,
+    required this.isMe,
+    required this.onToggleFollow,
+  });
+
+  final int followersCount;
+  final int followingCount;
+  final bool isFollowing;
+  final bool followLoading;
+  final bool isMe;
+  final VoidCallback onToggleFollow;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: Row(
+        children: [
+          _StatItem(label: 'Takipçi', count: followersCount),
+          const SizedBox(width: 24),
+          _StatItem(label: 'Takip', count: followingCount),
+          const Spacer(),
+          if (!isMe)
+            SizedBox(
+              height: 38,
+              child: ElevatedButton.icon(
+                onPressed: followLoading ? null : onToggleFollow,
+                icon: followLoading
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Icon(
+                        isFollowing
+                            ? Icons.person_remove_outlined
+                            : Icons.person_add_outlined,
+                        size: 16,
+                      ),
+                label: Text(
+                  isFollowing ? 'Takip Ediliyor' : 'Takip Et',
+                  style: const TextStyle(fontSize: 13),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isFollowing
+                      ? Theme.of(context).colorScheme.surfaceVariant
+                      : const Color(0xFF2D6A4F),
+                  foregroundColor: isFollowing
+                      ? Theme.of(context).colorScheme.onSurfaceVariant
+                      : Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  const _StatItem({required this.label, required this.count});
+  final String label;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          count.toString(),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.onSurfaceVariant),
+        ),
+      ],
+    );
   }
 }
 
@@ -308,7 +490,8 @@ class _PetMiniCard extends StatelessWidget {
     }
 
     return GestureDetector(
-      onTap: () => context.pushNamed('pet-detail', pathParameters: {'id': petId.toString()}),
+      onTap: () => context.pushNamed('pet-detail',
+          pathParameters: {'id': petId.toString()}),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
@@ -326,7 +509,8 @@ class _PetMiniCard extends StatelessWidget {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(14)),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -335,20 +519,32 @@ class _PetMiniCard extends StatelessWidget {
                             photoUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => Container(
-                              color: Theme.of(context).colorScheme.surfaceVariant,
-                              child: Icon(Icons.pets, color: Theme.of(context).colorScheme.outlineVariant, size: 40),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceVariant,
+                              child: Icon(Icons.pets,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant,
+                                  size: 40),
                             ),
                           )
                         : Container(
-                            color: Theme.of(context).colorScheme.surfaceVariant,
-                            child: Icon(Icons.pets, color: Theme.of(context).colorScheme.outlineVariant, size: 40),
+                            color:
+                                Theme.of(context).colorScheme.surfaceVariant,
+                            child: Icon(Icons.pets,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .outlineVariant,
+                                size: 40),
                           ),
                     if (typeLabel.isNotEmpty)
                       Positioned(
                         top: 8,
                         left: 8,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 3),
                           decoration: BoxDecoration(
                             color: typeColor.withOpacity(0.85),
                             borderRadius: BorderRadius.circular(8),
@@ -374,14 +570,19 @@ class _PetMiniCard extends StatelessWidget {
                 children: [
                   Text(
                     name,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
                   Text(
                     breed.isNotEmpty ? '$species · $breed' : species,
-                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 11),
+                    style: TextStyle(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurfaceVariant,
+                        fontSize: 11),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

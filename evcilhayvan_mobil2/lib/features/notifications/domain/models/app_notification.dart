@@ -10,6 +10,7 @@ enum NotificationType {
   orderUpdate,
   lostFoundNearby,
   sitterBooking,
+  appointment,
   general,
 }
 
@@ -67,6 +68,7 @@ class AppNotification {
       case 'orderUpdate': return NotificationType.orderUpdate;
       case 'lostFoundNearby': return NotificationType.lostFoundNearby;
       case 'sitterBooking': return NotificationType.sitterBooking;
+      case 'appointment': return NotificationType.appointment;
       default: return NotificationType.general;
     }
   }
@@ -84,6 +86,7 @@ class AppNotification {
       case NotificationType.orderUpdate: return 'local_shipping';
       case NotificationType.lostFoundNearby: return 'location_searching';
       case NotificationType.sitterBooking: return 'pets';
+      case NotificationType.appointment: return 'calendar_month';
       case NotificationType.general: return 'notifications';
     }
   }

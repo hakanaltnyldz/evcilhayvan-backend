@@ -30,14 +30,16 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   }
 }
 
-final themeModeProvider =
+final StateNotifierProvider<ThemeModeNotifier, ThemeMode> themeModeProvider =
     StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
-  return ThemeModeNotifier();
-});
+      return ThemeModeNotifier();
+    });
 
 /// Whether the user has already chosen their theme on first launch.
 /// Initialized in main() via override with the actual stored value.
-final themeSelectedProvider = StateProvider<bool>((ref) => false);
+final StateProvider<bool> themeSelectedProvider = StateProvider<bool>(
+  (ref) => false,
+);
 
 Future<bool> loadThemeSelected() async {
   final prefs = await SharedPreferences.getInstance();

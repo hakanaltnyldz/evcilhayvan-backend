@@ -403,17 +403,13 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
                   child: ListView.builder(
                     padding: const EdgeInsets.only(top: 4, bottom: 100),
                     itemCount: _sitters!.length,
-                    itemBuilder: (context, i) =>
-                        SitterCard(
-                              sitter: _sitters![i],
-                              onTap: () => context.pushNamed(
-                                'sitter-detail',
-                                pathParameters: {'id': _sitters![i].id},
-                              ),
-                            )
-                            .animate(delay: Duration(milliseconds: i * 60))
-                            .fadeIn(duration: 280.ms)
-                            .slideY(begin: 0.05),
+                    itemBuilder: (context, i) => SitterCard(
+                      sitter: _sitters![i],
+                      onTap: () => context.pushNamed(
+                        'sitter-detail',
+                        pathParameters: {'id': _sitters![i].id},
+                      ),
+                    ),
                   ),
                 ),
         ),

@@ -43,6 +43,88 @@ class SitterDetailScreen extends ConsumerWidget {
     }
   }
 
+  static Future<void> _showAddReviewDialog(BuildContext context, WidgetRef ref, PetSitterModel sitter) async {
+    int selectedRating = 0;
+    final commentController = TextEditingController();
+    bool saving = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: const Text('Bakıcıyı Değerlendir'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (i) => IconButton(
+                  icon: Icon(
+                    i < selectedRating ? Icons.star : Icons.star_border,
+                    color: Colors.amber,
+                    size: 32,
+                  ),
+                  onPressed: () => setState(() => selectedRating = i + 1),
+                )),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: commentController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'Yorumunuzu yazın (isteğe bağlı)',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('İptal'),
+            ),
+            ElevatedButton(
+              onPressed: saving || selectedRating == 0 ? null : () async {
+                setState(() => saving = true);
+                try {
+                  final repo = ref.read(petSitterRepositoryProvider);
+                  await repo.addSitterReview(
+                    sitter.id,
+                    rating: selectedRating,
+                    comment: commentController.text.trim(),
+                  );
+                  if (ctx.mounted) {
+                    Navigator.of(ctx).pop();
+                    ref.invalidate(sitterDetailProvider(sitter.id));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Yorumunuz kaydedildi!')),
+                    );
+                  }
+                } catch (e) {
+                  if (ctx.mounted) {
+                    setState(() => saving = false);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2D6A4F),
+                foregroundColor: Colors.white,
+              ),
+              child: saving
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('Gönder'),
+            ),
+          ],
+        ),
+      ),
+    );
+    commentController.dispose();
+  }
+
   Widget _sectionTitle(String title, IconData icon) => Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: SectionHeader(title: title),
@@ -308,6 +390,11 @@ class SitterDetailScreen extends ConsumerWidget {
                           style: Theme.of(context).textTheme.bodyLarge),
                       const SizedBox(height: 16),
 
+                      // Müsaitlik Takvimi
+                      _sectionTitle('Müsaitlik Takvimi', Icons.calendar_month_outlined),
+                      _AvailabilityCalendar(sitter: sitter),
+                      const SizedBox(height: 16),
+
                       // Portfolio Fotoğrafları
                       if (sitter.photos.isNotEmpty) ...[
                         _sectionTitle('Fotoğraflar (${sitter.photos.length})', Icons.photo_library),
@@ -421,6 +508,23 @@ class SitterDetailScreen extends ConsumerWidget {
                           );
                         }),
                       ],
+
+                      // Yorum yap butonu (kendi profili değilse)
+                      if (user != null && (sitter.userId == null || sitter.userId != user.id)) ...[
+                        const SizedBox(height: 8),
+                        OutlinedButton.icon(
+                          onPressed: () => _showAddReviewDialog(context, ref, sitter),
+                          icon: const Icon(Icons.rate_review_outlined, size: 18),
+                          label: const Text('Yorum Yap'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF2D6A4F),
+                            side: const BorderSide(color: Color(0xFF2D6A4F)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+
                       const SizedBox(height: 80),
                     ],
                   ),
@@ -495,11 +599,18 @@ class _MessageSitterButtonState extends ConsumerState<_MessageSitterButton> {
   bool _loading = false;
 
   Future<void> _openChat() async {
+    final sitterUserId = widget.sitter.userId;
+    if (sitterUserId == null || sitterUserId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bu bakıcının hesabı henüz bağlanmamış.')),
+      );
+      return;
+    }
     setState(() => _loading = true);
     try {
       final repo = ref.read(messageRepositoryProvider);
       final conv = await repo.createOrGetConversation(
-        participantId: widget.sitter.userId!,
+        participantId: sitterUserId,
         currentUserId: widget.userId,
       );
       if (mounted) {
@@ -520,18 +631,186 @@ class _MessageSitterButtonState extends ConsumerState<_MessageSitterButton> {
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: _loading ? null : _openChat,
+    final hasAccount = widget.sitter.userId != null && widget.sitter.userId!.isNotEmpty;
+    final button = OutlinedButton.icon(
+      onPressed: (_loading || !hasAccount) ? null : _openChat,
       icon: _loading
           ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
           : const Icon(Icons.message_outlined),
       label: const Text('Mesajla', style: TextStyle(fontSize: 16)),
       style: OutlinedButton.styleFrom(
         foregroundColor: const Color(0xFF2D6A4F),
-        side: const BorderSide(color: Color(0xFF2D6A4F)),
+        side: BorderSide(color: hasAccount ? const Color(0xFF2D6A4F) : Colors.grey.shade300),
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
+    if (!hasAccount) {
+      return Tooltip(
+        message: 'Bu bakıcı henüz hesabını bağlamamış',
+        child: Opacity(opacity: 0.4, child: button),
+      );
+    }
+    return button;
   }
+}
+
+// ── Müsaitlik Takvimi Widget ──
+class _AvailabilityCalendar extends StatefulWidget {
+  final PetSitterModel sitter;
+  const _AvailabilityCalendar({required this.sitter});
+
+  @override
+  State<_AvailabilityCalendar> createState() => _AvailabilityCalendarState();
+}
+
+class _AvailabilityCalendarState extends State<_AvailabilityCalendar> {
+  DateTime _viewMonth = DateTime.now();
+
+  Set<String> get _blockedSet {
+    final dates = widget.sitter.blockedDates ?? [];
+    return dates.map((d) => '${d.year}-${d.month}-${d.day}').toSet();
+  }
+
+  bool _isBlocked(DateTime day) {
+    return _blockedSet.contains('${day.year}-${day.month}-${day.day}');
+  }
+
+  bool _isPast(DateTime day) {
+    final today = DateTime.now();
+    return day.isBefore(DateTime(today.year, today.month, today.day));
+  }
+
+  void _prevMonth() => setState(() => _viewMonth = DateTime(_viewMonth.year, _viewMonth.month - 1));
+  void _nextMonth() => setState(() => _viewMonth = DateTime(_viewMonth.year, _viewMonth.month + 1));
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final firstDay = DateTime(_viewMonth.year, _viewMonth.month, 1);
+    final daysInMonth = DateTime(_viewMonth.year, _viewMonth.month + 1, 0).day;
+    // Pazartesi=0 başlangıç
+    final startWeekday = (firstDay.weekday - 1) % 7;
+    final monthNames = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          // Ay navigasyonu
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left, color: Color(0xFF2D6A4F)),
+                  onPressed: _prevMonth,
+                ),
+                Expanded(
+                  child: Text(
+                    '${monthNames[_viewMonth.month - 1]} ${_viewMonth.year}',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right, color: Color(0xFF2D6A4F)),
+                  onPressed: _nextMonth,
+                ),
+              ],
+            ),
+          ),
+          // Gün başlıkları
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              children: ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'].map((d) => Expanded(
+                child: Text(d, textAlign: TextAlign.center, style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700, color: Colors.grey)),
+              )).toList(),
+            ),
+          ),
+          const SizedBox(height: 6),
+          // Takvim grid
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+                childAspectRatio: 1,
+                mainAxisSpacing: 4,
+                crossAxisSpacing: 4,
+              ),
+              itemCount: startWeekday + daysInMonth,
+              itemBuilder: (ctx, i) {
+                if (i < startWeekday) return const SizedBox();
+                final day = DateTime(_viewMonth.year, _viewMonth.month, i - startWeekday + 1);
+                final isToday = day.year == DateTime.now().year && day.month == DateTime.now().month && day.day == DateTime.now().day;
+                final blocked = _isBlocked(day);
+                final past = _isPast(day);
+
+                Color bg;
+                Color textColor;
+                if (blocked) {
+                  bg = Colors.red.shade100;
+                  textColor = Colors.red.shade700;
+                } else if (past) {
+                  bg = Colors.transparent;
+                  textColor = Colors.grey.shade400;
+                } else if (isToday) {
+                  bg = const Color(0xFF2D6A4F);
+                  textColor = Colors.white;
+                } else {
+                  bg = const Color(0xFFD8F3DC);
+                  textColor = const Color(0xFF1B4332);
+                }
+
+                return Container(
+                  decoration: BoxDecoration(
+                    color: bg,
+                    borderRadius: BorderRadius.circular(8),
+                    border: blocked ? Border.all(color: Colors.red.shade300, width: 1) : null,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${day.day}',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textColor),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          // Lejant
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _legendDot(const Color(0xFFD8F3DC), 'Müsait'),
+                const SizedBox(width: 16),
+                _legendDot(Colors.red.shade100, 'Kapalı'),
+                const SizedBox(width: 16),
+                _legendDot(const Color(0xFF2D6A4F), 'Bugün'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _legendDot(Color color, String label) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Container(width: 12, height: 12, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4))),
+      const SizedBox(width: 4),
+      Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+    ],
+  );
 }

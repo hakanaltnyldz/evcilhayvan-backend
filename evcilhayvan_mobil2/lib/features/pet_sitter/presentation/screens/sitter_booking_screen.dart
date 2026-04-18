@@ -47,10 +47,13 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
       orElse: () => SitterService(type: ''),
     );
     if (service.type.isEmpty) return 0;
-    final hours = _endDate.difference(_startDate).inHours.abs();
-    final days = (_endDate.difference(_startDate).inHours / 24).ceil();
-    if (service.pricePerDay > 0 && days >= 1) return service.pricePerDay * days;
-    return service.pricePerHour * hours;
+    final diffMs = _endDate.difference(_startDate).inMilliseconds.abs();
+    final billedHours = ((diffMs / Duration.millisecondsPerHour).ceil()).clamp(1, 24 * 365);
+    final billedDays = (billedHours / 24).ceil();
+    if (service.pricePerDay > 0 && billedDays >= 1) {
+      return service.pricePerDay * billedDays;
+    }
+    return service.pricePerHour * billedHours;
   }
 
   Future<void> _pickStartDate() async {
@@ -61,7 +64,10 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
     if (d != null) {
-      setState(() => _startDate = DateTime(d.year, d.month, d.day, _startDate.hour, _startDate.minute));
+      setState(() {
+        _startDate = DateTime(d.year, d.month, d.day, _startDate.hour, _startDate.minute);
+        _alignEndAfterStart();
+      });
     }
   }
 
@@ -73,7 +79,52 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
     if (d != null) {
-      setState(() => _endDate = DateTime(d.year, d.month, d.day, _endDate.hour, _endDate.minute));
+      setState(() {
+        _endDate = DateTime(d.year, d.month, d.day, _endDate.hour, _endDate.minute);
+        _alignEndAfterStart();
+      });
+    }
+  }
+
+  Future<void> _pickStartTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_startDate),
+    );
+    if (picked == null) return;
+    setState(() {
+      _startDate = DateTime(
+        _startDate.year,
+        _startDate.month,
+        _startDate.day,
+        picked.hour,
+        picked.minute,
+      );
+      _alignEndAfterStart();
+    });
+  }
+
+  Future<void> _pickEndTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_endDate),
+    );
+    if (picked == null) return;
+    setState(() {
+      _endDate = DateTime(
+        _endDate.year,
+        _endDate.month,
+        _endDate.day,
+        picked.hour,
+        picked.minute,
+      );
+      _alignEndAfterStart();
+    });
+  }
+
+  void _alignEndAfterStart() {
+    if (!_endDate.isAfter(_startDate)) {
+      _endDate = _startDate.add(const Duration(hours: 1));
     }
   }
 
@@ -157,6 +208,42 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
 
   String _fmt(DateTime d) =>
       '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
+
+  String _fmtDateTime(DateTime d) {
+    final date = _fmt(d);
+    final hour = d.hour.toString().padLeft(2, '0');
+    final minute = d.minute.toString().padLeft(2, '0');
+    return '$date $hour:$minute';
+  }
+
+  String _durationSummary() {
+    final diff = _endDate.difference(_startDate);
+    final totalMinutes = diff.inMinutes;
+    if (totalMinutes <= 0) return 'En az 1 saat';
+    final days = totalMinutes ~/ (60 * 24);
+    final hours = (totalMinutes % (60 * 24)) ~/ 60;
+    final minutes = totalMinutes % 60;
+    final parts = <String>[];
+    if (days > 0) parts.add('$days gun');
+    if (hours > 0) parts.add('$hours saat');
+    if (minutes > 0) parts.add('$minutes dk');
+    return parts.join(' ');
+  }
+
+  String _billingSummary() {
+    if (_selectedServiceType == null) return 'Fiyat secilen hizmete gore hesaplanir';
+    final service = widget.sitter.services.firstWhere(
+      (s) => s.type == _selectedServiceType,
+      orElse: () => SitterService(type: ''),
+    );
+    final diffMs = _endDate.difference(_startDate).inMilliseconds.abs();
+    final billedHours = ((diffMs / Duration.millisecondsPerHour).ceil()).clamp(1, 24 * 365);
+    final billedDays = (billedHours / 24).ceil();
+    if (service.pricePerDay > 0 && billedDays >= 1) {
+      return 'Ucretlendirme: $billedDays gun';
+    }
+    return 'Ucretlendirme: $billedHours saat';
+  }
 
   // ── Navigation helpers ──────────────────────────────────────────
 
@@ -625,10 +712,94 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                     ],
                   ),
                 ),
+          ),
+        ],
+      ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
+      const SizedBox(height: 12),
+      Row(
+        children: [
+          Expanded(
+            child: PremiumCard(
+              onTap: _pickStartTime,
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF52B788).withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(Icons.schedule, color: Color(0xFF2D6A4F), size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Baslangic saati',
+                          style: TextStyle(fontSize: 11, color: context.secondaryText),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _fmtDateTime(_startDate).split(' ').last,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                            color: context.onCard,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
-          const SizedBox(height: 24),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: PremiumCard(
+              onTap: _pickEndTime,
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF52B788).withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(Icons.schedule, color: Color(0xFF2D6A4F), size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Bitis saati',
+                          style: TextStyle(fontSize: 11, color: context.secondaryText),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _fmtDateTime(_endDate).split(' ').last,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                            color: context.onCard,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ).animate().fadeIn(duration: 400.ms, delay: 100.ms).slideY(begin: 0.05, end: 0),
+      const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
@@ -651,6 +822,24 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
               ],
             ),
           ).animate().fadeIn(duration: 400.ms, delay: 150.ms),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            decoration: BoxDecoration(
+              color: context.cardColor,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: context.subtleBorder),
+            ),
+            child: Text(
+              _billingSummary(),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: context.onCard,
+                fontSize: 14,
+              ),
+            ),
+          ).animate().fadeIn(duration: 400.ms, delay: 220.ms),
         ],
       ),
     );
@@ -718,7 +907,7 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                 _summaryRow(
                   Icons.date_range,
                   'Tarih',
-                  '${_fmt(_startDate)} - ${_fmt(_endDate)}',
+                  '${_fmtDateTime(_startDate)} - ${_fmtDateTime(_endDate)}',
                 ),
                 const SizedBox(height: 10),
                 _summaryRow(Icons.person, 'Bakıcı', widget.sitter.displayName),

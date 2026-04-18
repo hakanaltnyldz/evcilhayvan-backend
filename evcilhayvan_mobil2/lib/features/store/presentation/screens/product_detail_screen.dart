@@ -9,6 +9,7 @@ import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/product_model.dart';
+import 'package:evcilhayvan_mobil2/features/store/domain/models/selected_variant_model.dart';
 import 'package:evcilhayvan_mobil2/features/store/providers/cart_providers.dart';
 import 'package:evcilhayvan_mobil2/features/store/providers/guest_cart_provider.dart';
 import 'package:evcilhayvan_mobil2/features/store/providers/store_providers.dart';
@@ -131,11 +132,11 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
 
     setState(() => _adding = true);
     try {
+      final selectedVariants = SelectedVariantModel.fromSelectionsMap(
+        _selectedVariants,
+      );
       final currentUser = ref.read(authProvider);
       if (currentUser == null) {
-        final selectedVariant = _selectedVariants.length == 1
-            ? _selectedVariants.entries.first
-            : null;
         ref
             .read(guestCartProvider.notifier)
             .add(
@@ -147,14 +148,13 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                 imageUrl: product.photos.isNotEmpty
                     ? product.photos.first
                     : null,
-                variantName: selectedVariant?.key,
-                variantLabel: selectedVariant?.value,
+                selectedVariants: selectedVariants,
               ),
             );
       } else {
-        final repo = ref.read(cartRepoProvider);
-        await repo.add(product.id, quantity: _quantity);
-        ref.invalidate(cartItemsProvider);
+        await ref
+            .read(cartProvider.notifier)
+            .addItem(product, _quantity, selectedVariants: selectedVariants);
       }
 
       if (mounted) {

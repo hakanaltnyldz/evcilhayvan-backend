@@ -454,12 +454,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
   }
 
   void _editProduct(ProductModel product) {
-    // TODO: Navigate to edit product screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context)!.productMgmtEditSoon),
-      ),
-    );
+    context.pushNamed('store-add-product', extra: product);
   }
 
   Future<void> _deleteProduct(ProductModel product) async {

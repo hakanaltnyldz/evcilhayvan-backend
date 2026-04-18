@@ -59,6 +59,7 @@ class FcmService {
         return '/store/orders';
       case 'sitter_booking':
       case 'booking_update':
+      case 'sitter_location_offline':
         return '/sitters/bookings';
       case 'lost_found':
         final lfId = data['reportId'] as String?;

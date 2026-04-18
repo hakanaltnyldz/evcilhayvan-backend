@@ -146,12 +146,14 @@ class SitterLocationOfflineEvent {
   final double? lastLng;
   final DateTime? lastUpdated;
   final String message;
+  final bool payoutPaused;
 
   SitterLocationOfflineEvent({
     required this.bookingId,
     this.lastLat,
     this.lastLng,
     this.lastUpdated,
+    this.payoutPaused = false,
     this.message = 'Bakıcının konumu alınamıyor.',
   });
 
@@ -163,6 +165,8 @@ class SitterLocationOfflineEvent {
         lastUpdated: json['lastUpdated'] != null
             ? DateTime.tryParse(json['lastUpdated'].toString())
             : null,
+        payoutPaused: json['payoutPaused'] == true ||
+            json['payoutPaused']?.toString() == 'true',
         message: json['message']?.toString() ?? 'Bakıcının konumu alınamıyor.',
       );
 }
@@ -537,6 +541,7 @@ class SocketService {
     _connectionStatusController.close();
     _sitterLocationController.close();
     _sitterWalkController.close();
+    _sitterLocationOfflineController.close();
     _appointmentUpdatedController.close();
     _bookingUpdateController.close();
     _careReportController.close();

@@ -9,6 +9,7 @@ import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/cart_item_model.dart';
+import 'package:evcilhayvan_mobil2/features/store/domain/models/selected_variant_model.dart';
 import 'package:evcilhayvan_mobil2/features/store/providers/cart_providers.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/features/store/providers/guest_cart_provider.dart';
@@ -34,9 +35,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     setState(() => _updatingItems.add(itemId));
 
     try {
-      final repo = ref.read(cartRepoProvider);
-      await repo.updateQuantity(itemId, newQuantity);
-      ref.invalidate(cartItemsProvider);
+      await ref.read(cartProvider.notifier).updateQuantity(itemId, newQuantity);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -58,8 +57,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   void _updateGuestQuantity(
     String productId,
     int newQuantity, {
-    String? variantName,
-    String? variantLabel,
+    List<SelectedVariantModel> selectedVariants = const [],
   }) {
     if (newQuantity < 1) return;
     ref
@@ -67,8 +65,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         .updateQuantity(
           productId,
           newQuantity,
-          variantName: variantName,
-          variantLabel: variantLabel,
+          selectedVariants: selectedVariants,
         );
   }
 
@@ -76,9 +73,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     setState(() => _updatingItems.add(itemId));
 
     try {
-      final repo = ref.read(cartRepoProvider);
-      await repo.remove(itemId);
-      ref.invalidate(cartItemsProvider);
+      await ref.read(cartProvider.notifier).removeItem(itemId);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -136,9 +131,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       if (isGuest) {
         ref.read(guestCartProvider.notifier).clear();
       } else {
-        final repo = ref.read(cartRepoProvider);
-        await repo.clear();
-        ref.invalidate(cartItemsProvider);
+        await ref.read(cartProvider.notifier).clearCart();
       }
 
       if (mounted) {
@@ -321,16 +314,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 onIncrement: () => _updateGuestQuantity(
                   item.productId,
                   item.quantity + 1,
-                  variantName: item.variantName,
-                  variantLabel: item.variantLabel,
+                  selectedVariants: item.selectedVariants,
                 ),
                 onDecrement: () {
                   if (item.quantity > 1) {
                     _updateGuestQuantity(
                       item.productId,
                       item.quantity - 1,
-                      variantName: item.variantName,
-                      variantLabel: item.variantLabel,
+                      selectedVariants: item.selectedVariants,
                     );
                   }
                 },
@@ -338,8 +329,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     .read(guestCartProvider.notifier)
                     .remove(
                       item.productId,
-                      variantName: item.variantName,
-                      variantLabel: item.variantLabel,
+                      selectedVariants: item.selectedVariants,
                     ),
               );
             },
@@ -379,7 +369,7 @@ class _CartItemCard extends StatelessWidget {
     final imageUrl = resolveImageUrl(
       product.photos.isNotEmpty ? product.photos.first : null,
     );
-    final subtotal = product.price * item.quantity;
+    final subtotal = item.total;
 
     return Opacity(
       opacity: isUpdating ? 0.6 : 1.0,
@@ -454,11 +444,20 @@ class _CartItemCard extends StatelessWidget {
                           color: AppPalette.onSurfaceVariant,
                         ),
                       ),
+                    if (item.selectedVariants.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        item.selectedVariantsLabel,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: AppPalette.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 8),
                     Row(
                       children: [
                         Text(
-                          '${product.price.toStringAsFixed(2)} ₺',
+                          '${item.unitPrice.toStringAsFixed(2)} ₺',
                           style: theme.textTheme.titleSmall?.copyWith(
                             color: AppPalette.storePrimary,
                             fontWeight: FontWeight.w800,
@@ -615,11 +614,10 @@ class _GuestCartItemCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (item.variantLabel != null &&
-                      item.variantLabel!.isNotEmpty) ...[
+                  if (item.selectedVariants.isNotEmpty) ...[
                     const SizedBox(height: 6),
                     Text(
-                      item.variantLabel!,
+                      item.selectedVariantsLabel,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: AppPalette.onSurfaceVariant,
                       ),

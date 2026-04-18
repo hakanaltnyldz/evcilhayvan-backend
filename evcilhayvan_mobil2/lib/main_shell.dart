@@ -105,8 +105,10 @@ class _MainShellState extends ConsumerState<MainShell> {
       socketService.offEvent('advert:expiry_warning');
       socketService.offEvent('sitter:new_booking');
       socketService.offEvent('sitter:booking_update');
+      socketService.offEvent('sitter:location_offline');
       socketService.offEvent('pet:birthday');
       socketService.offEvent('appointment:reminder');
+      socketService.offEvent('appointment:updated');
     } catch (_) {}
     super.dispose();
   }
@@ -303,11 +305,15 @@ class _MainShellState extends ConsumerState<MainShell> {
         final status = d['status']?.toString() ?? '';
         final title = status == 'accepted'
             ? 'Rezervasyon Kabul Edildi'
+            : status == 'active'
+                ? 'Bakim Basladi'
             : status == 'rejected'
                 ? 'Rezervasyon Reddedildi'
                 : 'Rezervasyon Guncellendi';
         final body = status == 'accepted'
             ? '${d['sitterName'] ?? 'Bakici'} rezervasyonunuzu kabul etti!'
+            : status == 'active'
+                ? '${d['sitterName'] ?? 'Bakici'} kopegi teslim aldi. Canli konum acildi.'
             : status == 'rejected'
                 ? '${d['sitterName'] ?? 'Bakici'} rezervasyonunuzu reddetti.'
                 : 'Rezervasyonunuz $status durumuna guncellendi.';
@@ -372,6 +378,63 @@ class _MainShellState extends ConsumerState<MainShell> {
                 textColor: Colors.white,
                 onPressed: () {},
               ),
+            ),
+          );
+        }
+      } catch (_) {}
+    });
+
+    socketService.onEvent('sitter:location_offline', (data) {
+      if (!mounted) return;
+      try {
+        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
+        notifier.addNotification(AppNotification(
+          id: 'sitter_location_offline_${d['bookingId'] ?? DateTime.now().millisecondsSinceEpoch}',
+          type: NotificationType.general,
+          title: 'Bakici Konumu Kesildi',
+          body: 'Konum 1 dakikadir alinamiyor. Son gorulen konum gosteriliyor ve odeme durduruldu.',
+          data: {'bookingId': d['bookingId']?.toString()},
+          createdAt: DateTime.now(),
+        ));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Bakici konumu kesildi. Odeme durduruldu.'),
+              action: SnackBarAction(label: 'Goruntule', onPressed: () => context.push('/sitters/bookings')),
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+      } catch (_) {}
+    });
+
+    // Randevu durumu güncellendi (onaylandı/iptal edildi)
+    socketService.onEvent('appointment:updated', (data) {
+      if (!mounted) return;
+      try {
+        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
+        final status = d['status']?.toString() ?? '';
+        final statusLabel = {
+          'confirmed': '✅ Onaylandı',
+          'cancelled': '❌ İptal edildi',
+          'completed': '🎉 Tamamlandı',
+          'no_show': '⚠️ Gelmedi',
+        }[status] ?? status;
+        final vetName = d['vetName']?.toString() ?? 'Veteriner';
+        notifier.addNotification(AppNotification(
+          id: 'appt_upd_${d['appointmentId'] ?? DateTime.now().millisecondsSinceEpoch}',
+          type: NotificationType.vaccinationReminder,
+          title: 'Randevu Güncellendi',
+          body: '$vetName randevunuz: $statusLabel',
+          data: {'appointmentId': d['appointmentId']?.toString()},
+          createdAt: DateTime.now(),
+        ));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$vetName randevunuz: $statusLabel'),
+              backgroundColor: status == 'confirmed' ? const Color(0xFF2D6A4F) : Colors.orange,
+              duration: const Duration(seconds: 4),
             ),
           );
         }
@@ -468,6 +531,7 @@ class _MainShellState extends ConsumerState<MainShell> {
         final status = d['status']?.toString() ?? '';
         final statusLabel = {
           'accepted': 'Kabul Edildi',
+          'active': 'Bakim Aktif',
           'rejected': 'Reddedildi',
           'completed': 'Tamamlandı',
           'cancelled': 'İptal Edildi',

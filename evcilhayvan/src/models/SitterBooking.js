@@ -27,7 +27,7 @@ const SitterBookingSchema = new mongoose.Schema(
     notes: { type: String, trim: true, maxlength: 500 },
     status: {
       type: String,
-      enum: ["pending", "accepted", "rejected", "cancelled", "completed"],
+      enum: ["pending", "accepted", "active", "rejected", "cancelled", "completed"],
       default: "pending",
     },
     ownerReview: { type: ReviewSchema },
@@ -48,9 +48,29 @@ const SitterBookingSchema = new mongoose.Schema(
     }],
     liveTracking: {
       isActive: { type: Boolean, default: false },
+      required: { type: Boolean, default: false },
       lastLat: { type: Number },
       lastLng: { type: Number },
       lastUpdated: { type: Date },
+      interruptedAt: { type: Date },
+      graceEndsAt: { type: Date },
+      offlineNotifiedAt: { type: Date },
+    },
+    serviceFlow: {
+      startedAt: { type: Date },
+      pickedUpAt: { type: Date },
+      completedAt: { type: Date },
+    },
+    earnings: {
+      status: {
+        type: String,
+        enum: ["pending", "earning", "paused", "completed"],
+        default: "pending",
+      },
+      pausedAt: { type: Date },
+      pauseReason: { type: String, trim: true, maxlength: 80 },
+      totalPausedMs: { type: Number, min: 0, default: 0 },
+      payableAmount: { type: Number, min: 0, default: 0 },
     },
   },
   {

@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-
+import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import '../../data/repositories/vaccination_repository.dart';
 import '../../domain/models/vaccination_schedule_model.dart';
@@ -63,20 +63,20 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
         error: (e, _) => Center(child: Text(l10n.vacCalendarLoadErr(e.toString()))),
         data: (items) {
           if (items.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.vaccines, size: 64, color: Colors.grey.shade600.withOpacity(0.3)),
-                  const SizedBox(height: 16),
-                  Text(l10n.vacCalendarEmpty),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () => context.pushNamed('vaccination-add', pathParameters: {'petId': widget.petId}),
-                    icon: const Icon(Icons.add),
-                    label: Text(l10n.vacCalendarAddRecord),
-                  ),
-                ],
+            return AnimatedEmptyState(
+              icon: Icons.vaccines,
+              title: l10n.vacCalendarEmpty,
+              subtitle: l10n.vacCalendarAddRecord,
+              action: ElevatedButton.icon(
+                onPressed: () => context.pushNamed('vaccination-add', pathParameters: {'petId': widget.petId}),
+                icon: const Icon(Icons.add),
+                label: Text(l10n.vacCalendarAddRecord),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppPalette.appBarDark,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
               ),
             );
           }

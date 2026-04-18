@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
-import 'package:evcilhayvan_mobil2/features/pets/data/repositories/pets_repository.dart';
 
 import '../../domain/user_model.dart';
 
@@ -22,6 +21,11 @@ final userPublicProfileProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>, String>((ref, userId) async {
   final repo = ref.watch(authRepositoryProvider);
   return repo.getUserPublicProfile(userId);
+});
+
+final myStatsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
+  final repo = ref.watch(authRepositoryProvider);
+  return repo.getMyStats();
 });
 
 class AuthNotifier extends StateNotifier<User?> {
@@ -218,6 +222,38 @@ class AuthRepository {
     return _guard(() async {
       final response = await _client.dio.get('/api/auth/users/$userId');
       return response.data as Map<String, dynamic>;
+    });
+  }
+
+  Future<Map<String, dynamic>> getMyStats() {
+    return _guard(() async {
+      final response = await _client.dio.get('/api/auth/me/stats');
+      return {
+        'postCount': (response.data['postCount'] as num?)?.toInt() ?? 0,
+        'totalLikes': (response.data['totalLikes'] as num?)?.toInt() ?? 0,
+        'appointmentCount': (response.data['appointmentCount'] as num?)?.toInt() ?? 0,
+        'bookingCount': (response.data['bookingCount'] as num?)?.toInt() ?? 0,
+      };
+    });
+  }
+
+  Future<Map<String, dynamic>> followUser(String userId) {
+    return _guard(() async {
+      final response = await _client.dio.post('/api/auth/users/$userId/follow');
+      return {
+        'isFollowing': response.data['isFollowing'] as bool? ?? true,
+        'followersCount': (response.data['followersCount'] as num?)?.toInt() ?? 0,
+      };
+    });
+  }
+
+  Future<Map<String, dynamic>> unfollowUser(String userId) {
+    return _guard(() async {
+      final response = await _client.dio.delete('/api/auth/users/$userId/follow');
+      return {
+        'isFollowing': response.data['isFollowing'] as bool? ?? false,
+        'followersCount': (response.data['followersCount'] as num?)?.toInt() ?? 0,
+      };
     });
   }
 }

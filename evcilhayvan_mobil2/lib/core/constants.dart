@@ -1,48 +1,46 @@
-/// Uygulama genelinde kullanılan sabit değerler.
-/// Magic number yerine bu sabitleri kullanın.
-library;
+/// Application-wide constants. Prefer these over repeated magic numbers.
 
-// ─── Görsel Kalite ───────────────────────────────────────────────────────────
-/// Profil fotoğrafı, ürün, mağaza logosu gibi genel yüklemeler (0-100)
+// Image quality
+/// General uploads like profile photos, product images, and store logos.
 const int kImageQualityMedium = 80;
 
-/// Mesaj içi görseller, evcil hayvan fotoğrafları gibi yüksek kaliteli yüklemeler
+/// Higher quality uploads like chat images and pet photos.
 const int kImageQualityHigh = 85;
 
-/// Gönderi / etkinlik fotoğrafı gibi düşük öncelikli küçük önizlemeler
+/// Lower priority previews like post and event thumbnails.
 const int kImageQualityLow = 70;
 
-/// Profil ve küçük görseller için maksimum genişlik (px)
+/// Maximum width for profile and other small images in pixels.
 const double kImageMaxWidthSmall = 800;
 
-/// Galeri yüklemeleri için maksimum genişlik (px)
+/// Maximum width for gallery uploads in pixels.
 const double kImageMaxWidth = 1200;
 
-// ─── Konum / Mesafe ──────────────────────────────────────────────────────────
-/// Yakın evcil hayvan ilanları için varsayılan arama yarıçapı (km)
+// Location and distance
+/// Default search radius for nearby pet listings in kilometers.
 const double kDefaultPetRadiusKm = 25;
 
-/// Veteriner arama için varsayılan yarıçap (km)
+/// Default veterinarian search radius in kilometers.
 const double kDefaultVetRadiusKm = 10;
 
-/// Kayıp & Bulunan için varsayılan yarıçap (km)
+/// Default lost and found search radius in kilometers.
 const double kDefaultLostFoundRadiusKm = 50;
 
-/// Bakıcı arama için varsayılan yarıçap (km)
+/// Default sitter search radius in kilometers.
 const double kDefaultSitterRadiusKm = 20;
 
-/// Etkinlik listesi için varsayılan yarıçap (km)
+/// Default event listing radius in kilometers.
 const double kDefaultEventRadiusKm = 50;
 
-/// Harita keşif sayfası için varsayılan yarıçap (km)
+/// Default map discovery radius in kilometers.
 const double kDefaultMapRadiusKm = 15;
 
-/// Çiftleşme eşleştirme için varsayılan maksimum mesafe (km)
+/// Default max distance for mating matches in kilometers.
 const double kDefaultMatingMaxDistanceKm = 20;
 
-// ─── Sayfalama ───────────────────────────────────────────────────────────────
-/// Genel liste sayfası boyutu
+// Pagination
+/// Default page size for generic lists.
 const int kDefaultPageSize = 10;
 
-/// Mağaza ürün akışı sayfa boyutu
+/// Page size for the store product feed.
 const int kStoreFeedLimit = 40;

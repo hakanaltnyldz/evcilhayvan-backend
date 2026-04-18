@@ -2,14 +2,15 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../domain/models/selected_variant_model.dart';
+
 class GuestCartItem {
   final String productId;
   final String title;
   final double price;
   int quantity;
   final String? imageUrl;
-  final String? variantName;
-  final String? variantLabel;
+  final List<SelectedVariantModel> selectedVariants;
 
   GuestCartItem({
     required this.productId,
@@ -17,31 +18,51 @@ class GuestCartItem {
     required this.price,
     this.quantity = 1,
     this.imageUrl,
-    this.variantName,
-    this.variantLabel,
+    this.selectedVariants = const [],
   });
 
   Map<String, dynamic> toJson() => {
-        'productId': productId,
-        'title': title,
-        'price': price,
-        'quantity': quantity,
-        'imageUrl': imageUrl,
-        'variantName': variantName,
-        'variantLabel': variantLabel,
-      };
+    'productId': productId,
+    'title': title,
+    'price': price,
+    'quantity': quantity,
+    'imageUrl': imageUrl,
+    'selectedVariants': selectedVariants
+        .map((variant) => variant.toJson())
+        .toList(),
+    'variantName': variantName,
+    'variantLabel': variantLabel,
+  };
 
-  factory GuestCartItem.fromJson(Map<String, dynamic> json) => GuestCartItem(
-        productId: json['productId'] as String,
-        title: json['title'] as String,
-        price: (json['price'] as num).toDouble(),
-        quantity: (json['quantity'] as num).toInt(),
-        imageUrl: json['imageUrl'] as String?,
-        variantName: json['variantName'] as String?,
-        variantLabel: json['variantLabel'] as String?,
-      );
+  factory GuestCartItem.fromJson(Map<String, dynamic> json) {
+    final selectedVariants = SelectedVariantModel.fromJsonList(
+      json['selectedVariants'],
+    );
+    final normalizedVariants = selectedVariants.isNotEmpty
+        ? selectedVariants
+        : SelectedVariantModel.fromLegacy(
+            variantName: json['variantName'] as String?,
+            variantLabel: json['variantLabel'] as String?,
+          );
+    return GuestCartItem(
+      productId: json['productId'] as String,
+      title: json['title'] as String,
+      price: (json['price'] as num).toDouble(),
+      quantity: (json['quantity'] as num).toInt(),
+      imageUrl: json['imageUrl'] as String?,
+      selectedVariants: normalizedVariants,
+    );
+  }
 
   double get total => price * quantity;
+  String get selectedVariantsSignature =>
+      SelectedVariantModel.signatureOf(selectedVariants);
+  String? get variantName =>
+      selectedVariants.isNotEmpty ? selectedVariants.first.name : null;
+  String? get variantLabel =>
+      selectedVariants.isNotEmpty ? selectedVariants.first.label : null;
+  String get selectedVariantsLabel =>
+      selectedVariants.map((variant) => variant.displayText).join(', ');
 }
 
 class GuestCartNotifier extends StateNotifier<List<GuestCartItem>> {
@@ -57,7 +78,9 @@ class GuestCartNotifier extends StateNotifier<List<GuestCartItem>> {
     if (raw != null) {
       try {
         final list = jsonDecode(raw) as List;
-        state = list.map((e) => GuestCartItem.fromJson(e as Map<String, dynamic>)).toList();
+        state = list
+            .map((e) => GuestCartItem.fromJson(e as Map<String, dynamic>))
+            .toList();
       } catch (_) {
         state = [];
       }
@@ -66,14 +89,18 @@ class GuestCartNotifier extends StateNotifier<List<GuestCartItem>> {
 
   Future<void> _save() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_key, jsonEncode(state.map((e) => e.toJson()).toList()));
+    await prefs.setString(
+      _key,
+      jsonEncode(state.map((e) => e.toJson()).toList()),
+    );
   }
 
   void add(GuestCartItem item) {
-    final idx = state.indexWhere((e) =>
-        e.productId == item.productId &&
-        e.variantName == item.variantName &&
-        e.variantLabel == item.variantLabel);
+    final idx = state.indexWhere(
+      (e) =>
+          e.productId == item.productId &&
+          e.selectedVariantsSignature == item.selectedVariantsSignature,
+    );
     if (idx >= 0) {
       final updated = List<GuestCartItem>.from(state);
       updated[idx].quantity += item.quantity;
@@ -84,20 +111,32 @@ class GuestCartNotifier extends StateNotifier<List<GuestCartItem>> {
     _save();
   }
 
-  void remove(String productId, {String? variantName, String? variantLabel}) {
-    state = state.where((e) =>
-        !(e.productId == productId &&
-          e.variantName == variantName &&
-          e.variantLabel == variantLabel)).toList();
+  void remove(
+    String productId, {
+    List<SelectedVariantModel> selectedVariants = const [],
+  }) {
+    final signature = SelectedVariantModel.signatureOf(selectedVariants);
+    state = state
+        .where(
+          (e) =>
+              !(e.productId == productId &&
+                  e.selectedVariantsSignature == signature),
+        )
+        .toList();
     _save();
   }
 
-  void updateQuantity(String productId, int quantity, {String? variantName, String? variantLabel}) {
+  void updateQuantity(
+    String productId,
+    int quantity, {
+    List<SelectedVariantModel> selectedVariants = const [],
+  }) {
     final updated = List<GuestCartItem>.from(state);
-    final idx = updated.indexWhere((e) =>
-        e.productId == productId &&
-        e.variantName == variantName &&
-        e.variantLabel == variantLabel);
+    final signature = SelectedVariantModel.signatureOf(selectedVariants);
+    final idx = updated.indexWhere(
+      (e) =>
+          e.productId == productId && e.selectedVariantsSignature == signature,
+    );
     if (idx >= 0) {
       if (quantity <= 0) {
         updated.removeAt(idx);
@@ -118,6 +157,7 @@ class GuestCartNotifier extends StateNotifier<List<GuestCartItem>> {
   int get itemCount => state.fold(0, (sum, e) => sum + e.quantity);
 }
 
-final guestCartProvider = StateNotifierProvider<GuestCartNotifier, List<GuestCartItem>>(
-  (_) => GuestCartNotifier(),
-);
+final guestCartProvider =
+    StateNotifierProvider<GuestCartNotifier, List<GuestCartItem>>(
+      (_) => GuestCartNotifier(),
+    );

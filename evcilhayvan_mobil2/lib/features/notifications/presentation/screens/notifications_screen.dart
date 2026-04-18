@@ -154,6 +154,9 @@ class NotificationsScreen extends ConsumerWidget {
       case NotificationType.sitterBooking:
         context.pushNamed('sitter-bookings');
         break;
+      case NotificationType.appointment:
+        context.pushNamed('veterinary');
+        break;
       case NotificationType.general:
         break;
     }
@@ -195,6 +198,8 @@ class _NotificationCard extends StatelessWidget {
         return Icons.location_searching;
       case NotificationType.sitterBooking:
         return Icons.pets;
+      case NotificationType.appointment:
+        return Icons.calendar_month;
       case NotificationType.general:
         return Icons.notifications;
     }
@@ -220,6 +225,8 @@ class _NotificationCard extends StatelessWidget {
         return Colors.deepOrange;
       case NotificationType.sitterBooking:
         return const Color(0xFF1B4332);
+      case NotificationType.appointment:
+        return Colors.indigo;
       case NotificationType.vaccinationReminder:
         return const Color(0xFF40916C);
       case NotificationType.orderUpdate:

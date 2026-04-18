@@ -28,11 +28,13 @@ final storeFeedProvider = AsyncNotifierProvider.autoDispose<StoreFeedNotifier, L
 );
 
 final storeDiscoverProvider = FutureProvider.autoDispose<List<StoreModel>>((ref) {
+  ref.keepAlive();
   final repo = ref.watch(storeRepositoryProvider);
   return repo.getStores();
 });
 
 final myStoreProvider = FutureProvider.autoDispose<StoreModel?>((ref) async {
+  ref.keepAlive();
   final repo = ref.watch(storeRepositoryProvider);
   try {
     return await repo.getMyStore();
@@ -42,11 +44,13 @@ final myStoreProvider = FutureProvider.autoDispose<StoreModel?>((ref) async {
 });
 
 final myProductsProvider = FutureProvider.autoDispose<List<ProductModel>>((ref) {
+  ref.keepAlive();
   final repo = ref.watch(storeRepositoryProvider);
   return repo.getMyProducts();
 });
 
 final categoriesProvider = FutureProvider.autoDispose<List<CategoryModel>>((ref) {
+  ref.keepAlive();
   final repo = ref.watch(storeRepositoryProvider);
   return repo.getCategories();
 });
@@ -412,6 +416,7 @@ class StoreFeedNotifier extends AutoDisposeAsyncNotifier<List<ProductModel>> {
 
   @override
   Future<List<ProductModel>> build() async {
+    ref.keepAlive();
     _repository = ref.read(storeRepositoryProvider);
     final cached = await _repository.getCachedFeed();
     if (cached.isNotEmpty) {

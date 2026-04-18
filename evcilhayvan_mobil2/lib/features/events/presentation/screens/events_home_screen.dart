@@ -63,7 +63,7 @@ class _EventsHomeScreenState extends ConsumerState<EventsHomeScreen> {
     final l10n = AppLocalizations.of(context)!;
     final categories = _getCategories(l10n);
     final params = EventListParams(lat: _lat, lng: _lng, category: _selectedCategory);
-    final eventsAsync = ref.watch(eventListProvider(params));
+    final eventsAsync = ref.watch(eventPaginatedProvider(params));
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -136,9 +136,10 @@ class _EventsHomeScreenState extends ConsumerState<EventsHomeScreen> {
               loading: () => const Center(child: PawLoading()),
               error: (e, _) => ErrorView(
                 message: e.toString(),
-                onRetry: () => ref.invalidate(eventListProvider(params)),
+                onRetry: () => ref.invalidate(eventPaginatedProvider(params)),
               ),
-              data: (events) {
+              data: (pageState) {
+                final events = pageState.events;
                 if (events.isEmpty) {
                   return AnimatedEmptyState(
                     icon: Icons.celebration_outlined,
@@ -147,14 +148,30 @@ class _EventsHomeScreenState extends ConsumerState<EventsHomeScreen> {
                   );
                 }
                 return PawRefreshIndicator(
-                  onRefresh: () async => ref.invalidate(eventListProvider(params)),
+                  onRefresh: () => ref.read(eventPaginatedProvider(params).notifier).refresh(),
                   child: ListView.builder(
                     padding: const EdgeInsets.fromLTRB(12, 4, 12, 100),
-                    itemCount: events.length,
-                    itemBuilder: (context, i) => EventCard(
-                      event: events[i],
-                      onTap: () => context.push('/events/${events[i].id}'),
-                    ),
+                    itemCount: events.length + (pageState.hasMore ? 1 : 0),
+                    itemBuilder: (context, i) {
+                      if (i == events.length) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Center(
+                            child: pageState.loadingMore
+                                ? const PawLoading()
+                                : OutlinedButton.icon(
+                                    onPressed: () => ref.read(eventPaginatedProvider(params).notifier).loadMore(),
+                                    icon: const Icon(Icons.expand_more),
+                                    label: Text(l10n.eventsEmptyTitle.isNotEmpty ? 'Daha Fazla Göster' : 'Daha Fazla'),
+                                  ),
+                          ),
+                        );
+                      }
+                      return EventCard(
+                        event: events[i],
+                        onTap: () => context.push('/events/${events[i].id}'),
+                      );
+                    },
                   ),
                 );
               },

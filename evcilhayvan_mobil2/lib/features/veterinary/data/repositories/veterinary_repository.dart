@@ -163,10 +163,14 @@ class VeterinaryRepository {
     });
   }
 
-  Future<VetReview> addVetReview(String vetId, int rating, {String? comment}) {
+  Future<VetReview> addVetReview(String vetId, int rating, {String? comment, Map<String, dynamic>? subRatings}) {
     return _guard(() async {
       final res = await _dio.post('/api/veterinaries/$vetId/reviews',
-          data: {'rating': rating, if (comment != null && comment.isNotEmpty) 'comment': comment});
+          data: {
+            'rating': rating,
+            if (comment != null && comment.isNotEmpty) 'comment': comment,
+            if (subRatings != null) 'subRatings': subRatings,
+          });
       return VetReview.fromJson(Map<String, dynamic>.from(res.data['review']));
     });
   }

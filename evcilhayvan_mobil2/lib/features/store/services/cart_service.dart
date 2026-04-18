@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../domain/models/cart_item_model.dart';
 import '../domain/models/cart_state.dart';
+import '../domain/models/selected_variant_model.dart';
 
 class CartService {
   CartService(this._dio);
@@ -15,8 +16,22 @@ class CartService {
     return CartState.fromJson(data);
   }
 
-  Future<void> add(String productId, {int quantity = 1}) async {
-    await _dio.post("/api/cart/items", data: {"productId": productId, "quantity": quantity});
+  Future<void> add(
+    String productId, {
+    int quantity = 1,
+    List<SelectedVariantModel> selectedVariants = const [],
+  }) async {
+    await _dio.post(
+      "/api/cart/items",
+      data: {
+        "productId": productId,
+        "quantity": quantity,
+        if (selectedVariants.isNotEmpty)
+          "selectedVariants": selectedVariants
+              .map((variant) => variant.toJson())
+              .toList(),
+      },
+    );
   }
 
   Future<void> updateQuantity(String itemId, int quantity) async {

@@ -127,7 +127,17 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
                       }).toList();
 
                       if (filtered.isEmpty) {
-                        return const _EmptyState();
+                        final hasActiveFilters = _selectedSpecies != 'Tümü' ||
+                            _selectedGender != 'Tümü';
+                        return _EmptyState(
+                          onClearFilters: hasActiveFilters ? () {
+                            setState(() {
+                              _selectedSpecies = 'Tümü';
+                              _selectedGender = 'Tümü';
+                              _maxDistance = 20;
+                            });
+                          } : null,
+                        );
                       }
 
                       return _SwipeCardDeck(
@@ -1050,7 +1060,8 @@ class _EndOfCards extends StatelessWidget {
 // ─── Empty / Error States ─────────────────────────────────────────────────────
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  final VoidCallback? onClearFilters;
+  const _EmptyState({this.onClearFilters});
 
   @override
   Widget build(BuildContext context) {
@@ -1070,6 +1081,19 @@ class _EmptyState extends StatelessWidget {
             'Yakınında henüz uygun eşleşme bulunamadı.',
             style: theme.textTheme.bodyMedium,
           ),
+          if (onClearFilters != null) ...[
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: onClearFilters,
+              icon: const Icon(Icons.filter_alt_off, size: 18),
+              label: const Text('Filtreyi Temizle'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF2D6A4F),
+                side: const BorderSide(color: Color(0xFF2D6A4F)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
         ],
       ),
     );

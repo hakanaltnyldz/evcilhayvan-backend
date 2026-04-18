@@ -34,6 +34,13 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
   List<LostFoundPet>? _foundReports;
   bool _loading = false;
   String? _error;
+  bool _loadingMoreLost = false;
+  bool _loadingMoreFound = false;
+  bool _hasMoreLost = true;
+  bool _hasMoreFound = true;
+  int _lostPage = 1;
+  int _foundPage = 1;
+  static const _pageSize = 20;
 
   @override
   void initState() {
@@ -75,16 +82,22 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
     setState(() {
       _loading = true;
       _error = null;
+      _lostPage = 1;
+      _foundPage = 1;
+      _hasMoreLost = true;
+      _hasMoreFound = true;
     });
     try {
       final repo = ref.read(lostFoundRepositoryProvider);
       final results = await Future.wait([
-        repo.listReports(type: 'lost', lat: _lat, lng: _lng),
-        repo.listReports(type: 'found', lat: _lat, lng: _lng),
+        repo.listReports(type: 'lost', lat: _lat, lng: _lng, page: 1),
+        repo.listReports(type: 'found', lat: _lat, lng: _lng, page: 1),
       ]);
       setState(() {
         _lostReports = results[0];
         _foundReports = results[1];
+        _hasMoreLost = results[0].length >= _pageSize;
+        _hasMoreFound = results[1].length >= _pageSize;
         _loading = false;
       });
     } catch (e) {
@@ -92,6 +105,40 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
         _error = e.toString();
         _loading = false;
       });
+    }
+  }
+
+  Future<void> _loadMoreLost() async {
+    if (_loadingMoreLost || !_hasMoreLost) return;
+    setState(() => _loadingMoreLost = true);
+    try {
+      final nextPage = _lostPage + 1;
+      final more = await ref.read(lostFoundRepositoryProvider).listReports(type: 'lost', lat: _lat, lng: _lng, page: nextPage);
+      setState(() {
+        _lostReports = [...?_lostReports, ...more];
+        _lostPage = nextPage;
+        _hasMoreLost = more.length >= _pageSize;
+        _loadingMoreLost = false;
+      });
+    } catch (_) {
+      setState(() => _loadingMoreLost = false);
+    }
+  }
+
+  Future<void> _loadMoreFound() async {
+    if (_loadingMoreFound || !_hasMoreFound) return;
+    setState(() => _loadingMoreFound = true);
+    try {
+      final nextPage = _foundPage + 1;
+      final more = await ref.read(lostFoundRepositoryProvider).listReports(type: 'found', lat: _lat, lng: _lng, page: nextPage);
+      setState(() {
+        _foundReports = [...?_foundReports, ...more];
+        _foundPage = nextPage;
+        _hasMoreFound = more.length >= _pageSize;
+        _loadingMoreFound = false;
+      });
+    } catch (_) {
+      setState(() => _loadingMoreFound = false);
     }
   }
 
@@ -143,8 +190,8 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
                       : TabBarView(
                           controller: _tabController,
                           children: [
-                            _buildList(_lostReports ?? []),
-                            _buildList(_foundReports ?? []),
+                            _buildList(_lostReports ?? [], isLost: true),
+                            _buildList(_foundReports ?? [], isLost: false),
                           ],
                         ),
       ),
@@ -158,7 +205,11 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
     );
   }
 
-  Widget _buildList(List<LostFoundPet> reports) {
+  Widget _buildList(List<LostFoundPet> reports, {required bool isLost}) {
+    final hasMore = isLost ? _hasMoreLost : _hasMoreFound;
+    final loadingMore = isLost ? _loadingMoreLost : _loadingMoreFound;
+    final onLoadMore = isLost ? _loadMoreLost : _loadMoreFound;
+
     if (reports.isEmpty) {
       return RefreshIndicator(
         onRefresh: _loadReports,
@@ -181,8 +232,22 @@ class _LostFoundHomeScreenState extends ConsumerState<LostFoundHomeScreen> with 
       child: ListView.builder(
         padding: const EdgeInsets.only(top: 8, bottom: 80),
         physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-        itemCount: reports.length,
+        itemCount: reports.length + (hasMore ? 1 : 0),
         itemBuilder: (context, index) {
+          if (index == reports.length) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Center(
+                child: loadingMore
+                    ? const PawLoading()
+                    : OutlinedButton.icon(
+                        onPressed: onLoadMore,
+                        icon: const Icon(Icons.expand_more),
+                        label: const Text('Daha Fazla Göster'),
+                      ),
+              ),
+            );
+          }
           final report = reports[index];
           return LostFoundCard(
             report: report,

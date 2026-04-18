@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
+import 'package:evcilhayvan_mobil2/features/messages/data/repositories/message_repository.dart';
 import '../../data/repositories/lost_found_repository.dart';
 import '../../domain/models/lost_found_model.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
@@ -53,9 +54,15 @@ class LostFoundDetailScreen extends ConsumerWidget {
                             return CachedNetworkImage(
                               imageUrl: _resolvePhoto(report.photos[index]),
                               fit: BoxFit.cover,
-                              placeholder: (_, __) => Container(color: Theme.of(context).colorScheme.surfaceVariant),
+                              placeholder: (_, __) => Container(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.surfaceVariant,
+                              ),
                               errorWidget: (_, __, ___) => Container(
-                                color: Theme.of(context).colorScheme.surfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.surfaceVariant,
                                 child: const Icon(Icons.broken_image, size: 48),
                               ),
                             );
@@ -86,16 +93,25 @@ class LostFoundDetailScreen extends ConsumerWidget {
                           if (report.hasReward) ...[
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.amber.shade100,
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.amber.shade400),
+                                border: Border.all(
+                                  color: Colors.amber.shade400,
+                                ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.star, size: 16, color: Colors.amber.shade700),
+                                  Icon(
+                                    Icons.star,
+                                    size: 16,
+                                    color: Colors.amber.shade700,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     'Odul: ${report.reward.toInt()} TL',
@@ -118,7 +134,8 @@ class LostFoundDetailScreen extends ConsumerWidget {
                         report.petName?.isNotEmpty == true
                             ? report.petName!
                             : '${report.speciesLabel} (${report.color})',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 16),
 
@@ -127,24 +144,41 @@ class LostFoundDetailScreen extends ConsumerWidget {
                       const SizedBox(height: 16),
 
                       // Description
-                      Text('Aciklama', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: const Color(0xFF1B4332))),
+                      Text(
+                        'Aciklama',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1B4332),
+                            ),
+                      ),
                       const SizedBox(height: 8),
-                      Text(report.description, style: Theme.of(context).textTheme.bodyLarge),
+                      Text(
+                        report.description,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
                       const SizedBox(height: 16),
 
                       // Location
-                      if (report.lastSeenAddress != null && report.lastSeenAddress!.isNotEmpty) ...[
+                      if (report.lastSeenAddress != null &&
+                          report.lastSeenAddress!.isNotEmpty) ...[
                         Text(
                           report.isLost ? 'Son Gorulme Yeri' : 'Bulundugu Yer',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
                         Card(
                           child: ListTile(
-                            leading: const Icon(Icons.location_on, color: Color(0xFF2D6A4F)),
+                            leading: const Icon(
+                              Icons.location_on,
+                              color: Color(0xFF2D6A4F),
+                            ),
                             title: Text(report.lastSeenAddress!),
                             subtitle: report.distanceKm != null
-                                ? Text('${report.distanceKm!.toStringAsFixed(1)} km uzakta')
+                                ? Text(
+                                    '${report.distanceKm!.toStringAsFixed(1)} km uzakta',
+                                  )
                                 : null,
                           ),
                         ),
@@ -153,7 +187,11 @@ class LostFoundDetailScreen extends ConsumerWidget {
 
                       // Reporter info
                       if (report.userName != null) ...[
-                        Text('Ilan Sahibi', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                        Text(
+                          'Ilan Sahibi',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
                         const SizedBox(height: 8),
                         Card(
                           child: ListTile(
@@ -161,12 +199,18 @@ class LostFoundDetailScreen extends ConsumerWidget {
                               backgroundColor: const Color(0xFFD8F3DC),
                               foregroundColor: const Color(0xFF2D6A4F),
                               child: Text(
-                                report.userName!.isNotEmpty ? report.userName![0].toUpperCase() : '?',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                report.userName!.isNotEmpty
+                                    ? report.userName![0].toUpperCase()
+                                    : '?',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                             title: Text(report.userName!),
-                            subtitle: report.contactNote != null ? Text(report.contactNote!) : null,
+                            subtitle: report.contactNote != null
+                                ? Text(report.contactNote!)
+                                : null,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -176,38 +220,45 @@ class LostFoundDetailScreen extends ConsumerWidget {
                       if (!isOwner && report.isActive) ...[
                         Row(
                           children: [
-                            if (report.contactPhone != null && report.contactPhone!.isNotEmpty)
+                            if (report.contactPhone != null &&
+                                report.contactPhone!.isNotEmpty)
                               Expanded(
                                 child: ElevatedButton.icon(
-                                  onPressed: () => _callPhone(report.contactPhone!),
+                                  onPressed: () =>
+                                      _callPhone(report.contactPhone!),
                                   icon: const Icon(Icons.phone),
                                   label: const Text('Ara'),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF2D6A4F),
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
                                     elevation: 0,
                                   ),
                                 ),
                               ),
-                            if (report.contactPhone != null && report.contactPhone!.isNotEmpty)
+                            if (report.contactPhone != null &&
+                                report.contactPhone!.isNotEmpty)
                               const SizedBox(width: 12),
                             Expanded(
                               child: ElevatedButton.icon(
-                                onPressed: () {
-                                  // TODO: create conversation and navigate to chat
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Mesaj gonderme yakinda aktif olacak')),
-                                  );
-                                },
+                                onPressed: () =>
+                                    _startConversation(context, ref, report),
                                 icon: const Icon(Icons.chat),
                                 label: const Text('Mesaj Gonder'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF2D6A4F),
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
                                   elevation: 0,
                                 ),
                               ),
@@ -223,14 +274,19 @@ class LostFoundDetailScreen extends ConsumerWidget {
                           children: [
                             Expanded(
                               child: ElevatedButton.icon(
-                                onPressed: () => _markReunited(context, ref, report),
+                                onPressed: () =>
+                                    _markReunited(context, ref, report),
                                 icon: const Icon(Icons.check_circle),
                                 label: const Text('Kavusturuldu'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF2D6A4F),
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
                                   elevation: 0,
                                 ),
                               ),
@@ -238,13 +294,18 @@ class LostFoundDetailScreen extends ConsumerWidget {
                             const SizedBox(width: 12),
                             Expanded(
                               child: OutlinedButton.icon(
-                                onPressed: () => _cancelReport(context, ref, report),
+                                onPressed: () =>
+                                    _cancelReport(context, ref, report),
                                 icon: const Icon(Icons.cancel),
                                 label: const Text('Iptal Et'),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.red,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
                               ),
                             ),
@@ -265,6 +326,51 @@ class LostFoundDetailScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _startConversation(
+    BuildContext context,
+    WidgetRef ref,
+    LostFoundPet report,
+  ) async {
+    final currentUser = ref.read(authProvider);
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Mesaj göndermek için giriş yapmalısınız.'),
+        ),
+      );
+      return;
+    }
+    final participantId = report.userId;
+    if (participantId == null || participantId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ilan sahibi bilgisi bulunamadi.')),
+      );
+      return;
+    }
+    try {
+      final repo = ref.read(messageRepositoryProvider);
+      final conversation = await repo.createOrGetConversation(
+        participantId: participantId,
+        currentUserId: currentUser.id,
+      );
+      if (context.mounted) {
+        context.pushNamed(
+          'chat',
+          pathParameters: {'conversationId': conversation.id},
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Sohbet başlatılamadı: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _callPhone(String phone) async {
     final uri = Uri.parse('tel:$phone');
     if (await canLaunchUrl(uri)) {
@@ -277,23 +383,40 @@ class LostFoundDetailScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Kavusturuldu'),
-        content: const Text('Hayvaniniz bulundu mu? Bu ilan "Kavusturuldu" olarak isaretlenecek.'),
+        content: const Text(
+          'Hayvaniniz bulundu mu? Bu ilan "Kavusturuldu" olarak isaretlenecek.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Iptal')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Iptal'),
+          ),
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
               try {
-                await ref.read(lostFoundRepositoryProvider).updateStatus(report.id, 'reunited');
+                await ref
+                    .read(lostFoundRepositoryProvider)
+                    .updateStatus(report.id, 'reunited');
                 ref.invalidate(lostFoundDetailProvider(report.id));
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Tebrikler! Ilan kavusturuldu olarak isaretlendi.'), backgroundColor: Colors.green),
+                    const SnackBar(
+                      content: Text(
+                        'Tebrikler! Ilan kavusturuldu olarak isaretlendi.',
+                      ),
+                      backgroundColor: Colors.green,
+                    ),
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Hata: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
                 }
               }
             },
@@ -311,13 +434,18 @@ class LostFoundDetailScreen extends ConsumerWidget {
         title: const Text('Ilani Iptal Et'),
         content: const Text('Bu ilani iptal etmek istediginize emin misiniz?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Vazgec')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Vazgec'),
+          ),
           TextButton(
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             onPressed: () async {
               Navigator.pop(ctx);
               try {
-                await ref.read(lostFoundRepositoryProvider).updateStatus(report.id, 'cancelled');
+                await ref
+                    .read(lostFoundRepositoryProvider)
+                    .updateStatus(report.id, 'cancelled');
                 ref.invalidate(lostFoundDetailProvider(report.id));
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -327,7 +455,12 @@ class LostFoundDetailScreen extends ConsumerWidget {
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Hata: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
                 }
               }
             },
@@ -383,7 +516,14 @@ class _StatusBadge extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: fg),
           const SizedBox(width: 4),
-          Text(label, style: TextStyle(color: fg, fontWeight: FontWeight.bold, fontSize: 13)),
+          Text(
+            label,
+            style: TextStyle(
+              color: fg,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
         ],
       ),
     );
@@ -401,17 +541,22 @@ class _InfoCard extends StatelessWidget {
 
     return Card(
       color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
       elevation: 0,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             _infoRow(context, Icons.pets, 'Tur', report.speciesLabel),
-            if (report.breed != null) _infoRow(context, Icons.category, 'Cins', report.breed!),
+            if (report.breed != null)
+              _infoRow(context, Icons.category, 'Cins', report.breed!),
             _infoRow(context, Icons.palette, 'Renk', report.color),
             _infoRow(context, Icons.wc, 'Cinsiyet', report.genderLabel),
-            if (report.ageApprox != null) _infoRow(context, Icons.cake, 'Tahmini Yas', report.ageApprox!),
+            if (report.ageApprox != null)
+              _infoRow(context, Icons.cake, 'Tahmini Yas', report.ageApprox!),
             _infoRow(
               context,
               Icons.calendar_today,
@@ -424,7 +569,12 @@ class _InfoCard extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(BuildContext context, IconData icon, String label, String value) {
+  Widget _infoRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(

@@ -30,6 +30,11 @@ final sellerRevenueChartProvider = FutureProvider.autoDispose<List<RevenueChartP
   return repo.getSellerRevenueChart();
 });
 
+final sellerProductStatsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) {
+  final repo = ref.watch(orderRepositoryProvider);
+  return repo.getSellerProductStats();
+});
+
 class OrderRepository {
   final ApiClient _client;
   OrderRepository(this._client);
@@ -140,6 +145,21 @@ class OrderRepository {
           .whereType<Map<String, dynamic>>()
           .map(RevenueChartPoint.fromJson)
           .toList();
+    });
+  }
+
+  /// Satıcı ürün istatistikleri (durum dağılımı + top ürünler)
+  Future<Map<String, dynamic>> getSellerProductStats() {
+    return _guard(() async {
+      final response = await _dio.get('/api/seller/stats');
+      return {
+        'orderStatusBreakdown': response.data['orderStatusBreakdown'] as Map<String, dynamic>? ?? {},
+        'topProducts': (response.data['topProducts'] as List?)
+                ?.map((e) => Map<String, dynamic>.from(e as Map))
+                .toList() ??
+            [],
+        'avgOrderValue': (response.data['avgOrderValue'] as num?)?.toDouble() ?? 0.0,
+      };
     });
   }
 }

@@ -64,10 +64,13 @@ class Message {
     if (relatedPetData is Map<String, dynamic>) {
       try {
         relatedPet = Pet.fromJson(relatedPetData);
-        petId = relatedPetData['_id']?.toString() ?? relatedPetData['id']?.toString();
+        petId =
+            relatedPetData['_id']?.toString() ??
+            relatedPetData['id']?.toString();
       } catch (e) {
-        print('⚠️ Message.fromJson: Failed to parse relatedPet: $e');
-        petId = relatedPetData['_id']?.toString() ?? relatedPetData['id']?.toString();
+        petId =
+            relatedPetData['_id']?.toString() ??
+            relatedPetData['id']?.toString();
       }
     } else if (relatedPetData is String) {
       petId = relatedPetData;
@@ -79,10 +82,19 @@ class Message {
       sender = senderData is Map<String, dynamic>
           ? User.fromJson(senderData)
           : senderData is String
-              ? User.fromJson({'_id': senderData, 'name': 'Kullanıcı', 'email': 'unknown@email.com', 'role': 'user'})
-              : User.fromJson({'_id': 'unknown', 'name': 'Kullanıcı', 'email': 'unknown@email.com', 'role': 'user'});
+          ? User.fromJson({
+              '_id': senderData,
+              'name': 'Kullanıcı',
+              'email': 'unknown@email.com',
+              'role': 'user',
+            })
+          : User.fromJson({
+              '_id': 'unknown',
+              'name': 'Kullanıcı',
+              'email': 'unknown@email.com',
+              'role': 'user',
+            });
     } catch (e) {
-      print('⚠️ Message.fromJson: Failed to parse sender: $e');
       sender = User(
         id: 'unknown',
         name: 'Kullanıcı',

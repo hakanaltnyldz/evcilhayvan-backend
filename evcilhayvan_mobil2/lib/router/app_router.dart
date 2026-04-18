@@ -77,6 +77,7 @@ import '../features/pet_sitter/presentation/screens/availability_screen.dart';
 import '../features/pet_sitter/domain/models/sitter_booking_model.dart';
 import '../features/pet_sitter/presentation/screens/my_bookings_screen.dart';
 import '../features/pet_sitter/presentation/screens/become_sitter_screen.dart';
+import '../features/pet_sitter/presentation/screens/sitter_request_form_screen.dart';
 import '../features/pet_sitter/domain/models/pet_sitter_model.dart';
 
 // Etkinlik ekranlari
@@ -89,10 +90,15 @@ import '../features/events/presentation/screens/my_events_screen.dart';
 import '../features/map/presentation/screens/map_discover_screen.dart';
 import '../features/social/presentation/screens/feed_screen.dart';
 import '../features/social/presentation/screens/create_post_screen.dart';
+import '../features/social/presentation/screens/saved_posts_screen.dart';
+import '../features/social/presentation/screens/hashtag_discover_screen.dart';
+import '../features/pets/presentation/screens/pet_timeline_screen.dart';
+import '../features/pets/presentation/screens/pet_health_dashboard_screen.dart';
 import '../features/auth/presentation/screens/onboarding_screen.dart';
 import '../core/providers/onboarding_provider.dart';
 import '../features/search/presentation/global_search_screen.dart';
 import '../features/health/presentation/screens/health_journal_screen.dart';
+import '../features/pets/presentation/screens/health_card_screen.dart';
 import '../features/ai/presentation/screens/ai_assistant_screen.dart';
 import '../features/ai/presentation/screens/guide_screen.dart';
 import '../features/auth/presentation/screens/splash_screen.dart';
@@ -345,6 +351,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         final extra = state.extra as Map<String, dynamic>?;
         final petName = extra?['petName'] as String? ?? 'Pet';
         return _buildPage(state, HealthJournalScreen(petId: petId, petName: petName));
+      },
+    ),
+
+    // Sağlık Kartı / QR
+    GoRoute(
+      path: '/health-card/:petId',
+      name: 'health-card',
+      pageBuilder: (context, state) {
+        final petId = state.pathParameters['petId']!;
+        return _buildPage(state, HealthCardScreen(petId: petId));
       },
     ),
 
@@ -697,6 +713,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         return _buildPage(state, AvailabilityScreen(sitterId: sitterId));
       },
     ),
+    GoRoute(
+      path: '/sitter-request-form',
+      name: 'sitter-request-form',
+      pageBuilder: (context, state) => _buildModalPage(state, const SitterRequestFormScreen()),
+    ),
 
     // Etkinlik ekranlari
     GoRoute(
@@ -824,6 +845,31 @@ final routerProvider = Provider<GoRouter>((ref) {
       path: '/feed/create',
       name: 'create-post',
       pageBuilder: (context, state) => _buildModalPage(state, const CreatePostScreen()),
+    ),
+    GoRoute(
+      path: '/saved-posts',
+      name: 'saved-posts',
+      pageBuilder: (context, state) => _buildPage(state, const SavedPostsScreen()),
+    ),
+    GoRoute(
+      path: '/hashtag-discover',
+      name: 'hashtag-discover',
+      pageBuilder: (context, state) => _buildPage(state, const HashtagDiscoverScreen()),
+    ),
+    GoRoute(
+      path: '/pet-health-dashboard',
+      name: 'pet-health-dashboard',
+      pageBuilder: (context, state) => _buildPage(state, const PetHealthDashboardScreen()),
+    ),
+    GoRoute(
+      path: '/pet/:id/timeline',
+      name: 'pet-timeline',
+      pageBuilder: (context, state) {
+        final petId = state.pathParameters['id']!;
+        final extra = state.extra as Map<String, dynamic>?;
+        final petName = extra?['petName'] as String? ?? 'Pet';
+        return _buildPage(state, PetTimelineScreen(petId: petId, petName: petName));
+      },
     ),
 
     // Kullanici public profili

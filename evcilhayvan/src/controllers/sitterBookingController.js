@@ -7,6 +7,12 @@ import { sendOk, sendError } from "../utils/apiResponse.js";
 import { recordAudit } from "../utils/audit.js";
 import { sendPush } from "../utils/fcm.js";
 import { sendEmail } from "../utils/mail.js";
+import {
+  cancelTrackingGrace,
+  computePayableAmount,
+  markServiceCompleted,
+  markServiceStarted,
+} from "../services/sitterTrackingService.js";
 
 const SERVICE_LABELS = {
   walking: "Gezdirme",
@@ -56,7 +62,7 @@ export async function createBooking(req, res) {
     // Tarih cakisma kontrolu
     const overlap = await SitterBooking.findOne({
       sitterId,
-      status: { $in: ["pending", "accepted"] },
+      status: { $in: ["pending", "accepted", "active"] },
       startDate: { $lt: end },
       endDate: { $gt: start },
     });
@@ -72,6 +78,11 @@ export async function createBooking(req, res) {
       endDate: end,
       totalPrice,
       notes,
+      earnings: {
+        status: "pending",
+        totalPausedMs: 0,
+        payableAmount: totalPrice,
+      },
     });
 
     // Socket bildirim - bakiciya
@@ -178,7 +189,7 @@ export async function updateBookingStatus(req, res) {
     const userId = req.user.sub;
     const { status, review } = req.body;
 
-    if (!["accepted", "rejected", "cancelled", "completed"].includes(status)) {
+    if (!["accepted", "active", "rejected", "cancelled", "completed"].includes(status)) {
       return sendError(res, 400, "Gecersiz durum", "invalid_status");
     }
 
@@ -209,7 +220,8 @@ export async function updateBookingStatus(req, res) {
     // Durum gecis matrisi
     const validTransitions = {
       pending:   ["accepted", "rejected", "cancelled"],
-      accepted:  ["cancelled", "completed"],
+      accepted:  ["active", "cancelled"],
+      active:    ["completed", "cancelled"],
       rejected:  [],
       cancelled: [],
       completed: [],
@@ -219,32 +231,58 @@ export async function updateBookingStatus(req, res) {
     }
 
     // Yetki kontrolu
-    if (["accepted", "rejected"].includes(status) && !isSitter) {
-      return sendError(res, 403, "Sadece bakici kabul/red edebilir", "forbidden");
+    if (["accepted", "active", "rejected", "completed"].includes(status) && !isSitter) {
+      return sendError(res, 403, "Sadece bakici bu islemi yapabilir", "forbidden");
     }
     if (status === "cancelled" && !isOwner) {
       return sendError(res, 403, "Sadece sahip iptal edebilir", "forbidden");
     }
-    if (status === "completed" && !isSitter) {
-      return sendError(res, 403, "Sadece bakici tamamlayabilir", "forbidden");
-    }
-
-    booking.status = status;
-    if (["accepted", "rejected"].includes(status)) booking.respondedAt = new Date();
-    if (status === "completed") {
-      booking.completedAt = new Date();
-      // Puan ekle
+    if (status === "cancelled") {
+      cancelTrackingGrace(booking.id);
+      booking.status = status;
+      booking.liveTracking = {
+        ...(booking.liveTracking?.toObject?.() ?? booking.liveTracking ?? {}),
+        isActive: false,
+        required: false,
+        interruptedAt: undefined,
+        graceEndsAt: undefined,
+      };
+      booking.earnings = {
+        ...(booking.earnings?.toObject?.() ?? booking.earnings ?? {}),
+        status: "paused",
+        pausedAt: new Date(),
+        pauseReason: "booking_cancelled",
+        payableAmount: 0,
+      };
+    } else if (status === "accepted") {
+      booking.status = status;
+      booking.respondedAt = new Date();
+      booking.earnings = {
+        ...(booking.earnings?.toObject?.() ?? booking.earnings ?? {}),
+        status: "pending",
+        payableAmount: computePayableAmount(booking),
+      };
+    } else if (status === "active") {
+      cancelTrackingGrace(booking.id);
+      markServiceStarted(booking, { now: new Date() });
+    } else if (status === "completed") {
+      cancelTrackingGrace(booking.id);
+      markServiceCompleted(booking, { now: new Date() });
       if (review?.rating) {
         booking.ownerReview = {
           rating: Math.min(5, Math.max(1, review.rating)),
           comment: review.comment || "",
         };
-        // Bakici ortalamasini guncelle
-        await _updateSitterRating(booking.sitterId);
       }
+    } else {
+      booking.status = status;
+      if (status === "rejected") booking.respondedAt = new Date();
     }
 
     await booking.save();
+    if (status === "completed") {
+      await _updateSitterRating(booking.sitterId);
+    }
 
     // Socket bildirim
     const io = req.app.get("io");
@@ -259,7 +297,22 @@ export async function updateBookingStatus(req, res) {
         serviceLabel: SERVICE_LABELS[booking.serviceType] || booking.serviceType,
         sitterName: booking.sitterId?.displayName || "Bakici",
         ownerName: booking.petOwnerId?.name || "Pet sahibi",
+        liveTrackingActive: booking.liveTracking?.isActive === true,
+        earningsStatus: booking.earnings?.status || "pending",
+        payableAmount: booking.earnings?.payableAmount ?? booking.totalPrice,
       });
+      if (status === "active") {
+        io.to(`user:${targetUserId}`).emit("sitter:walk_started", {
+          bookingId: booking.id,
+          startedAt: Date.now(),
+        });
+      }
+      if (status === "completed") {
+        io.to(`user:${targetUserId}`).emit("sitter:walk_ended", {
+          bookingId: booking.id,
+          endedAt: Date.now(),
+        });
+      }
     }
 
     // FCM push - karsi tarafa
@@ -269,6 +322,7 @@ export async function updateBookingStatus(req, res) {
         : String(booking.sitterUserId);
       const statusLabels = {
         accepted: "Rezervasyonunuz kabul edildi",
+        active: "Bakici kopegi teslim aldi. Canli konum acildi",
         rejected: "Rezervasyonunuz reddedildi",
         cancelled: "Rezervasyon iptal edildi",
         completed: "Rezervasyon tamamlandi",

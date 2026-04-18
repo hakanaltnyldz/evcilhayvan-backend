@@ -5,24 +5,33 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../socket_service.dart';
 
 // Socket service provider (singleton)
-final socketServiceProvider = Provider<SocketService>((ref) {
+final Provider<SocketService> socketServiceProvider = Provider<SocketService>((
+  ref,
+) {
   return SocketService();
 });
 
 // Connection status provider
-final socketConnectionProvider = StreamProvider<bool>((ref) {
+final StreamProvider<bool> socketConnectionProvider = StreamProvider<bool>((
+  ref,
+) {
   final socketService = ref.watch(socketServiceProvider);
   return socketService.onConnectionStatus;
 });
 
 // Match request count provider (for badge)
-final matchRequestCountProvider = StateProvider<int>((ref) => 0);
+final StateProvider<int> matchRequestCountProvider = StateProvider<int>(
+  (ref) => 0,
+);
 
 // Unread message count provider (for badge)
-final unreadMessageCountProvider = StateProvider<int>((ref) => 0);
+final StateProvider<int> unreadMessageCountProvider = StateProvider<int>(
+  (ref) => 0,
+);
 
 // Current chat conversation ID (to know if user is in chat)
-final currentChatConversationProvider = StateProvider<String?>((ref) => null);
+final StateProvider<String?> currentChatConversationProvider =
+    StateProvider<String?>((ref) => null);
 
 // Socket notification state
 class SocketNotificationState {
@@ -54,11 +63,13 @@ class SocketNotificationState {
 }
 
 // Socket notification notifier
-class SocketNotificationNotifier extends StateNotifier<SocketNotificationState> {
+class SocketNotificationNotifier
+    extends StateNotifier<SocketNotificationState> {
   final Ref ref;
   final List<StreamSubscription> _subscriptions = [];
 
-  SocketNotificationNotifier(this.ref) : super(const SocketNotificationState()) {
+  SocketNotificationNotifier(this.ref)
+    : super(const SocketNotificationState()) {
     _initListeners();
   }
 
@@ -162,18 +173,23 @@ class SocketNotificationNotifier extends StateNotifier<SocketNotificationState> 
   }
 }
 
-final socketNotificationProvider =
+final StateNotifierProvider<SocketNotificationNotifier, SocketNotificationState>
+socketNotificationProvider =
     StateNotifierProvider<SocketNotificationNotifier, SocketNotificationState>(
-  (ref) => SocketNotificationNotifier(ref),
-);
+      (ref) => SocketNotificationNotifier(ref),
+    );
 
 // Helper widget to show socket notifications
 class SocketNotificationListener extends ConsumerStatefulWidget {
   final Widget child;
-  final void Function(BuildContext context, MatchRequestEvent event)? onMatchRequest;
-  final void Function(BuildContext context, MatchAcceptedEvent event)? onMatchAccepted;
-  final void Function(BuildContext context, MatchRejectedEvent event)? onMatchRejected;
-  final void Function(BuildContext context, NewMessageEvent event)? onNewMessage;
+  final void Function(BuildContext context, MatchRequestEvent event)?
+  onMatchRequest;
+  final void Function(BuildContext context, MatchAcceptedEvent event)?
+  onMatchAccepted;
+  final void Function(BuildContext context, MatchRejectedEvent event)?
+  onMatchRejected;
+  final void Function(BuildContext context, NewMessageEvent event)?
+  onNewMessage;
 
   const SocketNotificationListener({
     super.key,
@@ -298,9 +314,7 @@ void showMatchAcceptedSnackBar(
 void showMatchRejectedSnackBar(BuildContext context, MatchRejectedEvent event) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text(
-        '${event.rejectorName} eslesme isteginizi reddetti.',
-      ),
+      content: Text('${event.rejectorName} eslesme isteginizi reddetti.'),
       duration: const Duration(seconds: 3),
       backgroundColor: Colors.orange,
     ),
@@ -317,10 +331,7 @@ void showNewMessageSnackBar(
       content: Text(
         '${event.senderName}: ${event.message.length > 30 ? '${event.message.substring(0, 30)}...' : event.message}',
       ),
-      action: SnackBarAction(
-        label: 'Gor',
-        onPressed: onGoToChat ?? () {},
-      ),
+      action: SnackBarAction(label: 'Gor', onPressed: onGoToChat ?? () {}),
       duration: const Duration(seconds: 3),
     ),
   );

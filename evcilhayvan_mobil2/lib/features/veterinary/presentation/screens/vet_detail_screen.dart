@@ -139,10 +139,10 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                         children: [
                           if (vet.isVerified)
                             _buildBadge(Icons.verified, l10n.vetVerified, const Color(0xFF2D6A4F)),
+                          if (vet.isVerified && vet.userId != null)
+                            _buildBadge(Icons.calendar_today_rounded, 'Randevu Kabul Ediyor', const Color(0xFF52B788)),
                           if (vet.source == 'google_places')
                             _buildBadge(Icons.map, 'Google Places', Colors.orange),
-                          if (vet.acceptsOnlineAppointments)
-                            _buildBadge(Icons.calendar_today, l10n.vetOnlineAppointment, const Color(0xFF52B788)),
                         ],
                       ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05),
                       const SizedBox(height: 16),
@@ -264,15 +264,59 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // PRIMARY: Randevu Al
-                    if (vet.acceptsOnlineAppointments)
+                    // PRIMARY: Randevu Al — sadece admin onaylı, hesap sahibi, kendi kliniği DEĞİL
+                    if (vet.isVerified && vet.userId != null && !isMyVet) ...[
                       GradientButton(
                         label: l10n.vetAppointment,
                         icon: Icons.calendar_today_rounded,
                         onPressed: () => context.pushNamed('appointment-create', extra: {'vetId': vet.id, 'vetName': vet.name}),
                       ),
-
-                    if (vet.acceptsOnlineAppointments) const SizedBox(height: 10),
+                      const SizedBox(height: 10),
+                    ] else if (isMyVet) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD8F3DC),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFF52B788)),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.store_rounded, color: Color(0xFF2D6A4F), size: 18),
+                            SizedBox(width: 8),
+                            Text(
+                              'Bu kliniğin sahibisiniz',
+                              style: TextStyle(color: Color(0xFF1B4332), fontSize: 13, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    ] else ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.info_outline, color: Colors.grey.shade500, size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Bu klinik henüz online randevu almıyor',
+                              style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
 
                     // SECONDARY: Row of Mesaj + Harita
                     Row(
@@ -540,7 +584,8 @@ class _VetReviewsSectionState extends ConsumerState<_VetReviewsSection> {
     try {
       final repo = ref.read(veterinaryRepositoryProvider);
       await repo.addVetReview(widget.vetId, result['rating'] as int,
-          comment: result['comment'] as String?);
+          comment: result['comment'] as String?,
+          subRatings: result['subRatings'] as Map<String, dynamic>?);
       ref.invalidate(vetReviewsProvider(widget.vetId));
       ref.invalidate(vetDetailProvider(widget.vetId));
       if (mounted) {
@@ -710,6 +755,20 @@ class _VetReviewsSectionState extends ConsumerState<_VetReviewsSection> {
                                   ),
                               ],
                             ),
+                            if (r.subRatings != null && r.subRatings!.hasAny) ...[
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 6,
+                                children: [
+                                  if (r.subRatings!.cleanliness != null)
+                                    _SubRatingChip(label: '🧹 ${r.subRatings!.cleanliness}', color: Colors.teal.shade50, textColor: Colors.teal.shade700),
+                                  if (r.subRatings!.communication != null)
+                                    _SubRatingChip(label: '💬 ${r.subRatings!.communication}', color: Colors.blue.shade50, textColor: Colors.blue.shade700),
+                                  if (r.subRatings!.value != null)
+                                    _SubRatingChip(label: '💰 ${r.subRatings!.value}', color: Colors.orange.shade50, textColor: Colors.orange.shade700),
+                                ],
+                              ),
+                            ],
                             if (r.comment != null && r.comment!.isNotEmpty) ...[
                               const SizedBox(height: 10),
                               Text(r.comment!, style: theme.textTheme.bodyMedium?.copyWith(height: 1.4)),
@@ -739,6 +798,9 @@ class _AddReviewDialog extends StatefulWidget {
 
 class _AddReviewDialogState extends State<_AddReviewDialog> {
   int _rating = 5;
+  int _cleanliness = 5;
+  int _communication = 5;
+  int _value = 5;
   final _commentCtrl = TextEditingController();
 
   @override
@@ -747,45 +809,84 @@ class _AddReviewDialogState extends State<_AddReviewDialog> {
     super.dispose();
   }
 
+  Widget _subRatingRow(String label, String emoji, int current, ValueChanged<int> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Text('$emoji $label', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+          const Spacer(),
+          ...List.generate(5, (i) => GestureDetector(
+            onTap: () => setState(() => onChanged(i + 1)),
+            child: Icon(
+              i < current ? Icons.star : Icons.star_border,
+              color: Colors.amber[600],
+              size: 20,
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Text(l10n.vetReviewDialogTitle),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(5, (i) {
-              return GestureDetector(
-                onTap: () => setState(() => _rating = i + 1),
-                child: Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: Icon(
-                    i < _rating ? Icons.star : Icons.star_border,
-                    color: Colors.amber[700],
-                    size: 36,
-                  ).animate(delay: Duration(milliseconds: i * 60))
-                      .scale(begin: const Offset(0.5, 0.5), end: const Offset(1, 1), duration: 300.ms, curve: Curves.elasticOut),
-                ),
-              );
-            }),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _commentCtrl,
-            maxLines: 3,
-            decoration: InputDecoration(
-              labelText: l10n.vetReviewCommentHint,
-              alignLabelWithHint: true,
-              filled: true,
-              fillColor: const Color(0xFFF4FAF6),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Genel puan
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(5, (i) {
+                return GestureDetector(
+                  onTap: () => setState(() => _rating = i + 1),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      i < _rating ? Icons.star : Icons.star_border,
+                      color: Colors.amber[700],
+                      size: 36,
+                    ).animate(delay: Duration(milliseconds: i * 60))
+                        .scale(begin: const Offset(0.5, 0.5), end: const Offset(1, 1), duration: 300.ms, curve: Curves.elasticOut),
+                  ),
+                );
+              }),
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            // Alt kategori puanları
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4FAF6),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  _subRatingRow('Temizlik', '🧹', _cleanliness, (v) => _cleanliness = v),
+                  _subRatingRow('İletişim', '💬', _communication, (v) => _communication = v),
+                  _subRatingRow('Fiyat/Performans', '💰', _value, (v) => _value = v),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _commentCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: l10n.vetReviewCommentHint,
+                alignLabelWithHint: true,
+                filled: true,
+                fillColor: const Color(0xFFF4FAF6),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              ),
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -796,6 +897,11 @@ class _AddReviewDialogState extends State<_AddReviewDialog> {
           onPressed: () => Navigator.pop(context, {
             'rating': _rating,
             'comment': _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
+            'subRatings': {
+              'cleanliness': _cleanliness,
+              'communication': _communication,
+              'value': _value,
+            },
           }),
           style: FilledButton.styleFrom(backgroundColor: const Color(0xFF2D6A4F)),
           child: Text(l10n.send),
@@ -1064,4 +1170,24 @@ class _ClaimFormSheetState extends State<_ClaimFormSheet> {
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2D6A4F), width: 1.5)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       );
+}
+
+class _SubRatingChip extends StatelessWidget {
+  final String label;
+  final Color color;
+  final Color textColor;
+
+  const _SubRatingChip({required this.label, required this.color, required this.textColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textColor)),
+    );
+  }
 }

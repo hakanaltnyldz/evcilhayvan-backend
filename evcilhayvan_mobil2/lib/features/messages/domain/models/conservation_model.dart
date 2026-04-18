@@ -28,8 +28,12 @@ class Conversation {
     required this.updatedAt,
   });
 
-  factory Conversation.fromJson(Map<String, dynamic> json, String currentUserId) {
-    final participants = (json['participants'] as List?)
+  factory Conversation.fromJson(
+    Map<String, dynamic> json,
+    String currentUserId,
+  ) {
+    final participants =
+        (json['participants'] as List?)
             ?.whereType<Map<String, dynamic>>()
             .toList() ??
         const <Map<String, dynamic>>[];
@@ -44,7 +48,6 @@ class Conversation {
           orElse: () => participants.first,
         );
       } catch (e) {
-        print('❌ Error finding other participant: $e');
         otherParticipantJson = participants.first;
       }
     }
@@ -69,7 +72,6 @@ class Conversation {
         relatedPet = Pet.fromJson(relatedPetData);
         relatedPetId = relatedPetData['_id']?.toString();
       } catch (e) {
-        print('Error parsing relatedPet: $e');
         relatedPetId = relatedPetData['_id']?.toString();
       }
     } else if (relatedPetData is String) {
@@ -95,18 +97,19 @@ class Conversation {
     final contextId = contextIdValue == null
         ? null
         : contextIdValue is Map<String, dynamic>
-            ? (contextIdValue['_id']?.toString() ?? contextIdValue['id']?.toString())
-            : contextIdValue.toString();
+        ? (contextIdValue['_id']?.toString() ??
+              contextIdValue['id']?.toString())
+        : contextIdValue.toString();
 
     // Try to parse User with error handling
     User otherParticipantUser;
     try {
       otherParticipantUser = User.fromJson(otherParticipantJson);
     } catch (e) {
-      print('❌ User.fromJson failed: $e');
       // Create fallback user
       otherParticipantUser = User(
-        id: otherParticipantJson['_id']?.toString() ??
+        id:
+            otherParticipantJson['_id']?.toString() ??
             otherParticipantJson['id']?.toString() ??
             'unknown',
         name: otherParticipantJson['name']?.toString() ?? 'Kullanıcı',

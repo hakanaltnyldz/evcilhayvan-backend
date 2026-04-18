@@ -21,17 +21,24 @@ class AppointmentCreateScreen extends ConsumerStatefulWidget {
   final String vetId;
   final String vetName;
 
-  const AppointmentCreateScreen({super.key, required this.vetId, required this.vetName});
+  const AppointmentCreateScreen({
+    super.key,
+    required this.vetId,
+    required this.vetName,
+  });
 
   @override
-  ConsumerState<AppointmentCreateScreen> createState() => _AppointmentCreateScreenState();
+  ConsumerState<AppointmentCreateScreen> createState() =>
+      _AppointmentCreateScreenState();
 }
 
-class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScreen> {
+class _AppointmentCreateScreenState
+    extends ConsumerState<AppointmentCreateScreen> {
   int _step = 0;
   Pet? _selectedPet;
   DateTime? _selectedDate;
   String? _selectedSlot;
+  String _appointmentType = 'clinic';
   final _reasonController = TextEditingController();
   final _notesController = TextEditingController();
   bool _loading = false;
@@ -87,8 +94,12 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
     setState(() => _slotsLoading = true);
     try {
       final repo = ref.read(appointmentRepositoryProvider);
-      final dateStr = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-      final slots = await repo.getAvailableSlots(vetId: widget.vetId, date: dateStr);
+      final dateStr =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final slots = await repo.getAvailableSlots(
+        vetId: widget.vetId,
+        date: dateStr,
+      );
       setState(() {
         _availableSlots = slots;
         _slotsLoading = false;
@@ -97,47 +108,65 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
       setState(() => _slotsLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.apptCreateSlotsError(e.toString()))),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.apptCreateSlotsError(e.toString()),
+            ),
+          ),
         );
       }
     }
   }
 
   Future<void> _submit() async {
-    if (_selectedPet == null || _selectedDate == null || _selectedSlot == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.apptCreateValidation)),
-      );
+    final l10n = AppLocalizations.of(context)!;
+    if (_selectedPet == null ||
+        _selectedDate == null ||
+        _selectedSlot == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.apptCreateValidation)));
       return;
     }
     setState(() => _loading = true);
     try {
       final repo = ref.read(appointmentRepositoryProvider);
       final parts = _selectedSlot!.split(':');
+      final hour = parts.isNotEmpty ? int.tryParse(parts[0]) : null;
+      final minute = parts.length > 1 ? int.tryParse(parts[1]) : null;
+      if (hour == null || minute == null) {
+        throw Exception(l10n.apptCreateValidation);
+      }
       final dateTime = DateTime(
         _selectedDate!.year,
         _selectedDate!.month,
         _selectedDate!.day,
-        int.parse(parts[0]),
-        int.parse(parts[1]),
+        hour,
+        minute,
       );
       await repo.createAppointment(
         petId: _selectedPet!.id,
         veterinaryId: widget.vetId,
         date: dateTime,
-        reason: _reasonController.text.trim().isEmpty ? null : _reasonController.text.trim(),
-        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        reason: _reasonController.text.trim().isEmpty
+            ? null
+            : _reasonController.text.trim(),
+        notes: _notesController.text.trim().isEmpty
+            ? null
+            : _notesController.text.trim(),
+        type: _appointmentType,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.apptCreateSuccess)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.apptCreateSuccess)));
+        ref.invalidate(myAppointmentsProvider);
         context.pop();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.apptCreateError(e.toString()))),
+          SnackBar(content: Text(l10n.apptCreateError(e.toString()))),
         );
       }
     } finally {
@@ -210,7 +239,10 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
       error: (e, _) => Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Text(l10n.apptCreatePetsError(e.toString()), textAlign: TextAlign.center),
+          child: Text(
+            l10n.apptCreatePetsError(e.toString()),
+            textAlign: TextAlign.center,
+          ),
         ),
       ),
       data: (pets) {
@@ -236,81 +268,96 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
             final selected = _selectedPet?.id == pet.id;
 
             return InteractiveScale(
-              onTap: () => setState(() => _selectedPet = pet),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                decoration: BoxDecoration(
-                  color: selected ? const Color(0xFFD8F3DC) : context.cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: selected ? const Color(0xFF2D6A4F) : context.subtleBorder,
-                    width: selected ? 2 : 0.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF2D6A4F).withOpacity(selected ? 0.15 : 0.06),
-                      blurRadius: selected ? 12 : 8,
-                      offset: const Offset(0, 3),
+                  onTap: () => setState(() => _selectedPet = pet),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? const Color(0xFFD8F3DC)
+                          : context.cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: selected
+                            ? const Color(0xFF2D6A4F)
+                            : context.subtleBorder,
+                        width: selected ? 2 : 0.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(
+                            0xFF2D6A4F,
+                          ).withOpacity(selected ? 0.15 : 0.06),
+                          blurRadius: selected ? 12 : 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        children: [
-                          _buildPetAvatar(pet),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  pet.name,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                    color: selected ? const Color(0xFF1B4332) : null,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                    child: Stack(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              _buildPetAvatar(pet),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      pet.name,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                        color: selected
+                                            ? const Color(0xFF1B4332)
+                                            : null,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      pet.species,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  pet.species,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (selected)
+                          Positioned(
+                            top: 6,
+                            right: 6,
+                            child: Container(
+                              width: 22,
+                              height: 22,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF2D6A4F),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 14,
+                              ),
                             ),
                           ),
-                        ],
-                      ),
+                      ],
                     ),
-                    if (selected)
-                      Positioned(
-                        top: 6,
-                        right: 6,
-                        child: Container(
-                          width: 22,
-                          height: 22,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF2D6A4F),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.check, color: Colors.white, size: 14),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ).animate().fadeIn(duration: 200.ms, delay: (index * 60).ms).slideX(begin: 0.05, end: 0);
+                  ),
+                )
+                .animate()
+                .fadeIn(duration: 200.ms, delay: (index * 60).ms)
+                .slideX(begin: 0.05, end: 0);
           },
         );
       },
@@ -364,63 +411,96 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
-        child: PremiumCard(
-          onTap: _pickDate,
-          padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD8F3DC),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF52B788), width: 2),
-                ),
-                child: const Icon(Icons.calendar_month_rounded, size: 48, color: Color(0xFF2D6A4F)),
-              ),
-              const SizedBox(height: 20),
-              if (_selectedDate != null) ...[
-                Text(
-                  '${_selectedDate!.day.toString().padLeft(2, '0')}.${_selectedDate!.month.toString().padLeft(2, '0')}.${_selectedDate!.year}',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1B4332),
+        child:
+            PremiumCard(
+                  onTap: _pickDate,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 32,
+                    horizontal: 24,
                   ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD8F3DC),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF52B788),
+                            width: 2,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.calendar_month_rounded,
+                          size: 48,
+                          color: Color(0xFF2D6A4F),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      if (_selectedDate != null) ...[
+                        Text(
+                          '${_selectedDate!.day.toString().padLeft(2, '0')}.${_selectedDate!.month.toString().padLeft(2, '0')}.${_selectedDate!.year}',
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1B4332),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _formatWeekday(_selectedDate!),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton.icon(
+                          onPressed: _pickDate,
+                          icon: const Icon(Icons.edit_calendar, size: 18),
+                          label: Text(l10n.apptCreateSelectDateBtn),
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFF2D6A4F),
+                          ),
+                        ),
+                      ] else ...[
+                        Text(
+                          l10n.apptCreateDate,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.apptCreateSelectDateBtn,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                )
+                .animate()
+                .fadeIn(duration: 300.ms)
+                .scale(
+                  begin: const Offset(0.95, 0.95),
+                  end: const Offset(1, 1),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  _formatWeekday(_selectedDate!),
-                  style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
-                ),
-                const SizedBox(height: 16),
-                TextButton.icon(
-                  onPressed: _pickDate,
-                  icon: const Icon(Icons.edit_calendar, size: 18),
-                  label: Text(l10n.apptCreateSelectDateBtn),
-                  style: TextButton.styleFrom(foregroundColor: const Color(0xFF2D6A4F)),
-                ),
-              ] else ...[
-                Text(
-                  l10n.apptCreateDate,
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.apptCreateSelectDateBtn,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
-                ),
-              ],
-            ],
-          ),
-        ).animate().fadeIn(duration: 300.ms).scale(begin: const Offset(0.95, 0.95), end: const Offset(1, 1)),
       ),
     );
   }
 
   String _formatWeekday(DateTime date) {
-    const days = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+    const days = [
+      'Pazartesi',
+      'Salı',
+      'Çarşamba',
+      'Perşembe',
+      'Cuma',
+      'Cumartesi',
+      'Pazar',
+    ];
     return days[date.weekday - 1];
   }
 
@@ -464,19 +544,31 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (morning.isNotEmpty) ...[
-            _buildTimeGroupHeader(Icons.wb_sunny_rounded, 'Sabah', const Color(0xFFF9A825)),
+            _buildTimeGroupHeader(
+              Icons.wb_sunny_rounded,
+              'Sabah',
+              const Color(0xFFF9A825),
+            ),
             const SizedBox(height: 8),
             _buildSlotGrid(morning),
             const SizedBox(height: 20),
           ],
           if (afternoon.isNotEmpty) ...[
-            _buildTimeGroupHeader(Icons.wb_cloudy_rounded, 'Öğleden Sonra', const Color(0xFFFF8F00)),
+            _buildTimeGroupHeader(
+              Icons.wb_cloudy_rounded,
+              'Öğleden Sonra',
+              const Color(0xFFFF8F00),
+            ),
             const SizedBox(height: 8),
             _buildSlotGrid(afternoon),
             const SizedBox(height: 20),
           ],
           if (evening.isNotEmpty) ...[
-            _buildTimeGroupHeader(Icons.nights_stay_rounded, 'Akşam', const Color(0xFF5C6BC0)),
+            _buildTimeGroupHeader(
+              Icons.nights_stay_rounded,
+              'Akşam',
+              const Color(0xFF5C6BC0),
+            ),
             const SizedBox(height: 8),
             _buildSlotGrid(evening),
           ],
@@ -517,7 +609,9 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
               color: selected ? const Color(0xFF2D6A4F) : context.cardColor,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: selected ? const Color(0xFF2D6A4F) : context.subtleBorder,
+                color: selected
+                    ? const Color(0xFF2D6A4F)
+                    : context.subtleBorder,
                 width: selected ? 1.5 : 0.5,
               ),
               boxShadow: [
@@ -554,13 +648,45 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Randevu Türü Seçimi
+          Text(
+            'Randevu Türü',
+            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _AppointmentTypeCard(
+                  icon: Icons.local_hospital_rounded,
+                  label: 'Klinikte',
+                  selected: _appointmentType == 'clinic',
+                  onTap: () => setState(() => _appointmentType = 'clinic'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _AppointmentTypeCard(
+                  icon: Icons.videocam_rounded,
+                  label: 'Online',
+                  selected: _appointmentType == 'online',
+                  onTap: () => setState(() => _appointmentType = 'online'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
           // Reason
           TextFormField(
             controller: _reasonController,
             decoration: InputDecoration(
               labelText: l10n.apptCreateReason,
               filled: true,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -571,7 +697,10 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
             decoration: InputDecoration(
               labelText: l10n.apptCreateNotes,
               filled: true,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
             ),
             maxLines: 3,
           ),
@@ -583,9 +712,17 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _buildSummaryRow(Icons.local_hospital_rounded, widget.vetName, theme),
+                _buildSummaryRow(
+                  Icons.local_hospital_rounded,
+                  widget.vetName,
+                  theme,
+                ),
                 const Divider(height: 20),
-                _buildSummaryRow(Icons.pets_rounded, _selectedPet?.name ?? '-', theme),
+                _buildSummaryRow(
+                  Icons.pets_rounded,
+                  _selectedPet?.name ?? '-',
+                  theme,
+                ),
                 const Divider(height: 20),
                 _buildSummaryRow(
                   Icons.calendar_today_rounded,
@@ -595,7 +732,17 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
                   theme,
                 ),
                 const Divider(height: 20),
-                _buildSummaryRow(Icons.access_time_rounded, _selectedSlot ?? '-', theme),
+                _buildSummaryRow(
+                  Icons.access_time_rounded,
+                  _selectedSlot ?? '-',
+                  theme,
+                ),
+                const Divider(height: 20),
+                _buildSummaryRow(
+                  _appointmentType == 'online' ? Icons.videocam_rounded : Icons.local_hospital_rounded,
+                  _appointmentType == 'online' ? 'Online Randevu' : 'Klinikte Randevu',
+                  theme,
+                ),
               ],
             ),
           ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0),
@@ -620,7 +767,9 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
         Expanded(
           child: Text(
             text,
-            style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+            style: theme.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ],
@@ -631,6 +780,7 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
 
   Widget _buildNavButtons() {
     final l10n = AppLocalizations.of(context)!;
+    final isBusy = _slotsLoading || _loading;
 
     return SafeArea(
       child: Padding(
@@ -640,14 +790,18 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
             if (_step > 0)
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => setState(() {
-                    _step--;
-                  }),
+                  onPressed: isBusy
+                      ? null
+                      : () => setState(() {
+                          _step--;
+                        }),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF2D6A4F),
                     side: const BorderSide(color: Color(0xFF2D6A4F)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                   child: const Text('Geri'),
                 ),
@@ -656,27 +810,94 @@ class _AppointmentCreateScreenState extends ConsumerState<AppointmentCreateScree
             Expanded(
               flex: 2,
               child: ElevatedButton(
-                onPressed: _canProceed
-                    ? (_step < 3 ? _nextStep : (_loading ? null : _submit))
+                onPressed: (_canProceed && !isBusy)
+                    ? (_step < 3 ? _nextStep : _submit)
                     : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2D6A4F),
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: const Color(0xFF2D6A4F).withOpacity(0.4),
+                  disabledBackgroundColor: const Color(
+                    0xFF2D6A4F,
+                  ).withOpacity(0.4),
                   disabledForegroundColor: Colors.white70,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   minimumSize: const Size(0, 52),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 child: _step < 3
-                    ? const Text('Devam', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16))
+                    ? const Text(
+                        'Devam',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      )
                     : _loading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : Text(l10n.apptCreateBtn, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        l10n.apptCreateBtn,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AppointmentTypeCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _AppointmentTypeCard({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFD8F3DC) : Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: selected ? const Color(0xFF2D6A4F) : Colors.grey.shade300,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 28, color: selected ? const Color(0xFF2D6A4F) : Colors.grey.shade500),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                color: selected ? const Color(0xFF1B4332) : Colors.grey.shade700,
               ),
             ),
           ],

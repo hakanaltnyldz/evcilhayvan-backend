@@ -10,6 +10,7 @@ import 'package:evcilhayvan_mobil2/features/health/data/repositories/health_repo
 import 'package:evcilhayvan_mobil2/features/health/domain/models/health_record_model.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/core/http.dart';
 
 
 // ── Providers ──────────────────────────────────────────────────────────────
@@ -25,6 +26,14 @@ final weightChartProvider =
     FutureProvider.autoDispose.family<List<Map<String, dynamic>>, String>((ref, petId) {
   return ref.read(healthRepoProvider).getWeightChart(petId);
 });
+
+final _petFeedingProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, String>(
+  (ref, petId) async {
+    final r = await ApiClient().dio.get('/api/pets/$petId');
+    final pet = Map<String, dynamic>.from(r.data as Map);
+    return pet;
+  },
+);
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -73,9 +82,23 @@ class HealthJournalScreen extends ConsumerStatefulWidget {
   ConsumerState<HealthJournalScreen> createState() => _HealthJournalScreenState();
 }
 
-class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen> {
+class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen>
+    with SingleTickerProviderStateMixin {
   String? _filterType;
   final _fmt = DateFormat('dd MMM yyyy', 'tr');
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   Future<void> _addRecord() async {
     final result = await showDialog<Map<String, dynamic>>(
@@ -133,99 +156,435 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final recordsAsync = ref.watch(healthRecordsProvider(widget.petId));
-    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.healthJournalTitle(widget.petName)),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(icon: Icon(Icons.medical_information), text: 'Sağlık Kayıtları'),
+            Tab(icon: Icon(Icons.restaurant), text: 'Beslenme'),
+          ],
+        ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _addRecord,
-        icon: const Icon(Icons.add),
-        label: Text(l10n.healthAddRecord),
+      floatingActionButton: ListenableBuilder(
+        listenable: _tabController,
+        builder: (_, __) => _tabController.index == 0
+            ? FloatingActionButton.extended(
+                onPressed: _addRecord,
+                icon: const Icon(Icons.add),
+                label: Text(l10n.healthAddRecord),
+              )
+            : FloatingActionButton.extended(
+                onPressed: () => _showAddMealSheet(context),
+                icon: const Icon(Icons.add),
+                label: const Text('Öğün Ekle'),
+                backgroundColor: const Color(0xFF40916C),
+              ),
       ),
-      body: Column(
+      body: TabBarView(
+        controller: _tabController,
         children: [
-          // Filter chips
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
+          _RecordsTab(
+            petId: widget.petId,
+            filterType: _filterType,
+            onFilterChanged: (t) => setState(() => _filterType = t),
+            fmt: _fmt,
+            onAddRecord: _addRecord,
+            onDelete: _delete,
+          ),
+          _FeedingTab(petId: widget.petId),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAddMealSheet(BuildContext context) async {
+    final timeCtrl = TextEditingController();
+    final amountCtrl = TextEditingController();
+    final foodCtrl = TextEditingController();
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text('Öğün Ekle', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: timeCtrl,
+              decoration: const InputDecoration(labelText: 'Saat (ör: 08:00)', prefixIcon: Icon(Icons.access_time)),
+              keyboardType: TextInputType.datetime,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: amountCtrl,
+              decoration: const InputDecoration(labelText: 'Miktar (ör: 100g)', prefixIcon: Icon(Icons.scale)),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: foodCtrl,
+              decoration: const InputDecoration(labelText: 'Mama Türü (ör: Kuru Mama)', prefixIcon: Icon(Icons.pets)),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                try {
+                  final petAsync = ref.read(_petFeedingProvider(widget.petId));
+                  final existing = (petAsync.valueOrNull?['feedingSchedule'] as List? ?? [])
+                      .cast<Map<String, dynamic>>();
+                  final updated = [...existing, {
+                    'time': timeCtrl.text.trim(),
+                    'amount': amountCtrl.text.trim(),
+                    'foodType': foodCtrl.text.trim(),
+                  }];
+                  await ApiClient().dio.patch('/api/pets/${widget.petId}/feeding', data: {
+                    'feedingSchedule': updated,
+                  });
+                  ref.invalidate(_petFeedingProvider(widget.petId));
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Öğün eklendi')),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2D6A4F),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Kaydet'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+}
+
+// ── Sağlık Kayıtları Sekmesi ────────────────────────────────────────────────
+
+class _RecordsTab extends ConsumerWidget {
+  final String petId;
+  final String? filterType;
+  final ValueChanged<String?> onFilterChanged;
+  final DateFormat fmt;
+  final VoidCallback onAddRecord;
+  final Future<void> Function(String) onDelete;
+
+  const _RecordsTab({
+    required this.petId,
+    required this.filterType,
+    required this.onFilterChanged,
+    required this.fmt,
+    required this.onAddRecord,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final recordsAsync = ref.watch(healthRecordsProvider(petId));
+
+    return Column(
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              FilterChip(
+                label: Text(l10n.healthTypeAll),
+                selected: filterType == null,
+                onSelected: (_) => onFilterChanged(null),
+              ),
+              const SizedBox(width: 8),
+              ...['weight', 'medication', 'vet_visit', 'note'].map((t) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    label: Text(_typeLabel(t, l10n)),
+                    selected: filterType == t,
+                    avatar: Icon(_typeIcons[t]!, size: 16),
+                    onSelected: (_) => onFilterChanged(filterType == t ? null : t),
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        if (filterType == 'weight') _WeightChartSection(petId: petId),
+        Expanded(
+          child: recordsAsync.when(
+            loading: () => const Center(child: PawLoading()),
+            error: (e, _) => Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                  const SizedBox(height: 8),
+                  Text(l10n.healthLoadError(e.toString())),
+                  TextButton(
+                    onPressed: () => ref.invalidate(healthRecordsProvider(petId)),
+                    child: Text(l10n.healthRefresh),
+                  ),
+                ],
+              ),
+            ),
+            data: (records) {
+              final filtered = filterType == null
+                  ? records
+                  : records.where((r) => r.type == filterType).toList();
+              if (filtered.isEmpty) {
+                return AnimatedEmptyState(
+                  icon: Icons.health_and_safety_outlined,
+                  title: filterType == null ? l10n.healthNoRecords : l10n.healthNoFilterRecords(filterType!),
+                  subtitle: l10n.healthAddHint,
+                );
+              }
+              return ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+                itemCount: filtered.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemBuilder: (context, index) {
+                  final record = filtered[index];
+                  return _RecordCard(record: record, fmt: fmt, onDelete: () => onDelete(record.id));
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Beslenme Sekmesi ────────────────────────────────────────────────────────
+
+class _FeedingTab extends ConsumerWidget {
+  final String petId;
+  const _FeedingTab({required this.petId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final petAsync = ref.watch(_petFeedingProvider(petId));
+
+    return petAsync.when(
+      loading: () => const Center(child: PawLoading()),
+      error: (e, _) => Center(child: Text('Yüklenemedi: $e')),
+      data: (petData) {
+        final schedule = (petData['feedingSchedule'] as List? ?? [])
+            .cast<Map<String, dynamic>>();
+        final currentWeight = (petData['currentWeight'] as num?)?.toDouble();
+        final targetWeight = (petData['targetWeight'] as num?)?.toDouble();
+
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // Kilo kartı
+            _WeightCard(
+              petId: petId,
+              currentWeight: currentWeight,
+              targetWeight: targetWeight,
+              onUpdated: () => ref.invalidate(_petFeedingProvider(petId)),
+            ),
+            const SizedBox(height: 16),
+            // Öğünler başlığı
+            Row(
               children: [
-                FilterChip(
-                  label: Text(l10n.healthTypeAll),
-                  selected: _filterType == null,
-                  onSelected: (_) => setState(() => _filterType = null),
-                ),
+                const Icon(Icons.restaurant, size: 18, color: Color(0xFF2D6A4F)),
                 const SizedBox(width: 8),
-                ...['weight', 'medication', 'vet_visit', 'note'].map((t) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(_typeLabel(t, l10n)),
-                      selected: _filterType == t,
-                      avatar: Icon(_typeIcons[t]!, size: 16),
-                      onSelected: (_) => setState(
-                          () => _filterType = _filterType == t ? null : t),
-                    ),
-                  );
-                }),
+                const Text('Beslenme Takvimi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                const Spacer(),
+                Text('${schedule.length} öğün', style: const TextStyle(fontSize: 12, color: Colors.grey)),
               ],
             ),
-          ),
-          const Divider(height: 1),
-          if (_filterType == 'weight') _WeightChartSection(petId: widget.petId),
-          Expanded(
-            child: recordsAsync.when(
-              loading: () => const Center(child: PawLoading()),
-              error: (e, _) => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                    const SizedBox(height: 8),
-                    Text(l10n.healthLoadError(e.toString())),
-                    TextButton(
-                      onPressed: () =>
-                          ref.invalidate(healthRecordsProvider(widget.petId)),
-                      child: Text(l10n.healthRefresh),
-                    ),
-                  ],
+            const SizedBox(height: 8),
+            if (schedule.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 32),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.no_meals, size: 48, color: Colors.grey),
+                      SizedBox(height: 8),
+                      Text('Henüz öğün eklenmedi', style: TextStyle(color: Colors.grey)),
+                    ],
+                  ),
                 ),
-              ),
-              data: (records) {
-                final filtered = _filterType == null
-                    ? records
-                    : records.where((r) => r.type == _filterType).toList();
-
-                if (filtered.isEmpty) {
-                  return AnimatedEmptyState(
-                    icon: Icons.health_and_safety_outlined,
-                    title: _filterType == null
-                        ? l10n.healthNoRecords
-                        : l10n.healthNoFilterRecords(_filterType!),
-                    subtitle: l10n.healthAddHint,
-                  );
-                }
-
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-                  itemCount: filtered.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (context, index) {
-                    final record = filtered[index];
-                    return _RecordCard(
-                      record: record,
-                      fmt: _fmt,
-                      onDelete: () => _delete(record.id),
-                    );
-                  },
+              )
+            else
+              ...schedule.asMap().entries.map((e) {
+                final i = e.key;
+                final meal = e.value;
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    leading: Container(
+                      width: 40, height: 40,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFD8F3DC), shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.restaurant, size: 20, color: Color(0xFF2D6A4F)),
+                    ),
+                    title: Text(meal['time']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text('${meal['amount'] ?? ''} • ${meal['foodType'] ?? ''}'),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                      onPressed: () async {
+                        final updated = [...schedule]..removeAt(i);
+                        try {
+                          await ApiClient().dio.patch('/api/pets/$petId/feeding', data: {
+                            'feedingSchedule': updated,
+                          });
+                          ref.invalidate(_petFeedingProvider(petId));
+                        } catch (_) {}
+                      },
+                    ),
+                  ),
                 );
-              },
+              }),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _WeightCard extends ConsumerStatefulWidget {
+  final String petId;
+  final double? currentWeight;
+  final double? targetWeight;
+  final VoidCallback onUpdated;
+  const _WeightCard({required this.petId, this.currentWeight, this.targetWeight, required this.onUpdated});
+
+  @override
+  ConsumerState<_WeightCard> createState() => _WeightCardState();
+}
+
+class _WeightCardState extends ConsumerState<_WeightCard> {
+  bool _editing = false;
+  late TextEditingController _curCtrl;
+  late TextEditingController _tgtCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _curCtrl = TextEditingController(text: widget.currentWeight?.toString() ?? '');
+    _tgtCtrl = TextEditingController(text: widget.targetWeight?.toString() ?? '');
+  }
+
+  @override
+  void dispose() {
+    _curCtrl.dispose();
+    _tgtCtrl.dispose();
+    super.dispose();
+  }
+
+  double? get _progress {
+    final cur = widget.currentWeight;
+    final tgt = widget.targetWeight;
+    if (cur == null || tgt == null || tgt == 0) return null;
+    return (cur / tgt).clamp(0.0, 1.5);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = _progress;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.monitor_weight, color: Color(0xFF2D6A4F)),
+                const SizedBox(width: 8),
+                const Text('Kilo Takibi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                const Spacer(),
+                IconButton(
+                  icon: Icon(_editing ? Icons.check : Icons.edit, size: 20),
+                  onPressed: () async {
+                    if (_editing) {
+                      try {
+                        await ApiClient().dio.patch('/api/pets/${widget.petId}/feeding', data: {
+                          if (_curCtrl.text.isNotEmpty) 'currentWeight': double.tryParse(_curCtrl.text),
+                          if (_tgtCtrl.text.isNotEmpty) 'targetWeight': double.tryParse(_tgtCtrl.text),
+                        });
+                        widget.onUpdated();
+                      } catch (_) {}
+                    }
+                    setState(() => _editing = !_editing);
+                  },
+                ),
+              ],
             ),
-          ),
-        ],
+            if (_editing) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _curCtrl,
+                      decoration: const InputDecoration(labelText: 'Mevcut Kilo (kg)', isDense: true),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: _tgtCtrl,
+                      decoration: const InputDecoration(labelText: 'Hedef Kilo (kg)', isDense: true),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+            ] else ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Text('Mevcut: ${widget.currentWeight != null ? "${widget.currentWeight} kg" : "—"}',
+                      style: const TextStyle(fontSize: 13)),
+                  const SizedBox(width: 16),
+                  Text('Hedef: ${widget.targetWeight != null ? "${widget.targetWeight} kg" : "—"}',
+                      style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                ],
+              ),
+              if (progress != null) ...[
+                const SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value: progress.clamp(0.0, 1.0),
+                  backgroundColor: Colors.grey.shade200,
+                  color: progress > 1.0 ? Colors.orange : const Color(0xFF52B788),
+                  minHeight: 8,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${(progress * 100).toStringAsFixed(0)}% hedefe ulaşıldı',
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+              ],
+            ],
+          ],
+        ),
       ),
     );
   }

@@ -381,7 +381,27 @@ class PetsRepository {
     final updated = updater(current);
     await cacheFeed(updated);
   }
+
+  Future<List<Map<String, dynamic>>> getPetTimeline(String petId) {
+    return _guard(() async {
+      final response = await _dio.get('/api/pets/$petId/timeline');
+      final list = response.data['timeline'] as List? ?? [];
+      return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getHealthSummary() {
+    return _guard(() async {
+      final response = await _dio.get('/api/pets/health-summary');
+      final list = response.data['summary'] as List? ?? [];
+      return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    });
+  }
 }
+
+final petHealthSummaryProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
+  return ref.read(petsRepositoryProvider).getHealthSummary();
+});
 
 class PetDetailException implements Exception {
   final String message;

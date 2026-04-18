@@ -11,6 +11,13 @@ import { sendOk, sendError } from "../utils/apiResponse.js";
 import WalkUpdate from "../models/WalkUpdate.js";
 import CareReport from "../models/CareReport.js";
 import SitterBooking from "../models/SitterBooking.js";
+import {
+  cancelTrackingGrace,
+  computePayableAmount,
+  markTrackingOffline,
+  markTrackingOnline,
+  scheduleTrackingGrace,
+} from "../services/sitterTrackingService.js";
 
 const router = Router();
 
@@ -69,7 +76,7 @@ router.patch(
     param("id").isMongoId().withMessage("Gecersiz rezervasyon ID"),
     body("status")
       .optional()
-      .isIn(["accepted", "rejected", "cancelled", "completed"])
+      .isIn(["accepted", "active", "rejected", "cancelled", "completed"])
       .withMessage("Gecersiz durum"),
     body("review.rating").optional().isInt({ min: 1, max: 5 }).withMessage("Puan 1 ile 5 arasinda olmali"),
     body("review.comment")
@@ -122,6 +129,15 @@ router.post(
       photoUrl: photoUrl || undefined,
       message: message || undefined,
     });
+    if (type === "location" && Array.isArray(coordinates) && coordinates.length === 2) {
+      cancelTrackingGrace(booking._id);
+      markTrackingOnline(booking, {
+        now: new Date(),
+        lng: Number(coordinates[0]),
+        lat: Number(coordinates[1]),
+      });
+      await booking.save();
+    }
 
     // Socket.io ile owner'a anlık bildirim
     const io = req.app.get("io");
@@ -282,7 +298,7 @@ router.post("/:id/walk-photos", authRequired(), (req, res, next) => {
     if (String(booking.sitterUserId) !== String(userId)) {
       return sendError(res, 403, "Yalnızca bakıcı fotoğraf paylaşabilir", "forbidden");
     }
-    if (!["accepted", "completed"].includes(booking.status)) {
+    if (!["active", "completed"].includes(booking.status)) {
       return sendError(res, 400, "Yalnızca aktif rezervasyona fotoğraf eklenebilir", "invalid_status");
     }
 
@@ -351,16 +367,40 @@ router.patch("/:id/tracking", authRequired(), async (req, res) => {
     }
 
     const active = req.body.active === true || req.body.active === "true";
-    booking.liveTracking = { ...booking.liveTracking, isActive: active };
-    await booking.save();
-
+    const reason = req.body.reason?.toString().trim() || "tracking_manually_disabled";
     const io = req.app.get("io");
-    if (io) {
-      const event = active ? "sitter:tracking_started" : "sitter:tracking_ended";
-      io.to(`user:${String(booking.petOwnerId)}`).emit(event, { bookingId: booking._id });
+
+    if (active) {
+      cancelTrackingGrace(booking._id);
+      markTrackingOnline(booking, { now: new Date() });
+    } else {
+      markTrackingOffline(booking, {
+        now: new Date(),
+        reason,
+      });
+      if (booking.status === "active") {
+        scheduleTrackingGrace({ io, bookingId: booking._id });
+      }
     }
 
-    return sendOk(res, 200, { liveTracking: booking.liveTracking });
+    booking.earnings = booking.earnings || {};
+    booking.earnings.payableAmount = computePayableAmount(booking);
+    await booking.save();
+
+    if (io) {
+      const event = active ? "sitter:tracking_started" : "sitter:tracking_ended";
+      io.to(`user:${String(booking.petOwnerId)}`).emit(event, {
+        bookingId: booking._id,
+        liveTracking: booking.liveTracking,
+        earningsStatus: booking.earnings?.status || "pending",
+        payableAmount: booking.earnings?.payableAmount ?? booking.totalPrice,
+      });
+    }
+
+    return sendOk(res, 200, {
+      liveTracking: booking.liveTracking,
+      earnings: booking.earnings,
+    });
   } catch (err) {
     return sendError(res, 500, "Takip durumu güncellenemedi", "internal_error", err.message);
   }

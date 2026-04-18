@@ -12,6 +12,11 @@ class User {
   final String? avatarUrl;
   final String? about;
   final bool isSeller;
+  final int points;
+  final List<String> badges;
+  final int followersCount;
+  final int followingCount;
+  final bool isFollowing;
 
   // profilePicture getter for backwards compatibility
   String? get profilePicture => avatarUrl;
@@ -22,9 +27,14 @@ class User {
     required this.email,
     required this.role,
     this.city,
-    this.avatarUrl, // Eklendi
-    this.about,      // Eklendi
+    this.avatarUrl,
+    this.about,
     this.isSeller = false,
+    this.points = 0,
+    this.badges = const [],
+    this.followersCount = 0,
+    this.followingCount = 0,
+    this.isFollowing = false,
   });
 
   // --- GÜNCELLEME: ÇÖKMEYİ ENGELLEYEN YER ---
@@ -44,6 +54,11 @@ class User {
       avatarUrl: json['avatarUrl'], // Eklendi
       about: json['about'],        // Eklendi
       isSeller: json['isSeller'] == true || json['role'] == 'seller',
+      points: (json['points'] as num?)?.toInt() ?? 0,
+      badges: (json['badges'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      followersCount: (json['followersCount'] as num?)?.toInt() ?? 0,
+      followingCount: (json['followingCount'] as num?)?.toInt() ?? 0,
+      isFollowing: json['isFollowing'] == true,
     );
   }
   // --- GÜNCELLEME BİTTİ ---

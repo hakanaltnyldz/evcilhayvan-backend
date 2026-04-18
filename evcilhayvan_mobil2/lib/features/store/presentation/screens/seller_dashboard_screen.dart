@@ -108,6 +108,7 @@ class SellerDashboardScreen extends ConsumerWidget {
           ref.invalidate(myProductsProvider);
           ref.invalidate(sellerOrderStatsProvider);
           ref.invalidate(sellerRevenueChartProvider);
+          ref.invalidate(sellerProductStatsProvider);
         },
         child: CustomScrollView(
           slivers: [
@@ -230,6 +231,30 @@ class SellerDashboardScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            // Sipariş Durum Dağılımı + Top Ürünler
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Consumer(
+                  builder: (context, ref, _) {
+                    final statsAsync = ref.watch(sellerProductStatsProvider);
+                    return statsAsync.when(
+                      data: (data) => Column(
+                        children: [
+                          _OrderStatusPieCard(breakdown: data['orderStatusBreakdown'] as Map<String, dynamic>? ?? {}),
+                          const SizedBox(height: 16),
+                          _TopProductsCard(topProducts: (data['topProducts'] as List?)
+                              ?.map((e) => Map<String, dynamic>.from(e as Map))
+                              .toList() ?? []),
+                        ],
+                      ),
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
                     );
                   },
                 ),
@@ -1392,6 +1417,246 @@ class _RevenueChartCardState extends State<_RevenueChartCard> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Sipariş Durum Dağılımı (PieChart) ──────────────────────────────────────
+
+class _OrderStatusPieCard extends StatelessWidget {
+  final Map<String, dynamic> breakdown;
+  const _OrderStatusPieCard({required this.breakdown});
+
+  static const _statusColors = {
+    'pending':    Color(0xFFFFB300),
+    'processing': Color(0xFF4895EF),
+    'shipped':    Color(0xFF7B2FBE),
+    'delivered':  Color(0xFF52B788),
+    'cancelled':  Color(0xFFE63946),
+  };
+
+  static const _statusLabels = {
+    'pending':    'Bekliyor',
+    'processing': 'Hazırlanıyor',
+    'shipped':    'Kargoda',
+    'delivered':  'Teslim',
+    'cancelled':  'İptal',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final entries = _statusColors.keys
+        .map((k) => MapEntry(k, (breakdown[k] as num?)?.toInt() ?? 0))
+        .where((e) => e.value > 0)
+        .toList();
+
+    final total = entries.fold<int>(0, (s, e) => s + e.value);
+
+    if (total == 0) return const SizedBox.shrink();
+
+    final sections = entries.map((e) {
+      final color = _statusColors[e.key]!;
+      return PieChartSectionData(
+        value: e.value.toDouble(),
+        color: color,
+        radius: 52,
+        title: '${(e.value / total * 100).toStringAsFixed(0)}%',
+        titleStyle: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      );
+    }).toList();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Sipariş Durumları',
+            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              SizedBox(
+                height: 130,
+                width: 130,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    PieChart(
+                      PieChartData(
+                        sections: sections,
+                        centerSpaceRadius: 36,
+                        sectionsSpace: 2,
+                      ),
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '$total',
+                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'sipariş',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: entries.map((e) {
+                    final color = _statusColors[e.key]!;
+                    final label = _statusLabels[e.key] ?? e.key;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 3),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(label, style: const TextStyle(fontSize: 12)),
+                          const Spacer(),
+                          Text(
+                            '${e.value}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: color,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── En Çok Satan Ürünler ────────────────────────────────────────────────────
+
+class _TopProductsCard extends StatelessWidget {
+  final List<Map<String, dynamic>> topProducts;
+  const _TopProductsCard({required this.topProducts});
+
+  @override
+  Widget build(BuildContext context) {
+    if (topProducts.isEmpty) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+
+    final maxSold = topProducts
+        .map((p) => (p['soldCount'] as num?)?.toInt() ?? 0)
+        .fold<int>(1, (m, v) => v > m ? v : m);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'En Çok Satan Ürünler',
+            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          ...topProducts.asMap().entries.map((entry) {
+            final i = entry.key;
+            final p = entry.value;
+            final name = p['name'] as String? ?? 'Ürün';
+            final sold = (p['soldCount'] as num?)?.toInt() ?? 0;
+            final revenue = (p['revenue'] as num?)?.toDouble() ?? 0.0;
+            final ratio = maxSold > 0 ? sold / maxSold : 0.0;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2D6A4F).withOpacity(0.1 + i * 0.05),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '${i + 1}',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF2D6A4F)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          name,
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Text(
+                        '${sold}x',
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2D6A4F)),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '₺${revenue.toStringAsFixed(0)}',
+                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: ratio,
+                      minHeight: 5,
+                      backgroundColor: theme.colorScheme.outline.withOpacity(0.15),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF52B788)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );

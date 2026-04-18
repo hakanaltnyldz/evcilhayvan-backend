@@ -75,6 +75,7 @@ class AppointmentRepository {
     required DateTime date,
     String? reason,
     String? notes,
+    String type = 'clinic',
   }) {
     return _guard(() async {
       final response = await _dio.post('/api/appointments', data: {
@@ -83,6 +84,7 @@ class AppointmentRepository {
         'date': date.toIso8601String(),
         if (reason != null) 'reason': reason,
         if (notes != null) 'notes': notes,
+        'type': type,
       });
       return AppointmentModel.fromJson(response.data['appointment']);
     });

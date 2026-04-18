@@ -15,6 +15,7 @@ class LocaleNotifier extends StateNotifier<Locale> {
   }
 }
 
-final localeProvider = StateNotifierProvider<LocaleNotifier, Locale>((ref) {
+final StateNotifierProvider<LocaleNotifier, Locale>
+localeProvider = StateNotifierProvider<LocaleNotifier, Locale>((ref) {
   return LocaleNotifier(); // default TR; overridden in main() with saved value
 });

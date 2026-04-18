@@ -30,6 +30,7 @@ class LostFoundRepository {
     double? lat,
     double? lng,
     double radiusKm = 50,
+    int page = 1,
   }) {
     return _guard(() async {
       final response = await _dio.get('/api/lost-found', queryParameters: {
@@ -39,6 +40,8 @@ class LostFoundRepository {
         if (lng != null) 'lng': lng,
         'radiusKm': radiusKm,
         'status': 'active',
+        'page': page,
+        'limit': 20,
       });
       final List<dynamic> list = response.data['reports'] ?? [];
       return list.map((j) => LostFoundPet.fromJson(Map<String, dynamic>.from(j))).toList();

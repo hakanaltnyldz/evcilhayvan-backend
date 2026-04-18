@@ -8,6 +8,7 @@ import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/premium_card.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/status_timeline.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../data/repositories/appointment_repository.dart';
 import '../../domain/models/appointment_model.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
@@ -112,6 +113,53 @@ class AppointmentDetailScreen extends ConsumerWidget {
                 title: 'Notlar',
                 content: apt.notes!,
                 index: cardIndex++,
+              ),
+            );
+          }
+
+          // Online randevu — video linki kartı
+          if (apt.type == 'online' && apt.meetingUrl != null) {
+            infoCards.add(
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Material(
+                  color: const Color(0xFFE8F4FD),
+                  borderRadius: BorderRadius.circular(16),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () async {
+                      final uri = Uri.parse(apt.meetingUrl!);
+                      if (await canLaunchUrl(uri)) launchUrl(uri, mode: LaunchMode.externalApplication);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44, height: 44,
+                            decoration: BoxDecoration(color: Colors.blue.shade100, borderRadius: BorderRadius.circular(12)),
+                            child: Icon(Icons.videocam_rounded, color: Colors.blue.shade700, size: 24),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Online Randevu — Video Bağlantısı',
+                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                                const SizedBox(height: 2),
+                                Text(apt.meetingUrl!,
+                                    style: TextStyle(fontSize: 12, color: Colors.blue.shade700),
+                                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.open_in_new, size: 18, color: Colors.blue.shade600),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
             );
           }

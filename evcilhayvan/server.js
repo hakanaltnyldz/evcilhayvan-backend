@@ -59,6 +59,14 @@ import { startAppointmentReminderJob } from "./src/services/appointmentReminderS
 import { startAdvertExpiryReminderJob } from "./src/services/advertExpiryReminderService.js";
 import { initFcm } from "./src/utils/fcm.js";
 import { listSitters } from "./src/controllers/petSitterController.js";
+import {
+  cancelTrackingGrace,
+  markServiceCompleted,
+  markServiceStarted,
+  markTrackingOffline,
+  markTrackingOnline,
+  scheduleTrackingGrace,
+} from "./src/services/sitterTrackingService.js";
 
 const APP_VERSION = process.env.APP_VERSION || "20260418a";
 
@@ -357,18 +365,21 @@ io.on("connection", (socket) => {
     if (!connectedUserId || !bookingId) return;
     try {
       const SitterBooking = (await import("./src/models/SitterBooking.js")).default;
-      const booking = await SitterBooking.findById(bookingId).select("sitterUserId petOwnerId status");
+      const booking = await SitterBooking.findById(bookingId).select(
+        "sitterUserId petOwnerId status liveTracking earnings totalPrice startDate endDate serviceFlow",
+      );
       if (!booking) return;
       if (booking.sitterUserId.toString() !== String(connectedUserId)) return; // sadece bakıcı emit edebilir
-      if (!['accepted', 'active'].includes(booking.status)) return;
+      if (booking.status !== "active") return;
 
       // Son konumu DB'ye kaydet (disconnect sonrası erişilebilsin)
-      await SitterBooking.findByIdAndUpdate(bookingId, {
-        'liveTracking.lastLat': lat,
-        'liveTracking.lastLng': lng,
-        'liveTracking.lastUpdated': new Date(),
-        'liveTracking.isActive': true,
+      cancelTrackingGrace(bookingId);
+      markTrackingOnline(booking, {
+        now: new Date(),
+        lat,
+        lng,
       });
+      await booking.save();
 
       // Pet sahibine konumu ilet
       io.to(`user:${booking.petOwnerId}`).emit("sitter:location_update", {
@@ -386,11 +397,16 @@ io.on("connection", (socket) => {
     if (!connectedUserId || !bookingId) return;
     try {
       const SitterBooking = (await import("./src/models/SitterBooking.js")).default;
-      const booking = await SitterBooking.findById(bookingId).select("sitterUserId petOwnerId status");
+      const booking = await SitterBooking.findById(bookingId).select(
+        "sitterUserId petOwnerId status liveTracking earnings totalPrice startDate endDate serviceFlow",
+      );
       if (!booking) return;
       if (booking.sitterUserId.toString() !== String(connectedUserId)) return;
       // Durumu güncelle
-      await SitterBooking.findByIdAndUpdate(bookingId, { status: 'active' });
+      if (!["accepted", "active"].includes(booking.status)) return;
+      cancelTrackingGrace(bookingId);
+      markServiceStarted(booking, { now: new Date() });
+      await booking.save();
       io.to(`user:${booking.petOwnerId}`).emit("sitter:walk_started", { bookingId, startedAt: Date.now() });
     } catch (err) {
       console.error("[Socket] sitter:walk_started error:", err.message);
@@ -401,9 +417,15 @@ io.on("connection", (socket) => {
     if (!connectedUserId || !bookingId) return;
     try {
       const SitterBooking = (await import("./src/models/SitterBooking.js")).default;
-      const booking = await SitterBooking.findById(bookingId).select("sitterUserId petOwnerId status");
+      const booking = await SitterBooking.findById(bookingId).select(
+        "sitterUserId petOwnerId status liveTracking earnings totalPrice startDate endDate serviceFlow completedAt",
+      );
       if (!booking) return;
       if (booking.sitterUserId.toString() !== String(connectedUserId)) return;
+      if (booking.status !== "active") return;
+      cancelTrackingGrace(bookingId);
+      markServiceCompleted(booking, { now: new Date() });
+      await booking.save();
       io.to(`user:${booking.petOwnerId}`).emit("sitter:walk_ended", { bookingId, endedAt: Date.now() });
     } catch (err) {
       console.error("[Socket] sitter:walk_ended error:", err.message);
@@ -423,7 +445,7 @@ io.on("connection", (socket) => {
           console.log(`User ${userIdStr} is now offline`);
 
           // Grace period: bakıcının aktif walk'u varsa 60 sn bekle, sonra pet owner'a bildir
-          setTimeout(async () => {
+          (async () => {
             try {
               // Kullanıcı yeniden bağlandıysa iptal et
               if (userSocketMap.has(userIdStr)) return;
@@ -432,39 +454,33 @@ io.on("connection", (socket) => {
               // Bu kullanıcının aktif walk'larını bul
               const activeBookings = await SitterBooking.find({
                 sitterUserId: userIdStr,
-                status: 'active',
-                'liveTracking.isActive': true,
-              }).select('petOwnerId liveTracking');
+                status: "active",
+                "liveTracking.required": true,
+              }).select(
+                "petOwnerId status liveTracking earnings totalPrice startDate endDate serviceFlow",
+              );
 
               for (const booking of activeBookings) {
-                const { lastLat, lastLng, lastUpdated } = booking.liveTracking || {};
-
-                // liveTracking'i kapat
-                await SitterBooking.findByIdAndUpdate(booking._id, {
-                  'liveTracking.isActive': false,
+                markTrackingOffline(booking, {
+                  now: new Date(),
+                  reason: "socket_disconnected",
                 });
+                await booking.save();
 
                 // Pet owner'a bildirim: konum kapandı, son bilinen konum
-                io.to(`user:${booking.petOwnerId}`).emit("sitter:location_offline", {
-                  bookingId: booking._id.toString(),
-                  lastLat: lastLat ?? null,
-                  lastLng: lastLng ?? null,
-                  lastUpdated: lastUpdated ?? null,
+                scheduleTrackingGrace({ io, bookingId: booking._id });
+                /*
                   message: 'Bakıcının konumu alınamıyor. Son bilinen konumu gösteriliyor.',
-                });
 
                 // FCM push gönder
-                const { sendPush: _sendPush } = await import("./src/utils/fcm.js");
-                _sendPush([String(booking.petOwnerId)], {
                   title: '⚠️ Bakıcı Konumu Kesildi',
                   body: 'Bakıcının konum paylaşımı durdu. Son bilinen konum haritada gösterilmekte.',
-                  data: { type: 'sitter_location_offline', bookingId: booking._id.toString() },
-                }).catch(() => {});
+                */
               }
             } catch (err) {
               console.error('[Socket] grace period check error:', err.message);
             }
-          }, 60_000); // 60 saniye grace period
+          })();
         } else {
           console.log(`User ${userIdStr} still has ${userSockets.size} connection(s)`);
         }

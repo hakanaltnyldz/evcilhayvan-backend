@@ -17,12 +17,44 @@ class CreatePostScreen extends ConsumerStatefulWidget {
 
 class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   final _contentCtrl = TextEditingController();
+  final _hashtagCtrl = TextEditingController();
   final List<File> _selectedImages = [];
+  final List<String> _hashtags = [];
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    _contentCtrl.addListener(_extractHashtagsFromContent);
+  }
+
+  void _extractHashtagsFromContent() {
+    final text = _contentCtrl.text;
+    final matches = RegExp(r'#(\w+)').allMatches(text);
+    final extracted = matches.map((m) => m.group(1)!.toLowerCase()).toSet();
+    // Only add tags not already in _hashtags
+    for (final tag in extracted) {
+      if (!_hashtags.contains(tag)) {
+        setState(() => _hashtags.add(tag));
+      }
+    }
+  }
+
+  void _addHashtagFromInput() {
+    final raw = _hashtagCtrl.text.trim().replaceAll('#', '').toLowerCase();
+    if (raw.isEmpty || _hashtags.contains(raw)) {
+      _hashtagCtrl.clear();
+      return;
+    }
+    setState(() => _hashtags.add(raw));
+    _hashtagCtrl.clear();
+  }
+
+  @override
   void dispose() {
+    _contentCtrl.removeListener(_extractHashtagsFromContent);
     _contentCtrl.dispose();
+    _hashtagCtrl.dispose();
     super.dispose();
   }
 
@@ -73,6 +105,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       await ref.read(postRepositoryProvider).createPost(
         content: content.isEmpty ? null : content,
         photos: photoUrls.isEmpty ? null : photoUrls,
+        hashtags: _hashtags.isEmpty ? null : _hashtags,
       );
 
       if (mounted) {
@@ -221,6 +254,63 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       Text(AppLocalizations.of(context)!.createPostEmptyHint, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                     ],
                   ),
+                ),
+              ),
+
+            const SizedBox(height: 24),
+
+            // Hashtag section
+            const Text(
+              'Hashtagler',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'İçeriğe yazdığın #kelimeler otomatik eklenir',
+              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _hashtagCtrl,
+                    decoration: InputDecoration(
+                      hintText: 'örn: kedi',
+                      prefixText: '#',
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    onSubmitted: (_) => _addHashtagFromInput(),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton.filled(
+                  onPressed: _addHashtagFromInput,
+                  icon: const Icon(Icons.add),
+                  style: IconButton.styleFrom(backgroundColor: const Color(0xFF2D6A4F)),
+                ),
+              ],
+            ),
+            if (_hashtags.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: _hashtags.map((tag) => Chip(
+                    label: Text('#$tag'),
+                    labelStyle: const TextStyle(color: Color(0xFF2D6A4F), fontWeight: FontWeight.w500),
+                    backgroundColor: const Color(0xFFD8F3DC),
+                    deleteIconColor: const Color(0xFF2D6A4F),
+                    onDeleted: () => setState(() => _hashtags.remove(tag)),
+                    side: BorderSide.none,
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                  )).toList(),
                 ),
               ),
           ],
