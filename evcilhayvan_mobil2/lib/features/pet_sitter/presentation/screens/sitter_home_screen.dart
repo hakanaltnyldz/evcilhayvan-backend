@@ -73,7 +73,8 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _init();
+    _load(); // Load immediately without waiting for location
+    _initLocation(); // Get location in background, reload when available
   }
 
   @override
@@ -82,7 +83,7 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
     super.dispose();
   }
 
-  Future<void> _init() async {
+  Future<void> _initLocation() async {
     try {
       LocationPermission perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.denied)
@@ -92,11 +93,13 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
         final pos = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.medium,
         );
-        _lat = pos.latitude;
-        _lng = pos.longitude;
+        if (mounted) {
+          _lat = pos.latitude;
+          _lng = pos.longitude;
+          _load(); // Reload with location data
+        }
       }
     } catch (_) {}
-    _load();
   }
 
   Future<void> _load() async {
