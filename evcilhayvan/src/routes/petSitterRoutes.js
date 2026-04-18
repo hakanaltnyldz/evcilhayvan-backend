@@ -33,6 +33,7 @@ const sitterUpload = multer({
 });
 
 // ─── Mevcut route'lar ─────────────────────────────────────────────────────────
+router.get("/", listSitters);
 router.post(
   "/",
   authRequired(),
@@ -42,9 +43,7 @@ router.post(
   ],
   createSitter
 );
-
 router.get("/me", authRequired(), mySitterProfile);
-router.get("/", listSitters);
 router.get("/:id", getSitter);
 router.put("/:id", authRequired(), updateSitter);
 router.patch("/:id/availability", authRequired(), toggleAvailability);
