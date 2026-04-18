@@ -258,8 +258,7 @@ export async function createAppointment(req, res) {
       entityId: appointment._id.toString(),
     });
 
-    // N-1: Veterinere push bildirimi + socket
-    const vet = await Veterinary.findById(veterinaryId).select("userId name");
+    // N-1: Veterinere push bildirimi + socket (vet zaten yukarıda yüklendi)
     if (vet?.userId) {
       const petName = populated.petId?.name || "Evcil hayvan";
       sendPush([String(vet.userId)], {
