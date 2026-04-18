@@ -135,13 +135,11 @@ router.get('/coupon-usage/my', authRequired(), async (req, res) => {
   }
 });
 
-// Protected routes
-router.use(protect);
-
 // Seller routes - manage coupons
-router.get('/seller/coupons', couponController.getSellerCoupons);
+router.get('/seller/coupons', protect, couponController.getSellerCoupons);
 router.post(
   '/seller/coupons',
+  protect,
   [
     body('code').trim().notEmpty().withMessage('Kupon kodu gerekli'),
     body('discountType').isIn(['percentage', 'fixed']).withMessage('Gecersiz indirim tipi'),
@@ -160,6 +158,7 @@ router.post(
 );
 router.put(
   '/seller/coupons/:couponId',
+  protect,
   [
     param('couponId').isMongoId().withMessage('Gecersiz kupon ID'),
     body('code').optional().trim().notEmpty().withMessage('Kupon kodu bos olamaz'),
@@ -177,7 +176,19 @@ router.put(
   validateRequest,
   couponController.updateCoupon
 );
-router.delete('/seller/coupons/:couponId', [param('couponId').isMongoId()], validateRequest, couponController.deleteCoupon);
-router.patch('/seller/coupons/:couponId/toggle', [param('couponId').isMongoId()], validateRequest, couponController.toggleCouponStatus);
+router.delete(
+  '/seller/coupons/:couponId',
+  protect,
+  [param('couponId').isMongoId()],
+  validateRequest,
+  couponController.deleteCoupon
+);
+router.patch(
+  '/seller/coupons/:couponId/toggle',
+  protect,
+  [param('couponId').isMongoId()],
+  validateRequest,
+  couponController.toggleCouponStatus
+);
 
 export default router;

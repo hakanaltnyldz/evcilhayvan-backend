@@ -58,6 +58,9 @@ import { startBirthdayReminderJob } from "./src/services/birthdayReminderService
 import { startAppointmentReminderJob } from "./src/services/appointmentReminderService.js";
 import { startAdvertExpiryReminderJob } from "./src/services/advertExpiryReminderService.js";
 import { initFcm } from "./src/utils/fcm.js";
+import { listSitters } from "./src/controllers/petSitterController.js";
+
+const APP_VERSION = process.env.APP_VERSION || "20260418a";
 
 // --- Firebase Admin init (optional) ---
 // FIREBASE_SERVICE_ACCOUNT → JSON içeriği (string olarak) veya dosya yolu
@@ -220,6 +223,7 @@ app.use("/api/veterinaries", veterinaryRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/vaccinations", vaccinationRoutes);
 app.use("/api/lost-found", lostFoundRoutes);
+app.get("/api/pet-sitters", listSitters);
 app.use("/api/pet-sitters", petSitterRoutes);
 app.use("/api/sitter-bookings", sitterBookingRoutes);
 app.use("/api/sitter-requests", sitterRequestRoutes);
@@ -246,6 +250,7 @@ export async function startServer() {
     });
     console.log("MongoDB connected");
     await CartItem.syncIndexes();
+    console.log(`[Boot] version=${APP_VERSION}`);
     await seedVaccinationSchedules();
     httpServer.listen(config.port, "0.0.0.0", () => {
       console.log(`Server listening on 0.0.0.0:${config.port}`);
