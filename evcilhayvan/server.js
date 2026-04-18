@@ -59,6 +59,8 @@ import { startAppointmentReminderJob } from "./src/services/appointmentReminderS
 import { startAdvertExpiryReminderJob } from "./src/services/advertExpiryReminderService.js";
 import { initFcm } from "./src/utils/fcm.js";
 
+const APP_VERSION = process.env.APP_VERSION || "20260418a";
+
 // --- Firebase Admin init (optional) ---
 // FIREBASE_SERVICE_ACCOUNT → JSON içeriği (string olarak) veya dosya yolu
 (async () => {
@@ -181,6 +183,13 @@ app.use("/uploads", express.static(uploadStaticPath, { maxAge: '7d', etag: true 
 
 // Health
 app.get("/api/health", (_req, res) => res.sendOk({ ok: true }));
+app.get("/api/version", (_req, res) =>
+  res.sendOk({
+    ok: true,
+    version: APP_VERSION,
+    service: "evcilhayvan-backend",
+  })
+);
 app.get("/api/utf8-test", (_req, res) =>
   res.json({
     city: "İstanbul",
@@ -245,6 +254,7 @@ export async function startServer() {
     });
     console.log("MongoDB connected");
     await CartItem.syncIndexes();
+    console.log(`[Boot] version=${APP_VERSION}`);
     await seedVaccinationSchedules();
     httpServer.listen(config.port, "0.0.0.0", () => {
       console.log(`Server listening on 0.0.0.0:${config.port}`);
