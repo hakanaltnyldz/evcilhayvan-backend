@@ -13,6 +13,7 @@ import 'package:evcilhayvan_mobil2/core/http.dart';
 import '../../../store/domain/models/address_model.dart';
 import '../../../store/providers/address_providers.dart';
 import '../../../store/providers/cart_providers.dart';
+import '../../../store/providers/checkout_coupon_provider.dart';
 import '../../../store/providers/guest_cart_provider.dart';
 import 'add_address_screen.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
@@ -35,10 +36,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _notesController = TextEditingController();
   final _couponController = TextEditingController();
   bool _isLoading = false;
-  bool _isApplyingCoupon = false;
-  String? _appliedCouponCode;
-  double _discountAmount = 0;
-  String? _couponError;
 
   // Misafir formu
   final _guestNameCtrl = TextEditingController();
@@ -101,6 +98,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    // Checkout açılınca sepeti backend'den taze yükle
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(cartProvider.notifier).refresh();
+    });
+  }
+
+  @override
   void dispose() {
     _cardNumberController.dispose();
     _cardHolderController.dispose();
@@ -118,37 +124,48 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     super.dispose();
   }
 
-  Future<void> _applyCoupon() async {
+  double _guestSubtotal(List<GuestCartItem> items) {
+    return items.fold<double>(0, (sum, item) => sum + item.total);
+  }
+
+  double _currentSubtotal(bool isGuest) {
+    if (isGuest) {
+      return _guestSubtotal(ref.read(guestCartProvider));
+    }
+    return ref.read(cartProvider).valueOrNull?.total ?? 0;
+  }
+
+  Future<void> _applyCoupon({
+    String? overrideCode,
+    bool silent = false,
+    bool clearInput = true,
+  }) async {
     final l10n = AppLocalizations.of(context)!;
-    final code = _couponController.text.trim();
+    final code = (overrideCode ?? _couponController.text).trim().toUpperCase();
     if (code.isEmpty) {
-      setState(() => _couponError = l10n.checkoutErrCouponEmpty);
+      ref
+          .read(checkoutCouponProvider.notifier)
+          .setError(l10n.checkoutErrCouponEmpty);
       return;
     }
 
-    setState(() {
-      _isApplyingCoupon = true;
-      _couponError = null;
-    });
+    ref.read(checkoutCouponProvider.notifier)
+      ..setApplying(true)
+      ..setError(null);
 
     try {
       final isGuest = ref.read(authProvider) == null;
-      double total;
       if (isGuest) {
-        final guestItems = ref.read(guestCartProvider);
-        total = guestItems.fold(
-          0.0,
-          (sum, item) => sum + item.price * item.quantity,
-        );
-      } else {
-        total = ref.read(cartProvider).valueOrNull?.total ?? 0;
+        ref.read(checkoutCouponProvider.notifier)
+          ..setApplying(false)
+          ..setError('Kupon kullanmak icin giris yapmalisiniz');
+        return;
       }
+      final total = _currentSubtotal(isGuest);
       if (total == 0) {
-        setState(() {
-          _couponError =
-              'Sepet toplamı hesaplanamadı, lütfen sayfayı yenileyin';
-          _isApplyingCoupon = false;
-        });
+        ref.read(checkoutCouponProvider.notifier)
+          ..setApplying(false)
+          ..setError('Sepet toplami hesaplanamadi, lutfen sayfayi yenileyin');
         return;
       }
 
@@ -159,17 +176,22 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
       if (response.statusCode == 200) {
         final data = response.data;
-        setState(() {
-          _appliedCouponCode = code;
-          _discountAmount = (data['discountAmount'] as num).toDouble();
+        final discountAmount = (data['discountAmount'] as num).toDouble();
+        ref
+            .read(checkoutCouponProvider.notifier)
+            .apply(
+              code: code,
+              discountAmount: discountAmount,
+              validatedSubtotal: total,
+            );
+        if (clearInput) {
           _couponController.clear();
-        });
-        if (mounted) {
-          final l10n = AppLocalizations.of(context)!;
+        }
+        if (mounted && !silent) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                l10n.checkoutCouponApplied(_discountAmount.toStringAsFixed(2)),
+                l10n.checkoutCouponApplied(discountAmount.toStringAsFixed(2)),
               ),
               backgroundColor: Colors.green,
             ),
@@ -190,26 +212,81 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       } else if (statusCode == 400) {
         errorMessage = l10n.checkoutErrCouponNotApplicable;
       }
-      setState(() => _couponError = errorMessage);
+      final notifier = ref.read(checkoutCouponProvider.notifier);
+      notifier
+        ..setApplying(false)
+        ..setError(errorMessage);
+      if (silent) {
+        notifier.clear();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Sepet degistigi icin kupon kaldirildi. Yeni tutara gore tekrar uygulayin.',
+              ),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      }
     } catch (e) {
       final l10n = AppLocalizations.of(context)!;
-      setState(() => _couponError = l10n.checkoutErrCouponFailed);
+      final notifier = ref.read(checkoutCouponProvider.notifier);
+      notifier
+        ..setApplying(false)
+        ..setError(l10n.checkoutErrCouponFailed);
+      if (silent) {
+        notifier.clear();
+      }
     } finally {
-      if (mounted) setState(() => _isApplyingCoupon = false);
+      ref.read(checkoutCouponProvider.notifier).setApplying(false);
     }
   }
 
   void _removeCoupon() {
-    setState(() {
-      _appliedCouponCode = null;
-      _discountAmount = 0;
-      _couponError = null;
+    ref.read(checkoutCouponProvider.notifier).clear();
+  }
+
+  void _syncCouponWithCartIfNeeded({
+    required CheckoutCouponState couponState,
+    required double subtotal,
+  }) {
+    if (ref.read(authProvider) == null) {
+      if (couponState.hasCoupon) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ref.read(checkoutCouponProvider.notifier).clear();
+        });
+      }
+      return;
+    }
+
+    if (!couponState.hasCoupon || couponState.isApplying) return;
+
+    if (subtotal <= 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(checkoutCouponProvider.notifier).clear();
+      });
+      return;
+    }
+
+    if ((couponState.validatedSubtotal - subtotal).abs() < 0.01) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _applyCoupon(
+        overrideCode: couponState.code,
+        silent: true,
+        clearInput: false,
+      );
     });
   }
 
   Future<void> _placeOrder() async {
     final l10n = AppLocalizations.of(context)!;
     final isGuest = ref.read(authProvider) == null;
+    final couponState = ref.read(checkoutCouponProvider);
 
     // Misafir validasyon
     if (isGuest) {
@@ -278,9 +355,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               (item) => {
                 'productId': item.productId,
                 'quantity': item.quantity,
-                if (item.variantName != null) 'variantName': item.variantName,
-                if (item.variantLabel != null)
-                  'variantLabel': item.variantLabel,
+                if (item.selectedVariants.isNotEmpty)
+                  'selectedVariants': item.selectedVariants
+                      .map((variant) => variant.toJson())
+                      .toList(),
               },
             )
             .toList();
@@ -301,6 +379,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               (item) => {
                 'productId': item.product.id,
                 'quantity': item.quantity,
+                if (item.selectedVariants.isNotEmpty)
+                  'selectedVariants': item.selectedVariants
+                      .map((variant) => variant.toJson())
+                      .toList(),
               },
             )
             .toList();
@@ -312,8 +394,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         'notes': _notesController.text.isNotEmpty
             ? _notesController.text
             : null,
-        if (_appliedCouponCode != null && !isGuest)
-          'couponCode': _appliedCouponCode,
+        if (couponState.hasCoupon && !isGuest) 'couponCode': couponState.code,
       };
 
       if (isGuest) {
@@ -350,6 +431,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         } else {
           await ref.read(cartProvider.notifier).clearCart();
         }
+        ref.read(checkoutCouponProvider.notifier).clear();
 
         if (mounted) {
           showDialog(
@@ -581,11 +663,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   Widget _buildGuestOrderSummary(
     AppLocalizations l10n,
-    List<GuestCartItem> guestItems,
-  ) {
+    List<GuestCartItem> guestItems, {
+    String? couponCode,
+    double discountAmount = 0,
+  }) {
     final guestTotal = guestItems.fold<double>(
       0,
-      (sum, item) => sum + (item.price * item.quantity),
+      (sum, item) => sum + item.total,
+    );
+    final shippingAmount = guestTotal >= 200 ? 0.0 : 29.99;
+    final finalTotal = (guestTotal + shippingAmount - discountAmount).clamp(
+      0,
+      double.infinity,
     );
 
     return Column(
@@ -597,15 +686,30 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    '${item.title} x${item.quantity}',
-                    style: const TextStyle(fontSize: 14),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${item.title} x${item.quantity}',
+                        style: const TextStyle(fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (item.selectedVariants.isNotEmpty)
+                        Text(
+                          item.selectedVariantsLabel,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 Text(
-                  '₺${(item.price * item.quantity).toStringAsFixed(2)}',
+                  '\u20BA${item.total.toStringAsFixed(2)}',
                   style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
               ],
@@ -622,7 +726,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
-            Text('₺${guestTotal.toStringAsFixed(2)}'),
+            Text('\u20BA${guestTotal.toStringAsFixed(2)}'),
           ],
         ),
         const SizedBox(height: 4),
@@ -636,11 +740,53 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               ),
             ),
             Text(
-              guestTotal >= 200 ? l10n.checkoutFreeShipping : '₺29.99',
+              guestTotal >= 200 ? l10n.checkoutFreeShipping : '\u20BA29.99',
               style: TextStyle(color: guestTotal >= 200 ? Colors.green : null),
             ),
           ],
         ),
+        if (discountAmount > 0 && couponCode != null) ...[
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    l10n.checkoutDiscount,
+                    style: const TextStyle(color: Colors.green),
+                  ),
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      couponCode,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                '-\u20BA${discountAmount.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
         const Divider(height: 24),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -650,7 +796,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text(
-              '₺${(guestTotal + (guestTotal >= 200 ? 0 : 29.99)).toStringAsFixed(2)}',
+              '\u20BA${finalTotal.toStringAsFixed(2)}',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -668,8 +814,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final l10n = AppLocalizations.of(context)!;
     final isGuest = ref.watch(authProvider) == null;
     final cartState = ref.watch(cartProvider);
+    final couponState = ref.watch(checkoutCouponProvider);
     final guestItems = ref.watch(guestCartProvider);
     final addressesAsync = ref.watch(addressNotifierProvider);
+    final currentSubtotal = isGuest
+        ? _guestSubtotal(guestItems)
+        : cartState.valueOrNull?.total ?? 0;
+
+    _syncCouponWithCartIfNeeded(
+      couponState: couponState,
+      subtotal: currentSubtotal,
+    );
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -826,7 +981,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Uygulanan kupon göstergesi
-                  if (_appliedCouponCode != null) ...[
+                  if (couponState.hasCoupon) ...[
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
@@ -848,14 +1003,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  _appliedCouponCode!,
+                                  couponState.code!,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
                                   l10n.checkoutCouponDiscount(
-                                    _discountAmount.toStringAsFixed(2),
+                                    couponState.discountAmount.toStringAsFixed(
+                                      2,
+                                    ),
                                   ),
                                   style: TextStyle(
                                     fontSize: 12,
@@ -878,7 +1035,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     const SizedBox(height: 8),
                   ],
                   // Kupon giriş alanı
-                  if (_appliedCouponCode == null) ...[
+                  if (!couponState.hasCoupon) ...[
                     TextField(
                       controller: _couponController,
                       textCapitalization: TextCapitalization.characters,
@@ -910,7 +1067,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             width: 2,
                           ),
                         ),
-                        errorText: _couponError,
+                        errorText: couponState.error,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -918,7 +1075,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       width: double.infinity,
                       height: 48,
                       child: ElevatedButton(
-                        onPressed: _isApplyingCoupon ? null : _applyCoupon,
+                        onPressed: couponState.isApplying
+                            ? null
+                            : () => _applyCoupon(),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF52B788),
                           foregroundColor: Colors.white,
@@ -926,7 +1085,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: _isApplyingCoupon
+                        child: couponState.isApplying
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
@@ -969,7 +1128,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               title: l10n.checkoutOrderSummary,
               icon: Icons.receipt_long,
               child: isGuest
-                  ? _buildGuestOrderSummary(l10n, guestItems)
+                  ? _buildGuestOrderSummary(
+                      l10n,
+                      guestItems,
+                      couponCode: couponState.code,
+                      discountAmount: couponState.discountAmount,
+                    )
                   : cartState.when(
                       data: (cart) {
                         return Column(
@@ -984,15 +1148,33 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Expanded(
-                                      child: Text(
-                                        '${item.product.title} x${item.quantity}',
-                                        style: const TextStyle(fontSize: 14),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${item.product.title} x${item.quantity}',
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          if (item.selectedVariants.isNotEmpty)
+                                            Text(
+                                              item.selectedVariantsLabel,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.onSurfaceVariant,
+                                              ),
+                                            ),
+                                        ],
                                       ),
                                     ),
                                     Text(
-                                      '₺${(item.product.price * item.quantity).toStringAsFixed(2)}',
+                                      '\u20BA${item.total.toStringAsFixed(2)}',
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -1013,7 +1195,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                     ).colorScheme.onSurfaceVariant,
                                   ),
                                 ),
-                                Text('₺${cart.total.toStringAsFixed(2)}'),
+                                Text('\u20BA${cart.total.toStringAsFixed(2)}'),
                               ],
                             ),
                             const SizedBox(height: 4),
@@ -1031,7 +1213,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                 Text(
                                   cart.total >= 200
                                       ? l10n.checkoutFreeShipping
-                                      : '₺29.99',
+                                      : '\u20BA29.99',
                                   style: TextStyle(
                                     color: cart.total >= 200
                                         ? Colors.green
@@ -1040,7 +1222,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                 ),
                               ],
                             ),
-                            if (_discountAmount > 0) ...[
+                            if (couponState.discountAmount > 0) ...[
                               const SizedBox(height: 4),
                               Row(
                                 mainAxisAlignment:
@@ -1067,7 +1249,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                           ),
                                         ),
                                         child: Text(
-                                          _appliedCouponCode!,
+                                          couponState.code!,
                                           style: const TextStyle(
                                             fontSize: 10,
                                             color: Colors.green,
@@ -1078,7 +1260,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                     ],
                                   ),
                                   Text(
-                                    '-₺${_discountAmount.toStringAsFixed(2)}',
+                                    '-\u20BA${couponState.discountAmount.toStringAsFixed(2)}',
                                     style: const TextStyle(
                                       color: Colors.green,
                                       fontWeight: FontWeight.w500,
@@ -1099,7 +1281,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                   ),
                                 ),
                                 Text(
-                                  '₺${(cart.total + (cart.total >= 200 ? 0 : 29.99) - _discountAmount).toStringAsFixed(2)}',
+                                  '\u20BA${(cart.total + (cart.total >= 200 ? 0 : 29.99) - couponState.discountAmount).toStringAsFixed(2)}',
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
