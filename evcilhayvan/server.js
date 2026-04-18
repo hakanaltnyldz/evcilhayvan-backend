@@ -56,6 +56,7 @@ import { startBirthdayReminderJob } from "./src/services/birthdayReminderService
 import { startAppointmentReminderJob } from "./src/services/appointmentReminderService.js";
 import { startAdvertExpiryReminderJob } from "./src/services/advertExpiryReminderService.js";
 import { initFcm } from "./src/utils/fcm.js";
+import { listSitters } from "./src/controllers/petSitterController.js";
 
 const APP_VERSION = process.env.APP_VERSION || "20260418a";
 
@@ -226,6 +227,7 @@ app.use("/api/veterinaries", veterinaryRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/vaccinations", vaccinationRoutes);
 app.use("/api/lost-found", lostFoundRoutes);
+app.get("/api/pet-sitters", listSitters);
 app.use("/api/pet-sitters", petSitterRoutes);
 app.use("/api/sitter-bookings", sitterBookingRoutes);
 app.use("/api/events", petEventRoutes);
