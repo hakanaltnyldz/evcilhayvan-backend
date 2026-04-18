@@ -10,7 +10,6 @@ import {
   toggleLike,
   toggleSavePost,
   addComment,
-  replyToComment,
   reactToMessage,
 } from "../controllers/postController.js";
 import Post from "../models/Post.js";
@@ -28,11 +27,6 @@ router.delete("/posts/:id", authRequired(), deletePost);
 router.post("/posts/:id/like", authRequired(), toggleLike);
 router.post("/posts/:id/save", authRequired(), toggleSavePost);
 router.post("/posts/:id/comment", authRequired(), addComment);
-router.post(
-  "/posts/:id/comments/:commentId/reply",
-  authRequired(),
-  replyToComment
-);
 
 // POST /api/posts/:id/comments/:commentId/reply — yoruma yanıt ver
 router.post("/posts/:id/comments/:commentId/reply", authRequired, async (req, res) => {
