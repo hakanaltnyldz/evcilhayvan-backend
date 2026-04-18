@@ -99,10 +99,7 @@ class ConversationCreatedEvent {
   final String conversationId;
   final Map<String, dynamic>? conversation;
 
-  ConversationCreatedEvent({
-    required this.conversationId,
-    this.conversation,
-  });
+  ConversationCreatedEvent({required this.conversationId, this.conversation});
 
   factory ConversationCreatedEvent.fromJson(Map<String, dynamic> json) {
     return ConversationCreatedEvent(
@@ -127,7 +124,8 @@ class SitterLocationEvent {
     required this.updatedAt,
   });
 
-  factory SitterLocationEvent.fromJson(Map<String, dynamic> json) => SitterLocationEvent(
+  factory SitterLocationEvent.fromJson(Map<String, dynamic> json) =>
+      SitterLocationEvent(
         bookingId: json['bookingId']?.toString() ?? '',
         lat: (json['lat'] as num).toDouble(),
         lng: (json['lng'] as num).toDouble(),
@@ -142,6 +140,33 @@ class SitterWalkEvent {
   SitterWalkEvent({required this.bookingId, required this.started});
 }
 
+class SitterLocationOfflineEvent {
+  final String bookingId;
+  final double? lastLat;
+  final double? lastLng;
+  final DateTime? lastUpdated;
+  final String message;
+
+  SitterLocationOfflineEvent({
+    required this.bookingId,
+    this.lastLat,
+    this.lastLng,
+    this.lastUpdated,
+    this.message = 'Bakıcının konumu alınamıyor.',
+  });
+
+  factory SitterLocationOfflineEvent.fromJson(Map<String, dynamic> json) =>
+      SitterLocationOfflineEvent(
+        bookingId: json['bookingId']?.toString() ?? '',
+        lastLat: json['lastLat'] != null ? (json['lastLat'] as num).toDouble() : null,
+        lastLng: json['lastLng'] != null ? (json['lastLng'] as num).toDouble() : null,
+        lastUpdated: json['lastUpdated'] != null
+            ? DateTime.tryParse(json['lastUpdated'].toString())
+            : null,
+        message: json['message']?.toString() ?? 'Bakıcının konumu alınamıyor.',
+      );
+}
+
 class SocketService {
   static final SocketService _instance = SocketService._internal();
   IO.Socket? _socket;
@@ -152,24 +177,49 @@ class SocketService {
   SocketService._internal();
 
   // Stream controllers for events
-  final _matchRequestController = StreamController<MatchRequestEvent>.broadcast();
-  final _matchAcceptedController = StreamController<MatchAcceptedEvent>.broadcast();
-  final _matchRejectedController = StreamController<MatchRejectedEvent>.broadcast();
+  final _matchRequestController =
+      StreamController<MatchRequestEvent>.broadcast();
+  final _matchAcceptedController =
+      StreamController<MatchAcceptedEvent>.broadcast();
+  final _matchRejectedController =
+      StreamController<MatchRejectedEvent>.broadcast();
   final _newMessageController = StreamController<NewMessageEvent>.broadcast();
-  final _conversationCreatedController = StreamController<ConversationCreatedEvent>.broadcast();
+  final _conversationCreatedController =
+      StreamController<ConversationCreatedEvent>.broadcast();
   final _connectionStatusController = StreamController<bool>.broadcast();
-  final _sitterLocationController = StreamController<SitterLocationEvent>.broadcast();
+  final _sitterLocationController =
+      StreamController<SitterLocationEvent>.broadcast();
   final _sitterWalkController = StreamController<SitterWalkEvent>.broadcast();
+  final _sitterLocationOfflineController =
+      StreamController<SitterLocationOfflineEvent>.broadcast();
+  final _appointmentUpdatedController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  final _bookingUpdateController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  final _careReportController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
   // Public streams
-  Stream<MatchRequestEvent> get onMatchRequest => _matchRequestController.stream;
-  Stream<MatchAcceptedEvent> get onMatchAccepted => _matchAcceptedController.stream;
-  Stream<MatchRejectedEvent> get onMatchRejected => _matchRejectedController.stream;
+  Stream<MatchRequestEvent> get onMatchRequest =>
+      _matchRequestController.stream;
+  Stream<MatchAcceptedEvent> get onMatchAccepted =>
+      _matchAcceptedController.stream;
+  Stream<MatchRejectedEvent> get onMatchRejected =>
+      _matchRejectedController.stream;
   Stream<NewMessageEvent> get onNewMessage => _newMessageController.stream;
-  Stream<ConversationCreatedEvent> get onConversationCreated => _conversationCreatedController.stream;
+  Stream<ConversationCreatedEvent> get onConversationCreated =>
+      _conversationCreatedController.stream;
   Stream<bool> get onConnectionStatus => _connectionStatusController.stream;
-  Stream<SitterLocationEvent> get onSitterLocation => _sitterLocationController.stream;
+  Stream<SitterLocationEvent> get onSitterLocation =>
+      _sitterLocationController.stream;
   Stream<SitterWalkEvent> get onSitterWalk => _sitterWalkController.stream;
+  Stream<SitterLocationOfflineEvent> get onSitterLocationOffline =>
+      _sitterLocationOfflineController.stream;
+  Stream<Map<String, dynamic>> get onAppointmentUpdated =>
+      _appointmentUpdatedController.stream;
+  Stream<Map<String, dynamic>> get onBookingUpdate =>
+      _bookingUpdateController.stream;
+  Stream<Map<String, dynamic>> get onCareReport => _careReportController.stream;
 
   bool get isConnected => _socket?.connected ?? false;
   String? get currentUserId => _currentUserId;
@@ -214,24 +264,20 @@ class SocketService {
 
       // Connection events
       socket.onConnect((_) {
-        print('Socket connected: ${socket.id}');
         _connectionStatusController.add(true);
 
         // Auto-join user room on connect
         if (userId != null) {
           _currentUserId = userId;
           socket.emit('join:user', userId);
-          print('Joined user room: user:$userId');
         }
       });
 
       socket.onDisconnect((_) {
-        print('Socket disconnected');
         _connectionStatusController.add(false);
       });
 
       socket.onReconnect((_) {
-        print('Socket reconnected');
         _connectionStatusController.add(true);
         // Rejoin user room on reconnect
         if (_currentUserId != null) {
@@ -239,8 +285,8 @@ class SocketService {
         }
       });
 
-      socket.onConnectError((e) => print('Socket connect_error: $e'));
-      socket.onError((e) => print('Socket error: $e'));
+      socket.onConnectError((_) {});
+      socket.onError((_) {});
 
       // Setup event listeners
       _setupEventListeners(socket);
@@ -259,101 +305,131 @@ class SocketService {
   void _setupEventListeners(IO.Socket socket) {
     // Match request listener
     socket.on('match_request', (data) {
-      print('Received match_request: $data');
       try {
         final event = MatchRequestEvent.fromJson(
           data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data),
         );
         _matchRequestController.add(event);
-      } catch (e) {
-        print('Error parsing match_request: $e');
-      }
+      } catch (e) {}
     });
 
     // Match accepted listener
     socket.on('match_accepted', (data) {
-      print('Received match_accepted: $data');
       try {
         final event = MatchAcceptedEvent.fromJson(
           data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data),
         );
         _matchAcceptedController.add(event);
-      } catch (e) {
-        print('Error parsing match_accepted: $e');
-      }
+      } catch (e) {}
     });
 
     // Match rejected listener
     socket.on('match_rejected', (data) {
-      print('Received match_rejected: $data');
       try {
         final event = MatchRejectedEvent.fromJson(
           data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data),
         );
         _matchRejectedController.add(event);
-      } catch (e) {
-        print('Error parsing match_rejected: $e');
-      }
+      } catch (e) {}
     });
 
     // New message listener (for notifications when not in chat)
     socket.on('new_message', (data) {
-      print('Received new_message: $data');
       try {
         final event = NewMessageEvent.fromJson(
           data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data),
         );
         _newMessageController.add(event);
-      } catch (e) {
-        print('Error parsing new_message: $e');
-      }
-    });
-
-    // Message:new listener (for chat screen updates)
-    socket.on('message:new', (data) {
-      print('Received message:new: $data');
-      // This is handled by the existing onMessage callback
+      } catch (e) {}
     });
 
     // Conversation created listener
     socket.on('conversation:created', (data) {
-      print('Received conversation:created: $data');
       try {
         final event = ConversationCreatedEvent.fromJson(
           data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data),
         );
         _conversationCreatedController.add(event);
-      } catch (e) {
-        print('Error parsing conversation:created: $e');
-      }
+      } catch (e) {}
     });
 
     // Sitter location events
     socket.on('sitter:location_update', (data) {
       try {
-        final map = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data);
+        final map = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data);
         _sitterLocationController.add(SitterLocationEvent.fromJson(map));
-      } catch (e) {
-        print('Error parsing sitter:location_update: $e');
-      }
+      } catch (e) {}
     });
 
     socket.on('sitter:walk_started', (data) {
       try {
-        final map = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data);
-        _sitterWalkController.add(SitterWalkEvent(bookingId: map['bookingId']?.toString() ?? '', started: true));
-      } catch (e) {
-        print('Error parsing sitter:walk_started: $e');
-      }
+        final map = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data);
+        _sitterWalkController.add(
+          SitterWalkEvent(
+            bookingId: map['bookingId']?.toString() ?? '',
+            started: true,
+          ),
+        );
+      } catch (e) {}
     });
 
     socket.on('sitter:walk_ended', (data) {
       try {
-        final map = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data);
-        _sitterWalkController.add(SitterWalkEvent(bookingId: map['bookingId']?.toString() ?? '', started: false));
-      } catch (e) {
-        print('Error parsing sitter:walk_ended: $e');
-      }
+        final map = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data);
+        _sitterWalkController.add(
+          SitterWalkEvent(
+            bookingId: map['bookingId']?.toString() ?? '',
+            started: false,
+          ),
+        );
+      } catch (e) {}
+    });
+
+    // Sitter location offline (grace period bitti, konum kayboldu)
+    socket.on('sitter:location_offline', (data) {
+      try {
+        final map = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data);
+        _sitterLocationOfflineController
+            .add(SitterLocationOfflineEvent.fromJson(map));
+      } catch (e) {}
+    });
+
+    // Appointment updated (randevu durum değişimi)
+    socket.on('appointment:updated', (data) {
+      try {
+        final map = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
+        _appointmentUpdatedController.add(map);
+      } catch (e) {}
+    });
+
+    // Sitter booking update (bakıcı rezervasyon güncelleme)
+    socket.on('booking:update', (data) {
+      try {
+        final map = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
+        _bookingUpdateController.add(map);
+      } catch (e) {}
+    });
+
+    // Care report (bakım raporu)
+    socket.on('booking:care_report', (data) {
+      try {
+        final map = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
+        _careReportController.add(map);
+      } catch (e) {}
     });
   }
 
@@ -363,11 +439,9 @@ class SocketService {
     if (socket == null) return;
     if (socket.connected) {
       socket.emit('join:user', userId);
-      print('Joined user room: user:$userId');
     } else {
       socket.onConnect((_) {
         socket.emit('join:user', userId);
-        print('Joined user room on connect: user:$userId');
       });
     }
   }
@@ -377,11 +451,9 @@ class SocketService {
     if (socket == null) return;
     if (socket.connected) {
       socket.emit('join:conversation', conversationId);
-      print('Joined conversation room: conv:$conversationId');
     } else {
       socket.onConnect((_) {
         socket.emit('join:conversation', conversationId);
-        print('Joined conversation room on connect: conv:$conversationId');
       });
     }
   }
@@ -391,7 +463,6 @@ class SocketService {
     if (socket == null) return;
     if (socket.connected) {
       socket.emit('leave:conversation', conversationId);
-      print('Left conversation room: conv:$conversationId');
     }
   }
 
@@ -415,8 +486,16 @@ class SocketService {
     socket.off(event);
   }
 
+  void joinBookingRoom(String bookingId) {
+    _socket?.emit('join:booking', {'bookingId': bookingId});
+  }
+
   void emitSitterLocation(String bookingId, double lat, double lng) {
-    _socket?.emit('sitter:location_update', {'bookingId': bookingId, 'lat': lat, 'lng': lng});
+    _socket?.emit('sitter:location_update', {
+      'bookingId': bookingId,
+      'lat': lat,
+      'lng': lng,
+    });
   }
 
   void emitWalkStarted(String bookingId) {
@@ -456,6 +535,11 @@ class SocketService {
     _newMessageController.close();
     _conversationCreatedController.close();
     _connectionStatusController.close();
+    _sitterLocationController.close();
+    _sitterWalkController.close();
+    _appointmentUpdatedController.close();
+    _bookingUpdateController.close();
+    _careReportController.close();
     disconnect();
   }
 }

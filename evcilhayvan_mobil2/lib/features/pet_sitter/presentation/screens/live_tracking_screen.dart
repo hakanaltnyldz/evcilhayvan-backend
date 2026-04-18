@@ -34,9 +34,18 @@ class _LiveTrackingScreenState extends ConsumerState<LiveTrackingScreen> {
   final List<LatLng> _path = [];
   StreamSubscription<SitterLocationEvent>? _locationSub;
   StreamSubscription<SitterWalkEvent>? _walkSub;
+  StreamSubscription<SitterLocationOfflineEvent>? _offlineSub;
   bool _walkActive = false;
   bool _walkEnded = false;
   DateTime? _walkStartTime;
+
+  // Offline / grace period (pet owner tarafı)
+  bool _locationOffline = false;
+  LatLng? _lastKnownPosition;
+  DateTime? _lastLocationTime;
+  Timer? _graceTimer;       // 60s countdown
+  int _graceSecondsLeft = 60;
+  DateTime? _lastLocationReceived;
 
   // Sitter mode — GPS
   StreamSubscription<Position>? _gpsSub;
@@ -97,17 +106,32 @@ class _LiveTrackingScreenState extends ConsumerState<LiveTrackingScreen> {
 
   void _subscribeToSocket() {
     final socketService = ref.read(socketServiceProvider);
+    socketService.joinBookingRoom(widget.booking.id);
+
     _locationSub = socketService.onSitterLocation.listen((event) {
       if (event.bookingId != widget.booking.id) return;
       final pos = LatLng(event.lat, event.lng);
       if (mounted) {
         setState(() {
           _sitterPosition = pos;
+          _lastKnownPosition = pos;
+          _lastLocationReceived = DateTime.now();
+          _lastLocationTime = DateTime.now();
           _path.add(pos);
+          // Konum geldi — offline durumu sıfırla
+          if (_locationOffline) {
+            _locationOffline = false;
+            _graceTimer?.cancel();
+            _graceTimer = null;
+          }
         });
         _mapController?.animateCamera(CameraUpdate.newLatLng(pos));
+        // Grace period varsa iptal et
+        _graceTimer?.cancel();
+        _graceTimer = null;
       }
     });
+
     _walkSub = socketService.onSitterWalk.listen((event) {
       if (event.bookingId != widget.booking.id) return;
       if (mounted) setState(() {
@@ -116,6 +140,54 @@ class _LiveTrackingScreenState extends ConsumerState<LiveTrackingScreen> {
         if (!event.started) _walkEnded = true;
       });
     });
+
+    // Backend'den 60s grace period tamamlanınca gelen event
+    _offlineSub = socketService.onSitterLocationOffline.listen((event) {
+      if (event.bookingId != widget.booking.id) return;
+      if (mounted) {
+        setState(() {
+          _locationOffline = true;
+          _graceTimer?.cancel();
+          _graceTimer = null;
+          if (event.lastLat != null && event.lastLng != null) {
+            _lastKnownPosition = LatLng(event.lastLat!, event.lastLng!);
+          }
+          _lastLocationTime = event.lastUpdated;
+        });
+        _showOfflineDialog(event);
+      }
+    });
+  }
+
+  void _showOfflineDialog(SitterLocationOfflineEvent event) {
+    if (!mounted) return;
+    final timeStr = event.lastUpdated != null
+        ? '${event.lastUpdated!.hour.toString().padLeft(2,'0')}:${event.lastUpdated!.minute.toString().padLeft(2,'0')}'
+        : 'bilinmiyor';
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.location_off, color: Colors.orange),
+            SizedBox(width: 8),
+            Text('Konum Kesildi', style: TextStyle(fontSize: 18)),
+          ],
+        ),
+        content: Text(
+          'Bakıcının konum paylaşımı durdu.\n\n'
+          'Son konum alınma saati: $timeStr\n'
+          'Haritada son bilinen konumu göstermeye devam ediyoruz.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tamam'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _startWalk() async {
@@ -228,22 +300,33 @@ class _LiveTrackingScreenState extends ConsumerState<LiveTrackingScreen> {
   void dispose() {
     _locationSub?.cancel();
     _walkSub?.cancel();
+    _offlineSub?.cancel();
     _gpsSub?.cancel();
     _gpsTimer?.cancel();
+    _graceTimer?.cancel();
     _mapController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final initialPos = _sitterPosition ?? _defaultLatLng;
+    // Offline durumda son bilinen konumu göster
+    final displayPos = _sitterPosition ?? _lastKnownPosition;
+    final initialPos = displayPos ?? _defaultLatLng;
     final markers = <Marker>{};
-    if (_sitterPosition != null) {
+    if (displayPos != null) {
+      // Canlıysa yeşil, offline ise turuncu marker
+      final markerHue = _locationOffline
+          ? BitmapDescriptor.hueOrange
+          : BitmapDescriptor.hueGreen;
+      final snippetText = _locationOffline
+          ? 'Son bilinen konum'
+          : 'Bakıcı konumu';
       markers.add(Marker(
         markerId: const MarkerId('sitter'),
-        position: _sitterPosition!,
-        infoWindow: InfoWindow(title: widget.booking.sitterName ?? 'Bakıcı', snippet: 'Bakıcı konumu'),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        position: displayPos,
+        infoWindow: InfoWindow(title: widget.booking.sitterName ?? 'Bakıcı', snippet: snippetText),
+        icon: BitmapDescriptor.defaultMarkerWithHue(markerHue),
       ));
     }
 
@@ -310,6 +393,42 @@ class _LiveTrackingScreenState extends ConsumerState<LiveTrackingScreen> {
             ),
           ),
 
+          // Offline uyarı banner (pet owner tarafı)
+          if (!widget.isSitter && _locationOffline)
+            Positioned(
+              top: 90, left: 16, right: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade800,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.25), blurRadius: 8)],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.location_off, color: Colors.white, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Konum paylaşımı durdu',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
+                          ),
+                          if (_lastLocationTime != null)
+                            Text(
+                              'Son konum: ${_lastLocationTime!.hour.toString().padLeft(2, '0')}:${_lastLocationTime!.minute.toString().padLeft(2, '0')}',
+                              style: const TextStyle(color: Colors.white70, fontSize: 11),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
           // Fotoğraf listesi (altta)
           if (photos.isNotEmpty)
             Positioned(
@@ -340,8 +459,8 @@ class _LiveTrackingScreenState extends ConsumerState<LiveTrackingScreen> {
               child: _buildSitterControls(),
             ),
 
-          // Owner: konum bekleniyor
-          if (!widget.isSitter && _sitterPosition == null && !_walkEnded)
+          // Owner: konum bekleniyor (ilk kez konum alınmadıysa)
+          if (!widget.isSitter && displayPos == null && !_walkEnded && !_locationOffline)
             Positioned(
               bottom: 24, left: 16, right: 16,
               child: Container(
