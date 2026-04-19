@@ -18,6 +18,7 @@ import '../../data/repositories/appointment_repository.dart';
 import '../../data/repositories/vaccination_repository.dart';
 import '../../data/repositories/veterinary_repository.dart';
 import '../../domain/models/veterinary_model.dart';
+import '../../domain/models/appointment_model.dart';
 import '../widgets/appointment_card.dart';
 import '../widgets/vet_card.dart';
 
@@ -35,7 +36,7 @@ class _VetHomeScreenState extends ConsumerState<VetHomeScreen> with SingleTicker
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this, initialIndex: widget.initialTabIndex.clamp(0, 2));
+    _tabController = TabController(length: 4, vsync: this, initialIndex: widget.initialTabIndex.clamp(0, 3));
   }
 
   @override
@@ -65,6 +66,7 @@ class _VetHomeScreenState extends ConsumerState<VetHomeScreen> with SingleTicker
             Tab(icon: const Icon(Icons.search), text: AppLocalizations.of(context)!.vetHomeTabSearch),
             Tab(icon: const Icon(Icons.calendar_today), text: AppLocalizations.of(context)!.vetHomeTabAppointments),
             Tab(icon: const Icon(Icons.vaccines), text: AppLocalizations.of(context)!.vetHomeTabVaccine),
+            const Tab(icon: Icon(Icons.local_hospital_rounded), text: 'Klinik'),
           ],
         ),
       ),
@@ -74,6 +76,7 @@ class _VetHomeScreenState extends ConsumerState<VetHomeScreen> with SingleTicker
           _SearchTab(),
           isGuest ? const _GuestLockedTab() : _AppointmentsTab(),
           isGuest ? const _GuestLockedTab() : _VaccinationTab(),
+          isGuest ? const _GuestLockedTab() : _VetScheduleTab(),
         ],
       ),
     );
@@ -634,5 +637,551 @@ class _GuestLockedTab extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// ─── Vet Schedule Tab (Klinik sahibi için) ───────────────────────
+
+class _VetScheduleTab extends ConsumerStatefulWidget {
+  @override
+  ConsumerState<_VetScheduleTab> createState() => _VetScheduleTabState();
+}
+
+class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
+  List<AppointmentModel> _appointments = [];
+  bool _loading = false;
+  String? _error;
+  String? _vetName;
+  String? _statusFilter; // null = hepsi
+  DateTime _focusedDay = DateTime.now();
+  DateTime? _selectedDay;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  DateTime _normalizeDay(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  Future<void> _load() async {
+    setState(() { _loading = true; _error = null; });
+    try {
+      final repo = ref.read(appointmentRepositoryProvider);
+      final result = await repo.getVetSchedule(status: _statusFilter);
+      if (mounted) {
+        setState(() {
+          _appointments = (result['appointments'] as List).cast<AppointmentModel>();
+          _vetName = result['vetName'] as String?;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() { _error = e.toString(); _loading = false; });
+    }
+  }
+
+  Future<void> _updateStatus(AppointmentModel apt, String newStatus, {String? vetNotes}) async {
+    try {
+      final repo = ref.read(appointmentRepositoryProvider);
+      await repo.updateStatus(apt.id, newStatus);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_statusLabel(newStatus) + ' olarak güncellendi')),
+        );
+        _load();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Güncelleme hatası: $e')),
+        );
+      }
+    }
+  }
+
+  String _statusLabel(String s) {
+    switch (s) {
+      case 'confirmed': return 'Onaylandı';
+      case 'cancelled': return 'İptal edildi';
+      case 'completed': return 'Tamamlandı';
+      case 'no_show':   return 'Gelmedi';
+      default:          return s;
+    }
+  }
+
+  Color _statusColor(String s) {
+    switch (s) {
+      case 'confirmed':  return const Color(0xFF2D6A4F);
+      case 'cancelled':  return Colors.red;
+      case 'completed':  return Colors.blue;
+      case 'no_show':    return Colors.grey;
+      default:           return Colors.orange;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Center(child: PawLoading());
+
+    if (_error != null) {
+      // Klinik bulunamadı durumu
+      final noClinic = _error!.contains('404') || _error!.toLowerCase().contains('bulunamadi');
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                noClinic ? Icons.local_hospital_outlined : Icons.error_outline,
+                size: 64,
+                color: Colors.grey.shade300,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                noClinic
+                    ? 'Kayıtlı kliniğiniz yok'
+                    : 'Randevular yüklenemedi',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                noClinic
+                    ? 'Veteriner olarak klinik kaydı yapın veya\nbir kliniği sahiplenin.'
+                    : _error!,
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              if (noClinic)
+                ElevatedButton.icon(
+                  onPressed: () => context.pushNamed('vet-register'),
+                  icon: const Icon(Icons.add_business, size: 18),
+                  label: const Text('Klinik Kaydet'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2D6A4F),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                )
+              else
+                ElevatedButton.icon(
+                  onPressed: _load,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Tekrar Dene'),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Takvim için event map
+    final Map<DateTime, List<AppointmentModel>> eventMap = {};
+    for (final apt in _appointments) {
+      final day = _normalizeDay(apt.date);
+      eventMap.putIfAbsent(day, () => []).add(apt);
+    }
+    List<AppointmentModel> getEvents(DateTime d) =>
+        eventMap[_normalizeDay(d)] ?? [];
+
+    final selectedDay = _selectedDay ?? _normalizeDay(DateTime.now());
+    final visible = _selectedDay != null
+        ? getEvents(_selectedDay!)
+        : List<AppointmentModel>.from(_appointments);
+
+    // Durum bazlı filtre
+    final filtered = _statusFilter == null
+        ? visible
+        : visible.where((a) => a.status == _statusFilter).toList();
+
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: CustomScrollView(
+        slivers: [
+          // Klinik başlığı + filtreler
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (_vetName != null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.local_hospital_rounded,
+                            color: Color(0xFF2D6A4F), size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _vetName!,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15,
+                              color: Color(0xFF1B4332),
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '${_appointments.length} randevu',
+                          style: TextStyle(
+                              color: Colors.grey.shade500, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                // Durum filtreleri
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+                  child: Row(
+                    children: [
+                      _filterChip(null, 'Tümü'),
+                      const SizedBox(width: 8),
+                      _filterChip('pending', 'Bekleyen'),
+                      const SizedBox(width: 8),
+                      _filterChip('confirmed', 'Onaylı'),
+                      const SizedBox(width: 8),
+                      _filterChip('completed', 'Tamamlandı'),
+                      const SizedBox(width: 8),
+                      _filterChip('cancelled', 'İptal'),
+                    ],
+                  ),
+                ),
+                // Takvim
+                TableCalendar<AppointmentModel>(
+                  firstDay: DateTime.now().subtract(const Duration(days: 180)),
+                  lastDay: DateTime.now().add(const Duration(days: 180)),
+                  focusedDay: _focusedDay,
+                  selectedDayPredicate: (day) => _selectedDay != null &&
+                      _normalizeDay(day) == _normalizeDay(_selectedDay!),
+                  eventLoader: getEvents,
+                  calendarFormat: CalendarFormat.twoWeeks,
+                  availableCalendarFormats: const {
+                    CalendarFormat.twoWeeks: '2 Hafta',
+                    CalendarFormat.month: 'Ay',
+                  },
+                  locale: 'tr_TR',
+                  onDaySelected: (selected, focused) {
+                    setState(() {
+                      _selectedDay = _normalizeDay(selected) ==
+                              _normalizeDay(_selectedDay ?? DateTime(0))
+                          ? null
+                          : selected;
+                      _focusedDay = focused;
+                    });
+                  },
+                  onPageChanged: (focused) =>
+                      setState(() => _focusedDay = focused),
+                  calendarStyle: CalendarStyle(
+                    todayDecoration: BoxDecoration(
+                      color: const Color(0xFF52B788).withOpacity(0.4),
+                      shape: BoxShape.circle,
+                    ),
+                    selectedDecoration: const BoxDecoration(
+                      color: Color(0xFF2D6A4F),
+                      shape: BoxShape.circle,
+                    ),
+                    markerDecoration: const BoxDecoration(
+                      color: Color(0xFF52B788),
+                      shape: BoxShape.circle,
+                    ),
+                    markersMaxCount: 3,
+                  ),
+                  headerStyle: const HeaderStyle(
+                    titleCentered: true,
+                    titleTextStyle: TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                ),
+                if (_selectedDay != null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.filter_list,
+                            size: 14, color: Color(0xFF2D6A4F)),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${_selectedDay!.day}.${_selectedDay!.month}.${_selectedDay!.year} — ${getEvents(_selectedDay!).length} randevu',
+                          style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF2D6A4F),
+                              fontWeight: FontWeight.w600),
+                        ),
+                        const Spacer(),
+                        GestureDetector(
+                          onTap: () =>
+                              setState(() => _selectedDay = null),
+                          child: Text('Tümü',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade500)),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+
+          // Randevu listesi
+          if (filtered.isEmpty)
+            SliverFillRemaining(
+              child: AnimatedEmptyState(
+                icon: Icons.event_available,
+                title: _statusFilter != null
+                    ? 'Bu durumda randevu yok'
+                    : _selectedDay != null
+                        ? 'Bu günde randevu yok'
+                        : 'Henüz randevu alınmamış',
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, i) => _buildAppointmentCard(filtered[i], i),
+                  childCount: filtered.length,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _filterChip(String? value, String label) {
+    final selected = _statusFilter == value;
+    return GestureDetector(
+      onTap: () => setState(() => _statusFilter = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF2D6A4F) : Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? const Color(0xFF2D6A4F) : Colors.grey.shade300,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: selected ? Colors.white : Colors.grey.shade700,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppointmentCard(AppointmentModel apt, int index) {
+    final statusColor = _statusColor(apt.status);
+    final isPending = apt.status == 'pending';
+    final isConfirmed = apt.status == 'confirmed';
+
+    return PremiumCard(
+      accentColor: statusColor,
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Üst satır: saat + durum badge
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2D6A4F).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.access_time,
+                        size: 14, color: Color(0xFF2D6A4F)),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${apt.date.hour.toString().padLeft(2, '0')}:${apt.date.minute.toString().padLeft(2, '0')}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: Color(0xFF1B4332),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${apt.date.day}.${apt.date.month}.${apt.date.year}',
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  _statusLabel(apt.status),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Hayvan sahibi bilgisi
+          Row(
+            children: [
+              const Icon(Icons.person_outline,
+                  size: 16, color: Color(0xFF52B788)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  apt.pet?.name != null
+                      ? '${apt.pet!.name} (${apt.pet!.species})'
+                      : 'Hayvan bilgisi yok',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              // Randevu türü
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    apt.type == 'online'
+                        ? Icons.videocam_rounded
+                        : Icons.local_hospital_rounded,
+                    size: 14,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    apt.type == 'online' ? 'Online' : 'Klinikte',
+                    style: TextStyle(
+                        fontSize: 11, color: Colors.grey.shade500),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          if (apt.reason != null && apt.reason!.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                const Icon(Icons.chat_bubble_outline,
+                    size: 14, color: Colors.grey),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    apt.reason!,
+                    style: TextStyle(
+                        color: Colors.grey.shade600, fontSize: 12),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+
+          // Aksiyon butonları
+          if (isPending || isConfirmed) ...[
+            const SizedBox(height: 10),
+            const Divider(height: 1),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                if (isPending) ...[
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _updateStatus(apt, 'cancelled'),
+                      icon: const Icon(Icons.close, size: 16),
+                      label: const Text('Reddet', style: TextStyle(fontSize: 13)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.red),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _updateStatus(apt, 'confirmed'),
+                      icon: const Icon(Icons.check, size: 16),
+                      label: const Text('Onayla', style: TextStyle(fontSize: 13)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2D6A4F),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ),
+                ] else if (isConfirmed) ...[
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _updateStatus(apt, 'no_show'),
+                      icon: const Icon(Icons.person_off_outlined, size: 16),
+                      label: const Text('Gelmedi', style: TextStyle(fontSize: 13)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.grey,
+                        side: BorderSide(color: Colors.grey.shade400),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _updateStatus(apt, 'completed'),
+                      icon: const Icon(Icons.task_alt, size: 16),
+                      label: const Text('Tamamlandı', style: TextStyle(fontSize: 13)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ],
+      ),
+    )
+        .animate(delay: Duration(milliseconds: index * 60))
+        .fadeIn(duration: 280.ms)
+        .slideY(begin: 0.04, duration: 280.ms, curve: Curves.easeOut);
   }
 }

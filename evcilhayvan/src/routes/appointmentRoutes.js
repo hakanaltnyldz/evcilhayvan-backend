@@ -4,6 +4,7 @@ import { authRequired } from "../middlewares/auth.js";
 import {
   createAppointment,
   getMyAppointments,
+  getVetSchedule,
   getAppointment,
   updateAppointmentStatus,
   getAvailableSlots,
@@ -16,6 +17,7 @@ const router = Router();
 
 router.post("/", authRequired(), createAppointment);
 router.get("/me", authRequired(), getMyAppointments);
+router.get("/vet-schedule", authRequired(), getVetSchedule);
 router.get("/vet/:veterinaryId/slots", authRequired(), [param("veterinaryId").isMongoId()], getAvailableSlots);
 router.get("/:id/prescriptions", authRequired(), [param("id").isMongoId()], getAppointmentPrescriptions);
 router.post("/:id/prescriptions", authRequired(), [param("id").isMongoId()], createAppointmentPrescription);

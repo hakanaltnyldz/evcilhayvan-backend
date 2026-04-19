@@ -97,6 +97,23 @@ class AppointmentRepository {
     });
   }
 
+  Future<Map<String, dynamic>> getVetSchedule({String? status, String? date, int page = 1}) {
+    return _guard(() async {
+      final response = await _dio.get('/api/appointments/vet-schedule', queryParameters: {
+        if (status != null) 'status': status,
+        if (date != null) 'date': date,
+        'page': page,
+        'limit': 50,
+      });
+      final List<dynamic> list = (response.data['appointments'] as List?) ?? [];
+      return {
+        'appointments': list.whereType<Map<String, dynamic>>().map(AppointmentModel.fromJson).toList(),
+        'vetName': response.data['vetName'] ?? '',
+        'total': response.data['total'] ?? 0,
+      };
+    });
+  }
+
   Future<List<String>> getAvailableSlots({required String vetId, required String date}) {
     return _guard(() async {
       final response = await _dio.get('/api/appointments/vet/$vetId/slots', queryParameters: {'date': date});

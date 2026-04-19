@@ -328,6 +328,52 @@ export async function getMyAppointments(req, res) {
   }
 }
 
+// GET /api/appointments/vet-schedule  — veteriner kliniğine gelen randevular
+export async function getVetSchedule(req, res) {
+  try {
+    const userId = req.user.sub;
+    const { status, date, page = 1, limit = 50 } = req.query;
+
+    // Kullanıcının sahip olduğu kliniği bul
+    const vet = await Veterinary.findOne({ userId, isActive: true });
+    if (!vet) {
+      return sendError(res, 404, "Klinik bulunamadi veya size ait degil", "vet_not_found");
+    }
+
+    const filter = { veterinaryId: vet._id };
+    if (status) filter.status = status;
+    if (date) {
+      const d = new Date(date);
+      const next = new Date(d);
+      next.setDate(next.getDate() + 1);
+      filter.date = { $gte: d, $lt: next };
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+    const [items, total] = await Promise.all([
+      Appointment.find(filter)
+        .populate("userId", "name avatarUrl email phone")
+        .populate("petId", "name species photos")
+        .sort({ date: 1 })
+        .skip(skip)
+        .limit(Number(limit)),
+      Appointment.countDocuments(filter),
+    ]);
+
+    return sendOk(res, 200, {
+      appointments: items,
+      vetName: vet.name,
+      vetId: vet._id,
+      total,
+      page: Number(page),
+      hasMore: skip + items.length < total,
+    });
+  } catch (err) {
+    console.error("[getVetSchedule]", err);
+    return sendError(res, 500, "Klinik randevulari yuklenemedi", "internal_error", err.message);
+  }
+}
+
 // GET /api/appointments/:id
 export async function getAppointment(req, res) {
   try {
