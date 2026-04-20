@@ -107,9 +107,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (perm == LocationPermission.deniedForever ||
           perm == LocationPermission.denied) {
         if (mounted) {
+          setState(() => _locLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context)!.homeLocationPermErr),
+              action: perm == LocationPermission.deniedForever
+                  ? SnackBarAction(
+                      label: 'Ayarlar',
+                      onPressed: () => Geolocator.openAppSettings(),
+                    )
+                  : null,
             ),
           );
         }

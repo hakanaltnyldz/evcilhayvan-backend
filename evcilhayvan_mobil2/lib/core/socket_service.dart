@@ -1,5 +1,6 @@
 // lib/core/socket_service.dart
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'http.dart';
 
@@ -314,7 +315,9 @@ class SocketService {
           data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data),
         );
         _matchRequestController.add(event);
-      } catch (e) {}
+      } catch (e) {
+        debugPrint('[Socket] match_request parse error: $e');
+      }
     });
 
     // Match accepted listener
@@ -324,7 +327,9 @@ class SocketService {
           data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data),
         );
         _matchAcceptedController.add(event);
-      } catch (e) {}
+      } catch (e) {
+        debugPrint('[Socket] match_accepted parse error: $e');
+      }
     });
 
     // Match rejected listener
@@ -334,7 +339,9 @@ class SocketService {
           data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data),
         );
         _matchRejectedController.add(event);
-      } catch (e) {}
+      } catch (e) {
+        debugPrint('[Socket] match_rejected parse error: $e');
+      }
     });
 
     // New message listener (for notifications when not in chat)
@@ -344,7 +351,9 @@ class SocketService {
           data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data),
         );
         _newMessageController.add(event);
-      } catch (e) {}
+      } catch (e) {
+        debugPrint('[Socket] new_message parse error: $e');
+      }
     });
 
     // Conversation created listener
@@ -354,7 +363,9 @@ class SocketService {
           data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data),
         );
         _conversationCreatedController.add(event);
-      } catch (e) {}
+      } catch (e) {
+        debugPrint('[Socket] conversation:created parse error: $e');
+      }
     });
 
     // Sitter location events
@@ -364,7 +375,9 @@ class SocketService {
             ? data
             : Map<String, dynamic>.from(data);
         _sitterLocationController.add(SitterLocationEvent.fromJson(map));
-      } catch (e) {}
+      } catch (e) {
+        debugPrint('[Socket] sitter:location_update parse error: $e');
+      }
     });
 
     socket.on('sitter:walk_started', (data) {
@@ -378,7 +391,9 @@ class SocketService {
             started: true,
           ),
         );
-      } catch (e) {}
+      } catch (e) {
+        debugPrint('[Socket] sitter:walk_started parse error: $e');
+      }
     });
 
     socket.on('sitter:walk_ended', (data) {
@@ -392,7 +407,9 @@ class SocketService {
             started: false,
           ),
         );
-      } catch (e) {}
+      } catch (e) {
+        debugPrint('[Socket] sitter:walk_ended parse error: $e');
+      }
     });
 
     // Sitter location offline (grace period bitti, konum kayboldu)
@@ -403,7 +420,9 @@ class SocketService {
             : Map<String, dynamic>.from(data);
         _sitterLocationOfflineController
             .add(SitterLocationOfflineEvent.fromJson(map));
-      } catch (e) {}
+      } catch (e) {
+        debugPrint('[Socket] sitter:location_offline parse error: $e');
+      }
     });
 
     // Appointment updated (randevu durum değişimi)
@@ -413,7 +432,9 @@ class SocketService {
             ? data
             : Map<String, dynamic>.from(data as Map);
         _appointmentUpdatedController.add(map);
-      } catch (e) {}
+      } catch (e) {
+        debugPrint('[Socket] appointment:updated parse error: $e');
+      }
     });
 
     // Sitter booking update (bakıcı rezervasyon güncelleme)
@@ -423,7 +444,9 @@ class SocketService {
             ? data
             : Map<String, dynamic>.from(data as Map);
         _bookingUpdateController.add(map);
-      } catch (e) {}
+      } catch (e) {
+        debugPrint('[Socket] booking:update parse error: $e');
+      }
     });
 
     // Care report (bakım raporu)
@@ -433,7 +456,9 @@ class SocketService {
             ? data
             : Map<String, dynamic>.from(data as Map);
         _careReportController.add(map);
-      } catch (e) {}
+      } catch (e) {
+        debugPrint('[Socket] booking:care_report parse error: $e');
+      }
     });
   }
 

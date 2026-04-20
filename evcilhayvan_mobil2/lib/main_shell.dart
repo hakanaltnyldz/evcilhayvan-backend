@@ -376,7 +376,15 @@ class _MainShellState extends ConsumerState<MainShell> {
               action: SnackBarAction(
                 label: AppLocalizations.of(context)!.shellApptSnackView,
                 textColor: Colors.white,
-                onPressed: () {},
+                onPressed: () {
+                  final appointmentId = d['appointmentId']?.toString();
+                  if (appointmentId != null && appointmentId.isNotEmpty) {
+                    context.pushNamed('appointment-detail',
+                        pathParameters: {'id': appointmentId});
+                  } else {
+                    context.pushNamed('veterinary');
+                  }
+                },
               ),
             ),
           );

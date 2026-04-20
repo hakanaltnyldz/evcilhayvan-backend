@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:evcilhayvan_mobil2/core/utils/url_resolver.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart' show Share;
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
@@ -493,7 +494,13 @@ class _StoreHeaderState extends ConsumerState<_StoreHeader> {
                   ),
                   const SizedBox(width: 10),
                   OutlinedButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      Share.share(
+                        '${widget.store.name} mağazasına göz at!'
+                        '${widget.store.description != null && widget.store.description!.isNotEmpty ? "\n${widget.store.description}" : ""}',
+                        subject: widget.store.name,
+                      );
+                    },
                     icon: const Icon(Icons.share_outlined, size: 18),
                     label: Text(l10n.storeDetailShare),
                   ),

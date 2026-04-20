@@ -88,7 +88,7 @@ class MatchRequestUpdateResult {
 }
 
 final matingRepositoryProvider = Provider<MatingRepository>((ref) {
-  final dio = HttpClient().dio;
+  final dio = ApiClient().dio;
   return MatingRepository(dio);
 });
 
