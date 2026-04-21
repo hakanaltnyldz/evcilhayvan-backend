@@ -1,8 +1,11 @@
 import path from "path";
 import "dotenv/config";
 
-if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'changeme')) {
-  console.error('[FATAL] JWT_SECRET must be set to a secure value in production. Exiting.');
+if (
+  process.env.NODE_ENV === "production" &&
+  (!process.env.JWT_SECRET || process.env.JWT_SECRET === "changeme")
+) {
+  console.error("[FATAL] JWT_SECRET must be set to a secure value in production. Exiting.");
   process.exit(1);
 }
 
@@ -13,18 +16,11 @@ if (missing.length && process.env.NODE_ENV !== "test") {
   console.warn(`[config] Missing environment variables: ${missing.join(", ")}`);
 }
 
-const rawCorsOrigin = (process.env.CORS_ORIGIN || "").trim();
-
-// Production'da CORS_ORIGIN zorunlu; set edilmezse sadece localhost'a izin ver
-const corsOrigins = rawCorsOrigin === ""
-  ? (process.env.NODE_ENV === "production"
-      ? (() => { console.warn("[config] WARNING: CORS_ORIGIN not set in production — defaulting to localhost only"); return ["http://localhost:3000", "http://localhost:5173"]; })()
-      : ["http://localhost:3000", "http://localhost:5173", "http://localhost:4000"])
-  : rawCorsOrigin === "*"
-    ? (process.env.NODE_ENV === "production"
-        ? (() => { console.error("[config] FATAL: CORS_ORIGIN=* is not allowed in production. Set explicit origins."); process.exit(1); })()
-        : true)
-    : rawCorsOrigin.split(",").map((o) => o.trim()).filter(Boolean);
+const rawCorsOrigin = (process.env.CORS_ORIGIN || "*").trim();
+const corsOrigins =
+  rawCorsOrigin === "*"
+    ? true
+    : rawCorsOrigin.split(",").map((origin) => origin.trim()).filter(Boolean);
 
 export const config = {
   env: process.env.NODE_ENV || "development",
