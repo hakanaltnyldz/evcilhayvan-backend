@@ -130,6 +130,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ],
               ),
+              if (user != null && user.role != 'seller') ...[
+                const SizedBox(height: 20),
+                _SettingsCard(
+                  title: 'Satıcı Ol',
+                  subtitle: 'Mağazanızı açın ve ürün satmaya başlayın',
+                  children: [
+                    GreenTile(
+                      icon: Icons.store_outlined,
+                      title: 'Satıcı Başvurusu Yap',
+                      subtitle: 'Başvurunuzu gönderin, admin onayından sonra mağazanız açılır',
+                      onTap: () => context.pushNamed('store-apply'),
+                    ),
+                    GreenTile(
+                      icon: Icons.assignment_outlined,
+                      title: 'Başvuru Durumum',
+                      subtitle: 'Mevcut başvurunuzun durumunu görüntüleyin',
+                      onTap: () => context.pushNamed('application-status'),
+                    ),
+                  ],
+                ),
+              ],
               if (user?.role == 'seller') ...[
                 const SizedBox(height: 20),
                 _SettingsCard(

@@ -108,10 +108,29 @@ class _VetRegisterScreenState extends ConsumerState<VetRegisterScreen> {
         'note': 'Klinigi sisteme ekleyen kullanici tarafindan otomatik olusturuldu.',
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Klinik kaydedildi! Sahiplenme talebiniz admin onayına gönderildi.'), backgroundColor: Colors.green),
+        await showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Klinik Kaydedildi'),
+            content: const Text(
+              'Klinik kaydınız alındı ve sahiplenme talebiniz admin onayına gönderildi.\n\nTalebinizin durumunu "Talep Durumum" ekranından takip edebilirsiniz.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Tamam'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  context.pushNamed('vet-claim-status');
+                },
+                child: const Text('Talep Durumum'),
+              ),
+            ],
+          ),
         );
-        context.pop();
+        if (mounted) context.pop();
       }
     } catch (e) {
       if (mounted) {

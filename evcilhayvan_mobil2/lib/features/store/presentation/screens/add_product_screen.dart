@@ -89,7 +89,9 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
           final o = _OptionDraft();
           o.labelCtrl.text = opt.label;
           o.stockCtrl.text = opt.stock.toString();
-          o.priceDiffCtrl.text = opt.priceDiff.toStringAsFixed(0);
+          o.priceDiffCtrl.text = opt.priceDiff == opt.priceDiff.truncateToDouble()
+              ? opt.priceDiff.toStringAsFixed(0)
+              : opt.priceDiff.toString();
           draft.options.add(o);
         }
         _variants.add(draft);

@@ -3,6 +3,7 @@ import { authRequired } from "../middlewares/auth.js";
 import {
   listVets,
   getNearbyVets,
+  getMyClinic,
   googleSearchVets,
   getVet,
   createVet,
@@ -11,6 +12,7 @@ import {
   verifyVet,
   claimVetProfile,
   getVetClaimStatus,
+  getMyClaimStatus,
   startVetConversation,
   fetchVetPhotosFromGoogle,
 } from "../controllers/veterinaryController.js";
@@ -24,6 +26,8 @@ const router = Router();
 
 router.get("/nearby", getNearbyVets);
 router.get("/google-search", authRequired(), googleSearchVets);
+router.get("/my-clinic", authRequired(), getMyClinic);
+router.get("/my-claim-status", authRequired(), getMyClaimStatus);
 router.get("/", listVets);
 // Yorum silme (specific route before :id)
 router.delete("/reviews/:reviewId", authRequired(), deleteVetReview);

@@ -7,6 +7,7 @@ import Users from './pages/Users.jsx'
 import Pets from './pages/Pets.jsx'
 import Reports from './pages/Reports.jsx'
 import Orders from './pages/Orders.jsx'
+import Returns from './pages/Returns.jsx'
 import Posts from './pages/Posts.jsx'
 import Coupons from './pages/Coupons.jsx'
 import Support from './pages/Support.jsx'
@@ -67,6 +68,7 @@ export default function App() {
               <Route path="pets" element={<Pets />} />
               <Route path="reports" element={<Reports />} />
               <Route path="orders" element={<Orders />} />
+              <Route path="returns" element={<Returns />} />
               <Route path="posts" element={<Posts />} />
               <Route path="coupons" element={<Coupons />} />
               <Route path="support" element={<Support />} />

@@ -6080,6 +6080,28 @@ abstract class AppLocalizations {
   /// **'Bir hata oluştu, lütfen tekrar deneyin.'**
   String get applySellerGenericError;
 
+  String get applySellerCompanyTitleLabel;
+  String get applySellerCompanyTitleHint;
+  String get applySellerCompanyTitleRequired;
+  String get applySellerTaxNumberLabel;
+  String get applySellerTaxNumberHint;
+  String get applySellerTaxNumberRequired;
+  String get applySellerTaxOfficeLabel;
+  String get applySellerTaxOfficeHint;
+  String get applySellerTaxOfficeRequired;
+  String get applySellerAddressLabel;
+  String get applySellerAddressHint;
+  String get applySellerAddressRequired;
+  String get applySellerContactInfoLabel;
+  String get applySellerContactInfoHint;
+  String get applySellerContactInfoRequired;
+  String get applySellerIbanLabel;
+  String get applySellerIbanHint;
+  String get applySellerIbanRequired;
+  String get applySellerIbanInvalid;
+  String get applySellerNameTooLong;
+  String get applySellerLegalInfoSection;
+
   /// No description provided for @addProductTitle.
   ///
   /// In tr, this message translates to:

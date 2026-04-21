@@ -11,6 +11,7 @@ import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/product_model.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/core/constants.dart';;
 
 class ProductManagementScreen extends ConsumerStatefulWidget {
   const ProductManagementScreen({super.key});
@@ -181,7 +182,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
       case 'inactive':
         return products.where((p) => !p.isActive).toList();
       case 'lowstock':
-        return products.where((p) => p.stock > 0 && p.stock <= 5).toList();
+        return products.where((p) => p.stock > 0 && p.stock <= kLowStockThreshold).toList();
       case 'outofstock':
         return products.where((p) => p.stock <= 0).toList();
       default:
@@ -307,7 +308,7 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                         fontWeight: FontWeight.w800,
                         color: product.stock <= 0
                             ? Colors.red
-                            : product.stock <= 5
+                            : product.stock <= kLowStockThreshold
                                 ? Colors.orange
                                 : Colors.green,
                       ),
@@ -396,11 +397,21 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                     flex: 2,
                     child: ElevatedButton(
                       onPressed: () async {
-                        final amount = int.tryParse(stockController.text) ?? 0;
+                        final parsed = int.tryParse(stockController.text.trim());
+                        if (parsed == null || parsed < 0) {
+                          setModalState(() {});
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(ml10n.productMgmtEnterAmt),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                          return;
+                        }
                         Navigator.pop(context);
                         await _updateStock(
                           product,
-                          amount,
+                          parsed,
                           action == 'set' ? null : action,
                         );
                       },
@@ -802,7 +813,7 @@ class _ProductCard extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          ] else if (product.stock <= 5) ...[
+                          ] else if (product.stock <= kLowStockThreshold) ...[
                             const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -877,7 +888,7 @@ class _ProductCard extends StatelessWidget {
 
   Color _getStockColor(int stock) {
     if (stock <= 0) return Colors.red;
-    if (stock <= 5) return Colors.orange;
+    if (stock <= kLowStockThreshold) return Colors.orange;
     return Colors.green;
   }
 }

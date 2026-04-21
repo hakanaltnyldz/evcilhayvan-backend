@@ -32,6 +32,36 @@ final petDetailProvider = FutureProvider.autoDispose.family<Pet, String>((
   return repository.getPetById(petId);
 });
 
+final relatedPetsProvider = FutureProvider.autoDispose
+    .family<
+      List<Pet>,
+      ({String petId, String species, String breed, String advertType})
+    >((ref, params) async {
+      final repository = ref.watch(petsRepositoryProvider);
+      final result = await repository.getPetsPaginated(
+        advertType: params.advertType,
+        species: params.species,
+        limit: 12,
+      );
+
+      final related = result.items.where((pet) {
+        return pet.id != params.petId && pet.isActive;
+      }).toList();
+
+      related.sort((a, b) {
+        final aBreedMatch = a.breed.toLowerCase() == params.breed.toLowerCase();
+        final bBreedMatch = b.breed.toLowerCase() == params.breed.toLowerCase();
+        if (aBreedMatch != bBreedMatch) {
+          return aBreedMatch ? -1 : 1;
+        }
+        return (b.createdAt ?? DateTime(1970)).compareTo(
+          a.createdAt ?? DateTime(1970),
+        );
+      });
+
+      return related.take(4).toList(growable: false);
+    });
+
 String _resolveSpecies(String species, AppLocalizations l10n) {
   switch (species) {
     case 'dog':
@@ -166,6 +196,11 @@ class PetDetailScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 16),
                           ],
+
+                          _SimilarPetsSection(
+                            pet: pet,
+                          ).animate(delay: 320.ms).fadeIn(duration: 260.ms),
+                          const SizedBox(height: 20),
 
                           // Bottom padding for action buttons
                           const SizedBox(height: 100),
@@ -384,14 +419,19 @@ class PetDetailScreen extends ConsumerWidget {
               FilledButton.icon(
                 onPressed: () {
                   Navigator.pop(ctx);
-                  context.pushNamed('health-card', pathParameters: {'petId': pet.id});
+                  context.pushNamed(
+                    'health-card',
+                    pathParameters: {'petId': pet.id},
+                  );
                 },
                 icon: const Icon(Icons.health_and_safety_outlined, size: 18),
                 label: const Text('Sağlık Kartını Aç'),
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFF2D6A4F),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   minimumSize: const Size(double.infinity, 44),
                 ),
               ),
@@ -449,7 +489,11 @@ class PetDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSliverAppBar(BuildContext context, Pet pet, {bool isOwner = false}) {
+  Widget _buildSliverAppBar(
+    BuildContext context,
+    Pet pet, {
+    bool isOwner = false,
+  }) {
     final heroTag = 'pet-image-${pet.id}';
 
     return SliverAppBar(
@@ -582,6 +626,12 @@ class PetDetailScreen extends ConsumerWidget {
               left: 16,
               child: _buildAdvertTypeBadge(context, pet),
             ),
+            if (pet.photos.length == 1)
+              const Positioned(
+                right: 16,
+                bottom: 18,
+                child: _PhotoCountBadge(totalPhotos: 1),
+              ),
           ],
         ),
       ),
@@ -814,9 +864,9 @@ class PetDetailScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.4)),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF2D6A4F).withOpacity(0.06),
@@ -995,7 +1045,28 @@ class PetDetailScreen extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _HealthStatusChip(
+                icon: Icons.vaccines_rounded,
+                label: pet.vaccinated
+                    ? l10n.petDetailVaccineComplete
+                    : l10n.petDetailVaccineNeeded,
+                isPositive: pet.vaccinated,
+              ),
+              _HealthStatusChip(
+                icon: Icons.verified_rounded,
+                label: pet.isActive
+                    ? l10n.petDetailActive
+                    : l10n.petDetailInactive,
+                isPositive: pet.isActive,
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
           Row(
             children: [
               Expanded(
@@ -1157,6 +1228,264 @@ class PetDetailScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PhotoCountBadge extends StatelessWidget {
+  const _PhotoCountBadge({required this.totalPhotos, this.currentIndex = 1});
+
+  final int totalPhotos;
+  final int currentIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.45),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withOpacity(0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.photo_library_outlined,
+            color: Colors.white,
+            size: 14,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '$currentIndex / $totalPhotos',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HealthStatusChip extends StatelessWidget {
+  const _HealthStatusChip({
+    required this.icon,
+    required this.label,
+    required this.isPositive,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isPositive;
+
+  @override
+  Widget build(BuildContext context) {
+    final background = isPositive
+        ? const Color(0xFFD8F3DC)
+        : const Color(0xFFFFE8D9);
+    final foreground = isPositive
+        ? const Color(0xFF1B4332)
+        : const Color(0xFFB85C38);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: foreground),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: foreground,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SimilarPetsSection extends ConsumerWidget {
+  const _SimilarPetsSection({required this.pet});
+
+  final Pet pet;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final relatedAsync = ref.watch(
+      relatedPetsProvider((
+        petId: pet.id,
+        species: pet.species,
+        breed: pet.breed,
+        advertType: pet.advertType,
+      )),
+    );
+
+    return relatedAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (relatedPets) {
+        if (relatedPets.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Benzer ilanlar',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Ayni turde yakindaki diger adaylar.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              height: 208,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: relatedPets.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                itemBuilder: (context, index) {
+                  final item = relatedPets[index];
+                  return _SimilarPetCard(pet: item);
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _SimilarPetCard extends StatelessWidget {
+  const _SimilarPetCard({required this.pet});
+
+  final Pet pet;
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = pet.photos.isNotEmpty
+        ? '$apiBaseUrl${pet.photos.first}'
+        : null;
+
+    return GestureDetector(
+      onTap: () =>
+          context.pushNamed('pet-detail', pathParameters: {'id': pet.id}),
+      child: Container(
+        width: 170,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF2D6A4F).withOpacity(0.08),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 112,
+              width: double.infinity,
+              child: imageUrl == null
+                  ? Container(
+                      color: const Color(0xFFD8F3DC),
+                      child: const Icon(
+                        Icons.pets_rounded,
+                        color: Color(0xFF2D6A4F),
+                        size: 42,
+                      ),
+                    )
+                  : CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.cover,
+                      errorWidget: (_, __, ___) => Container(
+                        color: const Color(0xFFD8F3DC),
+                        child: const Icon(
+                          Icons.pets_rounded,
+                          color: Color(0xFF2D6A4F),
+                          size: 42,
+                        ),
+                      ),
+                    ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      pet.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      pet.breed,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.cake_outlined,
+                          size: 14,
+                          color: Color(0xFF2D6A4F),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            '${pet.ageMonths} ay',
+                            style: const TextStyle(
+                              color: Color(0xFF1B4332),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        if (pet.vaccinated)
+                          const Icon(
+                            Icons.verified_rounded,
+                            size: 16,
+                            color: Color(0xFF2D6A4F),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -2408,6 +2737,14 @@ class _PhotoGalleryState extends State<_PhotoGallery> {
                   : CachedNetworkImage(imageUrl: url, fit: BoxFit.cover),
             );
           },
+        ),
+        Positioned(
+          top: 18,
+          right: 16,
+          child: _PhotoCountBadge(
+            totalPhotos: widget.photos.length,
+            currentIndex: _current + 1,
+          ),
         ),
         // Dot indicator
         Positioned(

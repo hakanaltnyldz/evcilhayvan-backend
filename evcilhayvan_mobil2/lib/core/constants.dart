@@ -44,3 +44,7 @@ const int kDefaultPageSize = 10;
 
 /// Page size for the store product feed.
 const int kStoreFeedLimit = 40;
+
+// Store / inventory
+/// Stock count at or below which a product is considered "low stock".
+const int kLowStockThreshold = 5;

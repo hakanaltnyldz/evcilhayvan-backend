@@ -14,8 +14,10 @@ import Coupon from "../models/Coupon.js";
 import CouponUsage from "../models/CouponUsage.js";
 import SupportTicket from "../models/SupportTicket.js";
 import PetSitter from "../models/PetSitter.js";
+import Appointment from "../models/Appointment.js";
 import VetClaimRequest from "../models/VetClaimRequest.js";
 import Veterinary from "../models/Veterinary.js";
+import VetReview from "../models/VetReview.js";
 import WalkUpdate from "../models/WalkUpdate.js";
 import CareReport from "../models/CareReport.js";
 import SitterBooking from "../models/SitterBooking.js";
@@ -71,6 +73,60 @@ function parseDateOnly(value, { endOfDay = false } = {}) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function formatTimelineLabel(date, granularity) {
+  return new Intl.DateTimeFormat("tr-TR", granularity === "day"
+    ? { day: "2-digit", month: "short", timeZone: "UTC" }
+    : { month: "short", year: "2-digit", timeZone: "UTC" }).format(date);
+}
+
+function buildTimelineBuckets({ fromDate, toDate, now = new Date() }) {
+  const endDate = toDate || now;
+  const explicitRangeDays = fromDate && toDate
+    ? Math.max(1, Math.ceil((toDate.getTime() - fromDate.getTime()) / 86400000) + 1)
+    : null;
+  const granularity = explicitRangeDays && explicitRangeDays <= 45 ? "day" : "month";
+
+  const buckets = [];
+  if (granularity === "day") {
+    const startDate = new Date(Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth(), fromDate.getUTCDate()));
+    const finalDate = new Date(Date.UTC(toDate.getUTCFullYear(), toDate.getUTCMonth(), toDate.getUTCDate(), 23, 59, 59, 999));
+    for (let cursor = new Date(startDate); cursor <= finalDate; cursor.setUTCDate(cursor.getUTCDate() + 1)) {
+      const point = new Date(cursor);
+      buckets.push({
+        key: point.toISOString().slice(0, 10),
+        label: formatTimelineLabel(point, "day"),
+      });
+    }
+    return {
+      granularity,
+      mongoFormat: "%Y-%m-%d",
+      startDate,
+      endDate: finalDate,
+      buckets,
+    };
+  }
+
+  const seedDate = fromDate || new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1));
+  const startDate = new Date(Date.UTC(seedDate.getUTCFullYear(), seedDate.getUTCMonth(), 1));
+  const finalMonth = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), 1));
+
+  for (let cursor = new Date(startDate); cursor <= finalMonth; cursor.setUTCMonth(cursor.getUTCMonth() + 1)) {
+    const point = new Date(cursor);
+    buckets.push({
+      key: `${point.getUTCFullYear()}-${String(point.getUTCMonth() + 1).padStart(2, "0")}`,
+      label: formatTimelineLabel(point, "month"),
+    });
+  }
+
+  return {
+    granularity,
+    mongoFormat: "%Y-%m",
+    startDate,
+    endDate,
+    buckets,
+  };
+}
+
 // Tüm admin endpointleri admin rolü gerektirir
 router.use(authRequired(["admin"]));
 
@@ -93,9 +149,25 @@ router.get("/stats", async (req, res) => {
     if (fromDate) dateFilter.$gte = fromDate;
     if (toDate) dateFilter.$lte = toDate;
     const hasDateFilter = fromDate || toDate;
+    const timeline = buildTimelineBuckets({ fromDate, toDate, now });
+
+    const commerceFilter = {
+      status: { $ne: "cancelled" },
+      paymentStatus: { $ne: "failed" },
+    };
+    if (hasDateFilter) {
+      commerceFilter.createdAt = dateFilter;
+    }
+
+    const returnsDateFilter = {};
+    if (fromDate) returnsDateFilter.$gte = fromDate;
+    if (toDate) returnsDateFilter.$lte = toDate;
+    const hasReturnsDateFilter = Object.keys(returnsDateFilter).length > 0;
 
     const [
+      allTimeUsers,
       totalUsers,
+      allTimeOrders,
       newUsersThisMonth,
       newUsersInRange,
       totalPets,
@@ -106,8 +178,17 @@ router.get("/stats", async (req, res) => {
       totalActiveCoupons,
       openSupportTickets,
       pendingSellerApplications,
+      pendingReturns,
+      approvedReturns,
+      rejectedReturns,
+      revenueSummaryRaw,
+      revenueTrendRaw,
+      userGrowthRaw,
+      topProductsRaw,
     ] = await Promise.all([
+      User.countDocuments({}),
       User.countDocuments(hasDateFilter ? { createdAt: dateFilter } : {}),
+      Order.countDocuments({}).catch(() => 0),
       User.countDocuments({
         createdAt: { $gte: new Date(new Date().setDate(1)) },
       }),
@@ -120,11 +201,136 @@ router.get("/stats", async (req, res) => {
       Coupon.countDocuments({ isActive: true, validUntil: { $gte: now } }).catch(() => 0),
       SupportTicket.countDocuments({ status: "open" }).catch(() => 0),
       SellerApplication.countDocuments({ status: "pending" }).catch(() => 0),
+      Order.countDocuments({
+        "returnRequest.status": "pending",
+        ...(hasReturnsDateFilter ? { "returnRequest.requestedAt": returnsDateFilter } : {}),
+      }).catch(() => 0),
+      Order.countDocuments({
+        "returnRequest.status": "approved",
+        ...(hasReturnsDateFilter ? { "returnRequest.requestedAt": returnsDateFilter } : {}),
+      }).catch(() => 0),
+      Order.countDocuments({
+        "returnRequest.status": "rejected",
+        ...(hasReturnsDateFilter ? { "returnRequest.requestedAt": returnsDateFilter } : {}),
+      }).catch(() => 0),
+      Order.aggregate([
+        { $match: commerceFilter },
+        {
+          $group: {
+            _id: null,
+            grossRevenue: { $sum: "$totalAmount" },
+            averageOrderValue: { $avg: "$totalAmount" },
+            deliveredOrders: {
+              $sum: { $cond: [{ $eq: ["$status", "delivered"] }, 1, 0] },
+            },
+          },
+        },
+      ]).catch(() => []),
+      Order.aggregate([
+        {
+          $match: {
+            status: { $ne: "cancelled" },
+            paymentStatus: { $ne: "failed" },
+            createdAt: {
+              $gte: timeline.startDate,
+              $lte: timeline.endDate,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              $dateToString: {
+                format: timeline.mongoFormat,
+                date: "$createdAt",
+                timezone: "UTC",
+              },
+            },
+            revenue: { $sum: "$totalAmount" },
+            orders: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]).catch(() => []),
+      User.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: timeline.startDate,
+              $lte: timeline.endDate,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              $dateToString: {
+                format: timeline.mongoFormat,
+                date: "$createdAt",
+                timezone: "UTC",
+              },
+            },
+            users: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]).catch(() => []),
+      Order.aggregate([
+        { $match: commerceFilter },
+        { $unwind: "$items" },
+        {
+          $group: {
+            _id: {
+              productId: "$items.product",
+              name: { $ifNull: ["$items.name", "Urun"] },
+            },
+            totalSold: { $sum: "$items.quantity" },
+            revenue: {
+              $sum: { $multiply: ["$items.price", "$items.quantity"] },
+            },
+          },
+        },
+        { $sort: { totalSold: -1, revenue: -1 } },
+        { $limit: 6 },
+      ]).catch(() => []),
     ]);
+
+    const revenueSummary = revenueSummaryRaw?.[0] || {};
+    const revenueTrendMap = new Map(
+      (revenueTrendRaw || []).map((item) => [
+        item._id,
+        {
+          revenue: Math.round((item.revenue || 0) * 100) / 100,
+          orders: item.orders || 0,
+        },
+      ])
+    );
+    const userGrowthMap = new Map(
+      (userGrowthRaw || []).map((item) => [item._id, item.users || 0])
+    );
+    const revenueTrend = timeline.buckets.map((bucket) => ({
+      key: bucket.key,
+      label: bucket.label,
+      revenue: revenueTrendMap.get(bucket.key)?.revenue || 0,
+      orders: revenueTrendMap.get(bucket.key)?.orders || 0,
+    }));
+    const userGrowthTrend = timeline.buckets.map((bucket) => ({
+      key: bucket.key,
+      label: bucket.label,
+      users: userGrowthMap.get(bucket.key) || 0,
+    }));
+    const topProducts = (topProductsRaw || []).map((item) => ({
+      _id: item._id?.productId?.toString() || null,
+      name: item._id?.name || "Urun",
+      totalSold: item.totalSold || 0,
+      revenue: Math.round((item.revenue || 0) * 100) / 100,
+    }));
 
     return sendOk(res, 200, {
       stats: {
+        allTimeUsers,
         totalUsers,
+        allTimeOrders,
         newUsersThisMonth,
         ...(hasDateFilter && { newUsersInRange }),
         totalPets,
@@ -135,6 +341,16 @@ router.get("/stats", async (req, res) => {
         totalActiveCoupons,
         openSupportTickets,
         pendingSellerApplications,
+        pendingReturns,
+        approvedReturns,
+        rejectedReturns,
+        grossRevenue: Math.round((revenueSummary.grossRevenue || 0) * 100) / 100,
+        averageOrderValue: Math.round((revenueSummary.averageOrderValue || 0) * 100) / 100,
+        deliveredOrders: revenueSummary.deliveredOrders || 0,
+        revenueTrend,
+        userGrowthTrend,
+        topProducts,
+        trendGranularity: timeline.granularity,
         dateFilter: hasDateFilter ? { from: req.query.from, to: req.query.to } : null,
       },
     });
@@ -438,7 +654,7 @@ router.get("/orders", async (req, res) => {
     const [orders, total] = await Promise.all([
       Order.find(filter)
         .populate("user", "name email")
-        .select("user totalAmount status paymentStatus items trackingNumber carrier estimatedDelivery createdAt")
+        .select("user guestInfo totalAmount status paymentStatus items trackingNumber carrier estimatedDelivery createdAt returnRequest")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
@@ -900,6 +1116,114 @@ router.get("/vets", async (req, res) => {
   }
 });
 
+router.get("/vets/:id/insights", async (req, res) => {
+  try {
+    const vetId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(vetId)) {
+      return sendError(res, 400, "Gecersiz veteriner ID", "validation_error");
+    }
+
+    const [vet, reviewStatsRaw, recentReviews, appointmentStatsRaw, upcomingAppointments] =
+      await Promise.all([
+        Veterinary.findById(vetId).populate("userId", "name email avatarUrl"),
+        VetReview.aggregate([
+          { $match: { vet: new mongoose.Types.ObjectId(vetId) } },
+          {
+            $group: {
+              _id: null,
+              averageRating: { $avg: "$rating" },
+              reviewCount: { $sum: 1 },
+            },
+          },
+        ]),
+        VetReview.find({ vet: vetId })
+          .populate("user", "name email avatarUrl")
+          .sort({ createdAt: -1 })
+          .limit(5)
+          .lean(),
+        Appointment.aggregate([
+          { $match: { veterinaryId: new mongoose.Types.ObjectId(vetId) } },
+          {
+            $group: {
+              _id: "$status",
+              count: { $sum: 1 },
+            },
+          },
+        ]),
+        Appointment.find({
+          veterinaryId: vetId,
+          date: { $gte: new Date() },
+          status: { $in: ["pending", "confirmed"] },
+        })
+          .sort({ date: 1 })
+          .limit(5)
+          .populate("userId", "name email")
+          .populate("petId", "name species")
+          .lean(),
+      ]);
+
+    if (!vet) return sendError(res, 404, "Veteriner bulunamadi", "not_found");
+
+    const reviewStats = reviewStatsRaw?.[0] || {};
+    const appointmentStats = {
+      total: 0,
+      pending: 0,
+      confirmed: 0,
+      completed: 0,
+      cancelled: 0,
+      no_show: 0,
+    };
+    for (const item of appointmentStatsRaw || []) {
+      appointmentStats[item._id] = item.count || 0;
+      appointmentStats.total += item.count || 0;
+    }
+
+    return sendOk(res, 200, {
+      vet,
+      insights: {
+        reviewStats: {
+          averageRating: Math.round((reviewStats.averageRating || 0) * 10) / 10,
+          reviewCount: reviewStats.reviewCount || 0,
+        },
+        recentReviews: recentReviews.map((review) => ({
+          _id: review._id,
+          rating: review.rating,
+          comment: review.comment || "",
+          createdAt: review.createdAt,
+          user: review.user
+            ? {
+                name: review.user.name,
+                email: review.user.email,
+                avatarUrl: review.user.avatarUrl,
+              }
+            : null,
+        })),
+        appointmentStats,
+        upcomingAppointments: upcomingAppointments.map((appointment) => ({
+          _id: appointment._id,
+          date: appointment.date,
+          status: appointment.status,
+          type: appointment.type,
+          user: appointment.userId
+            ? {
+                name: appointment.userId.name,
+                email: appointment.userId.email,
+              }
+            : null,
+          pet: appointment.petId
+            ? {
+                name: appointment.petId.name,
+                species: appointment.petId.species,
+              }
+            : null,
+        })),
+      },
+    });
+  } catch (err) {
+    return sendError(res, 500, "Veteriner detaylari alinamadi", "internal_error", err.message);
+  }
+});
+
 // GET /api/admin/vet-claims?page=1&status=pending|approved|rejected
 router.get("/vet-claims", async (req, res) => {
   try {
@@ -997,6 +1321,122 @@ router.get("/pet-sitters", async (req, res) => {
     return sendOk(res, 200, { sitters, total, page });
   } catch (err) {
     return sendError(res, 500, "Bakicilar alinamadi", "internal_error", err.message);
+  }
+});
+
+router.get("/pet-sitters/:id/insights", async (req, res) => {
+  try {
+    const sitterId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(sitterId)) {
+      return sendError(res, 400, "Gecersiz bakici ID", "validation_error");
+    }
+
+    const [sitter, statsRaw, serviceBreakdownRaw, recentReviews] = await Promise.all([
+      PetSitter.findById(sitterId).populate("userId", "name email avatarUrl"),
+      SitterBooking.aggregate([
+        { $match: { sitterId: new mongoose.Types.ObjectId(sitterId) } },
+        {
+          $group: {
+            _id: null,
+            totalBookings: { $sum: 1 },
+            pending: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] } },
+            accepted: { $sum: { $cond: [{ $eq: ["$status", "accepted"] }, 1, 0] } },
+            active: { $sum: { $cond: [{ $eq: ["$status", "active"] }, 1, 0] } },
+            completed: { $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] } },
+            cancelled: { $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] } },
+            rejected: { $sum: { $cond: [{ $eq: ["$status", "rejected"] }, 1, 0] } },
+            totalRevenue: {
+              $sum: {
+                $cond: [
+                  { $eq: ["$status", "completed"] },
+                  { $ifNull: ["$earnings.payableAmount", "$totalPrice"] },
+                  0,
+                ],
+              },
+            },
+          },
+        },
+      ]),
+      SitterBooking.aggregate([
+        { $match: { sitterId: new mongoose.Types.ObjectId(sitterId) } },
+        {
+          $group: {
+            _id: "$serviceType",
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { count: -1 } },
+      ]),
+      SitterBooking.find({
+        sitterId,
+        "ownerReview.rating": { $exists: true },
+      })
+        .populate("petOwnerId", "name email avatarUrl")
+        .sort({ updatedAt: -1 })
+        .limit(5)
+        .lean(),
+    ]);
+
+    if (!sitter) return sendError(res, 404, "Bakici bulunamadi", "not_found");
+
+    const stats = statsRaw?.[0] || {};
+    const monthlyRevenue = await SitterBooking.aggregate([
+      {
+        $match: {
+          sitterId: new mongoose.Types.ObjectId(sitterId),
+          status: "completed",
+          completedAt: {
+            $gte: new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: { $ifNull: ["$earnings.payableAmount", "$totalPrice"] },
+          },
+        },
+      },
+    ]);
+
+    return sendOk(res, 200, {
+      sitter,
+      insights: {
+        performance: {
+          totalBookings: stats.totalBookings || 0,
+          pending: stats.pending || 0,
+          accepted: stats.accepted || 0,
+          active: stats.active || 0,
+          completed: stats.completed || 0,
+          cancelled: stats.cancelled || 0,
+          rejected: stats.rejected || 0,
+          totalRevenue: Math.round((stats.totalRevenue || 0) * 100) / 100,
+          monthlyRevenue: Math.round((monthlyRevenue?.[0]?.total || 0) * 100) / 100,
+        },
+        serviceBreakdown: (serviceBreakdownRaw || []).map((item) => ({
+          serviceType: item._id,
+          count: item.count || 0,
+        })),
+        recentReviews: recentReviews.map((booking) => ({
+          _id: booking._id,
+          rating: booking.ownerReview?.rating || 0,
+          comment: booking.ownerReview?.comment || "",
+          createdAt: booking.ownerReview?.createdAt || booking.updatedAt,
+          owner: booking.petOwnerId
+            ? {
+                name: booking.petOwnerId.name,
+                email: booking.petOwnerId.email,
+                avatarUrl: booking.petOwnerId.avatarUrl,
+              }
+            : null,
+          serviceType: booking.serviceType,
+          totalPrice: booking.totalPrice || 0,
+        })),
+      },
+    });
+  } catch (err) {
+    return sendError(res, 500, "Bakici detaylari alinamadi", "internal_error", err.message);
   }
 });
 
@@ -1163,6 +1603,39 @@ router.get("/orders/:id/guest-sensitive", sensitiveDataLimiter, authRequired(["a
     });
   } catch (err) {
     return sendError(res, 500, "Veriler alinamadi", "internal_error", err.message);
+  }
+});
+
+// PATCH /api/admin/orders/:id/return-status
+// body: { status: "approved"|"rejected", note? }
+import { resolveReturnRequest } from "../controllers/orderController.js";
+router.patch("/orders/:id/return-status", async (req, res) => {
+  return resolveReturnRequest(req, res);
+});
+
+// GET /api/admin/orders/returns  — İade talep listesi (admin)
+router.get("/orders/returns", async (req, res) => {
+  try {
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 20 });
+    if (!pagination) return;
+    const { page, limit, skip } = pagination;
+    const statusFilter = req.query.status;
+    const filter = { 'returnRequest': { $exists: true, $ne: null } };
+    if (statusFilter && ['pending', 'approved', 'rejected'].includes(statusFilter)) {
+      filter['returnRequest.status'] = statusFilter;
+    }
+    const [returns, total] = await Promise.all([
+      Order.find(filter)
+        .populate('user', 'name email avatarUrl')
+        .select('_id user guestInfo items totalAmount createdAt returnRequest status')
+        .sort({ 'returnRequest.requestedAt': -1 })
+        .skip(skip)
+        .limit(limit),
+      Order.countDocuments(filter),
+    ]);
+    return sendOk(res, 200, { returns, total, page });
+  } catch (err) {
+    return sendError(res, 500, 'İade talepleri alınamadı', 'internal_error', err.message);
   }
 });
 

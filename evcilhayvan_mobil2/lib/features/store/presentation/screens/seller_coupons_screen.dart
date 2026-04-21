@@ -6,6 +6,8 @@ import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
+import 'package:evcilhayvan_mobil2/features/store/data/order_repository.dart';
+import 'package:evcilhayvan_mobil2/features/store/domain/models/order_model.dart';
 import 'dart:math';
 
 // ── Providers ──────────────────────────────────────────────────────────────
@@ -351,7 +353,16 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final couponsAsync = ref.watch(sellerCouponsProvider);
+    final performanceAsync = ref.watch(sellerCouponPerformanceProvider);
     final now = DateTime.now();
+
+    // Build performance map: couponId → SellerCouponPerformance
+    final performanceMap = <String, SellerCouponPerformance>{};
+    performanceAsync.whenData((perf) {
+      for (final p in perf) {
+        performanceMap[p.couponId] = p;
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -409,7 +420,10 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
           }
 
           return RefreshIndicator(
-            onRefresh: () async => ref.invalidate(sellerCouponsProvider),
+            onRefresh: () async {
+              ref.invalidate(sellerCouponsProvider);
+              ref.invalidate(sellerCouponPerformanceProvider);
+            },
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
               itemCount: filtered.length,
@@ -428,6 +442,7 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                     (DateTime.tryParse(c['validUntil'])?.isBefore(now) ?? false);
                 final usageCount = c['usageCount'] ?? 0;
                 final totalLimit = c['totalUsageLimit'];
+                final perf = performanceMap[couponId];
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: 10),
@@ -512,6 +527,33 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                               ),
                           ],
                         ),
+                        if (perf != null && perf.usageCount > 0) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: AppPalette.primary.withOpacity(0.06),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.insights_outlined, size: 14, color: AppPalette.primary),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    '${perf.usageCount}x kullanıldı • ${perf.totalDiscount.toStringAsFixed(0)} ₺ indirim sağlandı',
+                                    style: TextStyle(fontSize: 11, color: AppPalette.primary, fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                                if (perf.totalOrderValue > 0)
+                                  Text(
+                                    '${perf.totalOrderValue.toStringAsFixed(0)} ₺ ciro',
+                                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
                         const Divider(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,

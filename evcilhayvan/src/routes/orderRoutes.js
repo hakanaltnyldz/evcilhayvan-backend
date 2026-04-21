@@ -11,6 +11,9 @@ import {
   updateOrderStatus,
   getSellerOrderStats,
   getSellerRevenueChart,
+  createReturnRequest,
+  getMyReturnRequests,
+  resolveReturnRequest,
 } from "../controllers/orderController.js";
 import Order from "../models/Order.js";
 import { sendOk, sendError } from "../utils/apiResponse.js";
@@ -52,12 +55,19 @@ router.get("/orders/:id", authRequired(), getOrderById);
 // Siparişi iptal et
 router.patch("/orders/:id/cancel", authRequired(), cancelOrder);
 
+// İade talebi oluştur
+router.post("/orders/:id/return-request", authRequired(), createReturnRequest);
+
+// İade taleplerim
+router.get("/orders/returns/my", authRequired(), getMyReturnRequests);
+
 // === SELLER ENDPOINTS ===
 // Satıcı siparişleri
 router.get("/seller/orders", authRequired(["seller", "admin"]), getSellerOrders);
 
 // Sipariş durumu güncelle
 router.patch("/seller/orders/:id/status", authRequired(["seller", "admin"]), updateOrderStatus);
+router.patch("/seller/orders/:id/return-status", authRequired(["seller", "admin"]), resolveReturnRequest);
 
 // Satıcı sipariş istatistikleri
 router.get("/seller/orders/stats", authRequired(["seller", "admin"]), getSellerOrderStats);

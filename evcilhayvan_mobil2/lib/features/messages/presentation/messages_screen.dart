@@ -18,20 +18,21 @@ import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_reposito
 import 'package:evcilhayvan_mobil2/features/adoption/data/repositories/adoption_repository.dart';
 import 'package:evcilhayvan_mobil2/features/adoption/domain/models/adoption_application.dart';
 import 'package:evcilhayvan_mobil2/features/messages/data/repositories/message_repository.dart';
+import 'package:evcilhayvan_mobil2/features/messages/domain/models/conservation_model.dart';
 import 'package:evcilhayvan_mobil2/features/mating/data/repositories/mating_repository.dart';
 import 'package:evcilhayvan_mobil2/features/mating/domain/models/match_request.dart';
 import 'package:evcilhayvan_mobil2/features/pets/data/repositories/pets_repository.dart';
 import 'package:evcilhayvan_mobil2/features/pets/domain/models/pet_model.dart';
 
-final _conversationPetProvider =
-    FutureProvider.autoDispose.family<Pet?, String>((ref, petId) async {
-  final repo = ref.watch(petsRepositoryProvider);
-  try {
-    return await repo.getPetById(petId);
-  } catch (_) {
-    return null;
-  }
-});
+final _conversationPetProvider = FutureProvider.autoDispose
+    .family<Pet?, String>((ref, petId) async {
+      final repo = ref.watch(petsRepositoryProvider);
+      try {
+        return await repo.getPetById(petId);
+      } catch (_) {
+        return null;
+      }
+    });
 
 class MessagesScreen extends ConsumerWidget {
   const MessagesScreen({super.key, this.initialTabIndex = 0});
@@ -64,10 +65,7 @@ class MessagesScreen extends ConsumerWidget {
         ),
         body: SafeArea(
           child: TabBarView(
-            children: [
-              const _ConversationsTab(),
-              const _RequestsTab(),
-            ],
+            children: [const _ConversationsTab(), const _RequestsTab()],
           ),
         ),
       ),
@@ -75,11 +73,39 @@ class MessagesScreen extends ConsumerWidget {
   }
 }
 
-class _ConversationsTab extends ConsumerWidget {
+class _ConversationsTab extends ConsumerStatefulWidget {
   const _ConversationsTab();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ConversationsTab> createState() => _ConversationsTabState();
+}
+
+class _ConversationsTabState extends ConsumerState<_ConversationsTab> {
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  bool _matchesConversation(Conversation conversation, String query) {
+    final normalized = query.trim().toLowerCase();
+    if (normalized.isEmpty) return true;
+
+    final petName = conversation.relatedPet?.name.toLowerCase() ?? '';
+    final relatedPetId = conversation.relatedPetId?.toLowerCase() ?? '';
+    return conversation.otherParticipant.name.toLowerCase().contains(
+          normalized,
+        ) ||
+        conversation.lastMessage.toLowerCase().contains(normalized) ||
+        petName.contains(normalized) ||
+        relatedPetId.contains(normalized);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final conversationsAsync = ref.watch(conversationsProvider);
     final theme = Theme.of(context);
 
@@ -88,12 +114,43 @@ class _ConversationsTab extends ConsumerWidget {
       child: Column(
         children: [
           const _Header(),
+          const SizedBox(height: 12),
+          _ConversationSearchBar(
+            controller: _searchController,
+            onChanged: (value) => setState(() => _query = value),
+            onClear: () {
+              _searchController.clear();
+              setState(() => _query = '');
+            },
+          ),
           Expanded(
             child: conversationsAsync.when(
               skipLoadingOnReload: true,
               data: (conversations) {
+                final sorted = [...conversations]
+                  ..sort((a, b) {
+                    final unreadCompare = (b.unreadCount > 0 ? 1 : 0).compareTo(
+                      a.unreadCount > 0 ? 1 : 0,
+                    );
+                    if (unreadCompare != 0) return unreadCompare;
+                    return b.updatedAt.compareTo(a.updatedAt);
+                  });
+                final filtered = sorted
+                    .where((conv) => _matchesConversation(conv, _query))
+                    .toList(growable: false);
+
                 if (conversations.isEmpty) {
                   return const _EmptyConversations();
+                }
+
+                if (filtered.isEmpty) {
+                  return _EmptyConversations(
+                    hasQuery: true,
+                    onReset: () {
+                      _searchController.clear();
+                      setState(() => _query = '');
+                    },
+                  );
                 }
 
                 return RefreshIndicator(
@@ -105,103 +162,132 @@ class _ConversationsTab extends ConsumerWidget {
                       parent: AlwaysScrollableScrollPhysics(),
                     ),
                     padding: const EdgeInsets.only(bottom: 24, top: 12),
-                    itemCount: conversations.length,
+                    itemCount: filtered.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (itemContext, i) {
-                      final conv = conversations[i];
+                      final conv = filtered[i];
                       return Dismissible(
-                        key: ValueKey(conv.id),
-                        direction: DismissDirection.endToStart,
-                        confirmDismiss: (_) async {
-                          final dl10n = AppLocalizations.of(context)!;
-                          return await showDialog<bool>(
-                                context: context,
-                                builder: (dialogContext) {
-                                  final ddl10n = AppLocalizations.of(dialogContext)!;
-                                  return AlertDialog(
-                                    title: Text(ddl10n.chatDeleteTitle),
-                                    content: Text(ddl10n.chatDeleteContent),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.of(dialogContext).pop(false),
-                                        child: Text(ddl10n.cancel),
+                            key: ValueKey(conv.id),
+                            direction: DismissDirection.endToStart,
+                            confirmDismiss: (_) async {
+                              final dl10n = AppLocalizations.of(context)!;
+                              return await showDialog<bool>(
+                                    context: context,
+                                    builder: (dialogContext) {
+                                      final ddl10n = AppLocalizations.of(
+                                        dialogContext,
+                                      )!;
+                                      return AlertDialog(
+                                        title: Text(ddl10n.chatDeleteTitle),
+                                        content: Text(ddl10n.chatDeleteContent),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.of(
+                                              dialogContext,
+                                            ).pop(false),
+                                            child: Text(ddl10n.cancel),
+                                          ),
+                                          TextButton(
+                                            onPressed: () => Navigator.of(
+                                              dialogContext,
+                                            ).pop(true),
+                                            child: Text(ddl10n.delete),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ) ??
+                                  false;
+                            },
+                            onDismissed: (_) async {
+                              try {
+                                await ref
+                                    .read(messageRepositoryProvider)
+                                    .deleteConversation(conv.id);
+                                ref.invalidate(conversationsProvider);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.msgConvDeleted,
                                       ),
-                                      TextButton(
-                                        onPressed: () => Navigator.of(dialogContext).pop(true),
-                                        child: Text(ddl10n.delete),
-                                      ),
-                                    ],
+                                    ),
                                   );
-                                },
-                              ) ??
-                              false;
-                        },
-                        onDismissed: (_) async {
-                          try {
-                            await ref.read(messageRepositoryProvider).deleteConversation(conv.id);
-                            ref.invalidate(conversationsProvider);
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(AppLocalizations.of(context)!.msgConvDeleted)),
-                              );
-                            }
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(AppLocalizations.of(context)!.msgConvDeleteErr(e.toString()))),
-                              );
-                            }
-                          }
-                        },
-                        background: Container(
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24),
-                            gradient: LinearGradient(
-                              colors: [
-                                theme.colorScheme.error.withOpacity(0.8),
-                                theme.colorScheme.error.withOpacity(0.6),
-                              ],
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.msgConvDeleteErr(e.toString()),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(24),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    theme.colorScheme.error.withOpacity(0.8),
+                                    theme.colorScheme.error.withOpacity(0.6),
+                                  ],
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.delete_forever,
+                                color: theme.colorScheme.onError,
+                              ),
                             ),
-                          ),
-                          child: Icon(
-                            Icons.delete_forever,
-                            color: theme.colorScheme.onError,
-                          ),
-                        ),
-                        child: _ConversationCard(
-                          title: conv.otherParticipant.name,
-                          subtitle: conv.lastMessage.isNotEmpty ? conv.lastMessage : AppLocalizations.of(context)!.msgConvStart,
-                          relatedPet: conv.relatedPet,
-                          relatedPetId: conv.relatedPetId,
-                          updatedAt: conv.updatedAt,
-                          avatarUrl: resolveImageUrl(
-                            conv.otherParticipant.avatarUrl,
-                          ),
-                          onTap: () async {
-                            final result = await context.pushNamed(
-                              'chat',
-                              pathParameters: {'conversationId': conv.id},
-                              extra: {
-                                'name': conv.otherParticipant.name,
-                                'avatar': resolveImageUrl(
-                                  conv.otherParticipant.avatarUrl,
-                                ),
-                              },
-                            );
+                            child: _ConversationCard(
+                              title: conv.otherParticipant.name,
+                              subtitle: conv.lastMessage.isNotEmpty
+                                  ? conv.lastMessage
+                                  : AppLocalizations.of(context)!.msgConvStart,
+                              relatedPet: conv.relatedPet,
+                              relatedPetId: conv.relatedPetId,
+                              updatedAt: conv.updatedAt,
+                              unreadCount: conv.unreadCount,
+                              avatarUrl: resolveImageUrl(
+                                conv.otherParticipant.avatarUrl,
+                              ),
+                              onTap: () async {
+                                final result = await context.pushNamed(
+                                  'chat',
+                                  pathParameters: {'conversationId': conv.id},
+                                  extra: {
+                                    'name': conv.otherParticipant.name,
+                                    'avatar': resolveImageUrl(
+                                      conv.otherParticipant.avatarUrl,
+                                    ),
+                                  },
+                                );
 
-                            if (result == true && context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(AppLocalizations.of(context)!.msgConvDeleted),
-                                ),
-                              );
-                              ref.invalidate(conversationsProvider);
-                            }
-                          },
-                        ),
-                      )
+                                if (result == true && context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.msgConvDeleted,
+                                      ),
+                                    ),
+                                  );
+                                  ref.invalidate(conversationsProvider);
+                                }
+                              },
+                            ),
+                          )
                           .animate(delay: Duration(milliseconds: i * 60))
                           .fadeIn(duration: 280.ms)
                           .slideY(begin: 0.05);
@@ -240,11 +326,13 @@ class _RequestsTabState extends ConsumerState<_RequestsTab> {
     final adoptionAsync = ref.watch(inboxAdoptionApplicationsProvider);
 
     final matchingCount = matchingAsync.maybeWhen(
-      data: (items) => items.where((e) => e.status.toUpperCase() == 'PENDING').length,
+      data: (items) =>
+          items.where((e) => e.status.toUpperCase() == 'PENDING').length,
       orElse: () => 0,
     );
     final adoptionCount = adoptionAsync.maybeWhen(
-      data: (items) => items.where((e) => e.status.toUpperCase() == 'PENDING').length,
+      data: (items) =>
+          items.where((e) => e.status.toUpperCase() == 'PENDING').length,
       orElse: () => 0,
     );
 
@@ -267,7 +355,10 @@ class _RequestsTabState extends ConsumerState<_RequestsTab> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         children: [
-          _SectionHeader(title: AppLocalizations.of(context)!.msgMatingRequestsTitle, count: matchingCount),
+          _SectionHeader(
+            title: AppLocalizations.of(context)!.msgMatingRequestsTitle,
+            count: matchingCount,
+          ),
           const SizedBox(height: 12),
           matchingAsync.when(
             data: (items) {
@@ -275,7 +366,9 @@ class _RequestsTabState extends ConsumerState<_RequestsTab> {
                   ? items
                   : items.where((e) => !_isArchived(e.status)).toList();
               if (visible.isEmpty) {
-                return _EmptySection(message: AppLocalizations.of(context)!.msgNoMatingRequests);
+                return _EmptySection(
+                  message: AppLocalizations.of(context)!.msgNoMatingRequests,
+                );
               }
               return Column(
                 children: visible
@@ -290,7 +383,10 @@ class _RequestsTabState extends ConsumerState<_RequestsTab> {
             ),
           ),
           const SizedBox(height: 20),
-          _SectionHeader(title: AppLocalizations.of(context)!.msgAdoptionRequestsTitle, count: adoptionCount),
+          _SectionHeader(
+            title: AppLocalizations.of(context)!.msgAdoptionRequestsTitle,
+            count: adoptionCount,
+          ),
           const SizedBox(height: 12),
           adoptionAsync.when(
             data: (items) {
@@ -298,11 +394,16 @@ class _RequestsTabState extends ConsumerState<_RequestsTab> {
                   ? items
                   : items.where((e) => !_isArchived(e.status)).toList();
               if (visible.isEmpty) {
-                return _EmptySection(message: AppLocalizations.of(context)!.msgNoAdoptionRequests);
+                return _EmptySection(
+                  message: AppLocalizations.of(context)!.msgNoAdoptionRequests,
+                );
               }
               return Column(
                 children: visible
-                    .map((application) => _AdoptionApplicationCard(application: application))
+                    .map(
+                      (application) =>
+                          _AdoptionApplicationCard(application: application),
+                    )
                     .toList(),
               );
             },
@@ -351,7 +452,9 @@ class _SectionHeader extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         if (count > 0) _Badge(text: count.toString()),
@@ -376,7 +479,9 @@ class _Badge extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onPrimary),
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: theme.colorScheme.onPrimary,
+        ),
       ),
     );
   }
@@ -447,19 +552,28 @@ class _MatchingRequestCard extends ConsumerWidget {
 
     Future<void> _respond(String action) async {
       try {
-        final result = await ref.read(matingRepositoryProvider).updateRequestStatus(request.id, action);
+        final result = await ref
+            .read(matingRepositoryProvider)
+            .updateRequestStatus(request.id, action);
         ref.invalidate(inboxMatchRequestsProvider);
         ref.invalidate(conversationsProvider);
         if (context.mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.msgActionDone)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.msgActionDone),
+            ),
+          );
         }
-        if (action == 'accept' && result.conversationId != null && context.mounted) {
+        if (action == 'accept' &&
+            result.conversationId != null &&
+            context.mounted) {
           await _openChatForRequest(
             context: context,
             ref: ref,
             participantId: request.fromUser?.id ?? '',
-            participantName: request.fromUser?.name ?? AppLocalizations.of(context)!.chatTypeGeneral,
+            participantName:
+                request.fromUser?.name ??
+                AppLocalizations.of(context)!.chatTypeGeneral,
             participantAvatar: request.fromUser?.avatarUrl,
             conversationId: result.conversationId,
             listingId: request.listingId,
@@ -467,7 +581,9 @@ class _MatchingRequestCard extends ConsumerWidget {
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.toString())));
         }
       }
     }
@@ -484,19 +600,27 @@ class _MatchingRequestCard extends ConsumerWidget {
               children: [
                 Expanded(
                   child: Text(
-                    request.listing?.name ?? AppLocalizations.of(context)!.petDetailTitle,
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    request.listing?.name ??
+                        AppLocalizations.of(context)!.petDetailTitle,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text(
                     _statusLabel(status, AppLocalizations.of(context)!),
-                    style: theme.textTheme.labelMedium?.copyWith(color: statusColor),
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: statusColor,
+                    ),
                   ),
                 ),
               ],
@@ -506,7 +630,10 @@ class _MatchingRequestCard extends ConsumerWidget {
             if (status == 'CANCELLED' && request.listing == null)
               Container(
                 margin: const EdgeInsets.only(bottom: 6),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.orange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -517,14 +644,25 @@ class _MatchingRequestCard extends ConsumerWidget {
                   children: const [
                     Icon(Icons.info_outline, size: 14, color: Colors.orange),
                     SizedBox(width: 6),
-                    Text('İlan artık aktif değil', style: TextStyle(fontSize: 12, color: Colors.orange)),
+                    Text(
+                      'İlan artık aktif değil',
+                      style: TextStyle(fontSize: 12, color: Colors.orange),
+                    ),
                   ],
                 ),
               ),
-            Text(AppLocalizations.of(context)!.msgSenderLabel(request.fromUser?.name ?? '-')),
+            Text(
+              AppLocalizations.of(
+                context,
+              )!.msgSenderLabel(request.fromUser?.name ?? '-'),
+            ),
             if ((request.fromPet?.name ?? '').isNotEmpty) ...[
               const SizedBox(height: 4),
-              Text(AppLocalizations.of(context)!.msgSelectedPet(request.fromPet!.name)),
+              Text(
+                AppLocalizations.of(
+                  context,
+                )!.msgSelectedPet(request.fromPet!.name),
+              ),
             ],
             if (request.fromPetId.isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -544,14 +682,18 @@ class _MatchingRequestCard extends ConsumerWidget {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () => _respond('accept'),
-                      child: Text(AppLocalizations.of(context)!.matchRequestAccept),
+                      child: Text(
+                        AppLocalizations.of(context)!.matchRequestAccept,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => _respond('reject'),
-                      child: Text(AppLocalizations.of(context)!.matchRequestReject),
+                      child: Text(
+                        AppLocalizations.of(context)!.matchRequestReject,
+                      ),
                     ),
                   ),
                 ],
@@ -564,7 +706,9 @@ class _MatchingRequestCard extends ConsumerWidget {
                     context: context,
                     ref: ref,
                     participantId: request.fromUser?.id ?? '',
-                    participantName: request.fromUser?.name ?? AppLocalizations.of(context)!.chatTypeGeneral,
+                    participantName:
+                        request.fromUser?.name ??
+                        AppLocalizations.of(context)!.chatTypeGeneral,
                     participantAvatar: request.fromUser?.avatarUrl,
                     conversationId: request.conversationId,
                     listingId: request.listingId,
@@ -593,19 +737,28 @@ class _AdoptionApplicationCard extends ConsumerWidget {
 
     Future<void> _respond(String action) async {
       try {
-        final result = await ref.read(adoptionRepositoryProvider).respondToApplication(application.id, action);
+        final result = await ref
+            .read(adoptionRepositoryProvider)
+            .respondToApplication(application.id, action);
         ref.invalidate(inboxAdoptionApplicationsProvider);
         ref.invalidate(conversationsProvider);
         if (context.mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.msgActionDone)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.msgActionDone),
+            ),
+          );
         }
-        if (action == 'accept' && result.conversationId != null && context.mounted) {
+        if (action == 'accept' &&
+            result.conversationId != null &&
+            context.mounted) {
           await _openChatForRequest(
             context: context,
             ref: ref,
             participantId: application.applicantUser?.id ?? '',
-            participantName: application.applicantUser?.name ?? AppLocalizations.of(context)!.chatTypeGeneral,
+            participantName:
+                application.applicantUser?.name ??
+                AppLocalizations.of(context)!.chatTypeGeneral,
             participantAvatar: application.applicantUser?.avatarUrl,
             conversationId: result.conversationId,
             listingId: application.adoptionListingId,
@@ -613,7 +766,9 @@ class _AdoptionApplicationCard extends ConsumerWidget {
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.toString())));
         }
       }
     }
@@ -630,25 +785,37 @@ class _AdoptionApplicationCard extends ConsumerWidget {
               children: [
                 Expanded(
                   child: Text(
-                    application.listing?.name ?? AppLocalizations.of(context)!.petDetailTitle,
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    application.listing?.name ??
+                        AppLocalizations.of(context)!.petDetailTitle,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text(
                     _statusLabel(status, AppLocalizations.of(context)!),
-                    style: theme.textTheme.labelMedium?.copyWith(color: statusColor),
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: statusColor,
+                    ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 6),
-            Text(AppLocalizations.of(context)!.msgApplicantLabel(application.applicantUser?.name ?? '-')),
+            Text(
+              AppLocalizations.of(
+                context,
+              )!.msgApplicantLabel(application.applicantUser?.name ?? '-'),
+            ),
             if ((application.note ?? '').isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(application.note!),
@@ -660,14 +827,18 @@ class _AdoptionApplicationCard extends ConsumerWidget {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () => _respond('accept'),
-                      child: Text(AppLocalizations.of(context)!.matchRequestAccept),
+                      child: Text(
+                        AppLocalizations.of(context)!.matchRequestAccept,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => _respond('reject'),
-                      child: Text(AppLocalizations.of(context)!.matchRequestReject),
+                      child: Text(
+                        AppLocalizations.of(context)!.matchRequestReject,
+                      ),
                     ),
                   ),
                 ],
@@ -680,7 +851,9 @@ class _AdoptionApplicationCard extends ConsumerWidget {
                     context: context,
                     ref: ref,
                     participantId: application.applicantUser?.id ?? '',
-                    participantName: application.applicantUser?.name ?? AppLocalizations.of(context)!.chatTypeGeneral,
+                    participantName:
+                        application.applicantUser?.name ??
+                        AppLocalizations.of(context)!.chatTypeGeneral,
                     participantAvatar: application.applicantUser?.avatarUrl,
                     conversationId: application.conversationId,
                     listingId: application.adoptionListingId,
@@ -706,14 +879,16 @@ Future<void> _openChatForRequest({
   String? listingId,
 }) async {
   if (participantId.trim().isEmpty) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.msgNoRecipient)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.msgNoRecipient)),
+    );
     return;
   }
   final currentUser = ref.read(authProvider);
   if (currentUser == null) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.msgLoginRequired)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.msgLoginRequired)),
+    );
     return;
   }
 
@@ -731,7 +906,8 @@ Future<void> _openChatForRequest({
     final conversations = await repo.getMyConversations(currentUser.id);
     for (final conversation in conversations) {
       final sameUser = conversation.otherParticipant.id == participantId;
-      final sameListing = listingId == null ||
+      final sameListing =
+          listingId == null ||
           conversation.contextId == listingId ||
           conversation.relatedPetId == listingId;
       if (sameUser && sameListing) {
@@ -740,7 +916,8 @@ Future<void> _openChatForRequest({
           pathParameters: {'conversationId': conversation.id},
           extra: {
             'name': conversation.otherParticipant.name,
-            'avatar': conversation.otherParticipant.avatarUrl ?? participantAvatar,
+            'avatar':
+                conversation.otherParticipant.avatarUrl ?? participantAvatar,
           },
         );
         return;
@@ -771,8 +948,9 @@ Future<void> _openChatForRequest({
     }
   }
 
-  ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.msgOpenFailed)));
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(AppLocalizations.of(context)!.msgOpenFailed)),
+  );
 }
 
 Color _statusColor(ThemeData theme, String status) {
@@ -823,7 +1001,11 @@ class _Header extends StatelessWidget {
               color: Color(0xFF2D6A4F),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 22),
+            child: const Icon(
+              Icons.chat_bubble_outline_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -840,12 +1022,61 @@ class _Header extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   AppLocalizations.of(context)!.msgHeaderSubtitle,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF52B788)),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF52B788),
+                  ),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ConversationSearchBar extends StatelessWidget {
+  const _ConversationSearchBar({
+    required this.controller,
+    required this.onChanged,
+    required this.onClear,
+  });
+
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFD8F3DC)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2D6A4F).withOpacity(0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          icon: const Icon(Icons.search_rounded),
+          hintText: 'Konusma veya ilan ara',
+          suffixIcon: controller.text.isEmpty
+              ? null
+              : IconButton(
+                  onPressed: onClear,
+                  icon: const Icon(Icons.close_rounded),
+                ),
+        ),
       ),
     );
   }
@@ -859,6 +1090,7 @@ class _ConversationCard extends ConsumerWidget {
   final DateTime updatedAt;
   final String? avatarUrl;
   final VoidCallback onTap;
+  final int unreadCount;
 
   const _ConversationCard({
     required this.title,
@@ -868,6 +1100,7 @@ class _ConversationCard extends ConsumerWidget {
     required this.updatedAt,
     required this.avatarUrl,
     required this.onTap,
+    this.unreadCount = 0,
   });
 
   @override
@@ -911,113 +1144,166 @@ class _ConversationCard extends ConsumerWidget {
               children: [
                 CircleAvatar(
                   radius: 26,
-                    backgroundColor: const Color(0xFFD8F3DC),
-                    backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl!) : null,
-                    child: avatarUrl == null
-                        ? Text(
-                            title.isNotEmpty ? title[0].toUpperCase() : '?',
-                            style: const TextStyle(
-                              color: Color(0xFF2D6A4F),
-                              fontWeight: FontWeight.w700,
-                              fontSize: 18,
+                  backgroundColor: const Color(0xFFD8F3DC),
+                  backgroundImage: avatarUrl != null
+                      ? NetworkImage(avatarUrl!)
+                      : null,
+                  child: avatarUrl == null
+                      ? Text(
+                          title.isNotEmpty ? title[0].toUpperCase() : '?',
+                          style: const TextStyle(
+                            color: Color(0xFF2D6A4F),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 18,
+                          ),
+                        )
+                      : null,
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child:
+                      Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF52B788),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
                             ),
                           )
-                        : null,
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF52B788),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                          .animate(onPlay: (c) => c.repeat(reverse: true))
+                          .scaleXY(
+                            begin: 1.0,
+                            end: 1.25,
+                            duration: 1200.ms,
+                            curve: Curves.easeInOut,
+                          ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
-                    )
-                        .animate(onPlay: (c) => c.repeat(reverse: true))
-                        .scaleXY(begin: 1.0, end: 1.25, duration: 1200.ms, curve: Curves.easeInOut),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
+                      if (unreadCount > 0)
+                        Container(
+                          margin: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF40916C),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                           child: Text(
-                            title,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
+                            unreadCount > 99 ? '99+' : '$unreadCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                        Text(
-                          _formatUpdatedAt(updatedAt),
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                    if (relatedPetId != null && relatedPetId!.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD8F3DC),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.pets, size: 12, color: Color(0xFF2D6A4F)),
-                            const SizedBox(width: 4),
-                            Text(
-                              petChipLabel,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: Color(0xFF1B4332),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                      Text(
+                        _formatUpdatedAt(updatedAt),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                  if (relatedPetId != null && relatedPetId!.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD8F3DC),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.pets,
+                            size: 12,
+                            color: Color(0xFF2D6A4F),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            petChipLabel,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF1B4332),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
+      ),
     );
   }
 }
 
 class _EmptyConversations extends StatelessWidget {
-  const _EmptyConversations();
+  const _EmptyConversations({this.hasQuery = false, this.onReset});
+
+  final bool hasQuery;
+  final VoidCallback? onReset;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedEmptyState(
-      icon: Icons.chat_bubble_outline,
-      title: AppLocalizations.of(context)!.messagesEmpty,
-      subtitle: AppLocalizations.of(context)!.messagesEmptyDesc,
+      icon: hasQuery ? Icons.search_off_rounded : Icons.chat_bubble_outline,
+      title: hasQuery
+          ? 'Aramana uyan bir konusma bulunamadi'
+          : AppLocalizations.of(context)!.messagesEmpty,
+      subtitle: hasQuery
+          ? 'Farkli bir isim, ilan veya mesaj parcasi ile tekrar dene.'
+          : AppLocalizations.of(context)!.messagesEmptyDesc,
+      action: hasQuery
+          ? OutlinedButton.icon(
+              onPressed: onReset,
+              icon: const Icon(Icons.restart_alt_rounded),
+              label: const Text('Aramayi temizle'),
+            )
+          : FilledButton.icon(
+              onPressed: () => context.goNamed('home'),
+              icon: const Icon(Icons.explore_outlined),
+              label: const Text('Ilanlari kesfet'),
+            ),
     );
   }
 }
@@ -1073,8 +1359,9 @@ class _ShimmerTileState extends State<ShimmerTile>
       animation: _controller,
       builder: (context, child) {
         final baseColor = Theme.of(context).colorScheme.surface;
-        final highlightColor =
-            Theme.of(context).colorScheme.primary.withOpacity(0.12);
+        final highlightColor = Theme.of(
+          context,
+        ).colorScheme.primary.withOpacity(0.12);
         final t = 0.5 + (_controller.value * 0.5);
         final color = Color.lerp(baseColor, highlightColor, t)!;
 
@@ -1126,4 +1413,3 @@ String _formatUpdatedAt(DateTime time) {
   final minutes = time.minute.toString().padLeft(2, '0');
   return '$hours:$minutes';
 }
-

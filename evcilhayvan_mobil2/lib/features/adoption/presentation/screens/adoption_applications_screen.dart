@@ -3,6 +3,7 @@ import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:intl/intl.dart';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
@@ -315,11 +316,20 @@ class _ApplicationCard extends StatelessWidget {
   }
 
   @override
+  String _formatDate(DateTime date) {
+    try {
+      return DateFormat('dd MMM yyyy', 'tr').format(date);
+    } catch (_) {
+      return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final listing = application.listing;
     final applicant = application.applicantUser;
-    final dateStr = '${application.createdAt.day.toString().padLeft(2, '0')}.${application.createdAt.month.toString().padLeft(2, '0')}.${application.createdAt.year}';
+    final dateStr = _formatDate(application.createdAt);
 
     final imageUrl = listing != null && listing.images.isNotEmpty
         ? (listing.images.first.startsWith('http') ? listing.images.first : '$apiBaseUrl${listing.images.first}')
@@ -378,6 +388,25 @@ class _ApplicationCard extends StatelessWidget {
                           Text(dateStr, style: theme.textTheme.labelSmall?.copyWith(color: Colors.grey)),
                         ],
                       ),
+                      if (application.respondedAt != null) ...[
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Icon(
+                              application.status == 'ACCEPTED' ? Icons.check_circle_outline : Icons.cancel_outlined,
+                              size: 12,
+                              color: application.status == 'ACCEPTED' ? const Color(0xFF2D6A4F) : Colors.red,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Yanıtlandı: ${_formatDate(application.respondedAt!)}',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: application.status == 'ACCEPTED' ? const Color(0xFF2D6A4F) : Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),

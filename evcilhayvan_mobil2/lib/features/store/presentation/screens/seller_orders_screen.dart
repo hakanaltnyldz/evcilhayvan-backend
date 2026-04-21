@@ -28,7 +28,7 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
   }
 
   @override
@@ -74,6 +74,7 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
             Tab(text: l10n.sellerOrdersTabProcessing),
             Tab(text: l10n.sellerOrdersTabShipped),
             Tab(text: l10n.sellerOrdersTabCompleted),
+            const Tab(text: 'Iadeler'),
           ],
         ),
       ),
@@ -82,21 +83,29 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
           // Stats summary
           statsAsync.when(
             data: (stats) => _StatsSummary(stats: stats),
-            loading: () => const SizedBox(
-              height: 100,
-              child: Center(child: PawLoading()),
-            ),
+            loading: () =>
+                const SizedBox(height: 100, child: Center(child: PawLoading())),
             error: (_, __) => const SizedBox.shrink(),
           ),
           // Orders list
           Expanded(
             child: ordersAsync.when(
               data: (orders) {
+                final returnOrders = orders
+                    .where((order) => order.hasReturnRequest)
+                    .toList();
                 if (orders.isEmpty) {
                   // Don't use TabBarView when there are no orders
                   return TabBarView(
                     controller: _tabController,
-                    children: List.generate(5, (_) => _EmptyState()),
+                    children: [
+                      _EmptyState(),
+                      _EmptyState(),
+                      _EmptyState(),
+                      _EmptyState(),
+                      _EmptyState(),
+                      _ReturnsEmptyState(),
+                    ],
                   );
                 }
 
@@ -105,25 +114,34 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
                   children: [
                     _OrdersList(orders: orders, dateFormat: _dateFormat),
                     _OrdersList(
-                      orders: orders.where((o) => o.status == OrderStatus.pending).toList(),
-                      dateFormat: _dateFormat,
-                    ),
-                    _OrdersList(
-                      orders: orders.where((o) => o.status == OrderStatus.processing).toList(),
-                      dateFormat: _dateFormat,
-                    ),
-                    _OrdersList(
-                      orders: orders.where((o) => o.status == OrderStatus.shipped).toList(),
+                      orders: orders
+                          .where((o) => o.status == OrderStatus.pending)
+                          .toList(),
                       dateFormat: _dateFormat,
                     ),
                     _OrdersList(
                       orders: orders
-                          .where((o) =>
-                              o.status == OrderStatus.delivered ||
-                              o.status == OrderStatus.cancelled)
+                          .where((o) => o.status == OrderStatus.processing)
                           .toList(),
                       dateFormat: _dateFormat,
                     ),
+                    _OrdersList(
+                      orders: orders
+                          .where((o) => o.status == OrderStatus.shipped)
+                          .toList(),
+                      dateFormat: _dateFormat,
+                    ),
+                    _OrdersList(
+                      orders: orders
+                          .where(
+                            (o) =>
+                                o.status == OrderStatus.delivered ||
+                                o.status == OrderStatus.cancelled,
+                          )
+                          .toList(),
+                      dateFormat: _dateFormat,
+                    ),
+                    _ReturnsList(orders: returnOrders, dateFormat: _dateFormat),
                   ],
                 );
               },
@@ -132,7 +150,11 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Colors.red,
+                    ),
                     const SizedBox(height: 16),
                     Text(l10n.sellerOrdersLoadErr(e.toString())),
                     const SizedBox(height: 16),
@@ -256,14 +278,210 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
+class _ReturnsEmptyState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const AnimatedEmptyState(
+      icon: Icons.assignment_return_outlined,
+      title: 'Iade talebi yok',
+      subtitle: 'Musterilerden gelen iade talepleri burada listelenecek.',
+    );
+  }
+}
+
 class _OrdersList extends ConsumerWidget {
-  const _OrdersList({
-    required this.orders,
-    required this.dateFormat,
-  });
+  const _OrdersList({required this.orders, required this.dateFormat});
 
   final List<OrderModel> orders;
   final DateFormat dateFormat;
+
+  Future<void> _handleStatusUpdate(
+    BuildContext context,
+    WidgetRef ref,
+    OrderModel order,
+    String newStatus,
+  ) async {
+    String? trackingNumber;
+    String? carrier;
+
+    // "Kargoya Ver" için tracking dialog göster
+    if (newStatus == 'shipped' && context.mounted) {
+      final result = await _showTrackingDialog(context);
+      if (result == null) return; // iptal edildi
+      trackingNumber = result.$1;
+      carrier = result.$2;
+    }
+
+    try {
+      final repo = ref.read(orderRepositoryProvider);
+      await repo.updateOrderStatus(
+        order.id,
+        newStatus,
+        trackingNumber: trackingNumber,
+        carrier: carrier,
+      );
+      ref.invalidate(sellerOrdersProvider);
+      ref.invalidate(sellerOrderStatsProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.sellerOrdersStatusUpdated,
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.sellerOrdersStatusError(e.toString()),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Kargo firması + takip no dialog'u.
+  /// Returns (trackingNumber, carrier) or null if cancelled.
+  Future<(String, String)?> _showTrackingDialog(BuildContext context) async {
+    final trackingCtrl = TextEditingController();
+    String selectedCarrier = 'yurtici';
+    final formKey = GlobalKey<FormState>();
+
+    final result = await showDialog<(String, String)?>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF52B788).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.local_shipping,
+                  color: Color(0xFF52B788),
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Text(
+                'Kargo Bilgisi',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Kargo Firması',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                ),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: selectedCarrier,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'yurtici',
+                      child: Text('Yurtiçi Kargo'),
+                    ),
+                    DropdownMenuItem(value: 'ptt', child: Text('PTT Kargo')),
+                    DropdownMenuItem(value: 'aras', child: Text('Aras Kargo')),
+                    DropdownMenuItem(value: 'mng', child: Text('MNG Kargo')),
+                    DropdownMenuItem(
+                      value: 'surat',
+                      child: Text('Sürat Kargo'),
+                    ),
+                    DropdownMenuItem(value: 'other', child: Text('Diğer')),
+                  ],
+                  onChanged: (v) =>
+                      setDialogState(() => selectedCarrier = v ?? 'yurtici'),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'Takip Numarası',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: trackingCtrl,
+                  maxLength: 60,
+                  decoration: InputDecoration(
+                    hintText: 'Örn: 12345678901',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    counterText: '',
+                  ),
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty)
+                      return 'Takip numarası giriniz';
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(null),
+              child: const Text('İptal'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF52B788),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  Navigator.of(
+                    ctx,
+                  ).pop((trackingCtrl.text.trim(), selectedCarrier));
+                }
+              },
+              child: const Text(
+                'Kargoya Ver',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    trackingCtrl.dispose();
+    return result;
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -285,39 +503,352 @@ class _OrdersList extends ConsumerWidget {
         itemBuilder: (context, index) {
           final order = orders[index];
           return _OrderCard(
-            order: order,
-            dateFormat: dateFormat,
-            onStatusUpdate: (newStatus) async {
-              try {
-                final repo = ref.read(orderRepositoryProvider);
-                await repo.updateOrderStatus(order.id, newStatus);
-                ref.invalidate(sellerOrdersProvider);
-                ref.invalidate(sellerOrderStatsProvider);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(AppLocalizations.of(context)!.sellerOrdersStatusUpdated),
-
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(AppLocalizations.of(context)!.sellerOrdersStatusError(e.toString())),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-          )
-              .animate(delay: Duration(milliseconds: (index * 55).clamp(0, 440)))
+                order: order,
+                dateFormat: dateFormat,
+                onStatusUpdate: (newStatus) =>
+                    _handleStatusUpdate(context, ref, order, newStatus),
+              )
+              .animate(
+                delay: Duration(milliseconds: (index * 55).clamp(0, 440)),
+              )
               .fadeIn(duration: 280.ms, curve: Curves.easeOut)
               .slideY(begin: 0.06, duration: 280.ms, curve: Curves.easeOut);
         },
+      ),
+    );
+  }
+}
+
+class _ReturnsList extends ConsumerWidget {
+  const _ReturnsList({required this.orders, required this.dateFormat});
+
+  final List<OrderModel> orders;
+  final DateFormat dateFormat;
+
+  Future<void> _handleResolve(
+    BuildContext context,
+    WidgetRef ref,
+    OrderModel order,
+    String status,
+  ) async {
+    final note = await _showDecisionDialog(
+      context,
+      approve: status == 'approved',
+    );
+    if (note == null) return;
+
+    try {
+      await ref
+          .read(orderRepositoryProvider)
+          .resolveSellerReturnRequest(order.id, status, note: note);
+      ref.invalidate(sellerOrdersProvider);
+      ref.invalidate(sellerOrderStatsProvider);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            status == 'approved'
+                ? 'Iade talebi onaylandi.'
+                : 'Iade talebi reddedildi.',
+          ),
+          backgroundColor: status == 'approved'
+              ? const Color(0xFF2D6A4F)
+              : Colors.red,
+        ),
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Iade islemi basarisiz: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<String?> _showDecisionDialog(
+    BuildContext context, {
+    required bool approve,
+  }) async {
+    final controller = TextEditingController();
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(approve ? 'Iadeyi Onayla' : 'Iadeyi Reddet'),
+        content: TextField(
+          controller: controller,
+          maxLines: 4,
+          decoration: InputDecoration(
+            hintText: approve
+                ? 'Musteriye iletilecek not (opsiyonel)'
+                : 'Red nedeni veya aciklama',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(null),
+            child: const Text('Iptal'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: approve
+                  ? const Color(0xFF2D6A4F)
+                  : Colors.red.shade600,
+            ),
+            child: Text(
+              approve ? 'Onayla' : 'Reddet',
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    return result;
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (orders.isEmpty) {
+      return _ReturnsEmptyState();
+    }
+
+    return PawRefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(sellerOrdersProvider);
+        ref.invalidate(sellerOrderStatsProvider);
+      },
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        itemCount: orders.length,
+        itemBuilder: (context, index) {
+          final order = orders[index];
+          return _ReturnCard(
+                order: order,
+                dateFormat: dateFormat,
+                onResolve: (status) =>
+                    _handleResolve(context, ref, order, status),
+              )
+              .animate(
+                delay: Duration(milliseconds: (index * 55).clamp(0, 440)),
+              )
+              .fadeIn(duration: 280.ms, curve: Curves.easeOut)
+              .slideY(begin: 0.06, duration: 280.ms, curve: Curves.easeOut);
+        },
+      ),
+    );
+  }
+}
+
+class _ReturnCard extends StatelessWidget {
+  const _ReturnCard({
+    required this.order,
+    required this.dateFormat,
+    required this.onResolve,
+  });
+
+  final OrderModel order;
+  final DateFormat dateFormat;
+  final void Function(String status) onResolve;
+
+  @override
+  Widget build(BuildContext context) {
+    final returnRequest = order.returnRequest!;
+    final statusColor = _returnStatusColor(returnRequest.status);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: context.cardColor,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: statusColor.withOpacity(0.12),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(18),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: statusColor,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    returnRequest.displayName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  returnRequest.requestedAt != null
+                      ? dateFormat.format(returnRequest.requestedAt!)
+                      : dateFormat.format(order.createdAt),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        order.buyerName ?? 'Musteri bilgisi yok',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      'TL ${(order.sellerTotal ?? order.totalAmount).toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: AppPalette.storePrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                if ((order.buyerEmail ?? '').isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    order.buyerEmail!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                Text(
+                  returnRequest.reason,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                if (returnRequest.description.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    returnRequest.description,
+                    style: TextStyle(
+                      height: 1.4,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                ...order.items.map((item) => _OrderItemRow(item: item)),
+                if (returnRequest.resolvedNote != null &&
+                    returnRequest.resolvedNote!.trim().isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest.withOpacity(0.45),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      returnRequest.resolvedNote!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+                if (returnRequest.isPending &&
+                    !order.containsOnlySellerItems) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.10),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.orange.withOpacity(0.24),
+                      ),
+                    ),
+                    child: const Text(
+                      'Bu sipariste baska satici urunleri de oldugu icin iade karari admin panelinden verilmelidir.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.orange,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (returnRequest.isPending && order.sellerCanResolveReturn)
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => onResolve('rejected'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red.shade700,
+                        side: BorderSide(color: Colors.red.shade200),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      icon: const Icon(Icons.close_rounded),
+                      label: const Text('Reddet'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => onResolve('approved'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2D6A4F),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      icon: const Icon(Icons.check_rounded),
+                      label: const Text('Onayla'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -353,6 +884,7 @@ class _OrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final statusColor = _getStatusColor(order.status);
+    final returnRequest = order.returnRequest;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -374,12 +906,17 @@ class _OrderCard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: statusColor.withOpacity(0.1),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor,
                     borderRadius: BorderRadius.circular(8),
@@ -393,6 +930,29 @@ class _OrderCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                if (returnRequest != null) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _returnStatusColor(
+                        returnRequest.status,
+                      ).withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Iade: ${returnRequest.displayName}',
+                      style: TextStyle(
+                        color: _returnStatusColor(returnRequest.status),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
                 const Spacer(),
                 Text(
                   dateFormat.format(order.createdAt),
@@ -413,7 +973,11 @@ class _OrderCard extends StatelessWidget {
                 if (order.buyerName != null) ...[
                   Row(
                     children: [
-                      Icon(Icons.person_outline, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      Icon(
+                        Icons.person_outline,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         order.buyerName!,
@@ -425,7 +989,9 @@ class _OrderCard extends StatelessWidget {
                           child: Text(
                             order.buyerEmail!,
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                               fontSize: 12,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -460,16 +1026,58 @@ class _OrderCard extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (returnRequest != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _returnStatusColor(
+                        returnRequest.status,
+                      ).withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _returnStatusColor(
+                          returnRequest.status,
+                        ).withOpacity(0.2),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          returnRequest.reason,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        if (returnRequest.description.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            returnRequest.description,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
           // Actions
-          if (order.status != OrderStatus.cancelled && order.status != OrderStatus.delivered)
+          if (order.status != OrderStatus.cancelled &&
+              order.status != OrderStatus.delivered)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: context.subtleBackground,
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(16),
+                ),
               ),
               child: Row(
                 children: [
@@ -526,6 +1134,17 @@ class _OrderCard extends StatelessWidget {
   }
 }
 
+Color _returnStatusColor(String status) {
+  switch (status) {
+    case 'approved':
+      return const Color(0xFF2D6A4F);
+    case 'rejected':
+      return Colors.red.shade600;
+    default:
+      return Colors.orange.shade700;
+  }
+}
+
 class _OrderItemRow extends StatelessWidget {
   const _OrderItemRow({required this.item});
 
@@ -558,7 +1177,10 @@ class _OrderItemRow extends StatelessWidget {
                   : null,
             ),
             child: imageUrl == null
-                ? Icon(Icons.image_outlined, color: Theme.of(context).colorScheme.outlineVariant)
+                ? Icon(
+                    Icons.image_outlined,
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  )
                 : null,
           ),
           const SizedBox(width: 12),
@@ -573,7 +1195,10 @@ class _OrderItemRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  AppLocalizations.of(context)!.sellerOrdersItemQty(item.quantity, item.price.toStringAsFixed(2)),
+                  AppLocalizations.of(context)!.sellerOrdersItemQty(
+                    item.quantity,
+                    item.price.toStringAsFixed(2),
+                  ),
                   style: TextStyle(
                     fontSize: 12,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,

@@ -12,16 +12,16 @@ class VariantOption {
   });
 
   factory VariantOption.fromJson(Map<String, dynamic> json) => VariantOption(
-        label: json['label'] as String? ?? '',
-        stock: (json['stock'] as num?)?.toInt() ?? 0,
-        priceDiff: (json['priceDiff'] as num?)?.toDouble() ?? 0,
-      );
+    label: json['label'] as String? ?? '',
+    stock: (json['stock'] as num?)?.toInt() ?? 0,
+    priceDiff: (json['priceDiff'] as num?)?.toDouble() ?? 0,
+  );
 
   Map<String, dynamic> toJson() => {
-        'label': label,
-        'stock': stock,
-        'priceDiff': priceDiff,
-      };
+    'label': label,
+    'stock': stock,
+    'priceDiff': priceDiff,
+  };
 }
 
 class ProductVariant {
@@ -31,17 +31,17 @@ class ProductVariant {
   const ProductVariant({required this.name, this.options = const []});
 
   factory ProductVariant.fromJson(Map<String, dynamic> json) => ProductVariant(
-        name: json['name'] as String? ?? '',
-        options: (json['options'] as List<dynamic>? ?? [])
-            .whereType<Map<String, dynamic>>()
-            .map(VariantOption.fromJson)
-            .toList(),
-      );
+    name: json['name'] as String? ?? '',
+    options: (json['options'] as List<dynamic>? ?? [])
+        .whereType<Map<String, dynamic>>()
+        .map(VariantOption.fromJson)
+        .toList(),
+  );
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'options': options.map((o) => o.toJson()).toList(),
-      };
+    'name': name,
+    'options': options.map((o) => o.toJson()).toList(),
+  };
 }
 
 class ProductModel {
@@ -73,12 +73,13 @@ class ProductModel {
 
   List<String> get images => photos;
   String get displayName => title;
+  String get name => title;
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     final List<dynamic> rawPhotos =
         (json['images'] as List<dynamic>?) ??
-            (json['photos'] as List<dynamic>?) ??
-            const <dynamic>[];
+        (json['photos'] as List<dynamic>?) ??
+        const <dynamic>[];
     final dynamic categoryRaw = json['category'];
 
     return ProductModel(
@@ -104,14 +105,15 @@ class ProductModel {
   }
 
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "name": title,
-        if (description != null) "description": description,
-        "price": price,
-        "stock": stock,
-        "images": photos,
-        if (categoryId != null) "category": categoryId,
-        "isActive": isActive,
-        if (variants.isNotEmpty) "variants": variants.map((v) => v.toJson()).toList(),
-      };
+    "id": id,
+    "name": title,
+    if (description != null) "description": description,
+    "price": price,
+    "stock": stock,
+    "images": photos,
+    if (categoryId != null) "category": categoryId,
+    "isActive": isActive,
+    if (variants.isNotEmpty)
+      "variants": variants.map((v) => v.toJson()).toList(),
+  };
 }

@@ -76,6 +76,36 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
     });
   }
 
+  List<ProductModel> _buildSuggestions({
+    required String query,
+    required List<ProductModel> products,
+    required List<ProductModel> recentProducts,
+  }) {
+    final needle = query.trim().toLowerCase();
+    if (needle.isEmpty) return const <ProductModel>[];
+
+    final seen = <String>{};
+    final rankedPool = [...recentProducts, ...products];
+
+    final matches = rankedPool
+        .where((product) {
+          final title = product.title.trim().toLowerCase();
+          final storeName = product.store?.name.trim().toLowerCase() ?? '';
+          final matched = title.contains(needle) || storeName.contains(needle);
+          return matched && seen.add(product.id);
+        })
+        .toList(growable: false);
+
+    matches.sort((a, b) {
+      final aStarts = a.title.toLowerCase().startsWith(needle);
+      final bStarts = b.title.toLowerCase().startsWith(needle);
+      if (aStarts != bStarts) return aStarts ? -1 : 1;
+      return a.title.compareTo(b.title);
+    });
+
+    return matches.take(5).toList(growable: false);
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -94,12 +124,19 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
     final productsAsync = ref.watch(productsProvider);
     final categoriesAsync = ref.watch(catalog.categoriesProvider);
     final storesAsync = ref.watch(store_data.storeDiscoverProvider);
+    final recentViewedAsync = ref.watch(catalog.recentViewedProductsProvider);
     final user = ref.watch(authProvider);
     final myStoreAsync = user?.role == 'seller'
         ? ref.watch(store_data.myStoreProvider)
         : null;
     final hasFilters = _selectedCategory != null || _query.isNotEmpty;
     final myStoreId = myStoreAsync?.valueOrNull?.id;
+    final typedQuery = _searchController.text.trim();
+    final suggestions = _buildSuggestions(
+      query: typedQuery,
+      products: productsAsync.valueOrNull ?? const <ProductModel>[],
+      recentProducts: recentViewedAsync.valueOrNull ?? const <ProductModel>[],
+    );
 
     return Scaffold(
       body: ModernBackground(
@@ -132,8 +169,49 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                           onFavoritesTap: () => context.pushNamed('favorites'),
                           onOrdersTap: () => context.pushNamed('my-orders'),
                         ),
+                        if (suggestions.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          _SearchSuggestionsPanel(
+                            suggestions: suggestions,
+                            onSelect: (product) {
+                              _searchController.text = product.title;
+                              _searchController.selection =
+                                  TextSelection.collapsed(
+                                    offset: _searchController.text.length,
+                                  );
+                              setState(() => _query = product.title.trim());
+                              context.pushNamed(
+                                'store-new-product',
+                                pathParameters: {'id': product.id},
+                              );
+                            },
+                          ),
+                        ],
                         const SizedBox(height: 14),
                         const _HeroCard(),
+                        recentViewedAsync.when(
+                          data: (recentProducts) {
+                            if (recentProducts.isEmpty) {
+                              return const SizedBox(height: 16);
+                            }
+                            return Column(
+                              children: [
+                                const SizedBox(height: 16),
+                                _SectionHeader(title: 'Son gezilen urunler'),
+                                const SizedBox(height: 10),
+                                _RecentViewedRail(
+                                  products: recentProducts,
+                                  onTapProduct: (product) => context.pushNamed(
+                                    'store-new-product',
+                                    pathParameters: {'id': product.id},
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                          loading: () => const SizedBox(height: 16),
+                          error: (_, __) => const SizedBox(height: 16),
+                        ),
                         const SizedBox(height: 16),
                         categoriesAsync.when(
                           data: (categories) {
@@ -217,17 +295,7 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                             ),
                           ),
                         ),
-                        if (user == null || user.role != 'seller')
-                          _SellerCTA(
-                            onTap: () {
-                              if (user == null) {
-                                context.pushNamed('login');
-                              } else {
-                                context.pushNamed('store-apply');
-                              }
-                            },
-                          )
-                        else if (myStoreAsync != null)
+                        if (myStoreAsync != null)
                           myStoreAsync.when(
                             data: (store) {
                               // store burada StoreModel? (nullable) olabilir
@@ -612,6 +680,106 @@ class _HeaderIconButton extends StatelessWidget {
         icon: Icon(icon, color: Colors.white),
         padding: EdgeInsets.zero,
         constraints: const BoxConstraints.tightFor(width: 42, height: 42),
+      ),
+    );
+  }
+}
+
+class _SearchSuggestionsPanel extends StatelessWidget {
+  const _SearchSuggestionsPanel({
+    required this.suggestions,
+    required this.onSelect,
+  });
+
+  final List<ProductModel> suggestions;
+  final ValueChanged<ProductModel> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: context.cardColor,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: AppPalette.storePrimary.withOpacity(0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          for (var i = 0; i < suggestions.length; i++) ...[
+            ListTile(
+              onTap: () => onSelect(suggestions[i]),
+              leading: const CircleAvatar(
+                backgroundColor: Color(0xFFD8F3DC),
+                child: Icon(
+                  Icons.search_rounded,
+                  color: Color(0xFF2D6A4F),
+                  size: 18,
+                ),
+              ),
+              title: Text(
+                suggestions[i].title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: suggestions[i].store?.name != null
+                  ? Text(
+                      suggestions[i].store!.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  : null,
+              trailing: Text(
+                '₺${suggestions[i].price.toStringAsFixed(0)}',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: AppPalette.storePrimary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            if (i != suggestions.length - 1)
+              Divider(
+                height: 1,
+                indent: 20,
+                endIndent: 20,
+                color: Theme.of(context).dividerColor.withOpacity(0.5),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _RecentViewedRail extends StatelessWidget {
+  const _RecentViewedRail({required this.products, required this.onTapProduct});
+
+  final List<ProductModel> products;
+  final ValueChanged<ProductModel> onTapProduct;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 222,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: products.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final product = products[index];
+          return SizedBox(
+            width: 172,
+            child: StoreProductCard(
+              product: product,
+              showStoreName: true,
+              onTap: () => onTapProduct(product),
+            ),
+          );
+        },
       ),
     );
   }

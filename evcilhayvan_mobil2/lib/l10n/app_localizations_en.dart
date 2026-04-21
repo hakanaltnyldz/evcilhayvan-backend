@@ -3261,10 +3261,73 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get applySellerGoToStore => 'Go to My Store';
+  String get applySellerGoToStore => 'OK';
 
   @override
   String get applySellerGenericError => 'An error occurred, please try again.';
+
+  @override
+  String get applySellerCompanyTitleLabel => 'Company Title *';
+
+  @override
+  String get applySellerCompanyTitleHint => 'E.g.: ABC Pet Products Ltd.';
+
+  @override
+  String get applySellerCompanyTitleRequired => 'Company title is required';
+
+  @override
+  String get applySellerTaxNumberLabel => 'Tax Number *';
+
+  @override
+  String get applySellerTaxNumberHint => '10-digit tax number';
+
+  @override
+  String get applySellerTaxNumberRequired => 'Tax number is required';
+
+  @override
+  String get applySellerTaxOfficeLabel => 'Tax Office *';
+
+  @override
+  String get applySellerTaxOfficeHint => 'E.g.: Kadıköy Tax Office';
+
+  @override
+  String get applySellerTaxOfficeRequired => 'Tax office is required';
+
+  @override
+  String get applySellerAddressLabel => 'Company Address *';
+
+  @override
+  String get applySellerAddressHint => 'Enter full address...';
+
+  @override
+  String get applySellerAddressRequired => 'Company address is required';
+
+  @override
+  String get applySellerContactInfoLabel => 'Contact Info *';
+
+  @override
+  String get applySellerContactInfoHint => 'Phone or email';
+
+  @override
+  String get applySellerContactInfoRequired => 'Contact info is required';
+
+  @override
+  String get applySellerIbanLabel => 'IBAN *';
+
+  @override
+  String get applySellerIbanHint => '26-digit IBAN starting with TR';
+
+  @override
+  String get applySellerIbanRequired => 'IBAN is required';
+
+  @override
+  String get applySellerIbanInvalid => 'Enter a valid IBAN (must start with TR)';
+
+  @override
+  String get applySellerNameTooLong => 'Must be at most 120 characters';
+
+  @override
+  String get applySellerLegalInfoSection => 'Legal Information';
 
   @override
   String get addProductTitle => 'Add Product';

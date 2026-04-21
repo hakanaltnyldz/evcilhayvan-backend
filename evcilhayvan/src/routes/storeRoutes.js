@@ -6,7 +6,6 @@ import { Router } from "express";
 import { authRequired } from "../middlewares/auth.js";
 import {
   addProduct,
-  applySeller,
   discoverStores,
   getMyProducts,
   getMyStore,
@@ -14,6 +13,10 @@ import {
   getStoreProducts,
   productFeed,
 } from "../controllers/storeController.js";
+import {
+  applySeller,
+  getMyApplicationStatus,
+} from "../controllers/sellerApplicationController.js";
 import Store from "../models/Store.js";
 import { sendOk, sendError } from "../utils/apiResponse.js";
 
@@ -52,9 +55,12 @@ router.get("/discover", discoverStores);
 router.get("/feed", productFeed);
 router.get("/me", authRequired(["seller", "admin"]), getMyStore);
 router.get("/me/products", authRequired(["seller", "admin"]), getMyProducts);
+// Satıcı başvurusu — admin onayı gerektirir, anında mağaza açmaz
 router.post("/apply", authRequired(), applySeller);
 router.post("/create", authRequired(), applySeller);
 router.post("/", authRequired(), applySeller);
+// Kullanıcının kendi başvuru durumunu sorgular
+router.get("/application/status", authRequired(), getMyApplicationStatus);
 router.post("/products", authRequired(["seller", "admin"]), addProduct);
 router.post("/me/products", authRequired(["seller", "admin"]), addProduct);
 router.get("/:storeId/products", getStoreProducts);

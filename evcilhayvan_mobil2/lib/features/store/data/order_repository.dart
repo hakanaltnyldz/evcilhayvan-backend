@@ -15,7 +15,9 @@ final myOrdersProvider = FutureProvider.autoDispose<List<OrderModel>>((ref) {
   return repo.getMyOrders();
 });
 
-final sellerOrdersProvider = FutureProvider.autoDispose<List<OrderModel>>((ref) {
+final sellerOrdersProvider = FutureProvider.autoDispose<List<OrderModel>>((
+  ref,
+) {
   final repo = ref.watch(orderRepositoryProvider);
   return repo.getSellerOrders();
 });
@@ -25,15 +27,23 @@ final sellerOrderStatsProvider = FutureProvider.autoDispose<OrderStats>((ref) {
   return repo.getSellerOrderStats();
 });
 
-final sellerRevenueChartProvider = FutureProvider.autoDispose<List<RevenueChartPoint>>((ref) {
-  final repo = ref.watch(orderRepositoryProvider);
-  return repo.getSellerRevenueChart();
-});
+final sellerRevenueChartProvider =
+    FutureProvider.autoDispose<List<RevenueChartPoint>>((ref) {
+      final repo = ref.watch(orderRepositoryProvider);
+      return repo.getSellerRevenueChart();
+    });
 
-final sellerProductStatsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) {
-  final repo = ref.watch(orderRepositoryProvider);
-  return repo.getSellerProductStats();
-});
+final sellerProductStatsProvider =
+    FutureProvider.autoDispose<Map<String, dynamic>>((ref) {
+      final repo = ref.watch(orderRepositoryProvider);
+      return repo.getSellerProductStats();
+    });
+
+final sellerCouponPerformanceProvider =
+    FutureProvider.autoDispose<List<SellerCouponPerformance>>((ref) {
+      final repo = ref.watch(orderRepositoryProvider);
+      return repo.getSellerCouponPerformance();
+    });
 
 class OrderRepository {
   final ApiClient _client;
@@ -58,20 +68,53 @@ class OrderRepository {
     ShippingAddress? shippingAddress,
     String? paymentMethod,
     String? notes,
+    String? couponCode,
+    Map<String, dynamic>? guestInfo,
   }) {
     return _guard(() async {
-      final orderItems = items.map((item) => {
-            'productId': item.productId,
-            'quantity': item.quantity,
-          }).toList();
+      final orderItems = items
+          .map(
+            (item) => {
+              'productId': item.productId,
+              'quantity': item.quantity,
+              if (item.selectedVariants.isNotEmpty)
+                'selectedVariants': item.selectedVariants
+                    .map((v) => v.toJson())
+                    .toList(),
+            },
+          )
+          .toList();
 
-      final response = await _dio.post('/api/orders', data: {
-        'items': orderItems,
-        if (shippingAddress != null) 'shippingAddress': shippingAddress.toJson(),
-        if (paymentMethod != null) 'paymentMethod': paymentMethod,
-        if (notes != null) 'notes': notes,
-      });
+      final response = await _dio.post(
+        '/api/orders',
+        data: {
+          'items': orderItems,
+          if (shippingAddress != null)
+            'shippingAddress': shippingAddress.toJson(),
+          if (paymentMethod != null) 'paymentMethod': paymentMethod,
+          if (notes != null) 'notes': notes,
+          if (couponCode != null) 'couponCode': couponCode,
+          if (guestInfo != null) 'guestInfo': guestInfo,
+        },
+      );
 
+      return OrderModel.fromJson(response.data['order']);
+    });
+  }
+
+  Future<OrderModel> resolveSellerReturnRequest(
+    String orderId,
+    String status, {
+    String? note,
+  }) {
+    return _guard(() async {
+      final response = await _dio.patch(
+        '/api/seller/orders/$orderId/return-status',
+        data: {
+          'status': status,
+          if (note != null && note.isNotEmpty) 'note': note,
+        },
+      );
       return OrderModel.fromJson(response.data['order']);
     });
   }
@@ -119,11 +162,22 @@ class OrderRepository {
   }
 
   /// Sipariş durumunu güncelle
-  Future<OrderModel> updateOrderStatus(String orderId, String status) {
+  Future<OrderModel> updateOrderStatus(
+    String orderId,
+    String status, {
+    String? trackingNumber,
+    String? carrier,
+  }) {
     return _guard(() async {
-      final response = await _dio.patch('/api/seller/orders/$orderId/status', data: {
-        'status': status,
-      });
+      final response = await _dio.patch(
+        '/api/seller/orders/$orderId/status',
+        data: {
+          'status': status,
+          if (trackingNumber != null && trackingNumber.isNotEmpty)
+            'trackingNumber': trackingNumber,
+          if (carrier != null && carrier.isNotEmpty) 'carrier': carrier,
+        },
+      );
       return OrderModel.fromJson(response.data['order']);
     });
   }
@@ -148,17 +202,43 @@ class OrderRepository {
     });
   }
 
+  /// Satıcının ürünlerine gelen yorumlar (paginated)
+  Future<SellerReviewsResponse> getSellerReviews({int page = 1, int? rating}) {
+    return _guard(() async {
+      final query = StringBuffer('/api/seller/reviews?page=$page&limit=20');
+      if (rating != null) query.write('&rating=$rating');
+      final response = await _dio.get(query.toString());
+      return SellerReviewsResponse.fromJson(response.data as Map<String, dynamic>);
+    });
+  }
+
+  /// Satıcının kuponlarının performans istatistikleri
+  Future<List<SellerCouponPerformance>> getSellerCouponPerformance() {
+    return _guard(() async {
+      final response = await _dio.get('/api/seller/coupons/performance');
+      final List<dynamic> raw = (response.data['coupons'] as List?) ?? [];
+      return raw
+          .whereType<Map<String, dynamic>>()
+          .map(SellerCouponPerformance.fromJson)
+          .toList();
+    });
+  }
+
   /// Satıcı ürün istatistikleri (durum dağılımı + top ürünler)
   Future<Map<String, dynamic>> getSellerProductStats() {
     return _guard(() async {
       final response = await _dio.get('/api/seller/stats');
       return {
-        'orderStatusBreakdown': response.data['orderStatusBreakdown'] as Map<String, dynamic>? ?? {},
-        'topProducts': (response.data['topProducts'] as List?)
+        'orderStatusBreakdown':
+            response.data['orderStatusBreakdown'] as Map<String, dynamic>? ??
+            {},
+        'topProducts':
+            (response.data['topProducts'] as List?)
                 ?.map((e) => Map<String, dynamic>.from(e as Map))
                 .toList() ??
             [],
-        'avgOrderValue': (response.data['avgOrderValue'] as num?)?.toDouble() ?? 0.0,
+        'avgOrderValue':
+            (response.data['avgOrderValue'] as num?)?.toDouble() ?? 0.0,
       };
     });
   }

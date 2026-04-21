@@ -52,6 +52,7 @@ export default function Layout() {
       '/users': 'Rol, ban ve hesap temizligi islemlerini buradan yonetin.',
       '/pets': 'Yayinda olan ve kapatilan ilanlari anlik kontrol edin.',
       '/orders': 'Kargo ve siparis sureclerini merkezi olarak yonetin.',
+      '/returns': 'Iade taleplerini inceleyin, onaylayin veya gerekce ile reddedin.',
       '/reports': 'Sikayet ve moderasyon akisini hizli sekilde sonuclandirin.',
       '/support': 'Destek taleplerine ic not ve durum guncellemesi ekleyin.',
       '/seller': 'Magaza performansi, siparisler ve urunler burada toplandi.',

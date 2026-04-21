@@ -3268,11 +3268,74 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get applySellerGoToStore => 'Mağazama Git';
+  String get applySellerGoToStore => 'Tamam';
 
   @override
   String get applySellerGenericError =>
       'Bir hata oluştu, lütfen tekrar deneyin.';
+
+  @override
+  String get applySellerCompanyTitleLabel => 'Şirket Unvanı *';
+
+  @override
+  String get applySellerCompanyTitleHint => 'Örn: ABC Evcil Hayvan Ürünleri Ltd. Şti.';
+
+  @override
+  String get applySellerCompanyTitleRequired => 'Şirket unvanı gerekli';
+
+  @override
+  String get applySellerTaxNumberLabel => 'Vergi Numarası *';
+
+  @override
+  String get applySellerTaxNumberHint => '10 haneli vergi numarası';
+
+  @override
+  String get applySellerTaxNumberRequired => 'Vergi numarası gerekli';
+
+  @override
+  String get applySellerTaxOfficeLabel => 'Vergi Dairesi *';
+
+  @override
+  String get applySellerTaxOfficeHint => 'Örn: Kadıköy Vergi Dairesi';
+
+  @override
+  String get applySellerTaxOfficeRequired => 'Vergi dairesi gerekli';
+
+  @override
+  String get applySellerAddressLabel => 'Şirket Adresi *';
+
+  @override
+  String get applySellerAddressHint => 'Tam adres giriniz...';
+
+  @override
+  String get applySellerAddressRequired => 'Şirket adresi gerekli';
+
+  @override
+  String get applySellerContactInfoLabel => 'İletişim Bilgisi *';
+
+  @override
+  String get applySellerContactInfoHint => 'Telefon veya e-posta';
+
+  @override
+  String get applySellerContactInfoRequired => 'İletişim bilgisi gerekli';
+
+  @override
+  String get applySellerIbanLabel => 'IBAN *';
+
+  @override
+  String get applySellerIbanHint => 'TR ile başlayan 26 haneli IBAN';
+
+  @override
+  String get applySellerIbanRequired => 'IBAN gerekli';
+
+  @override
+  String get applySellerIbanInvalid => 'Geçerli bir IBAN giriniz (TR ile başlamalı)';
+
+  @override
+  String get applySellerNameTooLong => 'En fazla 120 karakter olabilir';
+
+  @override
+  String get applySellerLegalInfoSection => 'Yasal Bilgiler';
 
   @override
   String get addProductTitle => 'Ürün Ekle';

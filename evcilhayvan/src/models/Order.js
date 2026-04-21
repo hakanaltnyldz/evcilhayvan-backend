@@ -100,9 +100,23 @@ const orderSchema = new Schema(
     trackingNumber: { type: String, trim: true },
     carrier: {
       type: String,
-      enum: ['Yurtiçi', 'MNG', 'Aras', 'PTT', 'Sürat', 'UPS', 'DHL', 'Diğer'],
+      enum: ['Yurtiçi', 'MNG', 'Aras', 'PTT', 'Sürat', 'UPS', 'DHL', 'Diğer', 'yurtici', 'mng', 'aras', 'ptt', 'surat', 'other'],
     },
     estimatedDelivery: { type: Date },
+    // İade talebi
+    returnRequest: {
+      reason: { type: String, trim: true },
+      description: { type: String, trim: true },
+      photos: [{ type: String }],
+      status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending',
+      },
+      requestedAt: { type: Date, default: Date.now },
+      resolvedAt: { type: Date },
+      resolvedNote: { type: String },
+    },
   },
   {
     timestamps: true,

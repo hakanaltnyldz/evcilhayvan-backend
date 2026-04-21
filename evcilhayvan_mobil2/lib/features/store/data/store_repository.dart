@@ -13,9 +13,9 @@ import 'package:evcilhayvan_mobil2/features/store/domain/models/product_model.da
 import 'package:evcilhayvan_mobil2/features/store/domain/models/store_model.dart';
 
 class SellerApplicationResult {
-  final User user;
-  final StoreModel store;
-  SellerApplicationResult({required this.user, required this.store});
+  final String applicationId;
+  final String status;
+  SellerApplicationResult({required this.applicationId, required this.status});
 }
 
 final storeRepositoryProvider = Provider<StoreRepository>((ref) {
@@ -137,24 +137,36 @@ class StoreRepository {
   }
 
   Future<SellerApplicationResult> applySeller({
-    required String storeName,
-    String? description,
+    required String companyName,
+    required String companyTitle,
+    required String taxNumber,
+    required String taxOffice,
+    required String address,
+    required String contactInfo,
+    required String iban,
     String? logoUrl,
+    bool kvkkAccepted = true,
+    bool contractAccepted = true,
   }) {
     return _guard(() async {
-      final response = await _dio.post('/api/stores/create', data: {
-        'storeName': storeName,
-        if (description != null) 'description': description,
+      final response = await _dio.post('/api/stores/apply', data: {
+        'companyName': companyName,
+        'companyTitle': companyTitle,
+        'taxNumber': taxNumber,
+        'taxOffice': taxOffice,
+        'address': address,
+        'contactInfo': contactInfo,
+        'iban': iban,
+        'kvkkAccepted': kvkkAccepted,
+        'contractAccepted': contractAccepted,
         if (logoUrl != null && logoUrl.isNotEmpty) 'logoUrl': logoUrl,
       });
 
-      await _client.persistTokens(
-        accessToken: response.data['token'] as String?,
-        refreshToken: response.data['refreshToken'] as String?,
+      final app = response.data['application'] as Map<String, dynamic>;
+      return SellerApplicationResult(
+        applicationId: app['id']?.toString() ?? '',
+        status: app['status']?.toString() ?? 'pending',
       );
-      final user = User.fromJson(response.data['user'] as Map<String, dynamic>);
-      final store = StoreModel.fromJson(response.data['store']);
-      return SellerApplicationResult(user: user, store: store);
     });
   }
 

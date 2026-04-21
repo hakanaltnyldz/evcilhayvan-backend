@@ -214,24 +214,39 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isVerified
-              ? [const Color(0xFF2D6A4F).withOpacity(0.12), const Color(0xFF52B788).withOpacity(0.08)]
-              : [const Color(0xFFF57F17).withOpacity(0.10), const Color(0xFFFFCA28).withOpacity(0.08)],
+              ? [
+                  const Color(0xFF2D6A4F).withOpacity(0.12),
+                  const Color(0xFF52B788).withOpacity(0.08),
+                ]
+              : [
+                  const Color(0xFFF57F17).withOpacity(0.10),
+                  const Color(0xFFFFCA28).withOpacity(0.08),
+                ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isVerified ? const Color(0xFF52B788).withOpacity(0.4) : const Color(0xFFFFCA28).withOpacity(0.5),
+          color: isVerified
+              ? const Color(0xFF52B788).withOpacity(0.4)
+              : const Color(0xFFFFCA28).withOpacity(0.5),
         ),
       ),
       child: Row(
         children: [
           CircleAvatar(
             radius: 24,
-            backgroundColor: isVerified ? const Color(0xFF52B788).withOpacity(0.2) : Colors.orange.withOpacity(0.2),
-            backgroundImage: sitter.avatar != null ? NetworkImage(sitter.avatar!) : null,
+            backgroundColor: isVerified
+                ? const Color(0xFF52B788).withOpacity(0.2)
+                : Colors.orange.withOpacity(0.2),
+            backgroundImage: sitter.avatar != null
+                ? NetworkImage(sitter.avatar!)
+                : null,
             child: sitter.avatar == null
-                ? Icon(Icons.person, color: isVerified ? const Color(0xFF2D6A4F) : Colors.orange)
+                ? Icon(
+                    Icons.person,
+                    color: isVerified ? const Color(0xFF2D6A4F) : Colors.orange,
+                  )
                 : null,
           ),
           const SizedBox(width: 12),
@@ -244,12 +259,17 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.6),
                   ),
                 ),
                 Text(
                   sitter.displayName,
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
                 ),
               ],
             ),
@@ -257,7 +277,9 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: isVerified ? const Color(0xFF52B788).withOpacity(0.2) : const Color(0xFFFFCA28).withOpacity(0.25),
+              color: isVerified
+                  ? const Color(0xFF52B788).withOpacity(0.2)
+                  : const Color(0xFFFFCA28).withOpacity(0.25),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -265,12 +287,17 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: isVerified ? const Color(0xFF2D6A4F) : const Color(0xFFF57F17),
+                color: isVerified
+                    ? const Color(0xFF2D6A4F)
+                    : const Color(0xFFF57F17),
               ),
             ),
           ),
           const SizedBox(width: 8),
-          Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
+          Icon(
+            Icons.chevron_right,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+          ),
         ],
       ),
     );
@@ -314,26 +341,48 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
                       curve: Curves.easeInOut,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: selected ? const Color(0xFF2D6A4F) : Colors.white,
+                        color: selected
+                            ? const Color(0xFF2D6A4F)
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: selected ? const Color(0xFF2D6A4F) : Colors.grey.shade200,
+                          color: selected
+                              ? const Color(0xFF2D6A4F)
+                              : Colors.grey.shade200,
                           width: 1.5,
                         ),
                         boxShadow: selected
-                            ? [BoxShadow(color: const Color(0xFF2D6A4F).withOpacity(0.25), blurRadius: 8, offset: const Offset(0, 2))]
+                            ? [
+                                BoxShadow(
+                                  color: const Color(
+                                    0xFF2D6A4F,
+                                  ).withOpacity(0.25),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
                             : [],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(_getServiceIcon(value), size: 18, color: selected ? Colors.white : const Color(0xFF2D6A4F)),
+                          Icon(
+                            _getServiceIcon(value),
+                            size: 18,
+                            color: selected
+                                ? Colors.white
+                                : const Color(0xFF2D6A4F),
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             s['label']! as String,
                             style: TextStyle(
-                              color: selected ? Colors.white : const Color(0xFF2D6A4F),
-                              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                              color: selected
+                                  ? Colors.white
+                                  : const Color(0xFF2D6A4F),
+                              fontWeight: selected
+                                  ? FontWeight.w600
+                                  : FontWeight.w500,
                               fontSize: 13,
                             ),
                           ),
@@ -421,6 +470,8 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final user = ref.watch(authProvider);
+    final hasSitterProfile =
+        ref.watch(mySitterProfileProvider).valueOrNull != null;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -436,6 +487,12 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
               tooltip: 'Kendi İlanlarım',
               onPressed: () => _showMyRequests(context),
             ),
+          if (user != null && hasSitterProfile)
+            IconButton(
+              icon: const Icon(Icons.dashboard_customize_outlined),
+              tooltip: 'Bakici Dashboard',
+              onPressed: () => context.pushNamed('sitter-dashboard'),
+            ),
           if (user != null)
             IconButton(
               icon: const Icon(Icons.assignment),
@@ -449,7 +506,10 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
           indicatorColor: Colors.white,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white60,
-          labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+          ),
           tabs: const [
             Tab(text: 'Bakıcılar'),
             Tab(text: 'Bakıcı Aranıyor'),
@@ -490,10 +550,12 @@ class _SitterRequestsTabContent extends ConsumerStatefulWidget {
   const _SitterRequestsTabContent({this.lat, this.lng});
 
   @override
-  ConsumerState<_SitterRequestsTabContent> createState() => _SitterRequestsTabContentState();
+  ConsumerState<_SitterRequestsTabContent> createState() =>
+      _SitterRequestsTabContentState();
 }
 
-class _SitterRequestsTabContentState extends ConsumerState<_SitterRequestsTabContent> {
+class _SitterRequestsTabContentState
+    extends ConsumerState<_SitterRequestsTabContent> {
   List<Map<String, dynamic>>? _requests;
   bool _loading = true;
   String? _error;
@@ -511,7 +573,10 @@ class _SitterRequestsTabContentState extends ConsumerState<_SitterRequestsTabCon
     });
     try {
       final repo = ref.read(petSitterRepositoryProvider);
-      final data = await repo.listSitterRequests(lat: widget.lat, lng: widget.lng);
+      final data = await repo.listSitterRequests(
+        lat: widget.lat,
+        lng: widget.lng,
+      );
       setState(() {
         _requests = data;
         _loading = false;
@@ -526,12 +591,18 @@ class _SitterRequestsTabContentState extends ConsumerState<_SitterRequestsTabCon
 
   String _serviceLabel(String? type) {
     switch (type) {
-      case 'walking': return 'Yürüyüş';
-      case 'home_sitting': return 'Ev Bakımı';
-      case 'boarding': return 'Pansiyon';
-      case 'daycare': return 'Günlük Bakım';
-      case 'grooming': return 'Tımar';
-      default: return type ?? '';
+      case 'walking':
+        return 'Yürüyüş';
+      case 'home_sitting':
+        return 'Ev Bakımı';
+      case 'boarding':
+        return 'Pansiyon';
+      case 'daycare':
+        return 'Günlük Bakım';
+      case 'grooming':
+        return 'Tımar';
+      default:
+        return type ?? '';
     }
   }
 
@@ -551,9 +622,15 @@ class _SitterRequestsTabContentState extends ConsumerState<_SitterRequestsTabCon
                 children: [
                   Icon(Icons.search_off_rounded, size: 64, color: Colors.grey),
                   SizedBox(height: 12),
-                  Text('Henüz bakıcı ilanı yok', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                  Text(
+                    'Henüz bakıcı ilanı yok',
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                  ),
                   SizedBox(height: 4),
-                  Text('Birisi bakıcı aradığında burada görünecek', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text(
+                    'Birisi bakıcı aradığında burada görünecek',
+                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                  ),
                 ],
               ),
             ),
@@ -570,110 +647,158 @@ class _SitterRequestsTabContentState extends ConsumerState<_SitterRequestsTabCon
         itemBuilder: (context, i) {
           final req = _requests![i];
           final owner = req['owner'] as Map<String, dynamic>?;
-          final startDate = req['startDate'] != null ? DateTime.tryParse(req['startDate'].toString()) : null;
-          final endDate = req['endDate'] != null ? DateTime.tryParse(req['endDate'].toString()) : null;
+          final startDate = req['startDate'] != null
+              ? DateTime.tryParse(req['startDate'].toString())
+              : null;
+          final endDate = req['endDate'] != null
+              ? DateTime.tryParse(req['endDate'].toString())
+              : null;
           final petTypes = (req['petTypes'] as List?)?.cast<String>() ?? [];
           final serviceType = req['serviceType'] as String?;
           final description = req['description'] as String?;
-          final requestId = req['id']?.toString() ?? req['_id']?.toString() ?? '';
+          final requestId =
+              req['id']?.toString() ?? req['_id']?.toString() ?? '';
 
           return Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            elevation: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+                margin: const EdgeInsets.only(bottom: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 1,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundImage: owner?['avatarUrl'] != null ? NetworkImage(owner!['avatarUrl']) : null,
-                        child: owner?['avatarUrl'] == null ? const Icon(Icons.person) : null,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(owner?['name'] ?? 'Kullanıcı', style: const TextStyle(fontWeight: FontWeight.w700)),
-                            if (startDate != null && endDate != null)
-                              Text(
-                                '${startDate.day}.${startDate.month.toString().padLeft(2,'0')}.${startDate.year} — ${endDate.day}.${endDate.month.toString().padLeft(2,'0')}.${endDate.year}',
-                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundImage: owner?['avatarUrl'] != null
+                                ? NetworkImage(owner!['avatarUrl'])
+                                : null,
+                            child: owner?['avatarUrl'] == null
+                                ? const Icon(Icons.person)
+                                : null,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  owner?['name'] ?? 'Kullanıcı',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                if (startDate != null && endDate != null)
+                                  Text(
+                                    '${startDate.day}.${startDate.month.toString().padLeft(2, '0')}.${startDate.year} — ${endDate.day}.${endDate.month.toString().padLeft(2, '0')}.${endDate.year}',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2D6A4F).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              _serviceLabel(serviceType),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF2D6A4F),
                               ),
-                          ],
-                        ),
+                            ),
+                          ),
+                        ],
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2D6A4F).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
+                      if (petTypes.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 6,
+                          children: petTypes
+                              .map(
+                                (t) => Chip(
+                                  label: Text(
+                                    t,
+                                    style: const TextStyle(fontSize: 11),
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                              )
+                              .toList(),
                         ),
-                        child: Text(
-                          _serviceLabel(serviceType),
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF2D6A4F)),
+                      ],
+                      if (description != null && description.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          description,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            try {
+                              final repo = ref.read(
+                                petSitterRepositoryProvider,
+                              );
+                              final convId = await repo
+                                  .contactSitterRequestOwner(requestId);
+                              if (!context.mounted) return;
+                              context.pushNamed(
+                                'chat',
+                                pathParameters: {'conversationId': convId},
+                                extra: {
+                                  'name': owner?['name'] ?? 'Kullanıcı',
+                                  'avatar': owner?['avatarUrl'],
+                                },
+                              );
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Hata: $e')),
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.message_outlined, size: 18),
+                          label: const Text('İletişime Geç'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2D6A4F),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  if (petTypes.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 6,
-                      children: petTypes.map((t) => Chip(
-                        label: Text(t, style: const TextStyle(fontSize: 11)),
-                        padding: EdgeInsets.zero,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        visualDensity: VisualDensity.compact,
-                      )).toList(),
-                    ),
-                  ],
-                  if (description != null && description.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Text(description, style: const TextStyle(fontSize: 13, color: Colors.black87)),
-                  ],
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        try {
-                          final repo = ref.read(petSitterRepositoryProvider);
-                          final convId = await repo.contactSitterRequestOwner(requestId);
-                          if (!context.mounted) return;
-                          context.pushNamed(
-                            'chat',
-                            pathParameters: {'conversationId': convId},
-                            extra: {
-                              'name': owner?['name'] ?? 'Kullanıcı',
-                              'avatar': owner?['avatarUrl'],
-                            },
-                          );
-                        } catch (e) {
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Hata: $e')),
-                          );
-                        }
-                      },
-                      icon: const Icon(Icons.message_outlined, size: 18),
-                      label: const Text('İletişime Geç'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2D6A4F),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ).animate(delay: Duration(milliseconds: i * 60)).fadeIn(duration: 280.ms).slideY(begin: 0.05);
+                ),
+              )
+              .animate(delay: Duration(milliseconds: i * 60))
+              .fadeIn(duration: 280.ms)
+              .slideY(begin: 0.05);
         },
       ),
     );
@@ -702,20 +827,34 @@ class _MyRequestsSheetState extends State<_MyRequestsSheet> {
   Future<void> _load() async {
     try {
       final data = await widget.repo.mySitterRequests();
-      if (mounted) setState(() { _requests = data; _loading = false; });
+      if (mounted)
+        setState(() {
+          _requests = data;
+          _loading = false;
+        });
     } catch (_) {
-      if (mounted) setState(() { _requests = []; _loading = false; });
+      if (mounted)
+        setState(() {
+          _requests = [];
+          _loading = false;
+        });
     }
   }
 
   String _serviceLabel(String? type) {
     switch (type) {
-      case 'walking': return 'Yürüyüş';
-      case 'home_sitting': return 'Ev Bakımı';
-      case 'boarding': return 'Pansiyon';
-      case 'daycare': return 'Günlük Bakım';
-      case 'grooming': return 'Tımar';
-      default: return type ?? '';
+      case 'walking':
+        return 'Yürüyüş';
+      case 'home_sitting':
+        return 'Ev Bakımı';
+      case 'boarding':
+        return 'Pansiyon';
+      case 'daycare':
+        return 'Günlük Bakım';
+      case 'grooming':
+        return 'Tımar';
+      default:
+        return type ?? '';
     }
   }
 
@@ -748,7 +887,14 @@ class _MyRequestsSheetState extends State<_MyRequestsSheet> {
         child: Column(
           children: [
             const SizedBox(height: 8),
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
             const SizedBox(height: 16),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
@@ -756,7 +902,10 @@ class _MyRequestsSheetState extends State<_MyRequestsSheet> {
                 children: [
                   Icon(Icons.list_alt, color: Color(0xFF2D6A4F)),
                   SizedBox(width: 8),
-                  Text('Kendi İlanlarım', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+                  Text(
+                    'Kendi İlanlarım',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
+                  ),
                 ],
               ),
             ),
@@ -765,44 +914,76 @@ class _MyRequestsSheetState extends State<_MyRequestsSheet> {
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _requests == null || _requests!.isEmpty
-                  ? const Center(child: Text('Henüz ilan açmadınız', style: TextStyle(color: Colors.grey)))
+                  ? const Center(
+                      child: Text(
+                        'Henüz ilan açmadınız',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    )
                   : ListView.builder(
                       controller: controller,
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
                       itemCount: _requests!.length,
                       itemBuilder: (context, i) {
                         final req = _requests![i];
-                        final id = req['id']?.toString() ?? req['_id']?.toString() ?? '';
+                        final id =
+                            req['id']?.toString() ??
+                            req['_id']?.toString() ??
+                            '';
                         final status = req['status'] as String? ?? 'open';
                         final isOpen = status == 'open';
-                        final startDate = req['startDate'] != null ? DateTime.tryParse(req['startDate'].toString()) : null;
-                        final endDate = req['endDate'] != null ? DateTime.tryParse(req['endDate'].toString()) : null;
+                        final startDate = req['startDate'] != null
+                            ? DateTime.tryParse(req['startDate'].toString())
+                            : null;
+                        final endDate = req['endDate'] != null
+                            ? DateTime.tryParse(req['endDate'].toString())
+                            : null;
 
                         return Card(
                           margin: const EdgeInsets.only(bottom: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                           child: Padding(
                             padding: const EdgeInsets.all(14),
                             child: Row(
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text(_serviceLabel(req['serviceType'] as String?),
-                                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                                      Text(
+                                        _serviceLabel(
+                                          req['serviceType'] as String?,
+                                        ),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 14,
+                                        ),
+                                      ),
                                       if (startDate != null && endDate != null)
                                         Text(
-                                          '${startDate.day}.${startDate.month.toString().padLeft(2,'0')}.${startDate.year} — ${endDate.day}.${endDate.month.toString().padLeft(2,'0')}.${endDate.year}',
-                                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                          '${startDate.day}.${startDate.month.toString().padLeft(2, '0')}.${startDate.year} — ${endDate.day}.${endDate.month.toString().padLeft(2, '0')}.${endDate.year}',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
                                         ),
                                     ],
                                   ),
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: isOpen ? const Color(0xFF2D6A4F).withOpacity(0.1) : Colors.grey.shade200,
+                                    color: isOpen
+                                        ? const Color(
+                                            0xFF2D6A4F,
+                                          ).withOpacity(0.1)
+                                        : Colors.grey.shade200,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
@@ -810,16 +991,25 @@ class _MyRequestsSheetState extends State<_MyRequestsSheet> {
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,
-                                      color: isOpen ? const Color(0xFF2D6A4F) : Colors.grey,
+                                      color: isOpen
+                                          ? const Color(0xFF2D6A4F)
+                                          : Colors.grey,
                                     ),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 IconButton(
-                                  icon: Icon(isOpen ? Icons.pause_circle_outline : Icons.play_circle_outline,
-                                      color: isOpen ? Colors.orange : const Color(0xFF2D6A4F)),
+                                  icon: Icon(
+                                    isOpen
+                                        ? Icons.pause_circle_outline
+                                        : Icons.play_circle_outline,
+                                    color: isOpen
+                                        ? Colors.orange
+                                        : const Color(0xFF2D6A4F),
+                                  ),
                                   tooltip: isOpen ? 'İlanı Kapat' : 'İlanı Aç',
-                                  onPressed: () => isOpen ? _close(id) : _open(id),
+                                  onPressed: () =>
+                                      isOpen ? _close(id) : _open(id),
                                 ),
                               ],
                             ),

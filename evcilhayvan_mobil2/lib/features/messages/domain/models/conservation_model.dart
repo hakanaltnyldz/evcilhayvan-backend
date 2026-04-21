@@ -14,6 +14,7 @@ class Conversation {
   final String? contextId;
   final DateTime lastMessageAt;
   final DateTime updatedAt;
+  final int unreadCount;
 
   Conversation({
     required this.id,
@@ -26,6 +27,7 @@ class Conversation {
     this.contextId,
     required this.lastMessageAt,
     required this.updatedAt,
+    this.unreadCount = 0,
   });
 
   factory Conversation.fromJson(
@@ -130,6 +132,7 @@ class Conversation {
       contextId: contextId,
       lastMessageAt: lastMessageAt,
       updatedAt: lastMessageAt,
+      unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
     );
   }
 }

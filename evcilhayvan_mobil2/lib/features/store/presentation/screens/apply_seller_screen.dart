@@ -4,7 +4,6 @@ import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/modern_background.dart';
-import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,18 +20,35 @@ class ApplySellerScreen extends ConsumerStatefulWidget {
 
 class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
   final _formKey = GlobalKey<FormState>();
+
+  // Store info (Adım 1)
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
+
+  // Legal info (Adım 2)
+  final _companyTitleController = TextEditingController();
+  final _taxNumberController = TextEditingController();
+  final _taxOfficeController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _contactInfoController = TextEditingController();
+  final _ibanController = TextEditingController();
+
   bool _loading = false;
   bool _acceptedTerms = false;
+  bool _kvkkAccepted = false;
   XFile? _selectedLogo;
   final ImagePicker _picker = ImagePicker();
-  int _currentStep = 0;
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _companyTitleController.dispose();
+    _taxNumberController.dispose();
+    _taxOfficeController.dispose();
+    _addressController.dispose();
+    _contactInfoController.dispose();
+    _ibanController.dispose();
     super.dispose();
   }
 
@@ -121,7 +137,6 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
 
   Future<String?> _uploadLogo() async {
     if (_selectedLogo == null) return null;
-
     try {
       final dio = ApiClient().dio;
       final formData = FormData.fromMap({
@@ -130,26 +145,37 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
           filename: _selectedLogo!.name,
         ),
       });
-
-      debugPrint('[ApplySeller] Uploading logo...');
       final response = await dio.post('/api/uploads/images', data: formData);
-      debugPrint('[ApplySeller] Upload response: ${response.data}');
       return response.data['url'] as String?;
     } catch (e) {
       debugPrint('[ApplySeller] Logo upload error: $e');
-      if (e is DioException) {
-        debugPrint('[ApplySeller] Upload response: ${e.response?.data}');
-      }
       return null;
     }
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_acceptedTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Satıcı sözleşmesini kabul etmeniz gerekiyor.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    if (!_kvkkAccepted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('KVKK metnini kabul etmeniz gerekiyor.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
 
     setState(() => _loading = true);
     try {
-      // Önce logoyu yükle
       String? logoUrl;
       if (_selectedLogo != null) {
         logoUrl = await _uploadLogo();
@@ -157,23 +183,23 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
 
       final repo = ref.read(storeRepositoryProvider);
       final result = await repo.applySeller(
-        storeName: _nameController.text.trim(),
-        description: _descriptionController.text.trim().isNotEmpty
-            ? _descriptionController.text.trim()
-            : null,
+        companyName: _nameController.text.trim(),
+        companyTitle: _companyTitleController.text.trim(),
+        taxNumber: _taxNumberController.text.trim(),
+        taxOffice: _taxOfficeController.text.trim(),
+        address: _addressController.text.trim(),
+        contactInfo: _contactInfoController.text.trim(),
+        iban: _ibanController.text.trim().toUpperCase(),
         logoUrl: logoUrl,
+        kvkkAccepted: true,
+        contractAccepted: true,
       );
 
-      ref.read(authProvider.notifier).loginSuccess(result.user);
       if (mounted) {
-        _showSuccessDialog(result.store.name);
+        _showSuccessDialog(result.applicationId);
       }
     } catch (e) {
       debugPrint('[ApplySeller] Error: $e');
-      if (e is DioException) {
-        debugPrint('[ApplySeller] Response: ${e.response?.data}');
-        debugPrint('[ApplySeller] Status: ${e.response?.statusCode}');
-      }
       if (mounted) {
         final message = _formatErrorMessage(e);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -185,12 +211,12 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
     }
   }
 
-  void _showSuccessDialog(String storeName) {
-    final l10n = AppLocalizations.of(context)!;
+  void _showSuccessDialog(String applicationId) {
+    final outerContext = context;
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -201,26 +227,29 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                 color: Colors.green.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check_circle, color: Colors.green, size: 60),
+              child: const Icon(Icons.assignment_turned_in, color: Colors.green, size: 60),
             ),
             const SizedBox(height: 20),
             Text(
-              l10n.applySellerSuccessTitle,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              AppLocalizations.of(outerContext)!.applySellerSuccessTitle,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              l10n.applySellerSuccessDesc(storeName),
+              AppLocalizations.of(outerContext)!.applySellerSuccessDesc(_nameController.text.trim()),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              style: TextStyle(color: Theme.of(outerContext).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop(true);
+                  Navigator.of(dialogContext).pop();
+                  if (outerContext.mounted) {
+                    Navigator.of(outerContext).pop(true);
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
@@ -229,7 +258,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(l10n.applySellerGoToStore),
+                child: Text(AppLocalizations.of(outerContext)!.applySellerGoToStore),
               ),
             ),
           ],
@@ -413,27 +442,24 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Progress Steps
                   _buildProgressSteps(),
                   const SizedBox(height: 24),
 
-                  // Logo Section
                   _buildLogoSection(),
                   const SizedBox(height: 20),
 
-                  // Store Info Section
-                  _buildStoreInfoSection(),
+                  _buildStoreInfoSection(l10n),
                   const SizedBox(height: 20),
 
-                  // Terms Section
-                  _buildTermsSection(),
+                  _buildLegalInfoSection(l10n),
+                  const SizedBox(height: 20),
+
+                  _buildTermsSection(l10n),
                   const SizedBox(height: 24),
 
-                  // Submit Button
-                  _buildSubmitButton(),
+                  _buildSubmitButton(l10n),
                   const SizedBox(height: 16),
 
-                  // Info Text
                   Center(
                     child: Text(
                       l10n.applySellerApprovalNote,
@@ -455,6 +481,12 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
 
   Widget _buildProgressSteps() {
     final l10n = AppLocalizations.of(context)!;
+    final step1Done = _selectedLogo != null;
+    final step2Done = _nameController.text.isNotEmpty &&
+        _companyTitleController.text.isNotEmpty &&
+        _taxNumberController.text.isNotEmpty;
+    final step3Done = _acceptedTerms && _kvkkAccepted;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -470,11 +502,11 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
       ),
       child: Row(
         children: [
-          _buildStep(1, l10n.applySellerStepLogo, _selectedLogo != null),
-          _buildStepLine(_selectedLogo != null),
-          _buildStep(2, l10n.applySellerStepInfo, _nameController.text.isNotEmpty),
-          _buildStepLine(_nameController.text.isNotEmpty && _acceptedTerms),
-          _buildStep(3, l10n.applySellerStepContract, _acceptedTerms),
+          _buildStep(1, l10n.applySellerStepLogo, step1Done),
+          _buildStepLine(step1Done),
+          _buildStep(2, l10n.applySellerStepInfo, step2Done),
+          _buildStepLine(step2Done && step3Done),
+          _buildStep(3, l10n.applySellerStepContract, step3Done),
         ],
       ),
     );
@@ -639,8 +671,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
     );
   }
 
-  Widget _buildStoreInfoSection() {
-    final l10n = AppLocalizations.of(context)!;
+  Widget _buildStoreInfoSection(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -677,6 +708,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
           const SizedBox(height: 20),
           TextFormField(
             controller: _nameController,
+            maxLength: 120,
             onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
               labelText: l10n.applySellerNameLabel,
@@ -694,6 +726,9 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
               if (value.trim().length < 3) {
                 return l10n.applySellerNameTooShort;
               }
+              if (value.trim().length > 120) {
+                return l10n.applySellerNameTooLong;
+              }
               return null;
             },
           ),
@@ -701,6 +736,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
           TextFormField(
             controller: _descriptionController,
             maxLines: 4,
+            maxLength: 500,
             decoration: InputDecoration(
               labelText: l10n.applySellerDescLabel,
               hintText: l10n.applySellerDescHint,
@@ -720,8 +756,172 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
     );
   }
 
-  Widget _buildTermsSection() {
-    final l10n = AppLocalizations.of(context)!;
+  Widget _buildLegalInfoSection(AppLocalizations l10n) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: context.cardColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.deepPurple.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.business, color: Colors.deepPurple, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                l10n.applySellerLegalInfoSection,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // Şirket Unvanı
+          TextFormField(
+            controller: _companyTitleController,
+            maxLength: 200,
+            decoration: InputDecoration(
+              labelText: l10n.applySellerCompanyTitleLabel,
+              hintText: l10n.applySellerCompanyTitleHint,
+              prefixIcon: const Icon(Icons.apartment),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return l10n.applySellerCompanyTitleRequired;
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+          // Vergi Numarası
+          TextFormField(
+            controller: _taxNumberController,
+            maxLength: 11,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: l10n.applySellerTaxNumberLabel,
+              hintText: l10n.applySellerTaxNumberHint,
+              prefixIcon: const Icon(Icons.tag),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return l10n.applySellerTaxNumberRequired;
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+          // Vergi Dairesi
+          TextFormField(
+            controller: _taxOfficeController,
+            maxLength: 100,
+            decoration: InputDecoration(
+              labelText: l10n.applySellerTaxOfficeLabel,
+              hintText: l10n.applySellerTaxOfficeHint,
+              prefixIcon: const Icon(Icons.account_balance),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return l10n.applySellerTaxOfficeRequired;
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+          // Adres
+          TextFormField(
+            controller: _addressController,
+            maxLines: 3,
+            maxLength: 300,
+            decoration: InputDecoration(
+              labelText: l10n.applySellerAddressLabel,
+              hintText: l10n.applySellerAddressHint,
+              alignLabelWithHint: true,
+              prefixIcon: const Padding(
+                padding: EdgeInsets.only(bottom: 40),
+                child: Icon(Icons.location_on),
+              ),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return l10n.applySellerAddressRequired;
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+          // İletişim Bilgisi
+          TextFormField(
+            controller: _contactInfoController,
+            maxLength: 100,
+            keyboardType: TextInputType.emailAddress,
+            decoration: InputDecoration(
+              labelText: l10n.applySellerContactInfoLabel,
+              hintText: l10n.applySellerContactInfoHint,
+              prefixIcon: const Icon(Icons.contact_phone),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return l10n.applySellerContactInfoRequired;
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+          // IBAN
+          TextFormField(
+            controller: _ibanController,
+            maxLength: 32,
+            textCapitalization: TextCapitalization.characters,
+            decoration: InputDecoration(
+              labelText: l10n.applySellerIbanLabel,
+              hintText: l10n.applySellerIbanHint,
+              prefixIcon: const Icon(Icons.credit_card),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return l10n.applySellerIbanRequired;
+              }
+              final iban = value.trim().toUpperCase().replaceAll(' ', '');
+              if (!iban.startsWith('TR') || iban.length < 10) {
+                return l10n.applySellerIbanInvalid;
+              }
+              return null;
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTermsSection(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -774,7 +974,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                       const SizedBox(width: 4),
                       Text(
                         l10n.applySellerTermsAccepted,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.green,
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
@@ -818,10 +1018,45 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                   Expanded(
                     child: Text(
                       l10n.applySellerTermsRead,
-                      style: TextStyle(fontWeight: FontWeight.w500),
+                      style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
                   ),
                   const Icon(Icons.arrow_forward_ios, size: 16),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // KVKK onayı
+          InkWell(
+            onTap: () => setState(() => _kvkkAccepted = !_kvkkAccepted),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _kvkkAccepted
+                    ? Colors.blue.withOpacity(0.05)
+                    : Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _kvkkAccepted
+                      ? Colors.blue.withOpacity(0.3)
+                      : Theme.of(context).dividerColor,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: _kvkkAccepted,
+                    onChanged: (value) => setState(() => _kvkkAccepted = value ?? false),
+                    activeColor: Colors.blue,
+                  ),
+                  const Expanded(
+                    child: Text(
+                      'Kişisel verilerimin işlenmesine ilişkin KVKK aydınlatma metnini okudum ve onaylıyorum.',
+                      style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -831,9 +1066,8 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
     );
   }
 
-  Widget _buildSubmitButton() {
-    final l10n = AppLocalizations.of(context)!;
-    final isReady = _nameController.text.trim().isNotEmpty && _acceptedTerms;
+  Widget _buildSubmitButton(AppLocalizations l10n) {
+    final isReady = _nameController.text.trim().isNotEmpty && _acceptedTerms && _kvkkAccepted;
 
     return Container(
       width: double.infinity,
@@ -876,7 +1110,7 @@ class _ApplySellerScreenState extends ConsumerState<ApplySellerScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.rocket_launch,
+                    Icons.send,
                     color: isReady ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 8),

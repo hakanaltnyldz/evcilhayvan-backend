@@ -113,6 +113,33 @@ export async function getNearbyVets(req, res) {
 }
 
 // GET /api/veterinaries/google-search  (artık OSM Overpass kullanıyor)
+export async function getMyClinic(req, res) {
+  try {
+    const userId = req.user.sub;
+
+    let vet = await Veterinary.findOne({
+      userId,
+      isActive: true,
+    }).sort({ updatedAt: -1 });
+
+    if (!vet) {
+      vet = await Veterinary.findOne({
+        registeredBy: userId,
+        isActive: true,
+      }).sort({ updatedAt: -1 });
+    }
+
+    if (!vet) {
+      return sendError(res, 404, "Size ait klinik bulunamadi", "vet_not_found");
+    }
+
+    return sendOk(res, 200, { vet });
+  } catch (err) {
+    console.error("[getMyClinic]", err);
+    return sendError(res, 500, "Klinik bilgisi alinamadi", "internal_error", err.message);
+  }
+}
+
 export async function googleSearchVets(req, res) {
   try {
     const { lat, lng, radiusKm = 5 } = req.query;
@@ -381,6 +408,20 @@ export async function claimVetProfile(req, res) {
     }
     console.error("[claimVetProfile]", err);
     return sendError(res, 500, "Profil sahiplenme basarisiz", "internal_error", err.message);
+  }
+}
+
+// GET /api/veterinaries/my-claim-status
+// Giriş yapan kullanıcının tüm klinik sahiplenme taleplerini getir
+export async function getMyClaimStatus(req, res) {
+  try {
+    const userId = req.user.sub;
+    const claims = await VetClaimRequest.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate("vetId", "name address");
+    return sendOk(res, 200, { claims });
+  } catch (err) {
+    return sendError(res, 500, "Talep durumu alinamadi", "internal_error", err.message);
   }
 }
 

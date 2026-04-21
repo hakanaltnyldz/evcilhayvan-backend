@@ -14,6 +14,7 @@ import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 import '../../domain/models/order_model.dart';
 import '../../data/order_repository.dart';
+import 'order_detail_screen.dart' show orderDetailProvider;
 import '../../../reviews/presentation/screens/add_review_screen.dart';
 import '../../../reviews/domain/models/review_model.dart';
 import '../../../auth/domain/user_model.dart';
@@ -21,12 +22,36 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_refresh_indicator.dart';
+import 'dart:async';
+import 'package:evcilhayvan_mobil2/core/providers/socket_provider.dart';
 
-class MyOrdersScreen extends ConsumerWidget {
+class MyOrdersScreen extends ConsumerStatefulWidget {
   const MyOrdersScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyOrdersScreen> createState() => _MyOrdersScreenState();
+}
+
+class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
+  StreamSubscription<dynamic>? _orderStatusSub;
+
+  @override
+  void initState() {
+    super.initState();
+    final socketService = ref.read(socketServiceProvider);
+    _orderStatusSub = socketService.onOrderStatusUpdated.listen((_) {
+      if (mounted) ref.invalidate(myOrdersProvider);
+    });
+  }
+
+  @override
+  void dispose() {
+    _orderStatusSub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final ordersAsync = ref.watch(myOrdersProvider);
 
@@ -195,6 +220,7 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
     try {
       await ApiClient().dio.patch('/api/orders/${widget.order.id}/cancel');
       ref.invalidate(myOrdersProvider);
+      ref.invalidate(orderDetailProvider(widget.order.id));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -344,9 +370,28 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                         l10n.orderItemCount(order.items.length),
                         style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                       ),
-                      Icon(
-                        _expanded ? Icons.expand_less : Icons.expand_more,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextButton(
+                            onPressed: () => context.pushNamed(
+                              'order-detail',
+                              pathParameters: {'id': order.id},
+                            ),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              foregroundColor: AppPalette.storePrimary,
+                            ),
+                            child: const Text('Detay', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            _expanded ? Icons.expand_less : Icons.expand_more,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ],
                       ),
                     ],
                   ),

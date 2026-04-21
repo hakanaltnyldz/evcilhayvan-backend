@@ -190,6 +190,10 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
       }
 
       ref.invalidate(mySitterProfileProvider);
+      ref.invalidate(sitterListProvider);
+      if (widget.existing != null) {
+        ref.invalidate(sitterDetailProvider(widget.existing!.id));
+      }
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(

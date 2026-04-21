@@ -7,7 +7,7 @@ import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/config/app_config.dart';
 import '../../domain/models/sitter_booking_model.dart';
-import 'care_report_screen.dart';
+import 'package:go_router/go_router.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 
 final _careReportsProvider = FutureProvider.autoDispose.family<List<Map<String, dynamic>>, String>((ref, bookingId) async {
@@ -70,8 +70,9 @@ class BookingTimelineScreen extends ConsumerWidget {
               onPressed: () async {
                 final reports = reportsAsync.valueOrNull ?? [];
                 final nextDay = reports.isEmpty ? 1 : (reports.last['day'] as int? ?? 0) + 1;
-                final result = await Navigator.of(context).push<bool>(
-                  MaterialPageRoute(builder: (_) => CareReportScreen(booking: booking, dayNumber: nextDay)),
+                final result = await context.pushNamed<bool>(
+                  'care-report',
+                  extra: {'booking': booking, 'dayNumber': nextDay},
                 );
                 if (result == true) ref.invalidate(_careReportsProvider(booking.id));
               },

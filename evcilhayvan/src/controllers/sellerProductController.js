@@ -343,7 +343,7 @@ export async function getSellerStats(req, res) {
     const totalValue = products.reduce((sum, p) => sum + ((p.price || 0) * (p.stock || 0)), 0);
 
     // Sipariş istatistikleri
-    const [orderStatusAgg, topProductsAgg, totalOrdersAgg] = await Promise.all([
+    const [orderStatusAgg, topProductsAgg, totalOrdersAgg, categoryBreakdownAgg] = await Promise.all([
       // Durum dağılımı
       Order.aggregate([
         { $match: { "items.product": { $in: productIds } } },
@@ -368,6 +368,25 @@ export async function getSellerStats(req, res) {
       Order.aggregate([
         { $match: { "items.product": { $in: productIds }, status: { $ne: "cancelled" } } },
         { $group: { _id: null, total: { $sum: 1 }, totalRevenue: { $sum: "$totalAmount" } } },
+      ]),
+      // Kategori bazlı satış dağılımı
+      Order.aggregate([
+        { $match: { "items.product": { $in: productIds }, status: { $ne: "cancelled" } } },
+        { $unwind: "$items" },
+        { $match: { "items.product": { $in: productIds } } },
+        { $lookup: { from: "products", localField: "items.product", foreignField: "_id", as: "prod" } },
+        { $unwind: { path: "$prod", preserveNullAndEmptyArrays: true } },
+        { $lookup: { from: "categories", localField: "prod.category", foreignField: "_id", as: "cat" } },
+        {
+          $group: {
+            _id: { $ifNull: [{ $arrayElemAt: ["$cat.name", 0] }, "Kategorisiz"] },
+            soldCount: { $sum: "$items.quantity" },
+            revenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } },
+          },
+        },
+        { $sort: { revenue: -1 } },
+        { $limit: 8 },
+        { $project: { _id: 0, category: "$_id", soldCount: 1, revenue: { $round: ["$revenue", 2] } } },
       ]),
     ]);
 
@@ -401,6 +420,7 @@ export async function getSellerStats(req, res) {
       orderStatusBreakdown,
       topProducts: topProductsAgg,
       avgOrderValue,
+      categoryBreakdown: categoryBreakdownAgg,
     });
   } catch (err) {
     console.error("[getSellerStats] error", err);

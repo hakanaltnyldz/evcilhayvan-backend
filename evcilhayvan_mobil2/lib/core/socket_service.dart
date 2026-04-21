@@ -141,6 +141,28 @@ class SitterWalkEvent {
   SitterWalkEvent({required this.bookingId, required this.started});
 }
 
+class OrderStatusEvent {
+  final String orderId;
+  final String status;
+  final String? trackingNumber;
+  final String? carrier;
+
+  OrderStatusEvent({
+    required this.orderId,
+    required this.status,
+    this.trackingNumber,
+    this.carrier,
+  });
+
+  factory OrderStatusEvent.fromJson(Map<String, dynamic> json) =>
+      OrderStatusEvent(
+        orderId: json['orderId']?.toString() ?? '',
+        status: json['status']?.toString() ?? '',
+        trackingNumber: json['trackingNumber']?.toString(),
+        carrier: json['carrier']?.toString(),
+      );
+}
+
 class SitterLocationOfflineEvent {
   final String bookingId;
   final double? lastLat;
@@ -203,6 +225,8 @@ class SocketService {
       StreamController<Map<String, dynamic>>.broadcast();
   final _careReportController =
       StreamController<Map<String, dynamic>>.broadcast();
+  final _orderStatusController =
+      StreamController<OrderStatusEvent>.broadcast();
 
   // Public streams
   Stream<MatchRequestEvent> get onMatchRequest =>
@@ -225,6 +249,8 @@ class SocketService {
   Stream<Map<String, dynamic>> get onBookingUpdate =>
       _bookingUpdateController.stream;
   Stream<Map<String, dynamic>> get onCareReport => _careReportController.stream;
+  Stream<OrderStatusEvent> get onOrderStatusUpdated =>
+      _orderStatusController.stream;
 
   bool get isConnected => _socket?.connected ?? false;
   String? get currentUserId => _currentUserId;
@@ -458,6 +484,18 @@ class SocketService {
         _careReportController.add(map);
       } catch (e) {
         debugPrint('[Socket] booking:care_report parse error: $e');
+      }
+    });
+
+    // Order status updated (sipariş durum güncellemesi)
+    socket.on('order_status_updated', (data) {
+      try {
+        final map = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
+        _orderStatusController.add(OrderStatusEvent.fromJson(map));
+      } catch (e) {
+        debugPrint('[Socket] order_status_updated parse error: $e');
       }
     });
   }

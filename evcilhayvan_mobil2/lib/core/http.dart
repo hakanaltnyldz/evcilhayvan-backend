@@ -91,8 +91,19 @@ class ApiClient {
     ));
 
     if (kDebugMode) {
+      // Güvenli loglama: token ve hassas header'lar ASLA loglanmaz
       dio.interceptors.add(
         InterceptorsWrapper(
+          onRequest: (options, handler) {
+            debugPrint('[DIO] ${options.method} ${options.uri}');
+            return handler.next(options);
+          },
+          onResponse: (response, handler) {
+            debugPrint(
+              '[DIO] ${response.requestOptions.method} ${response.requestOptions.uri} -> ${response.statusCode}',
+            );
+            return handler.next(response);
+          },
           onError: (error, handler) {
             final status = error.response?.statusCode;
             final body = error.response?.data;
@@ -100,21 +111,15 @@ class ApiClient {
               '[DIO][ERROR] ${error.requestOptions.method} ${error.requestOptions.uri} -> ${status ?? 'n/a'}',
             );
             if (body != null) {
-              debugPrint('[DIO][ERROR][BODY] ${body.toString()}');
+              // Sadece hata mesajını logla, tüm body'yi değil
+              final msg = body is Map ? body['message'] ?? body['error'] : body.toString();
+              debugPrint('[DIO][ERROR] $msg');
             }
             return handler.next(error);
           },
         ),
       );
-      dio.interceptors.add(
-        LogInterceptor(
-          request: true,
-          requestBody: true,
-          responseBody: true,
-          error: true,
-          logPrint: (obj) => debugPrint(obj.toString()),
-        ),
-      );
+      // LogInterceptor KALDIRILDI — Authorization header'ını açıkta logluyor
     }
   }
 

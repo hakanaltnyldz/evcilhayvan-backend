@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
@@ -396,8 +397,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Expanded(
                     child: TabBarView(
                       children: [
-                        _AdvertsList(provider: adoptionPaginatedProvider),
-                        _AdvertsList(provider: matingPaginatedProvider),
+                        _AdvertsList(
+                          provider: adoptionPaginatedProvider,
+                          hasActiveFilters: _filters.activeCount > 0,
+                          onClearFilters: () =>
+                              _applyFilter(const _HomeAdvertFilters()),
+                        ),
+                        _AdvertsList(
+                          provider: matingPaginatedProvider,
+                          hasActiveFilters: _filters.activeCount > 0,
+                          onClearFilters: () =>
+                              _applyFilter(const _HomeAdvertFilters()),
+                        ),
                       ],
                     ),
                   ),
@@ -963,9 +974,15 @@ class _ShortcutCard extends StatelessWidget {
 }
 
 class _AdvertsList extends ConsumerStatefulWidget {
-  const _AdvertsList({required this.provider});
+  const _AdvertsList({
+    required this.provider,
+    required this.hasActiveFilters,
+    required this.onClearFilters,
+  });
   final StateNotifierProvider<PaginatedAdvertsNotifier, PaginatedAdvertsState>
   provider;
+  final bool hasActiveFilters;
+  final VoidCallback onClearFilters;
 
   @override
   ConsumerState<_AdvertsList> createState() => _AdvertsListState();
@@ -1010,12 +1027,26 @@ class _AdvertsListState extends ConsumerState<_AdvertsList> {
 
     if (state.items.isEmpty) {
       return EmptyState(
-        icon: Icons.pets,
+        icon: Icons.travel_explore_rounded,
         title: AppLocalizations.of(context)!.homeEmptyListings,
-        subtitle: AppLocalizations.of(context)!.homeEmptyListingsDesc,
+        subtitle: widget.hasActiveFilters
+            ? 'Bu filtrelerle ilan bulunamadi. Farkli bir kombinasyon dene veya filtreleri temizle.'
+            : AppLocalizations.of(context)!.homeEmptyListingsDesc,
+        action: widget.hasActiveFilters
+            ? FilledButton.icon(
+                onPressed: widget.onClearFilters,
+                icon: const Icon(Icons.filter_alt_off_rounded),
+                label: Text(AppLocalizations.of(context)!.homeClearFilter),
+              )
+            : null,
       );
     }
 
+    final featuredItems = state.items.take(4).toList(growable: false);
+    final hasFeatured = featuredItems.length >= 3;
+    final regularItems = hasFeatured
+        ? state.items.skip(featuredItems.length).toList(growable: false)
+        : state.items;
     final showBottomLoader = state.page > 0 && state.isLoading;
 
     return RefreshIndicator(
@@ -1028,15 +1059,23 @@ class _AdvertsListState extends ConsumerState<_AdvertsList> {
         physics: const BouncingScrollPhysics(
           parent: AlwaysScrollableScrollPhysics(),
         ),
-        itemCount: state.items.length + (showBottomLoader ? 1 : 0),
+        itemCount:
+            regularItems.length +
+            (hasFeatured ? 1 : 0) +
+            (showBottomLoader ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index == state.items.length) {
+          if (hasFeatured && index == 0) {
+            return _FeaturedAdvertsCarousel(items: featuredItems);
+          }
+
+          final adjustedIndex = index - (hasFeatured ? 1 : 0);
+          if (adjustedIndex == regularItems.length) {
             return const Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
               child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
             );
           }
-          final pet = state.items[index];
+          final pet = regularItems[adjustedIndex];
           return PetCard(
                 pet: pet,
                 onTap: () => context.pushNamed(
@@ -1046,11 +1085,242 @@ class _AdvertsListState extends ConsumerState<_AdvertsList> {
               )
               .animate(
                 key: ValueKey(pet.id),
-                delay: Duration(milliseconds: (index * 55).clamp(0, 440)),
+                delay: Duration(
+                  milliseconds: (adjustedIndex * 55).clamp(0, 440),
+                ),
               )
               .fadeIn(duration: 280.ms, curve: Curves.easeOut)
               .slideY(begin: 0.07, duration: 280.ms, curve: Curves.easeOut);
         },
+      ),
+    );
+  }
+}
+
+class _FeaturedAdvertsCarousel extends StatelessWidget {
+  const _FeaturedAdvertsCarousel({required this.items});
+
+  final List<Pet> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 10, 8, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD8F3DC),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: Color(0xFF2D6A4F),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'One cikan ilanlar',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Text(
+                      'Hizli karar vermek icin editor secimi kartlar.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: 228,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final pet = items[index];
+                return _FeaturedAdvertCard(pet: pet);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeaturedAdvertCard extends StatelessWidget {
+  const _FeaturedAdvertCard({required this.pet});
+
+  final Pet pet;
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = pet.photos.isNotEmpty
+        ? '${apiBaseUrl}${pet.photos.first}'
+        : null;
+
+    return InteractiveScale(
+      onTap: () =>
+          context.pushNamed('pet-detail', pathParameters: {'id': pet.id}),
+      child: Container(
+        width: 284,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(26),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF2D6A4F).withOpacity(0.14),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (imageUrl != null)
+              Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildFallback(),
+              )
+            else
+              _buildFallback(),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.08),
+                    Colors.black.withOpacity(0.72),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: 16,
+              left: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  pet.advertType == 'mating' ? 'Eslestirme' : 'Sahiplendirme',
+                  style: const TextStyle(
+                    color: Color(0xFF1B4332),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 18,
+              right: 18,
+              bottom: 18,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    pet.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    pet.breed,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _featuredInfoChip(
+                        icon: Icons.cake_outlined,
+                        label: '${pet.ageMonths} ay',
+                      ),
+                      _featuredInfoChip(
+                        icon: Icons.verified_outlined,
+                        label: pet.vaccinated ? 'Asili' : 'Asi bekliyor',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ).animate().fadeIn(duration: 280.ms).slideX(begin: 0.08, duration: 280.ms);
+  }
+
+  Widget _buildFallback() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF1B4332), Color(0xFF2D6A4F)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: const Center(
+        child: Icon(Icons.pets_rounded, color: Colors.white54, size: 72),
+      ),
+    );
+  }
+
+  Widget _featuredInfoChip({required IconData icon, required String label}) {
+    return Builder(
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.18),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: Colors.white.withOpacity(0.18)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: Colors.white),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

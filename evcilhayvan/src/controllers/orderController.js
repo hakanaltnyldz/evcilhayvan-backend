@@ -497,10 +497,13 @@ export async function getSellerOrders(req, res) {
       const items = order.items.filter(item =>
         productIds.some(pid => pid.toString() === item.product?._id?.toString())
       );
+      const containsOnlySellerItems = items.length === order.items.length;
       return {
         ...order,
         items,
         sellerTotal: items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+        containsOnlySellerItems,
+        sellerCanResolveReturn: containsOnlySellerItems,
       };
     });
 
@@ -569,6 +572,19 @@ export async function updateOrderStatus(req, res) {
       order.paymentStatus = "paid";
     }
     await order.save();
+
+    // Real-time order status update via Socket.IO
+    if (order.userId) {
+      const io = req.app.get("io");
+      if (io) {
+        io.to(`user_${order.userId}`).emit("order_status_updated", {
+          orderId: order._id.toString(),
+          status,
+          trackingNumber: order.trackingNumber,
+          carrier: order.carrier,
+        });
+      }
+    }
 
     await recordAudit("order.status_update", {
       userId: sellerId,
@@ -736,6 +752,143 @@ export async function getSellerOrderStats(req, res) {
   } catch (err) {
     console.error("[getSellerOrderStats] error", err);
     return sendError(res, 500, "Istatistikler alinamadi", "internal_error", err.message);
+  }
+}
+
+// ─── İade Talebi ──────────────────────────────────────────────────────────────
+
+// POST /api/orders/:id/return-request
+export async function createReturnRequest(req, res) {
+  try {
+    const userId = req.user?.sub;
+    const { id } = req.params;
+    const { reason, description, photos } = req.body;
+
+    if (!reason) return sendError(res, 400, 'İade nedeni zorunlu', 'validation_error');
+
+    const order = await Order.findById(id);
+    if (!order) return sendError(res, 404, 'Sipariş bulunamadı', 'not_found');
+
+    // Sadece kendi siparişi için iade talebi oluşturabilir
+    if (order.user?.toString() !== userId) {
+      return sendError(res, 403, 'Bu sipariş size ait değil', 'forbidden');
+    }
+
+    // Sadece teslim edilmiş siparişler için iade yapılabilir
+    if (order.status !== 'delivered') {
+      return sendError(res, 400, 'Yalnızca teslim edilmiş siparişler için iade talebi oluşturulabilir', 'invalid_status');
+    }
+
+    // Tekrar talep kontrolü
+    if (order.returnRequest?.status === 'pending' || order.returnRequest?.status === 'approved') {
+      return sendError(res, 409, 'Bu sipariş için zaten iade talebi mevcut', 'duplicate');
+    }
+
+    order.returnRequest = {
+      reason,
+      description: description || '',
+      photos: Array.isArray(photos) ? photos.slice(0, 3) : [],
+      status: 'pending',
+      requestedAt: new Date(),
+    };
+
+    await order.save();
+
+    await recordAudit({
+      action: 'return_request_created',
+      userId,
+      targetType: 'order',
+      targetId: order._id,
+      details: { reason },
+    });
+
+    return sendOk(res, 201, { order, message: 'İade talebi oluşturuldu' });
+  } catch (err) {
+    console.error('[createReturnRequest] error', err);
+    return sendError(res, 500, 'İade talebi oluşturulamadı', 'internal_error', err.message);
+  }
+}
+
+// GET /api/orders/returns  — Kullanıcının iade taleplerini listele
+export async function getMyReturnRequests(req, res) {
+  try {
+    const userId = req.user?.sub;
+    const orders = await Order.find({
+      user: userId,
+      'returnRequest.status': { $exists: true },
+    }).select('_id items totalAmount createdAt returnRequest status').sort({ createdAt: -1 });
+
+    return sendOk(res, 200, { returns: orders });
+  } catch (err) {
+    console.error('[getMyReturnRequests] error', err);
+    return sendError(res, 500, 'İade talepleri alınamadı', 'internal_error', err.message);
+  }
+}
+
+// PATCH /api/admin/orders/:id/return-status  — Admin iade onay/red
+export async function resolveReturnRequest(req, res) {
+  try {
+    const { id } = req.params;
+    const { status, note } = req.body;
+    const actorRole = req.user?.role;
+    const actorId = req.user?.sub;
+
+    if (!['approved', 'rejected'].includes(status)) {
+      return sendError(res, 400, 'Geçersiz durum. approved veya rejected olmalı', 'validation_error');
+    }
+
+    const order = await Order.findById(id);
+    if (!order) return sendError(res, 404, 'Sipariş bulunamadı', 'not_found');
+    if (!order.returnRequest) return sendError(res, 400, 'Bu siparişte iade talebi yok', 'not_found');
+
+    if (actorRole === 'seller') {
+      const sellerProducts = await Product.find({ seller: actorId }).select('_id');
+      const sellerProductIds = new Set(
+        sellerProducts.map((product) => product._id.toString())
+      );
+      const orderProductIds = order.items
+        .map((item) => item.product?.toString())
+        .filter(Boolean);
+      const matchingCount = orderProductIds.filter((productId) =>
+        sellerProductIds.has(productId)
+      ).length;
+
+      if (matchingCount === 0) {
+        return sendError(res, 403, 'Bu iade talebini yonetme yetkiniz yok', 'forbidden');
+      }
+
+      if (matchingCount !== orderProductIds.length) {
+        return sendError(
+          res,
+          400,
+          'Coklu saticili siparis iadesi admin tarafindan yonetilmeli',
+          'seller_return_requires_admin'
+        );
+      }
+    }
+
+    order.returnRequest.status = status;
+    order.returnRequest.resolvedAt = new Date();
+    order.returnRequest.resolvedNote = note || '';
+
+    if (status === 'approved') {
+      order.paymentStatus = 'refunded';
+    }
+
+    await order.save();
+
+    await recordAudit({
+      action: `return_request_${status}`,
+      userId: req.user?.sub,
+      targetType: 'order',
+      targetId: order._id,
+      details: { note },
+    });
+
+    return sendOk(res, 200, { order, message: `İade talebi ${status === 'approved' ? 'onaylandı' : 'reddedildi'}` });
+  } catch (err) {
+    console.error('[resolveReturnRequest] error', err);
+    return sendError(res, 500, 'İade talebi güncellenemedi', 'internal_error', err.message);
   }
 }
 

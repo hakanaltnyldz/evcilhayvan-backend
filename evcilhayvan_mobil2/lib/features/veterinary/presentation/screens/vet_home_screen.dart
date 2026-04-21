@@ -30,13 +30,18 @@ class VetHomeScreen extends ConsumerStatefulWidget {
   ConsumerState<VetHomeScreen> createState() => _VetHomeScreenState();
 }
 
-class _VetHomeScreenState extends ConsumerState<VetHomeScreen> with SingleTickerProviderStateMixin {
+class _VetHomeScreenState extends ConsumerState<VetHomeScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this, initialIndex: widget.initialTabIndex.clamp(0, 3));
+    _tabController = TabController(
+      length: 4,
+      vsync: this,
+      initialIndex: widget.initialTabIndex.clamp(0, 3),
+    );
   }
 
   @override
@@ -56,16 +61,31 @@ class _VetHomeScreenState extends ConsumerState<VetHomeScreen> with SingleTicker
         backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: Text(AppLocalizations.of(context)!.vetTitle, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text(
+          AppLocalizations.of(context)!.vetTitle,
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white60,
           indicatorColor: Colors.white,
           tabs: [
-            Tab(icon: const Icon(Icons.search), text: AppLocalizations.of(context)!.vetHomeTabSearch),
-            Tab(icon: const Icon(Icons.calendar_today), text: AppLocalizations.of(context)!.vetHomeTabAppointments),
-            Tab(icon: const Icon(Icons.vaccines), text: AppLocalizations.of(context)!.vetHomeTabVaccine),
+            Tab(
+              icon: const Icon(Icons.search),
+              text: AppLocalizations.of(context)!.vetHomeTabSearch,
+            ),
+            Tab(
+              icon: const Icon(Icons.calendar_today),
+              text: AppLocalizations.of(context)!.vetHomeTabAppointments,
+            ),
+            Tab(
+              icon: const Icon(Icons.vaccines),
+              text: AppLocalizations.of(context)!.vetHomeTabVaccine,
+            ),
             const Tab(icon: Icon(Icons.local_hospital_rounded), text: 'Klinik'),
           ],
         ),
@@ -101,26 +121,51 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
   }
 
   Future<void> _loadNearbyVets() async {
-    setState(() { _loadingVets = true; _errorVets = false; });
+    setState(() {
+      _loadingVets = true;
+      _errorVets = false;
+    });
     try {
       LocationPermission perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.denied) {
         perm = await Geolocator.requestPermission();
       }
-      if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
-        setState(() { _locationDenied = true; _loadingVets = false; });
+      if (perm == LocationPermission.denied ||
+          perm == LocationPermission.deniedForever) {
+        setState(() {
+          _locationDenied = true;
+          _loadingVets = false;
+        });
         return;
       }
-      final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
+      final pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+      );
       final repo = ref.read(veterinaryRepositoryProvider);
       final isGuest = ref.read(authProvider) == null;
       // Guest modda public endpoint kullan; giriş yapılmışsa Google Places ile upsert et
       final vets = isGuest
-          ? await repo.searchVets(lat: pos.latitude, lng: pos.longitude, radiusKm: kDefaultVetRadiusKm)
-          : await repo.googleSearch(lat: pos.latitude, lng: pos.longitude, radiusKm: kDefaultVetRadiusKm);
-      if (mounted) setState(() { _nearbyVets = vets; _loadingVets = false; });
+          ? await repo.searchVets(
+              lat: pos.latitude,
+              lng: pos.longitude,
+              radiusKm: kDefaultVetRadiusKm,
+            )
+          : await repo.googleSearch(
+              lat: pos.latitude,
+              lng: pos.longitude,
+              radiusKm: kDefaultVetRadiusKm,
+            );
+      if (mounted)
+        setState(() {
+          _nearbyVets = vets;
+          _loadingVets = false;
+        });
     } catch (_) {
-      if (mounted) setState(() { _loadingVets = false; _errorVets = true; });
+      if (mounted)
+        setState(() {
+          _loadingVets = false;
+          _errorVets = true;
+        });
     }
   }
 
@@ -141,9 +186,20 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
         onTap: () => context.pushNamed('vet-register'),
       ),
       _QuickActionData(
+        icon: Icons.assignment_ind_outlined,
+        label: 'Talep Durumum',
+        onTap: () => context.pushNamed('vet-claim-status'),
+      ),
+      _QuickActionData(
         icon: Icons.map,
         label: l10n.vetHomeGoogleSearch,
-        onTap: () => context.pushNamed('vet-search', extra: {'googleSearch': true}),
+        onTap: () =>
+            context.pushNamed('vet-search', extra: {'googleSearch': true}),
+      ),
+      _QuickActionData(
+        icon: Icons.dashboard_customize_outlined,
+        label: 'Klinik Panelim',
+        onTap: () => context.pushNamed('vet-clinic-panel'),
       ),
       _QuickActionData(
         icon: Icons.notifications_active,
@@ -166,14 +222,23 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
                 color: context.cardColor,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4)),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
                 ],
               ),
               child: Row(
                 children: [
                   Icon(Icons.search, color: Colors.grey.shade600),
                   const SizedBox(width: 12),
-                  Text(l10n.vetHomeSearchHint, style: theme.textTheme.bodyLarge?.copyWith(color: Colors.grey.shade600)),
+                  Text(
+                    l10n.vetHomeSearchHint,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -184,17 +249,11 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
           Row(
             children: [
               Expanded(
-                child: _QuickActionCard(
-                  data: quickActions[0],
-                  index: 0,
-                ),
+                child: _QuickActionCard(data: quickActions[0], index: 0),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _QuickActionCard(
-                  data: quickActions[1],
-                  index: 1,
-                ),
+                child: _QuickActionCard(data: quickActions[1], index: 1),
               ),
             ],
           ),
@@ -202,24 +261,35 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
           Row(
             children: [
               Expanded(
-                child: _QuickActionCard(
-                  data: quickActions[2],
-                  index: 2,
-                ),
+                child: _QuickActionCard(data: quickActions[2], index: 2),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _QuickActionCard(
-                  data: quickActions[3],
-                  index: 3,
-                ),
+                child: _QuickActionCard(data: quickActions[3], index: 3),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _QuickActionCard(data: quickActions[4], index: 4),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _QuickActionCard(data: quickActions[5], index: 5),
               ),
             ],
           ),
           const SizedBox(height: 24),
 
           // Yakin veterinerler
-          Text(l10n.vetHomeNearbyTitle, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            l10n.vetHomeNearbyTitle,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 12),
           if (_loadingVets)
             const Center(child: PawLoading())
@@ -258,15 +328,22 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
               itemBuilder: (context, index) {
                 final vet = _nearbyVets![index];
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: VetCard(
-                    vet: vet,
-                    onTap: () => context.pushNamed('vet-detail', pathParameters: {'id': vet.id}),
-                  ),
-                )
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: VetCard(
+                        vet: vet,
+                        onTap: () => context.pushNamed(
+                          'vet-detail',
+                          pathParameters: {'id': vet.id},
+                        ),
+                      ),
+                    )
                     .animate(delay: Duration(milliseconds: index * 60))
                     .fadeIn(duration: 280.ms)
-                    .slideY(begin: 0.05, duration: 280.ms, curve: Curves.easeOut);
+                    .slideY(
+                      begin: 0.05,
+                      duration: 280.ms,
+                      curve: Curves.easeOut,
+                    );
               },
             ),
         ],
@@ -280,7 +357,11 @@ class _QuickActionData {
   final String label;
   final VoidCallback onTap;
 
-  const _QuickActionData({required this.icon, required this.label, required this.onTap});
+  const _QuickActionData({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 }
 
 class _QuickActionCard extends StatelessWidget {
@@ -292,41 +373,47 @@ class _QuickActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InteractiveScale(
-      onTap: data.onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: context.cardColor,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF2D6A4F).withOpacity(0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
+          onTap: data.onTap,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: context.cardColor,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2D6A4F).withOpacity(0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: const Color(0xFFD8F3DC),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(data.icon, color: const Color(0xFF2D6A4F), size: 24),
+            child: Column(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD8F3DC),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    data.icon,
+                    color: const Color(0xFF2D6A4F),
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  data.label,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              data.label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    )
+          ),
+        )
         .animate(delay: Duration(milliseconds: 80 * index))
         .fadeIn(duration: 300.ms)
         .slideY(begin: 0.1, duration: 300.ms, curve: Curves.easeOut);
@@ -390,8 +477,8 @@ class _AppointmentsTabState extends ConsumerState<_AppointmentsTab> {
           eventMap.putIfAbsent(day, () => []).add(apt);
         }
 
-        List<dynamic> Function(DateTime) getEventsForDay =
-            (day) => eventMap[_normalizeDay(day)] ?? [];
+        List<dynamic> Function(DateTime) getEventsForDay = (day) =>
+            eventMap[_normalizeDay(day)] ?? [];
 
         final selectedDay = _selectedDay ?? _normalizeDay(DateTime.now());
         final visibleAppointments = _selectedDay != null
@@ -407,7 +494,8 @@ class _AppointmentsTabState extends ConsumerState<_AppointmentsTab> {
                   firstDay: DateTime.now().subtract(const Duration(days: 365)),
                   lastDay: DateTime.now().add(const Duration(days: 365)),
                   focusedDay: _focusedDay,
-                  selectedDayPredicate: (day) => _selectedDay != null &&
+                  selectedDayPredicate: (day) =>
+                      _selectedDay != null &&
                       _normalizeDay(day) == _normalizeDay(_selectedDay!),
                   eventLoader: getEventsForDay,
                   calendarFormat: CalendarFormat.month,
@@ -415,8 +503,10 @@ class _AppointmentsTabState extends ConsumerState<_AppointmentsTab> {
                   locale: 'tr_TR',
                   onDaySelected: (selected, focused) {
                     setState(() {
-                      _selectedDay = _normalizeDay(selected) == _normalizeDay(_selectedDay ?? DateTime(0))
-                          ? null  // ikinci tıklayınca seçimi kaldır
+                      _selectedDay =
+                          _normalizeDay(selected) ==
+                              _normalizeDay(_selectedDay ?? DateTime(0))
+                          ? null // ikinci tıklayınca seçimi kaldır
                           : selected;
                       _focusedDay = focused;
                     });
@@ -442,7 +532,10 @@ class _AppointmentsTabState extends ConsumerState<_AppointmentsTab> {
                   headerStyle: const HeaderStyle(
                     formatButtonVisible: false,
                     titleCentered: true,
-                    titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    titleTextStyle: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ),
@@ -452,16 +545,27 @@ class _AppointmentsTabState extends ConsumerState<_AppointmentsTab> {
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                     child: Row(
                       children: [
-                        const Icon(Icons.filter_list, size: 16, color: Color(0xFF2D6A4F)),
+                        const Icon(
+                          Icons.filter_list,
+                          size: 16,
+                          color: Color(0xFF2D6A4F),
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           '${_selectedDay!.day}.${_selectedDay!.month}.${_selectedDay!.year} — ${visibleAppointments.length} randevu',
-                          style: const TextStyle(fontSize: 13, color: Color(0xFF2D6A4F), fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF2D6A4F),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         const Spacer(),
                         GestureDetector(
                           onTap: () => setState(() => _selectedDay = null),
-                          child: const Text('Tümünü Göster', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                          child: const Text(
+                            'Tümünü Göster',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
                         ),
                       ],
                     ),
@@ -474,31 +578,40 @@ class _AppointmentsTabState extends ConsumerState<_AppointmentsTab> {
                     title: _selectedDay != null
                         ? 'Bu günde randevu yok'
                         : l10n.vetHomeApptsEmpty,
-                    subtitle: _selectedDay == null ? l10n.vetHomeApptsEmptyDesc : null,
+                    subtitle: _selectedDay == null
+                        ? l10n.vetHomeApptsEmptyDesc
+                        : null,
                   ),
                 )
               else
                 SliverPadding(
                   padding: const EdgeInsets.all(16),
                   sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final apt = visibleAppointments[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: PremiumCard(
-                            accentColor: _accentForStatus(apt.status),
-                            onTap: () => context.pushNamed('appointment-detail', pathParameters: {'id': apt.id}),
-                            padding: EdgeInsets.zero,
-                            child: AppointmentCard(appointment: apt, onTap: null),
-                          ),
-                        )
-                            .animate(delay: Duration(milliseconds: index * 60))
-                            .fadeIn(duration: 280.ms)
-                            .slideY(begin: 0.05, duration: 280.ms, curve: Curves.easeOut);
-                      },
-                      childCount: visibleAppointments.length,
-                    ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final apt = visibleAppointments[index];
+                      return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: PremiumCard(
+                              accentColor: _accentForStatus(apt.status),
+                              onTap: () => context.pushNamed(
+                                'appointment-detail',
+                                pathParameters: {'id': apt.id},
+                              ),
+                              padding: EdgeInsets.zero,
+                              child: AppointmentCard(
+                                appointment: apt,
+                                onTap: null,
+                              ),
+                            ),
+                          )
+                          .animate(delay: Duration(milliseconds: index * 60))
+                          .fadeIn(duration: 280.ms)
+                          .slideY(
+                            begin: 0.05,
+                            duration: 280.ms,
+                            curve: Curves.easeOut,
+                          );
+                    }, childCount: visibleAppointments.length),
                   ),
                 ),
             ],
@@ -539,7 +652,12 @@ class _VaccinationTab extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l10n.vetHomeVaccineTitle, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                l10n.vetHomeVaccineTitle,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               if (reminders.isEmpty)
                 Expanded(
@@ -556,52 +674,77 @@ class _VaccinationTab extends ConsumerWidget {
                     itemBuilder: (context, index) {
                       final r = reminders[index];
                       final isOverdue = r.isOverdue;
-                      final accentColor = isOverdue ? Colors.red : Colors.orange;
+                      final accentColor = isOverdue
+                          ? Colors.red
+                          : Colors.orange;
                       final iconColor = isOverdue ? Colors.red : Colors.orange;
 
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: PremiumCard(
-                          accentColor: accentColor,
-                          onTap: () => context.pushNamed('vaccination-calendar', pathParameters: {'petId': r.petId}),
-                          child: Row(
-                            children: [
-                              Icon(
-                                isOverdue ? Icons.warning : Icons.vaccines,
-                                color: iconColor,
-                                size: 28,
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: PremiumCard(
+                              accentColor: accentColor,
+                              onTap: () => context.pushNamed(
+                                'vaccination-calendar',
+                                pathParameters: {'petId': r.petId},
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      r.vaccineName,
-                                      style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    isOverdue ? Icons.warning : Icons.vaccines,
+                                    color: iconColor,
+                                    size: 28,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          r.vaccineName,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        ),
+                                        if (r.nextDueDate != null)
+                                          Text(
+                                            '${r.nextDueDate!.day}.${r.nextDueDate!.month}.${r.nextDueDate!.year}',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color: Colors.grey.shade600,
+                                                ),
+                                          ),
+                                      ],
                                     ),
-                                    if (r.nextDueDate != null)
-                                      Text(
-                                        '${r.nextDueDate!.day}.${r.nextDueDate!.month}.${r.nextDueDate!.year}',
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+                                  ),
+                                  Chip(
+                                    label: Text(
+                                      isOverdue
+                                          ? l10n.vetHomeVaccineOverdue
+                                          : l10n.vetHomeVaccineUpcoming,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
                                       ),
-                                  ],
-                                ),
+                                    ),
+                                    backgroundColor: accentColor,
+                                  ),
+                                ],
                               ),
-                              Chip(
-                                label: Text(
-                                  isOverdue ? l10n.vetHomeVaccineOverdue : l10n.vetHomeVaccineUpcoming,
-                                  style: const TextStyle(color: Colors.white, fontSize: 11),
-                                ),
-                                backgroundColor: accentColor,
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
+                            ),
+                          )
                           .animate(delay: Duration(milliseconds: index * 60))
                           .fadeIn(duration: 280.ms)
-                          .slideY(begin: 0.05, duration: 280.ms, curve: Curves.easeOut);
+                          .slideY(
+                            begin: 0.05,
+                            duration: 280.ms,
+                            curve: Curves.easeOut,
+                          );
                     },
                   ),
                 ),
@@ -626,7 +769,9 @@ class _GuestLockedTab extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'Bu özellik için giriş yapmalısın',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey[700]),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: Colors.grey[700]),
           ),
           const SizedBox(height: 20),
           ElevatedButton.icon(
@@ -665,58 +810,82 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
   DateTime _normalizeDay(DateTime d) => DateTime(d.year, d.month, d.day);
 
   Future<void> _load() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final repo = ref.read(appointmentRepositoryProvider);
       final result = await repo.getVetSchedule(status: _statusFilter);
       if (mounted) {
         setState(() {
-          _appointments = (result['appointments'] as List).cast<AppointmentModel>();
+          _appointments = (result['appointments'] as List)
+              .cast<AppointmentModel>();
           _vetName = result['vetName'] as String?;
           _loading = false;
         });
       }
     } catch (e) {
-      if (mounted) setState(() { _error = e.toString(); _loading = false; });
+      if (mounted)
+        setState(() {
+          _error = e.toString();
+          _loading = false;
+        });
     }
   }
 
-  Future<void> _updateStatus(AppointmentModel apt, String newStatus, {String? vetNotes}) async {
+  Future<void> _updateStatus(
+    AppointmentModel apt,
+    String newStatus, {
+    String? vetNotes,
+  }) async {
     try {
       final repo = ref.read(appointmentRepositoryProvider);
       await repo.updateStatus(apt.id, newStatus);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_statusLabel(newStatus) + ' olarak güncellendi')),
+          SnackBar(
+            content: Text(_statusLabel(newStatus) + ' olarak güncellendi'),
+          ),
         );
         _load();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Güncelleme hatası: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Güncelleme hatası: $e')));
       }
     }
   }
 
   String _statusLabel(String s) {
     switch (s) {
-      case 'confirmed': return 'Onaylandı';
-      case 'cancelled': return 'İptal edildi';
-      case 'completed': return 'Tamamlandı';
-      case 'no_show':   return 'Gelmedi';
-      default:          return s;
+      case 'confirmed':
+        return 'Onaylandı';
+      case 'cancelled':
+        return 'İptal edildi';
+      case 'completed':
+        return 'Tamamlandı';
+      case 'no_show':
+        return 'Gelmedi';
+      default:
+        return s;
     }
   }
 
   Color _statusColor(String s) {
     switch (s) {
-      case 'confirmed':  return const Color(0xFF2D6A4F);
-      case 'cancelled':  return Colors.red;
-      case 'completed':  return Colors.blue;
-      case 'no_show':    return Colors.grey;
-      default:           return Colors.orange;
+      case 'confirmed':
+        return const Color(0xFF2D6A4F);
+      case 'cancelled':
+        return Colors.red;
+      case 'completed':
+        return Colors.blue;
+      case 'no_show':
+        return Colors.grey;
+      default:
+        return Colors.orange;
     }
   }
 
@@ -726,7 +895,9 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
 
     if (_error != null) {
       // Klinik bulunamadı durumu
-      final noClinic = _error!.contains('404') || _error!.toLowerCase().contains('bulunamadi');
+      final noClinic =
+          _error!.contains('404') ||
+          _error!.toLowerCase().contains('bulunamadi');
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -740,9 +911,7 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
               ),
               const SizedBox(height: 16),
               Text(
-                noClinic
-                    ? 'Kayıtlı kliniğiniz yok'
-                    : 'Randevular yüklenemedi',
+                noClinic ? 'Kayıtlı kliniğiniz yok' : 'Randevular yüklenemedi',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: Colors.grey.shade600,
@@ -766,7 +935,9 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2D6A4F),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 )
               else
@@ -814,8 +985,11 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                     child: Row(
                       children: [
-                        const Icon(Icons.local_hospital_rounded,
-                            color: Color(0xFF2D6A4F), size: 20),
+                        const Icon(
+                          Icons.local_hospital_rounded,
+                          color: Color(0xFF2D6A4F),
+                          size: 20,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -830,7 +1004,9 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                         Text(
                           '${_appointments.length} randevu',
                           style: TextStyle(
-                              color: Colors.grey.shade500, fontSize: 12),
+                            color: Colors.grey.shade500,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
@@ -858,7 +1034,8 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                   firstDay: DateTime.now().subtract(const Duration(days: 180)),
                   lastDay: DateTime.now().add(const Duration(days: 180)),
                   focusedDay: _focusedDay,
-                  selectedDayPredicate: (day) => _selectedDay != null &&
+                  selectedDayPredicate: (day) =>
+                      _selectedDay != null &&
                       _normalizeDay(day) == _normalizeDay(_selectedDay!),
                   eventLoader: getEvents,
                   calendarFormat: CalendarFormat.twoWeeks,
@@ -869,7 +1046,8 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                   locale: 'tr_TR',
                   onDaySelected: (selected, focused) {
                     setState(() {
-                      _selectedDay = _normalizeDay(selected) ==
+                      _selectedDay =
+                          _normalizeDay(selected) ==
                               _normalizeDay(_selectedDay ?? DateTime(0))
                           ? null
                           : selected;
@@ -896,7 +1074,9 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                   headerStyle: const HeaderStyle(
                     titleCentered: true,
                     titleTextStyle: TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 15),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
                 if (_selectedDay != null)
@@ -904,24 +1084,30 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                     padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                     child: Row(
                       children: [
-                        const Icon(Icons.filter_list,
-                            size: 14, color: Color(0xFF2D6A4F)),
+                        const Icon(
+                          Icons.filter_list,
+                          size: 14,
+                          color: Color(0xFF2D6A4F),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           '${_selectedDay!.day}.${_selectedDay!.month}.${_selectedDay!.year} — ${getEvents(_selectedDay!).length} randevu',
                           style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF2D6A4F),
-                              fontWeight: FontWeight.w600),
+                            fontSize: 12,
+                            color: Color(0xFF2D6A4F),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         const Spacer(),
                         GestureDetector(
-                          onTap: () =>
-                              setState(() => _selectedDay = null),
-                          child: Text('Tümü',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade500)),
+                          onTap: () => setState(() => _selectedDay = null),
+                          child: Text(
+                            'Tümü',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -938,8 +1124,8 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                 title: _statusFilter != null
                     ? 'Bu durumda randevu yok'
                     : _selectedDay != null
-                        ? 'Bu günde randevu yok'
-                        : 'Henüz randevu alınmamış',
+                    ? 'Bu günde randevu yok'
+                    : 'Henüz randevu alınmamış',
               ),
             )
           else
@@ -965,7 +1151,9 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFF2D6A4F) : Theme.of(context).cardColor,
+          color: selected
+              ? const Color(0xFF2D6A4F)
+              : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: selected ? const Color(0xFF2D6A4F) : Colors.grey.shade300,
@@ -989,197 +1177,232 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
     final isConfirmed = apt.status == 'confirmed';
 
     return PremiumCard(
-      accentColor: statusColor,
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Üst satır: saat + durum badge
-          Row(
+          accentColor: statusColor,
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2D6A4F).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.access_time,
-                        size: 14, color: Color(0xFF2D6A4F)),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${apt.date.hour.toString().padLeft(2, '0')}:${apt.date.minute.toString().padLeft(2, '0')}',
-                      style: const TextStyle(
+              // Üst satır: saat + durum badge
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D6A4F).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.access_time,
+                          size: 14,
+                          color: Color(0xFF2D6A4F),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${apt.date.hour.toString().padLeft(2, '0')}:${apt.date.minute.toString().padLeft(2, '0')}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                            color: Color(0xFF1B4332),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${apt.date.day}.${apt.date.month}.${apt.date.year}',
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      _statusLabel(apt.status),
+                      style: TextStyle(
+                        fontSize: 11,
                         fontWeight: FontWeight.w700,
+                        color: statusColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              // Hayvan sahibi bilgisi
+              Row(
+                children: [
+                  const Icon(
+                    Icons.person_outline,
+                    size: 16,
+                    color: Color(0xFF52B788),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      apt.pet?.name != null
+                          ? '${apt.pet!.name} (${apt.pet!.species})'
+                          : 'Hayvan bilgisi yok',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
                         fontSize: 14,
-                        color: Color(0xFF1B4332),
+                      ),
+                    ),
+                  ),
+                  // Randevu türü
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        apt.type == 'online'
+                            ? Icons.videocam_rounded
+                            : Icons.local_hospital_rounded,
+                        size: 14,
+                        color: Colors.grey.shade400,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        apt.type == 'online' ? 'Online' : 'Klinikte',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              if (apt.reason != null && apt.reason!.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.chat_bubble_outline,
+                      size: 14,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        apt.reason!,
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '${apt.date.day}.${apt.date.month}.${apt.date.year}',
-                style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  _statusLabel(apt.status),
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: statusColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
+              ],
 
-          // Hayvan sahibi bilgisi
-          Row(
-            children: [
-              const Icon(Icons.person_outline,
-                  size: 16, color: Color(0xFF52B788)),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  apt.pet?.name != null
-                      ? '${apt.pet!.name} (${apt.pet!.species})'
-                      : 'Hayvan bilgisi yok',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-              // Randevu türü
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    apt.type == 'online'
-                        ? Icons.videocam_rounded
-                        : Icons.local_hospital_rounded,
-                    size: 14,
-                    color: Colors.grey.shade400,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    apt.type == 'online' ? 'Online' : 'Klinikte',
-                    style: TextStyle(
-                        fontSize: 11, color: Colors.grey.shade500),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          if (apt.reason != null && apt.reason!.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                const Icon(Icons.chat_bubble_outline,
-                    size: 14, color: Colors.grey),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    apt.reason!,
-                    style: TextStyle(
-                        color: Colors.grey.shade600, fontSize: 12),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+              // Aksiyon butonları
+              if (isPending || isConfirmed) ...[
+                const SizedBox(height: 10),
+                const Divider(height: 1),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    if (isPending) ...[
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _updateStatus(apt, 'cancelled'),
+                          icon: const Icon(Icons.close, size: 16),
+                          label: const Text(
+                            'Reddet',
+                            style: TextStyle(fontSize: 13),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.red,
+                            side: const BorderSide(color: Colors.red),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () => _updateStatus(apt, 'confirmed'),
+                          icon: const Icon(Icons.check, size: 16),
+                          label: const Text(
+                            'Onayla',
+                            style: TextStyle(fontSize: 13),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2D6A4F),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ] else if (isConfirmed) ...[
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _updateStatus(apt, 'no_show'),
+                          icon: const Icon(Icons.person_off_outlined, size: 16),
+                          label: const Text(
+                            'Gelmedi',
+                            style: TextStyle(fontSize: 13),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.grey,
+                            side: BorderSide(color: Colors.grey.shade400),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () => _updateStatus(apt, 'completed'),
+                          icon: const Icon(Icons.task_alt, size: 16),
+                          label: const Text(
+                            'Tamamlandı',
+                            style: TextStyle(fontSize: 13),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ],
-            ),
-          ],
-
-          // Aksiyon butonları
-          if (isPending || isConfirmed) ...[
-            const SizedBox(height: 10),
-            const Divider(height: 1),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                if (isPending) ...[
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _updateStatus(apt, 'cancelled'),
-                      icon: const Icon(Icons.close, size: 16),
-                      label: const Text('Reddet', style: TextStyle(fontSize: 13)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
-                        side: const BorderSide(color: Colors.red),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _updateStatus(apt, 'confirmed'),
-                      icon: const Icon(Icons.check, size: 16),
-                      label: const Text('Onayla', style: TextStyle(fontSize: 13)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2D6A4F),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                  ),
-                ] else if (isConfirmed) ...[
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _updateStatus(apt, 'no_show'),
-                      icon: const Icon(Icons.person_off_outlined, size: 16),
-                      label: const Text('Gelmedi', style: TextStyle(fontSize: 13)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.grey,
-                        side: BorderSide(color: Colors.grey.shade400),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _updateStatus(apt, 'completed'),
-                      icon: const Icon(Icons.task_alt, size: 16),
-                      label: const Text('Tamamlandı', style: TextStyle(fontSize: 13)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ],
-        ],
-      ),
-    )
+            ],
+          ),
+        )
         .animate(delay: Duration(milliseconds: index * 60))
         .fadeIn(duration: 280.ms)
         .slideY(begin: 0.04, duration: 280.ms, curve: Curves.easeOut);

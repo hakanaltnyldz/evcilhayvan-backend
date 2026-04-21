@@ -16,6 +16,8 @@ import 'package:evcilhayvan_mobil2/features/store/providers/store_providers.dart
 import 'package:evcilhayvan_mobil2/features/favorites/presentation/widgets/favorite_button.dart';
 import 'package:evcilhayvan_mobil2/features/reviews/presentation/widgets/reviews_section.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
+import 'package:share_plus/share_plus.dart' show Share;
+import 'package:evcilhayvan_mobil2/core/constants.dart';
 
 const List<Color> _detailGradientA = [Color(0xFF2D6A4F), Color(0xFF52B788)];
 
@@ -34,6 +36,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   int _page = 0;
   bool _adding = false;
   int _quantity = 1;
+  String? _trackedProductId;
   final Map<String, String> _selectedVariants =
       {}; // variantName -> selectedLabel
 
@@ -189,11 +192,13 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   }
 
   void _shareProduct(ProductModel product) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context)!.productDetailShareSoon),
-      ),
-    );
+    final description =
+        product.description != null && product.description!.isNotEmpty
+        ? '\n${product.description}'
+        : '';
+    final text =
+        '${product.name}$description\nEvcilhayvan uygulamasında incele!';
+    Share.share(text.trim(), subject: product.name);
   }
 
   @override
@@ -206,6 +211,15 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
         child: SafeArea(
           child: detail.when(
             data: (product) {
+              if (_trackedProductId != product.id) {
+                _trackedProductId = product.id;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+                  ref
+                      .read(recentViewedProductsProvider.notifier)
+                      .record(product);
+                });
+              }
               final l10n = AppLocalizations.of(context)!;
               final title = product.title.trim();
               final displayTitle = title.isNotEmpty
@@ -291,6 +305,16 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                 ),
                               ],
                             ),
+                            Builder(builder: (context) {
+                              final effStock = _effectiveStock(product);
+                              if (effStock > 0 && effStock <= kLowStockThreshold) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: _LowStockBanner(stock: effStock),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            }),
                             if (product.variants.isNotEmpty) ...[
                               const SizedBox(height: 16),
                               _VariantSelector(
@@ -892,6 +916,77 @@ class _VariantSelector extends StatelessWidget {
           ),
         );
       }).toList(),
+    );
+  }
+}
+
+// ── Low Stock Banner ──────────────────────────────────────────────────────────
+
+class _LowStockBanner extends StatefulWidget {
+  const _LowStockBanner({required this.stock});
+  final int stock;
+
+  @override
+  State<_LowStockBanner> createState() => _LowStockBannerState();
+}
+
+class _LowStockBannerState extends State<_LowStockBanner>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnim;
+  late Animation<Offset> _slideAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, -0.4),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fadeAnim,
+      child: SlideTransition(
+        position: _slideAnim,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.orange.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.orange.withOpacity(0.4)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 16),
+              const SizedBox(width: 6),
+              Text(
+                'Son ${widget.stock} ürün kaldı!',
+                style: const TextStyle(
+                  color: Colors.orange,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

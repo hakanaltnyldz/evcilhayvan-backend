@@ -3,6 +3,7 @@ import { randomBytes } from "crypto";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import mongoose from "mongoose";
 import { body } from "express-validator";
 import { authRequired } from "../middlewares/auth.js";
 import { handleValidation } from "../middlewares/validate.js";
@@ -19,6 +20,11 @@ import {
   getSellerStats,
   seedDemoProducts,
 } from "../controllers/sellerProductController.js";
+import Review from "../models/Review.js";
+import Product from "../models/Product.js";
+import Coupon from "../models/Coupon.js";
+import CouponUsage from "../models/CouponUsage.js";
+import { sendOk, sendError } from "../utils/apiResponse.js";
 
 const router = Router();
 
@@ -79,5 +85,163 @@ router.get("/seller/stats", authRequired(["seller", "admin"]), getSellerStats);
 
 // Demo products seed
 router.post("/seller/seed-demo-products", authRequired(["seller", "admin"]), seedDemoProducts);
+
+// ─── Seller Reviews ───────────────────────────────────────────────────────────
+// GET /api/seller/reviews?page=1&limit=20&rating=5
+router.get("/seller/reviews", authRequired(["seller", "admin"]), async (req, res) => {
+  try {
+    const sellerId = req.user?.sub;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(50, parseInt(req.query.limit) || 20);
+    const skip = (page - 1) * limit;
+    const ratingFilter = req.query.rating ? parseInt(req.query.rating) : null;
+
+    // Find seller's product IDs
+    const products = await Product.find({ seller: sellerId }, "_id name");
+    const productIds = products.map(p => p._id);
+
+    if (productIds.length === 0) {
+      return sendOk(res, 200, {
+        reviews: [],
+        total: 0,
+        page,
+        totalPages: 0,
+        avgRating: 0,
+        ratingBreakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      });
+    }
+
+    const matchStage = { product: { $in: productIds } };
+    if (ratingFilter) matchStage.rating = ratingFilter;
+
+    // Parallel: paginated reviews + summary stats
+    const [reviews, summaryAgg] = await Promise.all([
+      Review.aggregate([
+        { $match: matchStage },
+        { $sort: { createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+        {
+          $lookup: {
+            from: "users",
+            localField: "user",
+            foreignField: "_id",
+            as: "userDoc",
+          },
+        },
+        {
+          $lookup: {
+            from: "products",
+            localField: "product",
+            foreignField: "_id",
+            as: "productDoc",
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            rating: 1,
+            comment: 1,
+            verifiedPurchase: 1,
+            createdAt: 1,
+            userName: { $ifNull: [{ $arrayElemAt: ["$userDoc.displayName", 0] }, "Kullanıcı"] },
+            userAvatar: { $arrayElemAt: ["$userDoc.avatar", 0] },
+            productName: { $ifNull: [{ $arrayElemAt: ["$productDoc.name", 0] }, "Ürün"] },
+            productId: "$product",
+          },
+        },
+      ]),
+      Review.aggregate([
+        { $match: { product: { $in: productIds } } },
+        {
+          $group: {
+            _id: null,
+            avgRating: { $avg: "$rating" },
+            total: { $sum: 1 },
+            r1: { $sum: { $cond: [{ $eq: ["$rating", 1] }, 1, 0] } },
+            r2: { $sum: { $cond: [{ $eq: ["$rating", 2] }, 1, 0] } },
+            r3: { $sum: { $cond: [{ $eq: ["$rating", 3] }, 1, 0] } },
+            r4: { $sum: { $cond: [{ $eq: ["$rating", 4] }, 1, 0] } },
+            r5: { $sum: { $cond: [{ $eq: ["$rating", 5] }, 1, 0] } },
+          },
+        },
+      ]),
+    ]);
+
+    const totalFiltered = ratingFilter
+      ? await Review.countDocuments(matchStage)
+      : summaryAgg[0]?.total ?? 0;
+
+    const summary = summaryAgg[0] ?? { avgRating: 0, total: 0, r1: 0, r2: 0, r3: 0, r4: 0, r5: 0 };
+
+    return sendOk(res, 200, {
+      reviews,
+      total: totalFiltered,
+      page,
+      totalPages: Math.ceil(totalFiltered / limit),
+      avgRating: Math.round((summary.avgRating || 0) * 10) / 10,
+      ratingBreakdown: { 1: summary.r1, 2: summary.r2, 3: summary.r3, 4: summary.r4, 5: summary.r5 },
+    });
+  } catch (err) {
+    console.error("[seller/reviews]", err);
+    return sendError(res, 500, "Yorumlar alınamadı", "internal_error", err.message);
+  }
+});
+
+// ─── Seller Coupon Performance ────────────────────────────────────────────────
+// GET /api/seller/coupons/performance
+router.get("/seller/coupons/performance", authRequired(["seller", "admin"]), async (req, res) => {
+  try {
+    const sellerId = new mongoose.Types.ObjectId(req.user?.sub);
+
+    // Get coupons belonging to this seller
+    const sellerCoupons = await Coupon.find({ seller: sellerId }, "_id code discountType discountValue usageLimit usageCount isActive validUntil");
+    const couponIds = sellerCoupons.map(c => c._id);
+
+    if (couponIds.length === 0) {
+      return sendOk(res, 200, { coupons: [] });
+    }
+
+    // Aggregate usage stats per coupon
+    const usageAgg = await CouponUsage.aggregate([
+      { $match: { couponId: { $in: couponIds } } },
+      {
+        $group: {
+          _id: "$couponId",
+          usageCount: { $sum: "$count" },
+          totalDiscount: { $sum: "$discountAmount" },
+          totalOrderValue: { $sum: "$originalAmount" },
+        },
+      },
+    ]);
+
+    const usageMap = {};
+    for (const u of usageAgg) {
+      usageMap[u._id.toString()] = {
+        usageCount: u.usageCount,
+        totalDiscount: Math.round(u.totalDiscount * 100) / 100,
+        totalOrderValue: Math.round(u.totalOrderValue * 100) / 100,
+      };
+    }
+
+    const coupons = sellerCoupons.map(c => ({
+      couponId: c._id,
+      code: c.code,
+      discountType: c.discountType,
+      discountValue: c.discountValue,
+      usageLimit: c.usageLimit,
+      isActive: c.isActive,
+      validUntil: c.validUntil,
+      usageCount: usageMap[c._id.toString()]?.usageCount ?? c.usageCount ?? 0,
+      totalDiscount: usageMap[c._id.toString()]?.totalDiscount ?? 0,
+      totalOrderValue: usageMap[c._id.toString()]?.totalOrderValue ?? 0,
+    }));
+
+    return sendOk(res, 200, { coupons });
+  } catch (err) {
+    console.error("[seller/coupons/performance]", err);
+    return sendError(res, 500, "Kupon istatistikleri alınamadı", "internal_error", err.message);
+  }
+});
 
 export default router;

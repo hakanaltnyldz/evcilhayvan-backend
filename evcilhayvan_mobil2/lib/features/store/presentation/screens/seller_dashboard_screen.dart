@@ -12,6 +12,7 @@ import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/order_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/order_model.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/core/constants.dart';
 
 const List<Color> _dashboardGradientA = [
   Color(0xFF2D6A4F),
@@ -76,264 +77,313 @@ class SellerDashboardScreen extends ConsumerWidget {
       );
     }
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: AppPalette.appBarDark,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        title: Text(
-          l10n.sellerPanelTitle,
-          style: const TextStyle(fontWeight: FontWeight.w800),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              myStoreAsync.whenData((store) {
-                if (store != null) {
-                  context.pushNamed(
-                    'store-detail',
-                    pathParameters: {'storeId': store.id},
-                  );
-                }
-              });
-            },
-            icon: const Icon(Icons.store_outlined),
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          backgroundColor: AppPalette.appBarDark,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          title: Text(
+            l10n.sellerPanelTitle,
+            style: const TextStyle(fontWeight: FontWeight.w800),
           ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(myStoreProvider);
-          ref.invalidate(myProductsProvider);
-          ref.invalidate(sellerOrderStatsProvider);
-          ref.invalidate(sellerRevenueChartProvider);
-          ref.invalidate(sellerProductStatsProvider);
-        },
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: myStoreAsync.when(
-                  data: (store) {
-                    if (store == null) {
-                      return _NoStoreCard(
-                        onCreateStore: () => context.pushNamed('store-apply'),
-                      );
-                    }
-                    return _StoreInfoCard(storeName: store.name);
-                  },
-                  loading: () => const _StoreInfoSkeleton(),
-                  error: (e, _) => _ErrorCard(
-                    message: l10n.sellerStoreLoadErr,
-                    onRetry: () => ref.invalidate(myStoreProvider),
-                  ),
-                ),
-              ),
-            ),
-            // Sipariş ve Gelir İstatistikleri
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Consumer(
-                  builder: (context, ref, _) {
-                    final orderStatsAsync = ref.watch(sellerOrderStatsProvider);
-                    return orderStatsAsync.when(
-                      data: (stats) => _OrderStatsCard(
-                        totalRevenue: stats.totalRevenue,
-                        pendingOrders: stats.activeOrders,
-                        totalOrders: stats.totalOrders,
-                        onTap: () => context.pushNamed('seller-orders'),
-                      ),
-                      loading: () => Container(
-                        height: 100,
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF11998e), Color(0xFF38ef7d)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      error: (e, _) => Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.orange.withOpacity(0.3)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
-                            const SizedBox(width: 8),
-                            Expanded(child: Text(AppLocalizations.of(context)!.sellerOrderStatsLoadErr)),
-                            TextButton(
-                              onPressed: () => ref.invalidate(sellerOrderStatsProvider),
-                              child: Text(AppLocalizations.of(context)!.sellerRetry),
-                            ),
-                          ],
-                        ),
-                      ),
+          actions: [
+            IconButton(
+              onPressed: () {
+                myStoreAsync.whenData((store) {
+                  if (store != null) {
+                    context.pushNamed(
+                      'store-detail',
+                      pathParameters: {'storeId': store.id},
                     );
-                  },
-                ),
-              ),
+                  }
+                });
+              },
+              icon: const Icon(Icons.store_outlined),
             ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: myProductsAsync.when(
-                  data: (products) => _StatsGrid(
-                    totalProducts: products.length,
-                    activeProducts: products.where((p) => p.isActive).length,
-                    lowStockProducts: products.where((p) => p.stock <= 3).length,
-                  ),
-                  loading: () => const _StatsGridSkeleton(),
-                  error: (e, _) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                        const SizedBox(width: 6),
-                        Text(AppLocalizations.of(context)!.sellerProductStatsLoadErr, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
-                      ],
+          ],
+          bottom: const TabBar(
+            indicatorColor: Colors.white,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white60,
+            tabs: [
+              Tab(icon: Icon(Icons.dashboard_outlined), text: 'Genel'),
+              Tab(icon: Icon(Icons.bar_chart_outlined), text: 'Analitik'),
+              Tab(icon: Icon(Icons.flash_on_outlined), text: 'Eylemler'),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            // ── TAB 1: Genel Bakış ────────────────────────────────────
+            RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(myStoreProvider);
+                ref.invalidate(myProductsProvider);
+                ref.invalidate(sellerOrderStatsProvider);
+              },
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: myStoreAsync.when(
+                        data: (store) {
+                          if (store == null) {
+                            return _NoStoreCard(
+                              onCreateStore: () => context.pushNamed('store-apply'),
+                            );
+                          }
+                          return _StoreInfoCard(storeName: store.name);
+                        },
+                        loading: () => const _StoreInfoSkeleton(),
+                        error: (e, _) => _ErrorCard(
+                          message: l10n.sellerStoreLoadErr,
+                          onRetry: () => ref.invalidate(myStoreProvider),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ),
-            // Gelir grafiği
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: Consumer(
-                  builder: (context, ref, _) {
-                    final chartAsync = ref.watch(sellerRevenueChartProvider);
-                    return chartAsync.when(
-                      data: (points) => _RevenueChartCard(points: points),
-                      loading: () => const SizedBox(
-                        height: 180,
-                        child: Card(child: Center(child: PawLoading())),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Consumer(
+                        builder: (context, ref, _) {
+                          final orderStatsAsync = ref.watch(sellerOrderStatsProvider);
+                          return orderStatsAsync.when(
+                            data: (stats) => _OrderStatsCard(
+                              totalRevenue: stats.totalRevenue,
+                              pendingOrders: stats.activeOrders,
+                              totalOrders: stats.totalOrders,
+                              onTap: () => context.pushNamed('seller-orders'),
+                            ),
+                            loading: () => Container(
+                              height: 100,
+                              margin: const EdgeInsets.only(bottom: 16),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF11998e), Color(0xFF38ef7d)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                            error: (e, _) => Container(
+                              margin: const EdgeInsets.only(bottom: 16),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.orange.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: Text(AppLocalizations.of(context)!.sellerOrderStatsLoadErr)),
+                                  TextButton(
+                                    onPressed: () => ref.invalidate(sellerOrderStatsProvider),
+                                    child: Text(AppLocalizations.of(context)!.sellerRetry),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                      error: (_, __) => Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: myProductsAsync.when(
+                        data: (products) => _StatsGrid(
+                          totalProducts: products.length,
+                          activeProducts: products.where((p) => p.isActive).length,
+                          lowStockProducts: products.where((p) => p.stock <= kLowStockThreshold).length,
+                        ),
+                        loading: () => const _StatsGridSkeleton(),
+                        error: (e, _) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                           child: Row(
                             children: [
-                              Icon(Icons.bar_chart, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                              const SizedBox(width: 8),
-                              Text(AppLocalizations.of(context)!.sellerRevenueChartLoadErr, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                              Icon(Icons.info_outline, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                              const SizedBox(width: 6),
+                              Text(AppLocalizations.of(context)!.sellerProductStatsLoadErr, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
                             ],
                           ),
                         ),
                       ),
-                    );
-                  },
-                ),
-              ),
-            ),
-            // Sipariş Durum Dağılımı + Top Ürünler
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: Consumer(
-                  builder: (context, ref, _) {
-                    final statsAsync = ref.watch(sellerProductStatsProvider);
-                    return statsAsync.when(
-                      data: (data) => Column(
-                        children: [
-                          _OrderStatusPieCard(breakdown: data['orderStatusBreakdown'] as Map<String, dynamic>? ?? {}),
-                          const SizedBox(height: 16),
-                          _TopProductsCard(topProducts: (data['topProducts'] as List?)
-                              ?.map((e) => Map<String, dynamic>.from(e as Map))
-                              .toList() ?? []),
-                        ],
-                      ),
-                      loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
-                    );
-                  },
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: _QuickActionsCard(
-                  onAddProduct: () => context.pushNamed('store-add-product'),
-                  onManageProducts: () => context.pushNamed('product-management'),
-                  onViewStore: () {
-                    myStoreAsync.whenData((store) {
-                      if (store != null) {
-                        context.pushNamed(
-                          'store-detail',
-                          pathParameters: {'storeId': store.id},
-                        );
-                      }
-                    });
-                  },
-                  onViewOrders: () => context.pushNamed('seller-orders'),
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: myProductsAsync.when(
-                  data: (products) {
-                    if (products.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-
-                    final lowStockProducts = products.where((p) => p.stock <= 3 && p.stock > 0).toList();
-                    final outOfStockProducts = products.where((p) => p.stock <= 0).toList();
-
-                    if (lowStockProducts.isEmpty && outOfStockProducts.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.sellerAttentionProducts,
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      child: myProductsAsync.when(
+                        data: (products) {
+                          if (products.isEmpty) return const SizedBox.shrink();
+                          final lowStockProducts = products.where((p) => p.stock <= kLowStockThreshold && p.stock > 0).toList();
+                          final outOfStockProducts = products.where((p) => p.stock <= 0).toList();
+                          if (lowStockProducts.isEmpty && outOfStockProducts.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.sellerAttentionProducts,
+                                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+                              ),
+                              const SizedBox(height: 12),
+                              if (outOfStockProducts.isNotEmpty)
+                                _AlertCard(
+                                  title: l10n.sellerOutOfStock,
+                                  count: outOfStockProducts.length,
+                                  icon: Icons.inventory_2_outlined,
+                                  color: Colors.red,
+                                  products: outOfStockProducts.take(3).toList(),
+                                ),
+                              if (lowStockProducts.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                _AlertCard(
+                                  title: l10n.sellerLowStock,
+                                  count: lowStockProducts.length,
+                                  icon: Icons.warning_amber_outlined,
+                                  color: Colors.orange,
+                                  products: lowStockProducts.take(3).toList(),
+                                ),
+                              ],
+                            ],
+                          );
+                        },
+                        loading: () => const SizedBox.shrink(),
+                        error: (e, _) => Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.warning_amber, color: Colors.orange),
+                                const SizedBox(width: 8),
+                                const Expanded(child: Text('Stok verileri yüklenemedi.', style: TextStyle(color: Colors.orange))),
+                              ],
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        if (outOfStockProducts.isNotEmpty)
-                          _AlertCard(
-                            title: l10n.sellerOutOfStock,
-                            count: outOfStockProducts.length,
-                            icon: Icons.inventory_2_outlined,
-                            color: Colors.red,
-                            products: outOfStockProducts.take(3).toList(),
-                          ),
-                        if (lowStockProducts.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          _AlertCard(
-                            title: l10n.sellerLowStock,
-                            count: lowStockProducts.length,
-                            icon: Icons.warning_amber_outlined,
-                            color: Colors.orange,
-                            products: lowStockProducts.take(3).toList(),
-                          ),
-                        ],
-                      ],
-                    );
-                  },
-                  loading: () => const SizedBox.shrink(),
-                  error: (e, _) => const SizedBox.shrink(),
-                ),
+                      ),
+                    ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                ],
               ),
             ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 24),
+
+            // ── TAB 2: Analitik ───────────────────────────────────────
+            RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(sellerRevenueChartProvider);
+                ref.invalidate(sellerProductStatsProvider);
+              },
+              child: CustomScrollView(
+                slivers: [
+                  // Gelir grafiği
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                      child: Consumer(
+                        builder: (context, ref, _) {
+                          final chartAsync = ref.watch(sellerRevenueChartProvider);
+                          return chartAsync.when(
+                            data: (points) => _RevenueChartCard(points: points),
+                            loading: () => const SizedBox(
+                              height: 180,
+                              child: Card(child: Center(child: PawLoading())),
+                            ),
+                            error: (_, __) => Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.bar_chart, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                    const SizedBox(width: 8),
+                                    Text(AppLocalizations.of(context)!.sellerRevenueChartLoadErr, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  // Sipariş Durum Dağılımı + Top Ürünler
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      child: Consumer(
+                        builder: (context, ref, _) {
+                          final statsAsync = ref.watch(sellerProductStatsProvider);
+                          return statsAsync.when(
+                            data: (data) => Column(
+                              children: [
+                                _OrderStatusPieCard(breakdown: data['orderStatusBreakdown'] as Map<String, dynamic>? ?? {}),
+                                const SizedBox(height: 16),
+                                _TopProductsCard(topProducts: (data['topProducts'] as List?)
+                                    ?.map((e) => Map<String, dynamic>.from(e as Map))
+                                    .toList() ?? []),
+                                if ((data['categoryBreakdown'] as List?)?.isNotEmpty == true) ...[
+                                  const SizedBox(height: 16),
+                                  _CategoryBreakdownCard(
+                                    categories: (data['categoryBreakdown'] as List)
+                                        .map((e) => Map<String, dynamic>.from(e as Map))
+                                        .toList(),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.warning_amber, color: Colors.orange),
+                                    const SizedBox(width: 8),
+                                    const Expanded(child: Text('İstatistikler yüklenemedi.', style: TextStyle(color: Colors.orange))),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                ],
+              ),
+            ),
+
+            // ── TAB 3: Hızlı Eylemler ────────────────────────────────
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: _QuickActionsCard(
+                onAddProduct: () => context.pushNamed('store-add-product'),
+                onManageProducts: () => context.pushNamed('product-management'),
+                onViewStore: () {
+                  myStoreAsync.whenData((store) {
+                    if (store != null) {
+                      context.pushNamed(
+                        'store-detail',
+                        pathParameters: {'storeId': store.id},
+                      );
+                    }
+                  });
+                },
+                onViewOrders: () => context.pushNamed('seller-orders'),
+              ),
             ),
           ],
         ),
@@ -1004,7 +1054,26 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
             icon: Icons.edit_outlined,
             label: 'Mağaza Profilini Düzenle',
             color: const Color(0xFF40916C),
-            onTap: _showEditStoreSheet,
+            onTap: () {
+              final store = ref.read(myStoreProvider).valueOrNull;
+              if (store != null && context.mounted) {
+                context.pushNamed('store-edit', extra: store);
+              }
+            },
+          ),
+          const SizedBox(height: 12),
+          _QuickActionButton(
+            icon: Icons.bar_chart_outlined,
+            label: 'Finansal Rapor',
+            color: const Color(0xFF0984e3),
+            onTap: () => context.pushNamed('seller-financials'),
+          ),
+          const SizedBox(height: 12),
+          _QuickActionButton(
+            icon: Icons.rate_review_outlined,
+            label: 'Müşteri Yorumları',
+            color: const Color(0xFFe17055),
+            onTap: () => context.pushNamed('seller-reviews'),
           ),
           const SizedBox(height: 12),
           _QuickActionButton(
@@ -1651,6 +1720,90 @@ class _TopProductsCard extends StatelessWidget {
                       minHeight: 5,
                       backgroundColor: theme.colorScheme.outline.withOpacity(0.15),
                       valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF52B788)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategoryBreakdownCard extends StatelessWidget {
+  final List<Map<String, dynamic>> categories;
+  const _CategoryBreakdownCard({required this.categories});
+
+  @override
+  Widget build(BuildContext context) {
+    if (categories.isEmpty) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+    final maxRevenue = categories
+        .map((c) => (c['revenue'] as num?)?.toDouble() ?? 0.0)
+        .fold<double>(1.0, (m, v) => v > m ? v : m);
+
+    const colors = [
+      Color(0xFF6C5CE7), Color(0xFF00B894), Color(0xFFFFB86C),
+      Color(0xFFFF7675), Color(0xFF74B9FF), Color(0xFFA29BFE),
+      Color(0xFFFECEAB), Color(0xFF55EFC4),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Kategori Bazlı Satışlar',
+            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          ...categories.asMap().entries.map((entry) {
+            final i = entry.key;
+            final c = entry.value;
+            final category = c['category']?.toString() ?? 'Diğer';
+            final revenue = (c['revenue'] as num?)?.toDouble() ?? 0.0;
+            final soldCount = (c['soldCount'] as num?)?.toInt() ?? 0;
+            final ratio = maxRevenue > 0 ? revenue / maxRevenue : 0.0;
+            final color = colors[i % colors.length];
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 10, height: 10,
+                        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(category, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                      ),
+                      Text('${soldCount}x', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color)),
+                      const SizedBox(width: 8),
+                      Text('₺${revenue.toStringAsFixed(0)}', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant)),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: LinearProgressIndicator(
+                      value: ratio,
+                      minHeight: 6,
+                      backgroundColor: theme.colorScheme.outline.withOpacity(0.15),
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
                     ),
                   ),
                 ],

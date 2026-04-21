@@ -1,5 +1,6 @@
 import SellerApplication from "../models/SellerApplication.js";
 import SellerProfile from "../models/SellerProfile.js";
+import Store from "../models/Store.js";
 import User from "../models/User.js";
 import { sendError, sendOk } from "../utils/apiResponse.js";
 import { recordAudit } from "../utils/audit.js";
@@ -9,12 +10,42 @@ export async function applySeller(req, res) {
     const userId = req.user?.sub;
     if (!userId) return sendError(res, 401, "Kimlik dogrulama gerekli", "auth_required");
 
-    const existing = await SellerApplication.findOne({ user: userId, status: "pending" });
-    if (existing) {
-      return sendError(res, 400, "Basvurunuz zaten beklemede", "application_exists", existing);
+    // Zaten seller rolündeyse başvuru gerekmez
+    const user = await User.findById(userId).select("role isSeller");
+    if (user?.role === "seller" || user?.isSeller) {
+      return sendError(res, 400, "Zaten satici rolundesiniz", "already_seller");
     }
 
-    const application = await SellerApplication.create({ user: userId, ...req.body, status: "pending" });
+    // Zaten bekleyen veya onaylı başvuru var mı?
+    const existing = await SellerApplication.findOne({
+      user: userId,
+      status: { $in: ["pending", "approved"] },
+    });
+    if (existing) {
+      return sendError(res, 400, "Aktif bir basvurunuz zaten mevcut", "application_exists", { application: existing });
+    }
+
+    // Zorunlu alan validasyonu (model required ama net hata vermesi için)
+    const required = ["companyName", "companyTitle", "taxNumber", "taxOffice", "address", "contactInfo", "iban"];
+    const missing = required.filter((f) => !req.body?.[f]?.toString().trim());
+    if (missing.length) {
+      return sendError(res, 400, `Eksik alanlar: ${missing.join(", ")}`, "validation_error");
+    }
+
+    if (!req.body.kvkkAccepted || !req.body.contractAccepted) {
+      return sendError(res, 400, "KVKK ve sozlesme kabul edilmeli", "validation_error");
+    }
+
+    // Uzunluk sınırları
+    if (req.body.companyName?.length > 120) {
+      return sendError(res, 400, "Sirket adi en fazla 120 karakter olabilir", "validation_error");
+    }
+
+    const application = await SellerApplication.create({
+      user: userId,
+      ...req.body,
+      status: "pending",
+    });
 
     await recordAudit("seller_application.create", {
       userId,
@@ -26,6 +57,18 @@ export async function applySeller(req, res) {
   } catch (err) {
     console.error("[applySeller] error", err);
     return sendError(res, 500, "Basvuru olusturulamadi", "internal_error", err.message);
+  }
+}
+
+// GET /api/stores/application/status — kullanıcının kendi başvuru durumu
+export async function getMyApplicationStatus(req, res) {
+  try {
+    const userId = req.user?.sub;
+    const application = await SellerApplication.findOne({ user: userId })
+      .sort({ createdAt: -1 });
+    return sendOk(res, 200, { application: application || null });
+  } catch (err) {
+    return sendError(res, 500, "Basvuru durumu alinamadi", "internal_error", err.message);
   }
 }
 
@@ -60,6 +103,16 @@ async function updateApplicationStatus(req, res, status) {
         user.role = "seller";
         user.isSeller = true;
         await user.save();
+      }
+
+      // Mağaza henüz yoksa oluştur
+      const existingStore = await Store.findOne({ owner: application.user });
+      if (!existingStore) {
+        await Store.create({
+          name: application.companyName,
+          description: "",
+          owner: application.user,
+        });
       }
 
       await SellerProfile.findOneAndUpdate(

@@ -20,7 +20,6 @@ import '../../data/repositories/pet_sitter_repository.dart';
 import '../../domain/models/sitter_booking_model.dart';
 import '../../domain/models/pet_sitter_model.dart';
 import 'live_tracking_screen.dart';
-import 'care_report_screen.dart';
 import 'booking_timeline_screen.dart';
 
 class MyBookingsScreen extends ConsumerStatefulWidget {
@@ -414,8 +413,9 @@ class _BookingCard extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () async {
-                          final res = await Navigator.of(context).push<bool>(
-                            MaterialPageRoute(builder: (_) => CareReportScreen(booking: booking, dayNumber: 1)),
+                          final res = await context.pushNamed<bool>(
+                            'care-report',
+                            extra: {'booking': booking, 'dayNumber': 1},
                           );
                           if (res == true) ref.invalidate(myBookingsProvider);
                         },
