@@ -6,6 +6,8 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 let app;
 let mongo;
 let User;
+let Store;
+let issueTokens;
 
 const authHeader = (token) => ({ Authorization: `Bearer ${token}` });
 
@@ -38,6 +40,8 @@ describe("API smoke flows", () => {
 
     ({ app } = await import("../server.js"));
     ({ default: User } = await import("../src/models/User.js"));
+    ({ default: Store } = await import("../src/models/Store.js"));
+    ({ issueTokens } = await import("../src/utils/tokens.js"));
 
     await mongoose.connect(process.env.MONGO_URI);
   });
@@ -99,12 +103,17 @@ describe("API smoke flows", () => {
       .set(authHeader(userA.token))
       .expect(200);
 
-    const storeRes = await request(app)
-      .post("/api/stores/create")
-      .set(authHeader(userB.token))
-      .send({ storeName: "Test Store" })
-      .expect(201);
-    const sellerToken = storeRes.body.token;
+    const sellerUser = await User.findById(userB.id);
+    sellerUser.role = "seller";
+    sellerUser.isSeller = true;
+    await sellerUser.save();
+    await Store.create({
+      name: "Test Store",
+      owner: sellerUser._id,
+      isActive: true,
+    });
+    const sellerTokens = await issueTokens(sellerUser);
+    const sellerToken = sellerTokens.accessToken;
 
     const productRes = await request(app)
       .post("/api/stores/me/products")

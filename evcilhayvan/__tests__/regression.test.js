@@ -18,6 +18,8 @@ let CartItem;
 let Coupon;
 let SupportTicket;
 let VetClaimRequest;
+let UserReport;
+let Post;
 let issueTokens;
 
 const PASSWORD = "password123";
@@ -82,6 +84,8 @@ describe("Critical regression coverage", () => {
     ({ default: Coupon } = await import("../src/models/Coupon.js"));
     ({ default: SupportTicket } = await import("../src/models/SupportTicket.js"));
     ({ default: VetClaimRequest } = await import("../src/models/VetClaimRequest.js"));
+    ({ default: UserReport } = await import("../src/models/UserReport.js"));
+    ({ default: Post } = await import("../src/models/Post.js"));
     ({ issueTokens } = await import("../src/utils/tokens.js"));
 
     if (mongoose.connection.readyState !== 0) {
@@ -329,11 +333,112 @@ describe("Critical regression coverage", () => {
     expect(trackingOnRes.body.liveTracking.isActive).toBe(true);
     expect(trackingOnRes.body.earnings.status).toBe("earning");
 
-    await request(app)
+    const reportRes = await request(app)
+      .post(`/api/sitter-bookings/${bookingId}/care-reports`)
+      .set(authHeader(sitterUser.token))
+      .send({
+        day: 1,
+        mood: "great",
+        photos: ["/uploads/walk/report.png"],
+        notes: "Parkta enerjisi cok iyiydi",
+        activities: ["walk", "play"],
+        foodEaten: true,
+      })
+      .expect(201);
+
+    expect(reportRes.body.report.sharedWithOwnerAt).toBeTruthy();
+    expect(reportRes.body.report.notes).toBe("Parkta enerjisi cok iyiydi");
+
+    const reportsRes = await request(app)
+      .get(`/api/sitter-bookings/${bookingId}/care-reports`)
+      .set(authHeader(owner.token))
+      .expect(200);
+
+    expect(reportsRes.body.reports).toHaveLength(1);
+    expect(reportsRes.body.reports[0].photos).toEqual(["/uploads/walk/report.png"]);
+
+    const completeRes = await request(app)
       .patch(`/api/sitter-bookings/${bookingId}/status`)
       .set(authHeader(sitterUser.token))
-      .send({ status: "completed" })
+      .send({
+        status: "completed",
+        review: {
+          rating: 4,
+          comment: "Musteri acik ve net bilgi verdi",
+        },
+      })
       .expect(200);
+
+    expect(completeRes.body.booking.sitterReview.rating).toBe(4);
+
+    const ownerReviewRes = await request(app)
+      .patch(`/api/sitter-bookings/${bookingId}/status`)
+      .set(authHeader(owner.token))
+      .send({
+        status: "completed",
+        review: {
+          rating: 5,
+          comment: "Cok memnun kaldik",
+        },
+      })
+      .expect(200);
+
+    expect(ownerReviewRes.body.booking.ownerReview.rating).toBe(5);
+
+    await request(app)
+      .patch(`/api/sitter-bookings/${bookingId}/status`)
+      .set(authHeader(owner.token))
+      .send({
+        status: "completed",
+        review: {
+          rating: 5,
+          comment: "Tekrar yorum",
+        },
+      })
+      .expect(409);
+  });
+
+  it("lets vets manage clinic availability overrides through self-service endpoints", async () => {
+    const vetOwner = await createVerifiedUser({ name: "Clinic Owner" });
+    const vet = await Veterinary.create({
+      name: `Clinic ${Date.now()}`,
+      userId: vetOwner.user._id,
+      isActive: true,
+      appointmentSlotMinutes: 20,
+    });
+
+    const initialRes = await request(app)
+      .get("/api/veterinaries/my-clinic/availability?days=7")
+      .set(authHeader(vetOwner.token))
+      .expect(200);
+
+    expect(initialRes.body.vetId).toBe(String(vet._id));
+    expect(initialRes.body.appointmentSlotMinutes).toBe(20);
+    expect(initialRes.body.availabilityOverrides).toEqual([]);
+
+    const updateRes = await request(app)
+      .put("/api/veterinaries/my-clinic/availability")
+      .set(authHeader(vetOwner.token))
+      .send({
+        availabilityOverrides: [
+          { date: "2026-04-23", isClosed: true },
+          { date: "2026-04-24", open: "10:00", close: "16:00", isClosed: false },
+        ],
+      })
+      .expect(200);
+
+    expect(updateRes.body.availabilityOverrides).toEqual([
+      { date: "2026-04-23", open: null, close: null, isClosed: true },
+      { date: "2026-04-24", open: "10:00", close: "16:00", isClosed: false },
+    ]);
+
+    await request(app)
+      .put("/api/veterinaries/my-clinic/availability")
+      .set(authHeader(vetOwner.token))
+      .send({
+        availabilityOverrides: [{ date: "2026-04-25", open: "17:00", close: "09:00" }],
+      })
+      .expect(400);
   });
 
   it("accepts legacy mobile upload aliases for single-image uploads", async () => {
@@ -418,5 +523,90 @@ describe("Critical regression coverage", () => {
     expect(auditRes.body.actions).toEqual(
       expect.arrayContaining(["admin.vet_claim.review"])
     );
+  });
+
+  it("manages platform settings and moderation queue actions for admin operations", async () => {
+    const admin = await createVerifiedUser({ name: "Ops Admin", role: "admin" });
+    const reporter = await createVerifiedUser({ name: "Reporter" });
+    const reported = await createVerifiedUser({ name: "Reported" });
+
+    const supportTicket = await SupportTicket.create({
+      userId: reporter.user._id,
+      category: "content_complaint",
+      message: "Bu icerik incelensin",
+    });
+
+    const report = await UserReport.create({
+      reporterId: reporter.user._id,
+      reportedId: reported.user._id,
+      reason: "spam",
+      description: "Sikayet detay test",
+    });
+
+    const hiddenPost = await Post.create({
+      userId: reported.user._id,
+      userName: reported.user.name,
+      content: "Gizlenmis gonderi",
+      isActive: false,
+    });
+
+    const configRes = await request(app)
+      .get("/api/admin/platform-config")
+      .set(authHeader(admin.token))
+      .expect(200);
+
+    expect(configRes.body.config.fees.storeCommissionRate).toBeGreaterThanOrEqual(0);
+
+    const patchConfigRes = await request(app)
+      .patch("/api/admin/platform-config")
+      .set(authHeader(admin.token))
+      .send({
+        fees: { storeCommissionRate: 15, payoutReserveDays: 5 },
+        features: { maintenanceMode: true },
+        announcement: {
+          enabled: true,
+          tone: "warning",
+          message: "Planli bakim calismasi var",
+        },
+      })
+      .expect(200);
+
+    expect(patchConfigRes.body.config.fees.storeCommissionRate).toBe(15);
+    expect(patchConfigRes.body.config.features.maintenanceMode).toBe(true);
+    expect(patchConfigRes.body.config.announcement.message).toBe("Planli bakim calismasi var");
+
+    const queueRes = await request(app)
+      .get("/api/admin/moderation/queue?status=open&source=all")
+      .set(authHeader(admin.token))
+      .expect(200);
+
+    const queueIds = queueRes.body.items.map((item) => `${item.source}:${item.entityId}`);
+    expect(queueIds).toEqual(
+      expect.arrayContaining([
+        `report:${report._id}`,
+        `support:${supportTicket._id}`,
+        `post:${hiddenPost._id}`,
+      ])
+    );
+
+    await request(app)
+      .patch(`/api/admin/moderation/queue/report/${report._id}`)
+      .set(authHeader(admin.token))
+      .send({ action: "reviewed" })
+      .expect(200);
+
+    await request(app)
+      .patch(`/api/admin/moderation/queue/support/${supportTicket._id}`)
+      .set(authHeader(admin.token))
+      .send({ action: "closed", adminNote: "Temizlendi" })
+      .expect(200);
+
+    const postModerationRes = await request(app)
+      .patch(`/api/admin/moderation/queue/post/${hiddenPost._id}`)
+      .set(authHeader(admin.token))
+      .send({ action: "unhide" })
+      .expect(200);
+
+    expect(postModerationRes.body.item.status).toBe("active");
   });
 });
