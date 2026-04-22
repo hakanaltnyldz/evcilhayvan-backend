@@ -21,6 +21,7 @@ import '../../domain/models/veterinary_model.dart';
 import '../../domain/models/appointment_model.dart';
 import '../widgets/appointment_card.dart';
 import '../widgets/vet_card.dart';
+import 'vet_earnings_screen.dart';
 
 class VetHomeScreen extends ConsumerStatefulWidget {
   const VetHomeScreen({super.key, this.initialTabIndex = 0});
@@ -206,6 +207,13 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
         label: l10n.vetHomeReminders,
         onTap: () => context.pushNamed('vaccination-reminders'),
       ),
+      _QuickActionData(
+        icon: Icons.payments_outlined,
+        label: 'Kazanc Raporu',
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const VetEarningsScreen()),
+        ),
+      ),
     ];
 
     return SingleChildScrollView(
@@ -246,40 +254,23 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
           const SizedBox(height: 16),
 
           // Hizli erisim kartlari
-          Row(
-            children: [
-              Expanded(
-                child: _QuickActionCard(data: quickActions[0], index: 0),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _QuickActionCard(data: quickActions[1], index: 1),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _QuickActionCard(data: quickActions[2], index: 2),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _QuickActionCard(data: quickActions[3], index: 3),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _QuickActionCard(data: quickActions[4], index: 4),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _QuickActionCard(data: quickActions[5], index: 5),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final itemWidth = (constraints.maxWidth - 12) / 2;
+              return Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: List.generate(quickActions.length, (index) {
+                  return SizedBox(
+                    width: itemWidth,
+                    child: _QuickActionCard(
+                      data: quickActions[index],
+                      index: index,
+                    ),
+                  );
+                }),
+              );
+            },
           ),
           const SizedBox(height: 24),
 

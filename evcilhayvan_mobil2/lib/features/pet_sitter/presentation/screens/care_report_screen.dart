@@ -4,11 +4,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/config/app_config.dart';
 import '../../domain/models/sitter_booking_model.dart';
-import 'package:dio/dio.dart';
+import '../../data/repositories/pet_sitter_repository.dart';
 
 class CareReportScreen extends ConsumerStatefulWidget {
   final SitterBookingModel booking;
@@ -61,17 +60,13 @@ class _CareReportScreenState extends ConsumerState<CareReportScreen> {
 
     setState(() => _isSending = true);
     try {
-      final dio = ApiClient().dio;
+      final repo = ref.read(petSitterRepositoryProvider);
       for (final file in files) {
-        final formData = FormData.fromMap({
-          'photo': await MultipartFile.fromFile(file.path, filename: 'care_${DateTime.now().millisecondsSinceEpoch}.jpg'),
-        });
-        final res = await dio.post(
-          '/api/sitter-bookings/${widget.booking.id}/upload-care-photo',
-          data: formData,
+        final url = await repo.uploadCarePhoto(
+          widget.booking.id,
+          File(file.path),
         );
-        final url = res.data['photoUrl']?.toString();
-        if (url != null && mounted) setState(() => _uploadedPhotos.add(url));
+        if (url.isNotEmpty && mounted) setState(() => _uploadedPhotos.add(url));
       }
     } catch (e) {
       if (mounted) _showSnack('Fotoğraf yüklenemedi: $e', isError: true);
@@ -84,8 +79,8 @@ class _CareReportScreenState extends ConsumerState<CareReportScreen> {
     if (_isSending) return;
     setState(() => _isSending = true);
     try {
-      final dio = ApiClient().dio;
-      await dio.post('/api/sitter-bookings/${widget.booking.id}/care-reports', data: {
+      final repo = ref.read(petSitterRepositoryProvider);
+      await repo.createCareReport(widget.booking.id, {
         'day': widget.dayNumber,
         'mood': _mood,
         'photos': _uploadedPhotos,
@@ -94,7 +89,7 @@ class _CareReportScreenState extends ConsumerState<CareReportScreen> {
         'foodEaten': _foodEaten,
       });
       if (mounted) {
-        _showSnack('Günlük rapor gönderildi!');
+        _showSnack('Gunluk rapor olusturuldu ve musteriye gonderildi!');
         Navigator.of(context).pop(true);
       }
     } catch (e) {
@@ -105,10 +100,12 @@ class _CareReportScreenState extends ConsumerState<CareReportScreen> {
   }
 
   void _showSnack(String msg, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
-      backgroundColor: isError ? Colors.red : Colors.green,
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
   }
 
   @override
@@ -137,12 +134,19 @@ class _CareReportScreenState extends ConsumerState<CareReportScreen> {
                     onTap: () => setState(() => _mood = m.$1),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppPalette.primary.withOpacity(0.15) : Colors.transparent,
+                        color: isSelected
+                            ? AppPalette.primary.withOpacity(0.15)
+                            : Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isSelected ? AppPalette.primary : Colors.grey.shade300,
+                          color: isSelected
+                              ? AppPalette.primary
+                              : Colors.grey.shade300,
                           width: isSelected ? 2 : 1,
                         ),
                       ),
@@ -150,11 +154,18 @@ class _CareReportScreenState extends ConsumerState<CareReportScreen> {
                         children: [
                           Text(m.$2, style: const TextStyle(fontSize: 28)),
                           const SizedBox(height: 4),
-                          Text(m.$3, style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            color: isSelected ? AppPalette.primary : Colors.grey,
-                          )),
+                          Text(
+                            m.$3,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: isSelected
+                                  ? AppPalette.primary
+                                  : Colors.grey,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -190,7 +201,10 @@ class _CareReportScreenState extends ConsumerState<CareReportScreen> {
                   return FilterChip(
                     selected: isSelected,
                     onSelected: (v) => setState(() {
-                      if (v) _activities.add(a.$1); else _activities.remove(a.$1);
+                      if (v)
+                        _activities.add(a.$1);
+                      else
+                        _activities.remove(a.$1);
                     }),
                     avatar: Icon(a.$2, size: 16),
                     label: Text(a.$3),
@@ -215,10 +229,16 @@ class _CareReportScreenState extends ConsumerState<CareReportScreen> {
                         itemCount: _uploadedPhotos.length,
                         separatorBuilder: (_, __) => const SizedBox(width: 8),
                         itemBuilder: (ctx, i) {
-                          final url = '${AppConfig.current.apiBaseUrl}${_uploadedPhotos[i]}';
+                          final url =
+                              '${AppConfig.current.apiBaseUrl}${_uploadedPhotos[i]}';
                           return ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.network(url, width: 90, height: 90, fit: BoxFit.cover),
+                            child: Image.network(
+                              url,
+                              width: 90,
+                              height: 90,
+                              fit: BoxFit.cover,
+                            ),
                           );
                         },
                       ),
@@ -251,7 +271,10 @@ class _CareReportScreenState extends ConsumerState<CareReportScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppPalette.primary, width: 2),
+                    borderSide: const BorderSide(
+                      color: AppPalette.primary,
+                      width: 2,
+                    ),
                   ),
                 ),
               ),
@@ -266,12 +289,26 @@ class _CareReportScreenState extends ConsumerState<CareReportScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppPalette.primary,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: _isSending
-                    ? const SizedBox(width: 20, height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Raporu Gönder', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Raporu Olustur ve Gonder',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 16),
@@ -296,12 +333,17 @@ class _Section extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E2E28) : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
           const SizedBox(height: 12),
           child,
         ],

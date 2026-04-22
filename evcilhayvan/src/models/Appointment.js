@@ -24,6 +24,11 @@ const AppointmentSchema = new mongoose.Schema(
     endDate: { type: Date },
     reason: { type: String, trim: true, maxlength: 500 },
     notes: { type: String, trim: true, maxlength: 1000 },
+    diagnosis: { type: String, trim: true, maxlength: 500 },
+    treatmentSummary: { type: String, trim: true, maxlength: 2000 },
+    followUpDate: { type: Date },
+    feeAmount: { type: Number, default: 0, min: 0 },
+    completedAt: { type: Date },
 
     status: {
       type: String,
@@ -37,6 +42,7 @@ const AppointmentSchema = new mongoose.Schema(
     rescheduledBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     rescheduleReason: { type: String, trim: true, maxlength: 500 },
     vetNotes: { type: String, trim: true, maxlength: 2000 },
+    clinicalRecordUpdatedAt: { type: Date },
 
     reminderSent: { type: Boolean, default: false },
 

@@ -132,6 +132,51 @@ class VeterinaryRepository {
     });
   }
 
+  Future<Map<String, dynamic>> getMyClinicAvailability({int days = 14}) {
+    return _guard(() async {
+      final response = await _dio.get(
+        '/api/veterinaries/my-clinic/availability',
+        queryParameters: {'days': days},
+      );
+
+      final overrides =
+          (response.data['availabilityOverrides'] as List<dynamic>? ?? const [])
+              .whereType<Map<String, dynamic>>()
+              .map(AvailabilityOverrideModel.fromJson)
+              .toList();
+
+      final bookingLoad =
+          (response.data['bookingLoad'] as List<dynamic>? ?? const [])
+              .whereType<Map<String, dynamic>>()
+              .map(Map<String, dynamic>.from)
+              .toList();
+
+      return {
+        'availabilityOverrides': overrides,
+        'bookingLoad': bookingLoad,
+        'appointmentSlotMinutes':
+            (response.data['appointmentSlotMinutes'] as num?)?.toInt() ?? 30,
+      };
+    });
+  }
+
+  Future<List<AvailabilityOverrideModel>> updateMyClinicAvailability(
+    List<Map<String, dynamic>> overrides,
+  ) {
+    return _guard(() async {
+      final response = await _dio.put(
+        '/api/veterinaries/my-clinic/availability',
+        data: {'availabilityOverrides': overrides},
+      );
+      final list =
+          (response.data['availabilityOverrides'] as List<dynamic>? ?? const [])
+              .whereType<Map<String, dynamic>>()
+              .map(AvailabilityOverrideModel.fromJson)
+              .toList();
+      return list;
+    });
+  }
+
   Future<VeterinaryModel> updateVetProfile(
     String id,
     Map<String, dynamic> data,

@@ -9,7 +9,6 @@ import { sendError, sendOk } from "../utils/apiResponse.js";
 import { recordAudit } from "../utils/audit.js";
 import { sendEmail } from "../utils/mail.js";
 import { sendPush } from "../utils/fcm.js";
-import { io } from "../../server.js";
 import { awardPoints } from "../utils/points.js";
 
 const DEFAULT_APPOINTMENT_SLOT_MINUTES = 30;
@@ -21,7 +20,55 @@ function getAppointmentSlotMinutes(vet) {
     : DEFAULT_APPOINTMENT_SLOT_MINUTES;
 }
 
+function getDateKey(date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function parseTimeWindow(open, close) {
+  if (!open || !close) return null;
+
+  const [openH, openM] = String(open).split(":").map(Number);
+  const [closeH, closeM] = String(close).split(":").map(Number);
+
+  if ([openH, openM, closeH, closeM].some((value) => Number.isNaN(value))) {
+    return null;
+  }
+
+  return { openH, openM, closeH, closeM };
+}
+
+function getAvailabilityOverride(vet, targetDate) {
+  const overrides = Array.isArray(vet?.availabilityOverrides)
+    ? vet.availabilityOverrides
+    : [];
+  const targetKey = getDateKey(targetDate);
+
+  return (
+    overrides.find((item) => {
+      if (!item?.date) return false;
+      return getDateKey(new Date(item.date)) === targetKey;
+    }) || null
+  );
+}
+
 function getWorkingWindow(vet, targetDate) {
+  const availabilityOverride = getAvailabilityOverride(vet, targetDate);
+  if (availabilityOverride?.isClosed) {
+    return { isAvailable: false };
+  }
+
+  const overrideWindow = parseTimeWindow(
+    availabilityOverride?.open,
+    availabilityOverride?.close
+  );
+  if (overrideWindow) {
+    return { isAvailable: true, ...overrideWindow };
+  }
+
   const jsDay = targetDate.getDay();
   const dayIndex = jsDay === 0 ? 6 : jsDay - 1;
   const workingHours = Array.isArray(vet?.workingHours) ? vet.workingHours : [];
@@ -35,14 +82,12 @@ function getWorkingWindow(vet, targetDate) {
     return { isAvailable: false };
   }
 
-  const [openH, openM] = hours.open.split(":").map(Number);
-  const [closeH, closeM] = hours.close.split(":").map(Number);
-
-  if ([openH, openM, closeH, closeM].some((value) => Number.isNaN(value))) {
+  const parsedWindow = parseTimeWindow(hours.open, hours.close);
+  if (!parsedWindow) {
     return { isAvailable: false };
   }
 
-  return { isAvailable: true, openH, openM, closeH, closeM };
+  return { isAvailable: true, ...parsedWindow };
 }
 
 function formatMinutes(minutes) {
@@ -81,11 +126,11 @@ function getAppointmentStatusLabel(status) {
 
 async function loadAppointmentWithRelations(id) {
   return Appointment.findById(id)
-    .populate("userId", "name avatarUrl")
+    .populate("userId", "name avatarUrl email phone")
     .populate("petId", "name species photos")
     .populate(
       "veterinaryId",
-      "name address phone email photos workingHours userId appointmentSlotMinutes"
+      "name address phone email photos workingHours availabilityOverrides userId appointmentSlotMinutes clinicConsultationFee onlineConsultationFee"
     );
 }
 
@@ -107,9 +152,10 @@ async function emitAppointmentNotification({
 
   if (!recipients.length) return;
 
-  if (io?.to) {
+  const socket = await getIo();
+  if (socket?.to) {
     recipients.forEach((userId) => {
-      io.to(`user:${userId}`).emit(eventName, socketPayload);
+      socket.to(`user:${userId}`).emit(eventName, socketPayload);
     });
   }
 
@@ -189,6 +235,38 @@ function normalizeMedications(input) {
     .filter((item) => item.name);
 }
 
+function getAppointmentFee(vet, type) {
+  const clinicFee = Math.max(0, Number(vet?.clinicConsultationFee) || 0);
+  const onlineFee = Math.max(0, Number(vet?.onlineConsultationFee) || 0);
+  return type === "online" ? onlineFee || clinicFee : clinicFee;
+}
+
+function normalizeOptionalText(value, maxLength = 2000) {
+  if (value === undefined) return undefined;
+  const trimmed = String(value ?? "").trim();
+  if (!trimmed) return "";
+  return trimmed.slice(0, maxLength);
+}
+
+function parseOptionalDate(value) {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error("Gecersiz tarih");
+  }
+  return parsed;
+}
+
+async function getIo() {
+  try {
+    const server = await import("../../server.js");
+    return server.io || null;
+  } catch {
+    return null;
+  }
+}
+
 // POST /api/appointments
 export async function createAppointment(req, res) {
   try {
@@ -233,6 +311,7 @@ export async function createAppointment(req, res) {
     }
 
     const appointmentType = ['clinic', 'online'].includes(type) ? type : 'clinic';
+    const feeAmount = getAppointmentFee(vet, appointmentType);
     const meetingUrl = appointmentType === 'online'
       ? null // Onaylanınca üretilecek
       : null;
@@ -248,6 +327,7 @@ export async function createAppointment(req, res) {
       status: "pending",
       type: appointmentType,
       meetingUrl,
+      feeAmount,
     });
 
     const populated = await loadAppointmentWithRelations(appointment._id);
@@ -266,8 +346,9 @@ export async function createAppointment(req, res) {
         body: `${petName} için yeni bir randevu talebi aldınız.`,
         data: { type: "appointment", appointmentId: appointment._id.toString() },
       }).catch(() => {});
-      if (io?.to) {
-        io.to(`user:${String(vet.userId)}`).emit("appointment:new", {
+      const socket = await getIo();
+      if (socket?.to) {
+        socket.to(`user:${String(vet.userId)}`).emit("appointment:new", {
           appointmentId: appointment._id,
           petName,
           date: appointment.date,
@@ -427,6 +508,10 @@ export async function updateAppointmentStatus(req, res) {
       return sendError(res, 403, "Sahip tarafinda sadece iptal islemi yapilabilir", "forbidden");
     }
 
+    if (vetNotes !== undefined && !["vet", "admin"].includes(viewerRole)) {
+      return sendError(res, 403, "Veteriner notu ekleme yetkiniz yok", "forbidden");
+    }
+
     const validTransitions = {
       pending: ["confirmed", "cancelled"],
       confirmed: ["cancelled", "completed", "no_show"],
@@ -448,15 +533,27 @@ export async function updateAppointmentStatus(req, res) {
     if (status === "cancelled") {
       appointment.cancelledBy = userId;
       appointment.cancelReason = cancelReason || "";
+      appointment.completedAt = undefined;
     }
     if (status === "confirmed" && appointment.type === "online" && !appointment.meetingUrl) {
       appointment.meetingUrl = `https://meet.google.com/lookup/${appointment._id.toString().slice(-8)}`;
     }
+    if (status === "completed") {
+      appointment.completedAt = new Date();
+    }
+    if (status === "no_show") {
+      appointment.completedAt = undefined;
+    }
+    if (vetNotes !== undefined) {
+      appointment.vetNotes = normalizeOptionalText(vetNotes) || "";
+      appointment.clinicalRecordUpdatedAt = new Date();
+    }
     await appointment.save();
 
     // Socket.io bildirimi
-    if (io?.to) {
-      io.to(`user:${String(appointment.userId)}`).emit("appointment:updated", {
+    const socket = await getIo();
+    if (socket?.to) {
+      socket.to(`user:${String(appointment.userId)}`).emit("appointment:updated", {
         appointmentId: appointment._id,
         status,
         veterinaryName: appointment.veterinaryId?.name || "",
@@ -650,6 +747,318 @@ export async function rescheduleAppointment(req, res) {
   }
 }
 
+// PATCH /api/appointments/:id/clinical-record
+export async function updateAppointmentClinicalRecord(req, res) {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
+
+    const appointment = await loadAppointmentWithRelations(req.params.id);
+    if (!appointment) {
+      return sendError(res, 404, "Randevu bulunamadi", "appointment_not_found");
+    }
+
+    const viewerRole = getAppointmentViewerRole(req.user, appointment);
+    if (!["vet", "admin"].includes(viewerRole || "")) {
+      return sendError(res, 403, "Sadece veteriner veya admin klinik kaydi guncelleyebilir", "forbidden");
+    }
+
+    if (appointment.status === "cancelled") {
+      return sendError(res, 400, "Iptal edilen randevuya klinik kayit eklenemez", "invalid_status");
+    }
+
+    const { vetNotes, diagnosis, treatmentSummary, followUpDate, feeAmount } = req.body || {};
+    const changedFields = [];
+
+    if (vetNotes !== undefined) {
+      appointment.vetNotes = normalizeOptionalText(vetNotes) || "";
+      changedFields.push("vetNotes");
+    }
+    if (diagnosis !== undefined) {
+      appointment.diagnosis = normalizeOptionalText(diagnosis, 500) || "";
+      changedFields.push("diagnosis");
+    }
+    if (treatmentSummary !== undefined) {
+      appointment.treatmentSummary = normalizeOptionalText(treatmentSummary, 2000) || "";
+      changedFields.push("treatmentSummary");
+    }
+    if (followUpDate !== undefined) {
+      const parsedFollowUpDate = parseOptionalDate(followUpDate);
+      appointment.followUpDate = parsedFollowUpDate || undefined;
+      changedFields.push("followUpDate");
+    }
+    if (feeAmount !== undefined) {
+      const parsedFeeAmount = Number(feeAmount);
+      if (!Number.isFinite(parsedFeeAmount) || parsedFeeAmount < 0) {
+        return sendError(res, 400, "Ucret tutari gecersiz", "validation_error");
+      }
+      appointment.feeAmount = Math.round(parsedFeeAmount * 100) / 100;
+      changedFields.push("feeAmount");
+    }
+
+    if (!changedFields.length) {
+      return sendError(res, 400, "Guncellenecek klinik kayit alani bulunamadi", "validation_error");
+    }
+
+    appointment.clinicalRecordUpdatedAt = new Date();
+    await appointment.save();
+
+    const updatedAppointment = await loadAppointmentWithRelations(req.params.id);
+
+    await emitAppointmentNotification({
+      appointment: updatedAppointment,
+      eventName: "appointment:clinical_record_updated",
+      socketPayload: {
+        appointmentId: String(updatedAppointment._id),
+        veterinaryName: updatedAppointment.veterinaryId?.name || "",
+        petName: updatedAppointment.petId?.name || "",
+        action: "clinical_record_updated",
+      },
+      title: "Veteriner Notlari Guncellendi",
+      body: `${updatedAppointment.petId?.name || "Evcil hayvaniniz"} icin klinik kayit guncellendi.`,
+      pushType: "appointment_clinical_record_updated",
+      excludeUserId: req.user.sub,
+    });
+
+    await recordAudit("appointment.clinical_record.update", {
+      userId: req.user.sub,
+      entityType: "appointment",
+      entityId: req.params.id,
+      metadata: { changedFields },
+    });
+
+    return sendOk(res, 200, { appointment: updatedAppointment });
+  } catch (err) {
+    console.error("[updateAppointmentClinicalRecord]", err);
+    return sendError(res, 500, "Klinik kayit guncellenemedi", "internal_error", err.message);
+  }
+}
+
+// GET /api/appointments/vet-earnings
+export async function getVetEarningsSummary(req, res) {
+  try {
+    const userId = req.user.sub;
+    const vet = await Veterinary.findOne({ userId, isActive: true }).select(
+      "_id name clinicConsultationFee onlineConsultationFee"
+    );
+    if (!vet) {
+      return sendError(res, 404, "Klinik bulunamadi veya size ait degil", "vet_not_found");
+    }
+
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    monthStart.setHours(0, 0, 0, 0);
+    const dailyStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 13);
+    dailyStart.setHours(0, 0, 0, 0);
+    const monthlyStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    monthlyStart.setHours(0, 0, 0, 0);
+
+    const basePipeline = [
+      { $match: { veterinaryId: vet._id } },
+      {
+        $addFields: {
+          settledAt: { $ifNull: ["$completedAt", "$date"] },
+          resolvedFeeAmount: { $ifNull: ["$feeAmount", 0] },
+        },
+      },
+    ];
+
+    const [
+      statsRaw,
+      dailyTrendRaw,
+      monthlyTrendRaw,
+      typeBreakdownRaw,
+      recentCompleted,
+    ] = await Promise.all([
+      Appointment.aggregate([
+        ...basePipeline,
+        {
+          $group: {
+            _id: null,
+            totalAppointments: { $sum: 1 },
+            pendingAppointments: {
+              $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] },
+            },
+            confirmedAppointments: {
+              $sum: { $cond: [{ $eq: ["$status", "confirmed"] }, 1, 0] },
+            },
+            completedAppointments: {
+              $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] },
+            },
+            cancelledAppointments: {
+              $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] },
+            },
+            noShowAppointments: {
+              $sum: { $cond: [{ $eq: ["$status", "no_show"] }, 1, 0] },
+            },
+            totalRevenue: {
+              $sum: {
+                $cond: [{ $eq: ["$status", "completed"] }, "$resolvedFeeAmount", 0],
+              },
+            },
+            thisMonthRevenue: {
+              $sum: {
+                $cond: [
+                  {
+                    $and: [
+                      { $eq: ["$status", "completed"] },
+                      { $gte: ["$settledAt", monthStart] },
+                    ],
+                  },
+                  "$resolvedFeeAmount",
+                  0,
+                ],
+              },
+            },
+            upcomingRevenue: {
+              $sum: {
+                $cond: [{ $eq: ["$status", "confirmed"] }, "$resolvedFeeAmount", 0],
+              },
+            },
+            averageCompletedFee: {
+              $avg: {
+                $cond: [{ $eq: ["$status", "completed"] }, "$resolvedFeeAmount", null],
+              },
+            },
+          },
+        },
+      ]),
+      Appointment.aggregate([
+        ...basePipeline,
+        {
+          $match: {
+            status: "completed",
+            settledAt: { $gte: dailyStart },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: "$settledAt",
+                timezone: "Europe/Istanbul",
+              },
+            },
+            revenue: { $sum: "$resolvedFeeAmount" },
+            appointments: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
+      Appointment.aggregate([
+        ...basePipeline,
+        {
+          $match: {
+            status: "completed",
+            settledAt: { $gte: monthlyStart },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              $dateToString: {
+                format: "%Y-%m",
+                date: "$settledAt",
+                timezone: "Europe/Istanbul",
+              },
+            },
+            revenue: { $sum: "$resolvedFeeAmount" },
+            appointments: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
+      Appointment.aggregate([
+        ...basePipeline,
+        { $match: { status: "completed" } },
+        {
+          $group: {
+            _id: "$type",
+            revenue: { $sum: "$resolvedFeeAmount" },
+            appointments: { $sum: 1 },
+          },
+        },
+        { $sort: { revenue: -1 } },
+      ]),
+      Appointment.find({ veterinaryId: vet._id, status: "completed" })
+        .populate("userId", "name")
+        .populate("petId", "name")
+        .sort({ completedAt: -1, date: -1 })
+        .limit(5)
+        .lean(),
+    ]);
+
+    const stats = statsRaw?.[0] || {};
+
+    const dailySeries = [];
+    for (let index = 0; index < 14; index += 1) {
+      const cursor = new Date(dailyStart);
+      cursor.setDate(cursor.getDate() + index);
+      const key = getDateKey(cursor);
+      const matched = (dailyTrendRaw || []).find((item) => item._id === key);
+      dailySeries.push({
+        key,
+        label: `${String(cursor.getDate()).padStart(2, "0")}/${String(cursor.getMonth() + 1).padStart(2, "0")}`,
+        revenue: Math.round(((matched?.revenue || 0) * 100)) / 100,
+        appointments: matched?.appointments || 0,
+      });
+    }
+
+    const monthlySeries = [];
+    for (let index = 0; index < 6; index += 1) {
+      const cursor = new Date(monthlyStart);
+      cursor.setMonth(cursor.getMonth() + index);
+      const key = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
+      const matched = (monthlyTrendRaw || []).find((item) => item._id === key);
+      monthlySeries.push({
+        key,
+        label: `${String(cursor.getMonth() + 1).padStart(2, "0")}/${cursor.getFullYear()}`,
+        revenue: Math.round(((matched?.revenue || 0) * 100)) / 100,
+        appointments: matched?.appointments || 0,
+      });
+    }
+
+    return sendOk(res, 200, {
+      summary: {
+        vetId: vet._id,
+        vetName: vet.name,
+        totalRevenue: Math.round(((stats.totalRevenue || 0) * 100)) / 100,
+        thisMonthRevenue: Math.round(((stats.thisMonthRevenue || 0) * 100)) / 100,
+        upcomingRevenue: Math.round(((stats.upcomingRevenue || 0) * 100)) / 100,
+        averageCompletedFee: Math.round(((stats.averageCompletedFee || 0) * 100)) / 100,
+        totalAppointments: stats.totalAppointments || 0,
+        pendingAppointments: stats.pendingAppointments || 0,
+        confirmedAppointments: stats.confirmedAppointments || 0,
+        completedAppointments: stats.completedAppointments || 0,
+        cancelledAppointments: stats.cancelledAppointments || 0,
+        noShowAppointments: stats.noShowAppointments || 0,
+        clinicConsultationFee: Math.round(((vet.clinicConsultationFee || 0) * 100)) / 100,
+        onlineConsultationFee: Math.round(((vet.onlineConsultationFee || 0) * 100)) / 100,
+      },
+      dailyTrend: dailySeries,
+      monthlyTrend: monthlySeries,
+      typeBreakdown: (typeBreakdownRaw || []).map((item) => ({
+        type: item._id || "clinic",
+        label: item._id === "online" ? "Online" : "Klinik",
+        revenue: Math.round(((item.revenue || 0) * 100)) / 100,
+        appointments: item.appointments || 0,
+      })),
+      recentCompleted: recentCompleted.map((item) => ({
+        id: item._id,
+        petName: item.petId?.name || "Pet",
+        ownerName: item.userId?.name || "Musteri",
+        type: item.type || "clinic",
+        feeAmount: Math.round((((item.feeAmount || 0) * 100))) / 100,
+        completedAt: item.completedAt || item.date,
+      })),
+    });
+  } catch (err) {
+    console.error("[getVetEarningsSummary]", err);
+    return sendError(res, 500, "Veteriner kazanc ozeti alinamadi", "internal_error", err.message);
+  }
+}
+
 // GET /api/appointments/vet/:veterinaryId/slots?date=2026-03-01
 export async function getAvailableSlots(req, res) {
   try {
@@ -812,6 +1221,11 @@ export async function createAppointmentPrescription(req, res) {
       notes: notes?.toString().trim() || "",
       followUpDate: parsedFollowUpDate || undefined,
     });
+
+    appointment.diagnosis = String(diagnosis).trim();
+    appointment.followUpDate = parsedFollowUpDate || appointment.followUpDate;
+    appointment.clinicalRecordUpdatedAt = new Date();
+    await appointment.save();
 
     await emitAppointmentNotification({
       appointment,

@@ -3,6 +3,7 @@ import {
   ChartBarIcon,
   ChatBubbleBottomCenterTextIcon,
   ClipboardDocumentListIcon,
+  Cog6ToothIcon,
   CubeIcon,
   DocumentMagnifyingGlassIcon,
   FlagIcon,
@@ -13,6 +14,7 @@ import {
   ShoppingBagIcon,
   ShoppingCartIcon,
   ShieldCheckIcon,
+  ShieldExclamationIcon,
   UsersIcon,
 } from '@heroicons/react/24/outline'
 
@@ -26,11 +28,13 @@ export const adminNavigation = [
       { to: '/orders', label: 'Siparisler', icon: ShoppingCartIcon },
       { to: '/returns', label: 'Iadeler', icon: ArrowUturnLeftIcon },
       { to: '/coupons', label: 'Kuponlar', icon: ReceiptPercentIcon },
+      { to: '/platform-settings', label: 'Platform Ayarlari', icon: Cog6ToothIcon },
     ],
   },
   {
     title: 'Moderasyon',
     items: [
+      { to: '/moderation-queue', label: 'Moderasyon Kuyrugu', icon: ShieldExclamationIcon },
       { to: '/reports', label: 'Sikayetler', icon: FlagIcon },
       { to: '/posts', label: 'Gonderiler', icon: DocumentMagnifyingGlassIcon },
       { to: '/support', label: 'Destek', icon: ChatBubbleBottomCenterTextIcon },

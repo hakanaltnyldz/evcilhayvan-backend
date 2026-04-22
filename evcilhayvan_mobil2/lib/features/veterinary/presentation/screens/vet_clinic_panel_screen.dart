@@ -53,6 +53,9 @@ final _vetClinicPanelProvider =
       double averageRating = 0;
       int ratingCount = 0;
       List<AppointmentModel> appointments = const [];
+      List<AvailabilityOverrideModel> availabilityOverrides =
+          vet.availabilityOverrides;
+      List<Map<String, dynamic>> bookingLoad = const [];
 
       try {
         final reviewData = await vetRepo.getVetReviews(vet.id);
@@ -67,6 +70,17 @@ final _vetClinicPanelProvider =
             (schedule['appointments'] as List<AppointmentModel>?) ?? const [];
       } catch (_) {}
 
+      try {
+        final availabilityData = await vetRepo.getMyClinicAvailability();
+        availabilityOverrides =
+            (availabilityData['availabilityOverrides']
+                as List<AvailabilityOverrideModel>?) ??
+            availabilityOverrides;
+        bookingLoad =
+            (availabilityData['bookingLoad'] as List<Map<String, dynamic>>?) ??
+            const [];
+      } catch (_) {}
+
       return _VetClinicPanelData(
         vet: vet,
         claim: activeClaim,
@@ -74,6 +88,8 @@ final _vetClinicPanelProvider =
         averageRating: averageRating,
         ratingCount: ratingCount,
         appointments: appointments,
+        availabilityOverrides: availabilityOverrides,
+        bookingLoad: bookingLoad,
       );
     });
 
@@ -94,6 +110,8 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
   final _websiteController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _slotMinutesController = TextEditingController();
+  final _clinicFeeController = TextEditingController();
+  final _onlineFeeController = TextEditingController();
 
   bool _acceptsOnlineAppointments = false;
   bool _saving = false;
@@ -101,6 +119,8 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
   final Set<String> _selectedSpecies = <String>{};
   final Set<String> _selectedServices = <String>{};
   List<_WorkingHoursDraft> _workingHours = _buildDefaultWorkingHours();
+  List<_AvailabilityOverrideDraft> _availabilityOverrides =
+      _buildAvailabilityDrafts();
 
   static const Map<String, String> _speciesOptions = {
     'dog': 'Kopek',
@@ -131,6 +151,8 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
     _websiteController.dispose();
     _descriptionController.dispose();
     _slotMinutesController.dispose();
+    _clinicFeeController.dispose();
+    _onlineFeeController.dispose();
     super.dispose();
   }
 
@@ -147,7 +169,10 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
         title: const Text('Klinik Panelim'),
         actions: [
           IconButton(
-            onPressed: () => ref.invalidate(_vetClinicPanelProvider),
+            onPressed: () {
+              setState(() => _seededVetId = null);
+              ref.invalidate(_vetClinicPanelProvider);
+            },
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -182,9 +207,16 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
           final completedCount = data.appointments
               .where((item) => item.status == 'completed')
               .length;
+          final bookingLoadByDate = <String, Map<String, dynamic>>{
+            for (final item in data.bookingLoad)
+              (item['date']?.toString() ?? ''): item,
+          };
 
           return RefreshIndicator(
-            onRefresh: () async => ref.invalidate(_vetClinicPanelProvider),
+            onRefresh: () async {
+              setState(() => _seededVetId = null);
+              ref.invalidate(_vetClinicPanelProvider);
+            },
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -297,6 +329,32 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
                           label: 'Randevu Slot Dakikasi',
                           keyboardType: TextInputType.number,
                         ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _clinicFeeController,
+                                label: 'Klinik Ucreti (TL)',
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _onlineFeeController,
+                                label: 'Online Ucret (TL)',
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -368,22 +426,49 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
                 ),
                 const SizedBox(height: 16),
                 _SectionCard(
-                  title: 'Son Yorumlar',
+                  title: 'Takvim ve Uygunluk',
                   subtitle:
-                      'Klinik kalitesini takip etmek icin son gelen geri bildirimler.',
-                  child: data.reviews.isEmpty
-                      ? const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8),
-                          child: Text(
-                            'Henuz uygulama ici yorum yok.',
-                            style: TextStyle(color: Colors.grey),
+                      'Gelecek 14 gun icin klinigi kapatabilir veya gunluk saat override tanimlayabilirsiniz.',
+                  child: Column(
+                    children: _availabilityOverrides
+                        .map(
+                          (item) => _AvailabilityOverrideRow(
+                            item: item,
+                            bookingLoad:
+                                (bookingLoadByDate[item.dateKey]?['total']
+                                        as num?)
+                                    ?.toInt() ??
+                                0,
+                            onClosedChanged: (value) => setState(() {
+                              item.isClosed = value;
+                              if (value) {
+                                item.open = null;
+                                item.close = null;
+                              }
+                            }),
+                            onPickOpen: () => _pickAvailabilityTime(item, true),
+                            onPickClose: () =>
+                                _pickAvailabilityTime(item, false),
+                            onReset: () => setState(() {
+                              item.isClosed = false;
+                              item.open = null;
+                              item.close = null;
+                            }),
                           ),
                         )
-                      : Column(
-                          children: data.reviews.take(3).map((review) {
-                            return _ReviewTile(review: review);
-                          }).toList(),
-                        ),
+                        .toList(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _SectionCard(
+                  title: 'Yorum Paneli',
+                  subtitle:
+                      'Tum yorumlari, puan ortalamasini ve son geri bildirimleri bu alandan izleyin.',
+                  child: _VetReviewPanel(
+                    averageRating: data.averageRating,
+                    ratingCount: data.ratingCount,
+                    reviews: data.reviews,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
@@ -428,6 +513,16 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
     _websiteController.text = data.vet.website ?? '';
     _descriptionController.text = data.vet.description ?? '';
     _slotMinutesController.text = data.vet.appointmentSlotMinutes.toString();
+    _clinicFeeController.text = data.vet.clinicConsultationFee == 0
+        ? ''
+        : data.vet.clinicConsultationFee.toStringAsFixed(
+            data.vet.clinicConsultationFee % 1 == 0 ? 0 : 2,
+          );
+    _onlineFeeController.text = data.vet.onlineConsultationFee == 0
+        ? ''
+        : data.vet.onlineConsultationFee.toStringAsFixed(
+            data.vet.onlineConsultationFee % 1 == 0 ? 0 : 2,
+          );
     _acceptsOnlineAppointments = data.vet.acceptsOnlineAppointments;
     _selectedSpecies
       ..clear()
@@ -436,10 +531,36 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
       ..clear()
       ..addAll(data.vet.services);
     _workingHours = _seedWorkingHours(data.vet.workingHours);
+    _availabilityOverrides = _seedAvailabilityDrafts(
+      data.availabilityOverrides,
+    );
     setState(() {});
   }
 
   Future<void> _pickTime(_WorkingHoursDraft item, bool isOpen) async {
+    if (item.isClosed) return;
+
+    final currentValue = isOpen ? item.open : item.close;
+    final initial =
+        _parseTime(currentValue) ?? const TimeOfDay(hour: 9, minute: 0);
+    final result = await showTimePicker(context: context, initialTime: initial);
+
+    if (result == null || !mounted) return;
+
+    setState(() {
+      final formatted = _formatTime(result);
+      if (isOpen) {
+        item.open = formatted;
+      } else {
+        item.close = formatted;
+      }
+    });
+  }
+
+  Future<void> _pickAvailabilityTime(
+    _AvailabilityOverrideDraft item,
+    bool isOpen,
+  ) async {
     if (item.isClosed) return;
 
     final currentValue = isOpen ? item.open : item.close;
@@ -470,9 +591,39 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
       return;
     }
 
+    for (final item in _availabilityOverrides) {
+      if (item.isClosed) continue;
+      final hasOpen = (item.open ?? '').isNotEmpty;
+      final hasClose = (item.close ?? '').isNotEmpty;
+      if (hasOpen != hasClose) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${item.label} icin acilis ve kapanis birlikte girilmeli.',
+            ),
+          ),
+        );
+        return;
+      }
+      if (hasOpen && hasClose && item.open!.compareTo(item.close!) >= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${item.label} icin kapanis saati acilistan sonra olmali.',
+            ),
+          ),
+        );
+        return;
+      }
+    }
+
     setState(() => _saving = true);
     try {
       final repo = ref.read(veterinaryRepositoryProvider);
+      final clinicFee =
+          double.tryParse(_clinicFeeController.text.replaceAll(',', '.')) ?? 0;
+      final onlineFee =
+          double.tryParse(_onlineFeeController.text.replaceAll(',', '.')) ?? 0;
       await repo.updateVetProfile(vetId, {
         'name': _nameController.text.trim(),
         'address': _addressController.text.trim(),
@@ -484,9 +635,17 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
         'speciesServed': _selectedSpecies.toList(),
         'acceptsOnlineAppointments': _acceptsOnlineAppointments,
         'appointmentSlotMinutes': slotMinutes,
+        'clinicConsultationFee': clinicFee,
+        'onlineConsultationFee': onlineFee,
         'workingHours': _workingHours.map((item) => item.toJson()).toList(),
       });
+      await repo.updateMyClinicAvailability(
+        _availabilityOverrides.map((item) => item.toJson()).toList(),
+      );
 
+      if (mounted) {
+        setState(() => _seededVetId = null);
+      }
       ref.invalidate(_vetClinicPanelProvider);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -549,6 +708,13 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
   }
 }
 
+String _formatDateOnly(DateTime value) {
+  final local = value.toLocal();
+  final month = local.month.toString().padLeft(2, '0');
+  final day = local.day.toString().padLeft(2, '0');
+  return '${local.year}-$month-$day';
+}
+
 class _VetClinicPanelData {
   const _VetClinicPanelData({
     required this.vet,
@@ -557,6 +723,8 @@ class _VetClinicPanelData {
     required this.averageRating,
     required this.ratingCount,
     required this.appointments,
+    required this.availabilityOverrides,
+    required this.bookingLoad,
   });
 
   final VeterinaryModel vet;
@@ -565,6 +733,8 @@ class _VetClinicPanelData {
   final double averageRating;
   final int ratingCount;
   final List<AppointmentModel> appointments;
+  final List<AvailabilityOverrideModel> availabilityOverrides;
+  final List<Map<String, dynamic>> bookingLoad;
 }
 
 class _ClinicHeroCard extends StatelessWidget {
@@ -951,6 +1121,125 @@ class _WorkingHoursRow extends StatelessWidget {
   }
 }
 
+class _AvailabilityOverrideRow extends StatelessWidget {
+  const _AvailabilityOverrideRow({
+    required this.item,
+    required this.bookingLoad,
+    required this.onClosedChanged,
+    required this.onPickOpen,
+    required this.onPickClose,
+    required this.onReset,
+  });
+
+  final _AvailabilityOverrideDraft item;
+  final int bookingLoad;
+  final ValueChanged<bool> onClosedChanged;
+  final VoidCallback onPickOpen;
+  final VoidCallback onPickClose;
+  final VoidCallback onReset;
+
+  @override
+  Widget build(BuildContext context) {
+    final helperText = item.isClosed
+        ? 'Bu tarih randevuya kapatildi'
+        : (item.hasCustomHours
+              ? 'Haftalik plani bu tarih icin override eder'
+              : 'Haftalik plana gore calisir');
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.label,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        helperText,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (bookingLoad > 0)
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF4D6),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      '$bookingLoad randevu',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF8C5E00),
+                      ),
+                    ),
+                  ),
+                Switch.adaptive(
+                  value: item.isClosed,
+                  activeColor: Colors.red.shade600,
+                  onChanged: onClosedChanged,
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: _TimeButton(
+                    label: 'Acilis',
+                    value: item.open ?? 'Varsayilan',
+                    enabled: !item.isClosed,
+                    onTap: onPickOpen,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _TimeButton(
+                    label: 'Kapanis',
+                    value: item.close ?? 'Varsayilan',
+                    enabled: !item.isClosed,
+                    onTap: onPickClose,
+                  ),
+                ),
+              ],
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: onReset,
+                icon: const Icon(Icons.restart_alt_rounded),
+                label: const Text('Haftalik plana don'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _TimeButton extends StatelessWidget {
   const _TimeButton({
     required this.label,
@@ -1008,6 +1297,161 @@ class _TimeButton extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _VetReviewPanel extends StatelessWidget {
+  const _VetReviewPanel({
+    required this.averageRating,
+    required this.ratingCount,
+    required this.reviews,
+  });
+
+  final double averageRating;
+  final int ratingCount;
+  final List<VetReview> reviews;
+
+  @override
+  Widget build(BuildContext context) {
+    if (reviews.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: Text(
+          'Henuz uygulama ici yorum yok.',
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+
+    final visibleReviews = reviews.take(5).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF4D6),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    averageRating.toStringAsFixed(1),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$ratingCount yorum',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _ReviewStatPill(
+                    icon: Icons.rate_review_outlined,
+                    label: 'Son yorumlar',
+                  ),
+                  _ReviewStatPill(
+                    icon: Icons.thumb_up_alt_outlined,
+                    label: 'Kalite takibi',
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        ...visibleReviews.map((review) => _ReviewTile(review: review)),
+        if (reviews.length > visibleReviews.length)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () {
+                showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  showDragHandle: true,
+                  builder: (context) => SafeArea(
+                    child: FractionallySizedBox(
+                      heightFactor: 0.88,
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                        children: [
+                          Text(
+                            'Tum Klinik Yorumlari',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.w900),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '$ratingCount yorum | Ortalama ${averageRating.toStringAsFixed(1)}',
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          ...reviews.map(
+                            (review) => _ReviewTile(review: review),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.open_in_full_rounded),
+              label: const Text('Tum yorumlari gor'),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _ReviewStatPill extends StatelessWidget {
+  const _ReviewStatPill({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD8F3DC),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: const Color(0xFF1B4332)),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1B4332),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1200,6 +1644,34 @@ class _WorkingHoursDraft {
   };
 }
 
+class _AvailabilityOverrideDraft {
+  _AvailabilityOverrideDraft({
+    required this.date,
+    this.open,
+    this.close,
+    this.isClosed = false,
+  });
+
+  final DateTime date;
+  String? open;
+  String? close;
+  bool isClosed;
+
+  bool get hasCustomHours =>
+      (open ?? '').isNotEmpty || (close ?? '').isNotEmpty;
+
+  String get dateKey => _formatDateOnly(date);
+
+  String get label => DateFormat('dd MMM, EEEE', 'tr_TR').format(date);
+
+  Map<String, dynamic> toJson() => {
+    'date': dateKey,
+    'open': isClosed ? null : open,
+    'close': isClosed ? null : close,
+    'isClosed': isClosed,
+  };
+}
+
 Map<String, dynamic>? _pickPreferredClaim(List<Map<String, dynamic>> claims) {
   if (claims.isEmpty) return null;
   for (final claim in claims) {
@@ -1243,6 +1715,14 @@ List<_WorkingHoursDraft> _buildDefaultWorkingHours() {
   );
 }
 
+List<_AvailabilityOverrideDraft> _buildAvailabilityDrafts({int days = 14}) {
+  final now = DateTime.now();
+  return List<_AvailabilityOverrideDraft>.generate(days, (index) {
+    final date = DateTime(now.year, now.month, now.day + index);
+    return _AvailabilityOverrideDraft(date: date);
+  });
+}
+
 List<_WorkingHoursDraft> _seedWorkingHours(List<WorkingHours> source) {
   final drafts = _buildDefaultWorkingHours();
   for (final item in source) {
@@ -1253,5 +1733,25 @@ List<_WorkingHoursDraft> _seedWorkingHours(List<WorkingHours> source) {
     draft.close = item.close ?? draft.close;
     draft.isClosed = item.isClosed;
   }
+  return drafts;
+}
+
+List<_AvailabilityOverrideDraft> _seedAvailabilityDrafts(
+  List<AvailabilityOverrideModel> source, {
+  int days = 14,
+}) {
+  final drafts = _buildAvailabilityDrafts(days: days);
+  final sourceByDate = <String, AvailabilityOverrideModel>{
+    for (final item in source) _formatDateOnly(item.date): item,
+  };
+
+  for (final draft in drafts) {
+    final match = sourceByDate[draft.dateKey];
+    if (match == null) continue;
+    draft.open = match.open;
+    draft.close = match.close;
+    draft.isClosed = match.isClosed;
+  }
+
   return drafts;
 }

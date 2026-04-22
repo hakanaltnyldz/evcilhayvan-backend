@@ -4,6 +4,7 @@ import { param, query } from "express-validator";
 import mongoose from "mongoose";
 import rateLimit from "express-rate-limit";
 import { authRequired } from "../middlewares/auth.js";
+import { config as appConfig } from "../config/config.js";
 import { sendOk, sendError } from "../utils/apiResponse.js";
 import User from "../models/User.js";
 import Pet from "../models/Pet.js";
@@ -13,6 +14,7 @@ import UserReport from "../models/UserReport.js";
 import Coupon from "../models/Coupon.js";
 import CouponUsage from "../models/CouponUsage.js";
 import SupportTicket from "../models/SupportTicket.js";
+import PlatformConfig from "../models/PlatformConfig.js";
 import PetSitter from "../models/PetSitter.js";
 import Appointment from "../models/Appointment.js";
 import VetClaimRequest from "../models/VetClaimRequest.js";
@@ -127,8 +129,603 @@ function buildTimelineBuckets({ fromDate, toDate, now = new Date() }) {
   };
 }
 
+const PLATFORM_CONFIG_KEY = "default";
+
+function toNumberSetting(value, { field, min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) {
+    throw new Error(`${field} sayi olmali`);
+  }
+  if (numericValue < min || numericValue > max) {
+    throw new Error(`${field} ${min} ile ${max} arasinda olmali`);
+  }
+  return numericValue;
+}
+
+function toBooleanSetting(value, { field } = {}) {
+  if (typeof value !== "boolean") {
+    throw new Error(`${field} true/false olmali`);
+  }
+  return value;
+}
+
+function toTrimmedString(value, { field, maxLength = 255, allowEmpty = true } = {}) {
+  if (typeof value !== "string") {
+    throw new Error(`${field} metin olmali`);
+  }
+  const trimmed = value.trim();
+  if (!allowEmpty && !trimmed) {
+    throw new Error(`${field} bos birakilamaz`);
+  }
+  if (trimmed.length > maxLength) {
+    throw new Error(`${field} en fazla ${maxLength} karakter olabilir`);
+  }
+  return trimmed;
+}
+
+function normalizePlatformConfig(doc) {
+  if (!doc) return null;
+  return {
+    id: doc.id || doc._id?.toString(),
+    fees: {
+      storeCommissionRate: Number(doc.fees?.storeCommissionRate ?? 12),
+      sitterCommissionRate: Number(doc.fees?.sitterCommissionRate ?? 10),
+      vetCommissionRate: Number(doc.fees?.vetCommissionRate ?? 8),
+      payoutReserveDays: Number(doc.fees?.payoutReserveDays ?? 7),
+      returnWindowDays: Number(doc.fees?.returnWindowDays ?? 14),
+      freeShippingThreshold: Number(doc.fees?.freeShippingThreshold ?? 750),
+    },
+    features: {
+      storeEnabled: Boolean(doc.features?.storeEnabled ?? true),
+      sitterMatchingEnabled: Boolean(doc.features?.sitterMatchingEnabled ?? true),
+      vetAppointmentsEnabled: Boolean(doc.features?.vetAppointmentsEnabled ?? true),
+      socialFeedEnabled: Boolean(doc.features?.socialFeedEnabled ?? true),
+      maintenanceMode: Boolean(doc.features?.maintenanceMode ?? false),
+    },
+    moderation: {
+      autoHideReportThreshold: Number(doc.moderation?.autoHideReportThreshold ?? 3),
+      reviewSlaHours: Number(doc.moderation?.reviewSlaHours ?? 24),
+      careReportReviewWindowHours: Number(doc.moderation?.careReportReviewWindowHours ?? 48),
+      escalateUserComplaintThreshold: Number(doc.moderation?.escalateUserComplaintThreshold ?? 5),
+    },
+    contact: {
+      supportEmail: doc.contact?.supportEmail || "",
+      supportPhone: doc.contact?.supportPhone || "",
+      supportWhatsapp: doc.contact?.supportWhatsapp || "",
+    },
+    announcement: {
+      enabled: Boolean(doc.announcement?.enabled ?? false),
+      tone: doc.announcement?.tone || "info",
+      message: doc.announcement?.message || "",
+    },
+    updatedAt: doc.updatedAt || null,
+    updatedBy: doc.updatedBy
+      ? {
+          id: doc.updatedBy._id?.toString?.() || doc.updatedBy.id || doc.updatedBy.toString?.(),
+          name: doc.updatedBy.name || "",
+          email: doc.updatedBy.email || "",
+        }
+      : null,
+  };
+}
+
+async function ensurePlatformConfig() {
+  const doc = await PlatformConfig.findOneAndUpdate(
+    { key: PLATFORM_CONFIG_KEY },
+    { $setOnInsert: { key: PLATFORM_CONFIG_KEY } },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  ).populate("updatedBy", "name email");
+  return doc;
+}
+
+function getModerationBadge(item) {
+  if (item.source === "report") return item.reasonLabel;
+  if (item.source === "support") return item.categoryLabel;
+  if (item.source === "post") return item.isActive ? "Yayinda" : "Gizli";
+  if (item.source === "care_report") return `${item.day}. gun`;
+  return item.source;
+}
+
+function getModerationPriority(value, fallback = "medium") {
+  if (["high", "medium", "low"].includes(value)) return value;
+  return fallback;
+}
+
+function buildModerationItem(item) {
+  const common = {
+    queueId: `${item.source}:${item.entityId}`,
+    source: item.source,
+    entityId: item.entityId,
+    createdAt: item.createdAt,
+    status: item.status,
+    priority: getModerationPriority(item.priority),
+    badge: getModerationBadge(item),
+  };
+
+  if (item.source === "report") {
+    return {
+      ...common,
+      title: `${item.reportedName || "Kullanici"} hakkinda sikayet`,
+      subtitle: `Sikayet eden: ${item.reporterName || "Bilinmiyor"}`,
+      excerpt: item.description || item.reasonLabel || "Aciklama eklenmemis.",
+      media: null,
+      metrics: [
+        { label: "Sebep", value: item.reasonLabel || item.reason },
+        { label: "Durum", value: item.statusLabel },
+      ],
+      actions: item.status === "pending" ? ["reviewed", "dismissed"] : [],
+    };
+  }
+
+  if (item.source === "support") {
+    return {
+      ...common,
+      title: `${item.categoryLabel || "Destek"} bildirimi`,
+      subtitle: item.userName || item.userEmail || "Kullanici bilgisi yok",
+      excerpt: item.message || "Mesaj yok",
+      media: null,
+      metrics: [
+        { label: "Kategori", value: item.categoryLabel || item.category },
+        { label: "Durum", value: item.statusLabel },
+      ],
+      actions: item.status === "closed" ? ["open"] : ["reviewing", "closed"],
+      adminNote: item.adminNote || "",
+    };
+  }
+
+  if (item.source === "post") {
+    return {
+      ...common,
+      title: item.userName ? `${item.userName} gonderisi` : "Kullanici gonderisi",
+      subtitle: `${item.photoCount} foto • ${item.commentCount} yorum • ${item.likeCount} begeni`,
+      excerpt: item.content || "Sadece fotograf iceren gonderi",
+      media: item.photoUrl || null,
+      metrics: [
+        { label: "Gorunurluk", value: item.isActive ? "Yayinda" : "Gizli" },
+        { label: "Etkilesim", value: `${item.likeCount}❤ / ${item.commentCount}💬` },
+      ],
+      actions: item.isActive ? ["hide", "delete"] : ["unhide", "delete"],
+    };
+  }
+
+  return {
+    ...common,
+    title: `${item.petOwnerName || "Musteri"} icin bakim raporu`,
+    subtitle: item.serviceLabel || "Bakim raporu",
+    excerpt: item.notes || "Bu raporda not bulunmuyor.",
+    media: item.photoUrl || null,
+    metrics: [
+      { label: "Pet", value: item.petName || "Bilinmiyor" },
+      { label: "Paylasim", value: item.sharedWithOwnerAt ? "Gonderildi" : "Taslak" },
+    ],
+    actions: ["delete"],
+  };
+}
+
 // Tüm admin endpointleri admin rolü gerektirir
 router.use(authRequired(["admin"]));
+
+// GET /api/admin/platform-config
+router.get("/platform-config", async (req, res) => {
+  try {
+    const configDoc = await ensurePlatformConfig();
+    return sendOk(res, 200, {
+      config: normalizePlatformConfig(configDoc),
+      runtime: {
+        env: appConfig.env,
+        hasGooglePlacesApiKey: Boolean(appConfig.googlePlacesApiKey),
+        hasMailerConfig: Boolean(appConfig.sendgridKey && appConfig.senderEmail),
+        hasAnthropicKey: Boolean(appConfig.anthropicApiKey),
+        uploadDirConfigured: Boolean(appConfig.uploadDir),
+      },
+    });
+  } catch (err) {
+    return sendError(res, 500, "Platform ayarlari alinamadi", "internal_error", err.message);
+  }
+});
+
+// PATCH /api/admin/platform-config
+router.patch("/platform-config", async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const update = {};
+
+    if (payload.fees) {
+      const fees = payload.fees;
+      if ("storeCommissionRate" in fees) update["fees.storeCommissionRate"] = toNumberSetting(fees.storeCommissionRate, { field: "Store komisyonu", min: 0, max: 100 });
+      if ("sitterCommissionRate" in fees) update["fees.sitterCommissionRate"] = toNumberSetting(fees.sitterCommissionRate, { field: "Bakici komisyonu", min: 0, max: 100 });
+      if ("vetCommissionRate" in fees) update["fees.vetCommissionRate"] = toNumberSetting(fees.vetCommissionRate, { field: "Veteriner komisyonu", min: 0, max: 100 });
+      if ("payoutReserveDays" in fees) update["fees.payoutReserveDays"] = toNumberSetting(fees.payoutReserveDays, { field: "Payout bekleme gunu", min: 0, max: 90 });
+      if ("returnWindowDays" in fees) update["fees.returnWindowDays"] = toNumberSetting(fees.returnWindowDays, { field: "Iade suresi", min: 0, max: 60 });
+      if ("freeShippingThreshold" in fees) update["fees.freeShippingThreshold"] = toNumberSetting(fees.freeShippingThreshold, { field: "Ucretsiz kargo esigi", min: 0, max: 1000000 });
+    }
+
+    if (payload.features) {
+      const features = payload.features;
+      if ("storeEnabled" in features) update["features.storeEnabled"] = toBooleanSetting(features.storeEnabled, { field: "Magaza aktifligi" });
+      if ("sitterMatchingEnabled" in features) update["features.sitterMatchingEnabled"] = toBooleanSetting(features.sitterMatchingEnabled, { field: "Bakici eslestirme" });
+      if ("vetAppointmentsEnabled" in features) update["features.vetAppointmentsEnabled"] = toBooleanSetting(features.vetAppointmentsEnabled, { field: "Veteriner randevulari" });
+      if ("socialFeedEnabled" in features) update["features.socialFeedEnabled"] = toBooleanSetting(features.socialFeedEnabled, { field: "Sosyal akis" });
+      if ("maintenanceMode" in features) update["features.maintenanceMode"] = toBooleanSetting(features.maintenanceMode, { field: "Bakim modu" });
+    }
+
+    if (payload.moderation) {
+      const moderation = payload.moderation;
+      if ("autoHideReportThreshold" in moderation) update["moderation.autoHideReportThreshold"] = toNumberSetting(moderation.autoHideReportThreshold, { field: "Auto-hide esigi", min: 1, max: 50 });
+      if ("reviewSlaHours" in moderation) update["moderation.reviewSlaHours"] = toNumberSetting(moderation.reviewSlaHours, { field: "Moderasyon SLA", min: 1, max: 168 });
+      if ("careReportReviewWindowHours" in moderation) update["moderation.careReportReviewWindowHours"] = toNumberSetting(moderation.careReportReviewWindowHours, { field: "Bakim raporu inceleme penceresi", min: 1, max: 168 });
+      if ("escalateUserComplaintThreshold" in moderation) update["moderation.escalateUserComplaintThreshold"] = toNumberSetting(moderation.escalateUserComplaintThreshold, { field: "Kullanici sikayet escalation esigi", min: 1, max: 50 });
+    }
+
+    if (payload.contact) {
+      const contact = payload.contact;
+      if ("supportEmail" in contact) update["contact.supportEmail"] = toTrimmedString(contact.supportEmail, { field: "Destek email", maxLength: 200 });
+      if ("supportPhone" in contact) update["contact.supportPhone"] = toTrimmedString(contact.supportPhone, { field: "Destek telefonu", maxLength: 40 });
+      if ("supportWhatsapp" in contact) update["contact.supportWhatsapp"] = toTrimmedString(contact.supportWhatsapp, { field: "WhatsApp hatti", maxLength: 40 });
+    }
+
+    if (payload.announcement) {
+      const announcement = payload.announcement;
+      if ("enabled" in announcement) update["announcement.enabled"] = toBooleanSetting(announcement.enabled, { field: "Duyuru aktifligi" });
+      if ("tone" in announcement) {
+        if (!["info", "warning", "success"].includes(String(announcement.tone))) {
+          return sendError(res, 400, "Duyuru tonu gecersiz", "validation_error");
+        }
+        update["announcement.tone"] = String(announcement.tone);
+      }
+      if ("message" in announcement) update["announcement.message"] = toTrimmedString(announcement.message, { field: "Duyuru mesaji", maxLength: 240 });
+    }
+
+    if (!Object.keys(update).length) {
+      return sendError(res, 400, "Guncellenecek alan bulunamadi", "validation_error");
+    }
+
+    update.updatedBy = req.user.sub;
+
+    const configDoc = await PlatformConfig.findOneAndUpdate(
+      { key: PLATFORM_CONFIG_KEY },
+      {
+        $set: update,
+        $setOnInsert: { key: PLATFORM_CONFIG_KEY },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    ).populate("updatedBy", "name email");
+
+    await recordAudit("admin.platform_config.update", {
+      userId: req.user.sub,
+      entityType: "PlatformConfig",
+      entityId: configDoc._id.toString(),
+      metadata: Object.keys(update),
+    });
+
+    return sendOk(res, 200, {
+      message: "Platform ayarlari guncellendi",
+      config: normalizePlatformConfig(configDoc),
+    });
+  } catch (err) {
+    return sendError(res, 400, err.message || "Platform ayarlari kaydedilemedi", "validation_error");
+  }
+});
+
+// GET /api/admin/moderation/queue?page=1&status=open|resolved|all&source=all|reports|support|posts|care_reports
+router.get("/moderation/queue", async (req, res) => {
+  try {
+    const pagination = getPagination(req, res, { defaultLimit: 20, maxLimit: 30 });
+    if (!pagination) return;
+    const { page, limit } = pagination;
+    const source = ["all", "reports", "support", "posts", "care_reports"].includes(String(req.query.source))
+      ? String(req.query.source)
+      : "all";
+    const status = ["open", "resolved", "all"].includes(String(req.query.status))
+      ? String(req.query.status)
+      : "open";
+    const search = String(req.query.search || "").trim();
+    const fetchLimit = page * limit;
+    const configDoc = await ensurePlatformConfig();
+    const reviewWindowHours = normalizePlatformConfig(configDoc)?.moderation?.careReportReviewWindowHours ?? 48;
+    const reviewWindowDate = new Date(Date.now() - reviewWindowHours * 60 * 60 * 1000);
+
+    const reportReasons = {
+      spam: "Spam",
+      harassment: "Taciz",
+      inappropriate_content: "Uygunsuz Icerik",
+      fake_profile: "Sahte Profil",
+      other: "Diger",
+    };
+    const supportCategories = {
+      content_complaint: "Icerik Sikayeti",
+      user_complaint: "Kullanici Sikayeti",
+    };
+    const supportStatuses = {
+      open: "Acik",
+      reviewing: "Inceleniyor",
+      closed: "Kapali",
+    };
+
+    const shouldInclude = (key) => source === "all" || source === key;
+    const reportFilter = {};
+    if (status === "open") reportFilter.status = "pending";
+    if (status === "resolved") reportFilter.status = { $in: ["reviewed", "dismissed"] };
+    if (search) {
+      const regex = new RegExp(escapeRegex(search), "i");
+      reportFilter.$or = [{ description: regex }];
+    }
+
+    const supportFilter = {
+      category: { $in: ["content_complaint", "user_complaint"] },
+    };
+    if (status === "open") supportFilter.status = { $in: ["open", "reviewing"] };
+    if (status === "resolved") supportFilter.status = "closed";
+    if (search) {
+      const regex = new RegExp(escapeRegex(search), "i");
+      supportFilter.$or = [{ message: regex }, { adminNote: regex }];
+    }
+
+    const postFilter = {};
+    if (status === "open") postFilter.isActive = false;
+    if (status === "resolved") postFilter.isActive = true;
+    if (search) {
+      const regex = new RegExp(escapeRegex(search), "i");
+      postFilter.$or = [{ content: regex }, { userName: regex }, { petName: regex }];
+    }
+
+    const careReportFilter = {};
+    if (status === "open") careReportFilter.timestamp = { $gte: reviewWindowDate };
+    if (status === "resolved") careReportFilter.timestamp = { $lt: reviewWindowDate };
+    if (search) {
+      const regex = new RegExp(escapeRegex(search), "i");
+      careReportFilter.$or = [{ notes: regex }];
+    }
+
+    const [
+      reportsResult,
+      supportResult,
+      postsResult,
+      careReportsResult,
+      hiddenPostsCount,
+      openReportsCount,
+      openSupportCount,
+      recentCareReportsCount,
+    ] = await Promise.all([
+      shouldInclude("reports")
+        ? Promise.all([
+            UserReport.find(reportFilter)
+              .populate("reporterId", "name email")
+              .populate("reportedId", "name email")
+              .sort({ createdAt: -1 })
+              .limit(fetchLimit)
+              .lean(),
+            UserReport.countDocuments(reportFilter),
+          ])
+        : Promise.resolve([[], 0]),
+      shouldInclude("support")
+        ? Promise.all([
+            SupportTicket.find(supportFilter)
+              .populate("userId", "name email")
+              .sort({ createdAt: -1 })
+              .limit(fetchLimit)
+              .lean(),
+            SupportTicket.countDocuments(supportFilter),
+          ])
+        : Promise.resolve([[], 0]),
+      shouldInclude("posts")
+        ? Promise.all([
+            Post.find(postFilter)
+              .populate("userId", "name avatarUrl")
+              .select("userId userName content photos likes comments isActive createdAt petName")
+              .sort({ createdAt: -1 })
+              .limit(fetchLimit)
+              .lean(),
+            Post.countDocuments(postFilter),
+          ])
+        : Promise.resolve([[], 0]),
+      shouldInclude("care_reports")
+        ? Promise.all([
+            CareReport.find(careReportFilter)
+              .populate({
+                path: "bookingId",
+                select: "serviceType petOwnerId petId",
+                populate: [
+                  { path: "petOwnerId", select: "name email" },
+                  { path: "petId", select: "name" },
+                ],
+              })
+              .sort({ timestamp: -1 })
+              .limit(fetchLimit)
+              .lean(),
+            CareReport.countDocuments(careReportFilter),
+          ])
+        : Promise.resolve([[], 0]),
+      Post.countDocuments({ isActive: false }),
+      UserReport.countDocuments({ status: "pending" }),
+      SupportTicket.countDocuments({
+        category: { $in: ["content_complaint", "user_complaint"] },
+        status: { $in: ["open", "reviewing"] },
+      }),
+      CareReport.countDocuments({ timestamp: { $gte: reviewWindowDate } }),
+    ]);
+
+    const [reports, reportsTotal] = reportsResult;
+    const [supportTickets, supportTotal] = supportResult;
+    const [posts, postsTotal] = postsResult;
+    const [careReports, careReportsTotal] = careReportsResult;
+
+    const items = [
+      ...reports.map((report) =>
+        buildModerationItem({
+          source: "report",
+          entityId: report._id.toString(),
+          createdAt: report.createdAt,
+          status: report.status,
+          statusLabel: report.status === "pending" ? "Bekliyor" : report.status === "dismissed" ? "Reddedildi" : "Incelendi",
+          reason: report.reason,
+          reasonLabel: reportReasons[report.reason] || report.reason,
+          reporterName: report.reporterId?.name || report.reporterId?.email || "",
+          reportedName: report.reportedId?.name || report.reportedId?.email || "",
+          description: report.description || "",
+          priority: ["harassment", "fake_profile"].includes(report.reason) ? "high" : "medium",
+        })
+      ),
+      ...supportTickets.map((ticket) =>
+        buildModerationItem({
+          source: "support",
+          entityId: ticket._id.toString(),
+          createdAt: ticket.createdAt,
+          status: ticket.status,
+          statusLabel: supportStatuses[ticket.status] || ticket.status,
+          categoryLabel: supportCategories[ticket.category] || ticket.category,
+          userName: ticket.userId?.name || "",
+          userEmail: ticket.userId?.email || "",
+          message: ticket.message || "",
+          adminNote: ticket.adminNote || "",
+          priority: ticket.category === "content_complaint" ? "high" : "medium",
+        })
+      ),
+      ...posts.map((post) =>
+        buildModerationItem({
+          source: "post",
+          entityId: post._id.toString(),
+          createdAt: post.createdAt,
+          status: post.isActive ? "active" : "hidden",
+          isActive: Boolean(post.isActive),
+          userName: post.userId?.name || post.userName || "",
+          content: post.content || "",
+          photoCount: Array.isArray(post.photos) ? post.photos.length : 0,
+          likeCount: Array.isArray(post.likes) ? post.likes.length : 0,
+          commentCount: Array.isArray(post.comments) ? post.comments.length : 0,
+          photoUrl: Array.isArray(post.photos) && post.photos[0] ? post.photos[0] : null,
+          priority: post.isActive ? "low" : "medium",
+        })
+      ),
+      ...careReports.map((report) =>
+        buildModerationItem({
+          source: "care_report",
+          entityId: report._id.toString(),
+          createdAt: report.timestamp,
+          status: report.timestamp >= reviewWindowDate ? "open" : "resolved",
+          notes: report.notes || "",
+          day: report.day || 1,
+          photoUrl: Array.isArray(report.photos) && report.photos[0] ? report.photos[0] : null,
+          petOwnerName: report.bookingId?.petOwnerId?.name || report.bookingId?.petOwnerId?.email || "",
+          petName: report.bookingId?.petId?.name || "",
+          serviceLabel: report.bookingId?.serviceType || "Bakim",
+          sharedWithOwnerAt: report.sharedWithOwnerAt || null,
+          priority: report.timestamp >= reviewWindowDate ? "medium" : "low",
+        })
+      ),
+    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    const total = reportsTotal + supportTotal + postsTotal + careReportsTotal;
+    const pagedItems = items.slice((page - 1) * limit, page * limit);
+
+    return sendOk(res, 200, {
+      items: pagedItems,
+      total,
+      page,
+      hasMore: page * limit < total,
+      summary: {
+        openReports: openReportsCount,
+        openSupportTickets: openSupportCount,
+        hiddenPosts: hiddenPostsCount,
+        recentCareReports: recentCareReportsCount,
+        totalOpenItems: openReportsCount + openSupportCount + hiddenPostsCount + recentCareReportsCount,
+      },
+    });
+  } catch (err) {
+    return sendError(res, 500, "Moderasyon kuyrugu alinamadi", "internal_error", err.message);
+  }
+});
+
+// PATCH /api/admin/moderation/queue/:source/:id
+router.patch("/moderation/queue/:source/:id", async (req, res) => {
+  try {
+    const { source, id } = req.params;
+    const { action, adminNote } = req.body || {};
+
+    if (!action) {
+      return sendError(res, 400, "action alani zorunlu", "validation_error");
+    }
+
+    if (source === "report") {
+      if (!["reviewed", "dismissed"].includes(action)) {
+        return sendError(res, 400, "Rapor aksiyonu gecersiz", "validation_error");
+      }
+      const report = await UserReport.findByIdAndUpdate(id, { status: action }, { new: true });
+      if (!report) return sendError(res, 404, "Sikayet bulunamadi", "not_found");
+      await recordAudit("admin.moderation.report", {
+        userId: req.user.sub,
+        entityType: "UserReport",
+        entityId: id,
+        metadata: { action },
+      });
+      return sendOk(res, 200, { item: { source, id, status: report.status } });
+    }
+
+    if (source === "support") {
+      if (!["open", "reviewing", "closed"].includes(action)) {
+        return sendError(res, 400, "Support aksiyonu gecersiz", "validation_error");
+      }
+      const update = { status: action };
+      if (adminNote !== undefined) update.adminNote = String(adminNote || "").trim();
+      const ticket = await SupportTicket.findByIdAndUpdate(id, update, { new: true });
+      if (!ticket) return sendError(res, 404, "Ticket bulunamadi", "not_found");
+      await recordAudit("admin.moderation.support", {
+        userId: req.user.sub,
+        entityType: "SupportTicket",
+        entityId: id,
+        metadata: { action },
+      });
+      return sendOk(res, 200, { item: { source, id, status: ticket.status } });
+    }
+
+    if (source === "post") {
+      if (!["hide", "unhide", "delete"].includes(action)) {
+        return sendError(res, 400, "Post aksiyonu gecersiz", "validation_error");
+      }
+      if (action === "delete") {
+        const post = await Post.findByIdAndDelete(id);
+        if (!post) return sendError(res, 404, "Gonderi bulunamadi", "not_found");
+        await recordAudit("admin.moderation.post_delete", {
+          userId: req.user.sub,
+          entityType: "Post",
+          entityId: id,
+          metadata: { action },
+        });
+        return sendOk(res, 200, { deleted: true, source, id });
+      }
+      const post = await Post.findById(id);
+      if (!post) return sendError(res, 404, "Gonderi bulunamadi", "not_found");
+      post.isActive = action === "unhide";
+      await post.save();
+      await recordAudit("admin.moderation.post_visibility", {
+        userId: req.user.sub,
+        entityType: "Post",
+        entityId: id,
+        metadata: { action, isActive: post.isActive },
+      });
+      return sendOk(res, 200, { item: { source, id, status: post.isActive ? "active" : "hidden" } });
+    }
+
+    if (source === "care_report") {
+      if (action !== "delete") {
+        return sendError(res, 400, "Bakim raporu aksiyonu gecersiz", "validation_error");
+      }
+      const report = await CareReport.findByIdAndDelete(id);
+      if (!report) return sendError(res, 404, "Bakim raporu bulunamadi", "not_found");
+      await recordAudit("admin.moderation.care_report_delete", {
+        userId: req.user.sub,
+        entityType: "CareReport",
+        entityId: id,
+        metadata: { action },
+      });
+      return sendOk(res, 200, { deleted: true, source, id });
+    }
+
+    return sendError(res, 400, "Kaynak tipi gecersiz", "validation_error");
+  } catch (err) {
+    return sendError(res, 500, "Moderasyon aksiyonu uygulanamadi", "internal_error", err.message);
+  }
+});
 
 // GET /api/admin/stats?from=YYYY-MM-DD&to=YYYY-MM-DD
 router.get("/stats", async (req, res) => {

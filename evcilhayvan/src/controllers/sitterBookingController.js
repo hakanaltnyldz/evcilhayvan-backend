@@ -1,4 +1,5 @@
 import { validationResult } from "express-validator";
+import mongoose from "mongoose";
 import SitterBooking from "../models/SitterBooking.js";
 import PetSitter from "../models/PetSitter.js";
 import Pet from "../models/Pet.js";
@@ -21,6 +22,34 @@ const SERVICE_LABELS = {
   daycare: "Gunduz Bakimi",
   grooming: "Timar/Bakim",
 };
+
+function getMonthKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function getDateKey(date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function buildSeriesMap(startDate, length, keyBuilder) {
+  const map = new Map();
+  for (let index = 0; index < length; index += 1) {
+    const cursor = new Date(startDate);
+    keyBuilder.advance(cursor, index);
+    const key = keyBuilder.key(cursor);
+    map.set(key, {
+      key,
+      label: keyBuilder.label(cursor),
+      revenue: 0,
+      bookings: 0,
+    });
+  }
+  return map;
+}
 
 // POST / - Rezervasyon olustur
 export async function createBooking(req, res) {
@@ -154,6 +183,236 @@ export async function incomingBookings(req, res) {
     return sendOk(res, 200, { bookings: bookings.map(b => ({ ...b, id: b._id })) });
   } catch (err) {
     return sendError(res, 500, "Rezervasyonlar alinamadi", "list_error");
+  }
+}
+
+// GET /financial-summary - bakici finansal ozeti
+export async function getMyFinancialSummary(req, res) {
+  try {
+    const sitterUserId = req.user.sub;
+    const sitterUserObjectId = new mongoose.Types.ObjectId(sitterUserId);
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    monthStart.setHours(0, 0, 0, 0);
+
+    const dailyStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 13);
+    dailyStart.setHours(0, 0, 0, 0);
+
+    const monthlyStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    monthlyStart.setHours(0, 0, 0, 0);
+
+    const basePipeline = [
+      { $match: { sitterUserId: sitterUserObjectId } },
+      {
+        $addFields: {
+          payoutAmount: { $ifNull: ["$earnings.payableAmount", "$totalPrice"] },
+          settledAt: { $ifNull: ["$completedAt", "$endDate"] },
+        },
+      },
+    ];
+
+    const [statsRaw, dailyTrendRaw, monthlyTrendRaw, serviceBreakdownRaw, recentCompleted] =
+      await Promise.all([
+        SitterBooking.aggregate([
+          ...basePipeline,
+          {
+            $group: {
+              _id: null,
+              totalBookings: { $sum: 1 },
+              pendingBookings: {
+                $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] },
+              },
+              acceptedBookings: {
+                $sum: { $cond: [{ $eq: ["$status", "accepted"] }, 1, 0] },
+              },
+              activeBookings: {
+                $sum: { $cond: [{ $eq: ["$status", "active"] }, 1, 0] },
+              },
+              completedBookings: {
+                $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] },
+              },
+              cancelledBookings: {
+                $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] },
+              },
+              pausedBookings: {
+                $sum: {
+                  $cond: [{ $eq: ["$earnings.status", "paused"] }, 1, 0],
+                },
+              },
+              totalRevenue: {
+                $sum: {
+                  $cond: [{ $eq: ["$status", "completed"] }, "$payoutAmount", 0],
+                },
+              },
+              thisMonthRevenue: {
+                $sum: {
+                  $cond: [
+                    {
+                      $and: [
+                        { $eq: ["$status", "completed"] },
+                        { $gte: ["$settledAt", monthStart] },
+                      ],
+                    },
+                    "$payoutAmount",
+                    0,
+                  ],
+                },
+              },
+              pipelineRevenue: {
+                $sum: {
+                  $cond: [
+                    { $in: ["$status", ["accepted", "active"]] },
+                    "$payoutAmount",
+                    0,
+                  ],
+                },
+              },
+              pausedRevenue: {
+                $sum: {
+                  $cond: [
+                    { $eq: ["$earnings.status", "paused"] },
+                    "$payoutAmount",
+                    0,
+                  ],
+                },
+              },
+            },
+          },
+        ]),
+        SitterBooking.aggregate([
+          ...basePipeline,
+          {
+            $match: {
+              status: "completed",
+              settledAt: { $gte: dailyStart },
+            },
+          },
+          {
+            $group: {
+              _id: {
+                $dateToString: {
+                  format: "%Y-%m-%d",
+                  date: "$settledAt",
+                  timezone: "Europe/Istanbul",
+                },
+              },
+              revenue: { $sum: "$payoutAmount" },
+              bookings: { $sum: 1 },
+            },
+          },
+          { $sort: { _id: 1 } },
+        ]),
+        SitterBooking.aggregate([
+          ...basePipeline,
+          {
+            $match: {
+              status: "completed",
+              settledAt: { $gte: monthlyStart },
+            },
+          },
+          {
+            $group: {
+              _id: {
+                $dateToString: {
+                  format: "%Y-%m",
+                  date: "$settledAt",
+                  timezone: "Europe/Istanbul",
+                },
+              },
+              revenue: { $sum: "$payoutAmount" },
+              bookings: { $sum: 1 },
+            },
+          },
+          { $sort: { _id: 1 } },
+        ]),
+        SitterBooking.aggregate([
+          ...basePipeline,
+          { $match: { status: "completed" } },
+          {
+            $group: {
+              _id: "$serviceType",
+              revenue: { $sum: "$payoutAmount" },
+              bookings: { $sum: 1 },
+            },
+          },
+          { $sort: { revenue: -1 } },
+        ]),
+        SitterBooking.find({
+          sitterUserId,
+          status: "completed",
+        })
+          .sort({ completedAt: -1, endDate: -1 })
+          .limit(5)
+          .populate("petOwnerId", "name")
+          .populate("petId", "name")
+          .lean(),
+      ]);
+
+    const stats = statsRaw?.[0] || {};
+
+    const dailySeries = buildSeriesMap(dailyStart, 14, {
+      advance: (date, index) => date.setDate(date.getDate() + index),
+      key: (date) => getDateKey(date),
+      label: (date) => `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}`,
+    });
+    for (const item of dailyTrendRaw || []) {
+      if (!dailySeries.has(item._id)) continue;
+      dailySeries.set(item._id, {
+        ...dailySeries.get(item._id),
+        revenue: Math.round((item.revenue || 0) * 100) / 100,
+        bookings: item.bookings || 0,
+      });
+    }
+
+    const monthlySeries = buildSeriesMap(monthlyStart, 6, {
+      advance: (date, index) => date.setMonth(date.getMonth() + index),
+      key: (date) => getMonthKey(date),
+      label: (date) => `${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`,
+    });
+    for (const item of monthlyTrendRaw || []) {
+      if (!monthlySeries.has(item._id)) continue;
+      monthlySeries.set(item._id, {
+        ...monthlySeries.get(item._id),
+        revenue: Math.round((item.revenue || 0) * 100) / 100,
+        bookings: item.bookings || 0,
+      });
+    }
+
+    return sendOk(res, 200, {
+      summary: {
+        totalRevenue: Math.round((stats.totalRevenue || 0) * 100) / 100,
+        thisMonthRevenue: Math.round((stats.thisMonthRevenue || 0) * 100) / 100,
+        pipelineRevenue: Math.round((stats.pipelineRevenue || 0) * 100) / 100,
+        pausedRevenue: Math.round((stats.pausedRevenue || 0) * 100) / 100,
+        totalBookings: stats.totalBookings || 0,
+        pendingBookings: stats.pendingBookings || 0,
+        acceptedBookings: stats.acceptedBookings || 0,
+        activeBookings: stats.activeBookings || 0,
+        completedBookings: stats.completedBookings || 0,
+        cancelledBookings: stats.cancelledBookings || 0,
+        pausedBookings: stats.pausedBookings || 0,
+      },
+      dailyTrend: [...dailySeries.values()],
+      monthlyTrend: [...monthlySeries.values()],
+      serviceBreakdown: (serviceBreakdownRaw || []).map((item) => ({
+        serviceType: item._id,
+        serviceLabel: SERVICE_LABELS[item._id] || item._id,
+        revenue: Math.round((item.revenue || 0) * 100) / 100,
+        bookings: item.bookings || 0,
+      })),
+      recentCompleted: recentCompleted.map((booking) => ({
+        id: booking._id,
+        serviceType: booking.serviceType,
+        serviceLabel: SERVICE_LABELS[booking.serviceType] || booking.serviceType,
+        revenue: Math.round(((booking.earnings?.payableAmount ?? booking.totalPrice) || 0) * 100) / 100,
+        completedAt: booking.completedAt || booking.endDate,
+        ownerName: booking.petOwnerId?.name || "Musteri",
+        petName: booking.petId?.name || "Pet",
+      })),
+    });
+  } catch (err) {
+    console.error("[SitterBooking] financial summary error:", err.message);
+    return sendError(res, 500, "Finansal ozet alinamadi", "financial_summary_error");
   }
 }
 

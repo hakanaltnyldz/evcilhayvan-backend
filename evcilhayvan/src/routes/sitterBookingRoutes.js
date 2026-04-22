@@ -5,12 +5,15 @@ import multer from "multer";
 import { body, param, validationResult } from "express-validator";
 import { authRequired } from "../middlewares/auth.js";
 import {
-  createBooking, myBookings, incomingBookings, getBooking, updateBookingStatus,
+  createBooking, myBookings, incomingBookings, getBooking, getMyFinancialSummary, updateBookingStatus,
 } from "../controllers/sitterBookingController.js";
 import { sendOk, sendError } from "../utils/apiResponse.js";
 import WalkUpdate from "../models/WalkUpdate.js";
 import CareReport from "../models/CareReport.js";
 import SitterBooking from "../models/SitterBooking.js";
+import User from "../models/User.js";
+import { sendEmail } from "../utils/mail.js";
+import { sendPush } from "../utils/fcm.js";
 import {
   cancelTrackingGrace,
   computePayableAmount,
@@ -68,6 +71,7 @@ router.post(
 );
 router.get("/me", authRequired(), myBookings);
 router.get("/incoming", authRequired(), incomingBookings);
+router.get("/financial-summary", authRequired(), getMyFinancialSummary);
 router.get("/:id", authRequired(), [param("id").isMongoId()], getBooking);
 router.patch(
   "/:id/status",
@@ -219,6 +223,7 @@ router.post(
       return sendError(res, 403, "Yalnızca bakıcı rapor ekleyebilir", "forbidden");
 
     const { day, mood, photos, notes, activities, foodEaten } = req.body;
+    const sharedWithOwnerAt = new Date();
     const report = await CareReport.create({
       bookingId: booking._id,
       sitterUserId: userId,
@@ -228,7 +233,10 @@ router.post(
       notes,
       activities: activities || [],
       foodEaten: foodEaten !== false,
+      sharedWithOwnerAt,
     });
+
+    await booking.populate("petId", "name");
 
     // Owner'a bildirim
     const io = req.app.get("io");
@@ -237,6 +245,30 @@ router.post(
         bookingId: booking._id,
         report: report.toJSON(),
       });
+    }
+
+    sendPush([String(booking.petOwnerId)], {
+      title: "Yeni Bakim Raporu",
+      body: `${day || 1}. gun bakim raporu sizinle paylasildi.`,
+      data: {
+        type: "care_report",
+        bookingId: String(booking._id),
+        reportId: String(report._id),
+      },
+    }).catch(() => {});
+
+    const owner = await User.findById(booking.petOwnerId).select("email name");
+    if (owner?.email) {
+      const petName = booking.petId?.name || "Evcil hayvaniniz";
+      sendEmail(
+        owner.email,
+        "Yeni Bakim Raporu Hazir",
+        `<h2>Yeni bir bakim raporu paylasildi</h2>
+         <p>Merhaba ${owner.name || "pet sahibi"},</p>
+         <p><strong>${petName}</strong> icin ${day || 1}. gun raporu bakiciniz tarafindan gonderildi.</p>
+         ${notes ? `<p><strong>Not:</strong> ${notes}</p>` : ""}
+         <p>Uygulama uzerinden fotograf ve detaylari inceleyebilirsiniz.</p>`
+      ).catch(() => {});
     }
 
     return sendOk(res, 201, { report });

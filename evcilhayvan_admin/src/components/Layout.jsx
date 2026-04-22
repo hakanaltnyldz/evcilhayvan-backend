@@ -53,6 +53,8 @@ export default function Layout() {
       '/pets': 'Yayinda olan ve kapatilan ilanlari anlik kontrol edin.',
       '/orders': 'Kargo ve siparis sureclerini merkezi olarak yonetin.',
       '/returns': 'Iade taleplerini inceleyin, onaylayin veya gerekce ile reddedin.',
+      '/platform-settings': 'Komisyon, feature flag ve operasyonel esikleri canli ortam icin yonetin.',
+      '/moderation-queue': 'Sikayet, support ve icerik akislarini tek moderasyon kuyruunda toplayin.',
       '/reports': 'Sikayet ve moderasyon akisini hizli sekilde sonuclandirin.',
       '/support': 'Destek taleplerine ic not ve durum guncellemesi ekleyin.',
       '/seller': 'Magaza performansi, siparisler ve urunler burada toplandi.',

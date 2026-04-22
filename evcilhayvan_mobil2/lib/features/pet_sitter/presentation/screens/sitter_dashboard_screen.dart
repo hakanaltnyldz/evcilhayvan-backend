@@ -10,6 +10,8 @@ import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
 import '../../domain/models/pet_sitter_model.dart';
 import '../../domain/models/sitter_booking_model.dart';
+import '../../domain/models/sitter_financial_summary_model.dart';
+import 'sitter_financials_screen.dart';
 
 final _sitterDashboardProvider =
     FutureProvider.autoDispose<_SitterDashboardData?>((ref) async {
@@ -19,15 +21,23 @@ final _sitterDashboardProvider =
 
       final bookings = await repo.incomingBookings();
       List<SitterReview> reviews = const [];
+      SitterFinancialSummaryModel? financials;
       try {
         final detail = await repo.getSitter(profile.id);
         reviews = (detail['reviews'] as List<SitterReview>?) ?? const [];
       } catch (_) {}
 
+      try {
+        financials = await repo.getMyFinancialSummary();
+      } catch (_) {
+        financials = null;
+      }
+
       return _SitterDashboardData(
         profile: profile,
         bookings: bookings,
         reviews: reviews,
+        financials: financials,
       );
     });
 
@@ -93,19 +103,23 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
               .where((b) => b.status == 'completed')
               .toList();
           final now = DateTime.now();
-          final monthRevenue = completed
-              .where(
-                (b) =>
-                    b.endDate.year == now.year && b.endDate.month == now.month,
-              )
-              .fold<double>(0, (sum, b) => sum + _amount(b));
-          final totalRevenue = completed.fold<double>(
-            0,
-            (sum, b) => sum + _amount(b),
-          );
-          final pipeline = data.bookings
-              .where((b) => b.status == 'accepted' || b.status == 'active')
-              .fold<double>(0, (sum, b) => sum + _amount(b));
+          final monthRevenue =
+              data.financials?.thisMonthRevenue ??
+              completed
+                  .where(
+                    (b) =>
+                        b.endDate.year == now.year &&
+                        b.endDate.month == now.month,
+                  )
+                  .fold<double>(0, (sum, b) => sum + _amount(b));
+          final totalRevenue =
+              data.financials?.totalRevenue ??
+              completed.fold<double>(0, (sum, b) => sum + _amount(b));
+          final pipeline =
+              data.financials?.pipelineRevenue ??
+              data.bookings
+                  .where((b) => b.status == 'accepted' || b.status == 'active')
+                  .fold<double>(0, (sum, b) => sum + _amount(b));
           final upcoming =
               data.bookings
                   .where(
@@ -210,6 +224,15 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
                           pathParameters: {'id': data.profile.id},
                         ),
                       ),
+                      _actionChip(
+                        'Kazanc Raporu',
+                        Icons.insights_outlined,
+                        () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const SitterFinancialsScreen(),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -236,6 +259,14 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
                       _financeRow(context, 'Pipeline', _currency(pipeline)),
                       const Divider(height: 22),
                       _financeRow(context, 'Kabul edilen is', '$accepted'),
+                      if (data.financials != null) ...[
+                        const Divider(height: 22),
+                        _financeRow(
+                          context,
+                          'Duraklayan odeme',
+                          _currency(data.financials!.pausedRevenue),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -370,11 +401,13 @@ class _SitterDashboardData {
     required this.profile,
     required this.bookings,
     required this.reviews,
+    required this.financials,
   });
 
   final PetSitterModel profile;
   final List<SitterBookingModel> bookings;
   final List<SitterReview> reviews;
+  final SitterFinancialSummaryModel? financials;
 }
 
 class _HeroCard extends StatelessWidget {

@@ -10,6 +10,16 @@ const WorkingHoursSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const AvailabilityOverrideSchema = new mongoose.Schema(
+  {
+    date: { type: Date, required: true },
+    open: { type: String },
+    close: { type: String },
+    isClosed: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
 const VeterinarySchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true, maxlength: 200 },
@@ -51,7 +61,10 @@ const VeterinarySchema = new mongoose.Schema(
     // Randevu destegi
     acceptsOnlineAppointments: { type: Boolean, default: false },
     appointmentSlotMinutes: { type: Number, default: 30 },
+    clinicConsultationFee: { type: Number, default: 0, min: 0 },
+    onlineConsultationFee: { type: Number, default: 0, min: 0 },
     workingHours: { type: [WorkingHoursSchema], default: [] },
+    availabilityOverrides: { type: [AvailabilityOverrideSchema], default: [] },
 
     // Uygulama içi değerlendirme
     averageRating: { type: Number, default: 0, min: 0, max: 5 },

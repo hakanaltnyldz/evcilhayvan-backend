@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import Appointment from "../models/Appointment.js";
 import Veterinary from "../models/Veterinary.js";
 import User from "../models/User.js";
 import Conversation from "../models/Conversation.js";
@@ -35,6 +36,95 @@ function mapOsmResultToVet(el, lat, lng) {
     source: "osm",
     isActive: true,
   };
+}
+
+function isValidTimeString(value) {
+  return typeof value === "string" && /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
+}
+
+function dateKeyFromDate(value) {
+  const date = value instanceof Date ? value : new Date(value);
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function toDateOnly(value) {
+  if (typeof value !== "string" || !value.trim()) return null;
+
+  const normalized = value.trim().slice(0, 10);
+  const match = normalized.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+
+  const parsed = new Date(
+    Number(match[1]),
+    Number(match[2]) - 1,
+    Number(match[3]),
+    0,
+    0,
+    0,
+    0
+  );
+
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function normalizeAvailabilityOverrides(input) {
+  if (!Array.isArray(input)) return [];
+
+  const deduped = new Map();
+  for (const rawItem of input) {
+    const date = toDateOnly(rawItem?.date);
+    if (!date) continue;
+
+    const isClosed = rawItem?.isClosed === true;
+    const open = isValidTimeString(rawItem?.open) ? rawItem.open : null;
+    const close = isValidTimeString(rawItem?.close) ? rawItem.close : null;
+
+    if (!isClosed && ((open && !close) || (!open && close))) {
+      throw new Error("Musaitlik degisikliginde acilis ve kapanis birlikte girilmelidir");
+    }
+
+    if (open && close && open >= close) {
+      throw new Error("Musaitlik saatlerinde kapanis, acilistan sonra olmalidir");
+    }
+
+    deduped.set(dateKeyFromDate(date), {
+      date,
+      open: isClosed ? null : open,
+      close: isClosed ? null : close,
+      isClosed,
+    });
+  }
+
+  return [...deduped.values()].sort((a, b) => a.date - b.date);
+}
+
+function serializeAvailabilityOverrides(items) {
+  return (Array.isArray(items) ? items : []).map((item) => ({
+    date: dateKeyFromDate(item.date),
+    open: item.open || null,
+    close: item.close || null,
+    isClosed: item.isClosed === true,
+  }));
+}
+
+async function findManagedVetByUser(userId) {
+  let vet = await Veterinary.findOne({
+    userId,
+    isActive: true,
+  }).sort({ updatedAt: -1 });
+
+  if (!vet) {
+    vet = await Veterinary.findOne({
+      registeredBy: userId,
+      isActive: true,
+    }).sort({ updatedAt: -1 });
+  }
+
+  return vet;
 }
 
 // GET /api/veterinaries
@@ -116,18 +206,7 @@ export async function getNearbyVets(req, res) {
 export async function getMyClinic(req, res) {
   try {
     const userId = req.user.sub;
-
-    let vet = await Veterinary.findOne({
-      userId,
-      isActive: true,
-    }).sort({ updatedAt: -1 });
-
-    if (!vet) {
-      vet = await Veterinary.findOne({
-        registeredBy: userId,
-        isActive: true,
-      }).sort({ updatedAt: -1 });
-    }
+    const vet = await findManagedVetByUser(userId);
 
     if (!vet) {
       return sendError(res, 404, "Size ait klinik bulunamadi", "vet_not_found");
@@ -137,6 +216,103 @@ export async function getMyClinic(req, res) {
   } catch (err) {
     console.error("[getMyClinic]", err);
     return sendError(res, 500, "Klinik bilgisi alinamadi", "internal_error", err.message);
+  }
+}
+
+// GET /api/veterinaries/my-clinic/availability
+export async function getMyClinicAvailability(req, res) {
+  try {
+    const userId = req.user.sub;
+    const days = Math.min(Math.max(Number(req.query.days) || 14, 1), 30);
+    const vet = await findManagedVetByUser(userId);
+
+    if (!vet) {
+      return sendError(res, 404, "Size ait klinik bulunamadi", "vet_not_found");
+    }
+
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + days);
+
+    const bookingLoadRaw = await Appointment.aggregate([
+      {
+        $match: {
+          veterinaryId: vet._id,
+          date: { $gte: startDate, $lt: endDate },
+          status: { $in: ["pending", "confirmed"] },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$date",
+              timezone: "Europe/Istanbul",
+            },
+          },
+          total: { $sum: 1 },
+          pending: {
+            $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] },
+          },
+          confirmed: {
+            $sum: { $cond: [{ $eq: ["$status", "confirmed"] }, 1, 0] },
+          },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    return sendOk(res, 200, {
+      vetId: vet._id,
+      appointmentSlotMinutes: vet.appointmentSlotMinutes || 30,
+      availabilityOverrides: serializeAvailabilityOverrides(vet.availabilityOverrides),
+      bookingLoad: bookingLoadRaw.map((item) => ({
+        date: item._id,
+        total: item.total || 0,
+        pending: item.pending || 0,
+        confirmed: item.confirmed || 0,
+      })),
+    });
+  } catch (err) {
+    console.error("[getMyClinicAvailability]", err);
+    return sendError(res, 500, "Musaitlik takvimi alinamadi", "internal_error", err.message);
+  }
+}
+
+// PUT /api/veterinaries/my-clinic/availability
+export async function updateMyClinicAvailability(req, res) {
+  try {
+    const userId = req.user.sub;
+    const vet = await findManagedVetByUser(userId);
+
+    if (!vet) {
+      return sendError(res, 404, "Size ait klinik bulunamadi", "vet_not_found");
+    }
+
+    const overrides = normalizeAvailabilityOverrides(req.body?.availabilityOverrides);
+    vet.availabilityOverrides = overrides;
+    await vet.save();
+
+    await recordAudit("veterinary.availability.update", {
+      userId,
+      entityType: "veterinary",
+      entityId: vet._id.toString(),
+      metadata: { overrideCount: overrides.length },
+    });
+
+    return sendOk(res, 200, {
+      availabilityOverrides: serializeAvailabilityOverrides(vet.availabilityOverrides),
+    });
+  } catch (err) {
+    console.error("[updateMyClinicAvailability]", err);
+    return sendError(
+      res,
+      400,
+      err.message || "Musaitlik takvimi guncellenemedi",
+      "validation_error"
+    );
   }
 }
 
@@ -221,7 +397,8 @@ export async function createVet(req, res) {
     const {
       name, address, phone, email, website, description, photos,
       services, speciesServed, acceptsOnlineAppointments,
-      appointmentSlotMinutes, workingHours, location,
+      appointmentSlotMinutes, clinicConsultationFee, onlineConsultationFee,
+      workingHours, location,
     } = req.body;
 
     if (!name || !name.trim()) {
@@ -235,6 +412,8 @@ export async function createVet(req, res) {
       speciesServed: speciesServed || ["dog", "cat", "bird", "fish", "rodent", "other"],
       acceptsOnlineAppointments: acceptsOnlineAppointments || false,
       appointmentSlotMinutes: appointmentSlotMinutes || 30,
+      clinicConsultationFee: Math.max(0, Number(clinicConsultationFee) || 0),
+      onlineConsultationFee: Math.max(0, Number(onlineConsultationFee) || 0),
       workingHours: workingHours || [],
       source: "manual",
       registeredBy: userId,

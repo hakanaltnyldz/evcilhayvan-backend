@@ -4,6 +4,7 @@ import {
   listVets,
   getNearbyVets,
   getMyClinic,
+  getMyClinicAvailability,
   googleSearchVets,
   getVet,
   createVet,
@@ -13,6 +14,7 @@ import {
   claimVetProfile,
   getVetClaimStatus,
   getMyClaimStatus,
+  updateMyClinicAvailability,
   startVetConversation,
   fetchVetPhotosFromGoogle,
 } from "../controllers/veterinaryController.js";
@@ -27,6 +29,8 @@ const router = Router();
 router.get("/nearby", getNearbyVets);
 router.get("/google-search", authRequired(), googleSearchVets);
 router.get("/my-clinic", authRequired(), getMyClinic);
+router.get("/my-clinic/availability", authRequired(), getMyClinicAvailability);
+router.put("/my-clinic/availability", authRequired(), updateMyClinicAvailability);
 router.get("/my-claim-status", authRequired(), getMyClaimStatus);
 router.get("/", listVets);
 // Yorum silme (specific route before :id)

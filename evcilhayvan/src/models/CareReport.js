@@ -14,6 +14,7 @@ const CareReportSchema = new mongoose.Schema(
       default: [],
     },
     foodEaten: { type: Boolean, default: true },
+    sharedWithOwnerAt: { type: Date, default: Date.now },
     timestamp: { type: Date, default: Date.now },
   },
   {

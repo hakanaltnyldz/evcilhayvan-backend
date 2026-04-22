@@ -2,8 +2,10 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
+import '../../domain/models/care_report_model.dart';
 import '../../domain/models/pet_sitter_model.dart';
 import '../../domain/models/sitter_booking_model.dart';
+import '../../domain/models/sitter_financial_summary_model.dart';
 
 final petSitterRepositoryProvider = Provider<PetSitterRepository>(
   (ref) => PetSitterRepository(ApiClient()),
@@ -117,6 +119,14 @@ class PetSitterRepository {
         .toList();
   });
 
+  Future<SitterFinancialSummaryModel> getMyFinancialSummary() =>
+      _guard(() async {
+        final r = await _dio.get('/api/sitter-bookings/financial-summary');
+        return SitterFinancialSummaryModel.fromJson(
+          Map<String, dynamic>.from(r.data as Map),
+        );
+      });
+
   Future<void> updateBookingStatus(
     String id,
     String status, {
@@ -142,10 +152,10 @@ class PetSitterRepository {
   // Walk güncelleme gönder (bakıcı → evcil hayvan sahibine)
   Future<void> sendWalkUpdate(String bookingId, {String? note, String? type}) =>
       _guard(() async {
-        await _dio.post('/api/sitter-bookings/$bookingId/updates', data: {
-          'type': type ?? 'note',
-          if (note != null) 'message': note,
-        });
+        await _dio.post(
+          '/api/sitter-bookings/$bookingId/updates',
+          data: {'type': type ?? 'note', if (note != null) 'message': note},
+        );
       });
 
   // Walk güncellemelerini getir
@@ -157,17 +167,46 @@ class PetSitterRepository {
       });
 
   // Bakım raporu oluştur
-  Future<void> createCareReport(String bookingId, Map<String, dynamic> report) =>
-      _guard(() async {
-        await _dio.post('/api/sitter-bookings/$bookingId/care-reports', data: report);
-      });
+  Future<CareReportModel> createCareReport(
+    String bookingId,
+    Map<String, dynamic> report,
+  ) => _guard(() async {
+    final r = await _dio.post(
+      '/api/sitter-bookings/$bookingId/care-reports',
+      data: report,
+    );
+    return CareReportModel.fromJson(
+      Map<String, dynamic>.from(r.data['report'] as Map),
+    );
+  });
 
   // Bakım raporlarını getir
-  Future<List<Map<String, dynamic>>> getCareReports(String bookingId) =>
+  Future<List<CareReportModel>> getCareReports(String bookingId) => _guard(
+    () async {
+      final r = await _dio.get('/api/sitter-bookings/$bookingId/care-reports');
+      final list = r.data['reports'] as List? ?? [];
+      return list
+          .map(
+            (j) =>
+                CareReportModel.fromJson(Map<String, dynamic>.from(j as Map)),
+          )
+          .toList();
+    },
+  );
+
+  Future<String> uploadCarePhoto(String bookingId, File photo) =>
       _guard(() async {
-        final r = await _dio.get('/api/sitter-bookings/$bookingId/care-reports');
-        final list = r.data['reports'] as List? ?? [];
-        return list.map((j) => Map<String, dynamic>.from(j as Map)).toList();
+        final formData = FormData.fromMap({
+          'photo': await MultipartFile.fromFile(
+            photo.path,
+            filename: photo.path.split('/').last,
+          ),
+        });
+        final r = await _dio.post(
+          '/api/sitter-bookings/$bookingId/upload-care-photo',
+          data: formData,
+        );
+        return r.data['photoUrl']?.toString() ?? '';
       });
 
   // Blocked dates güncelle
@@ -176,10 +215,10 @@ class PetSitterRepository {
     List<String> add = const [],
     List<String> remove = const [],
   }) => _guard(() async {
-    await _dio.patch('/api/pet-sitters/$sitterId/blocked-dates', data: {
-      'add': add,
-      'remove': remove,
-    });
+    await _dio.patch(
+      '/api/pet-sitters/$sitterId/blocked-dates',
+      data: {'add': add, 'remove': remove},
+    );
   });
 
   // Sitter request ilanlarını listele (evcil hayvan sahiplerinin açtığı)
@@ -208,15 +247,21 @@ class PetSitterRepository {
   });
 
   // Bakıcı olarak ilana başvur (konuşma başlat)
-  Future<String> contactSitterRequestOwner(String requestId) => _guard(() async {
-    final r = await _dio.post('/api/sitter-requests/$requestId/contact');
-    return r.data['conversationId']?.toString() ?? r.data['conversation']?['_id']?.toString() ?? '';
-  });
+  Future<String> contactSitterRequestOwner(String requestId) =>
+      _guard(() async {
+        final r = await _dio.post('/api/sitter-requests/$requestId/contact');
+        return r.data['conversationId']?.toString() ??
+            r.data['conversation']?['_id']?.toString() ??
+            '';
+      });
 
   // İlan durumunu değiştir (kapat/aç)
   Future<void> updateSitterRequestStatus(String requestId, String status) =>
       _guard(() async {
-        await _dio.patch('/api/sitter-requests/$requestId/status', data: {'status': status});
+        await _dio.patch(
+          '/api/sitter-requests/$requestId/status',
+          data: {'status': status},
+        );
       });
 
   // Bakıcı ilanı oluştur
@@ -227,15 +272,24 @@ class PetSitterRepository {
       });
 
   // Walk fotoğrafı yükle (bakıcı)
-  Future<String> uploadWalkPhoto(String bookingId, File photo, {String? caption}) =>
-      _guard(() async {
-        final formData = FormData.fromMap({
-          'photo': await MultipartFile.fromFile(photo.path, filename: photo.path.split('/').last),
-          if (caption != null && caption.isNotEmpty) 'caption': caption,
-        });
-        final r = await _dio.post('/api/sitter-bookings/$bookingId/walk-photos', data: formData);
-        return r.data['photo']?['url']?.toString() ?? '';
-      });
+  Future<String> uploadWalkPhoto(
+    String bookingId,
+    File photo, {
+    String? caption,
+  }) => _guard(() async {
+    final formData = FormData.fromMap({
+      'photo': await MultipartFile.fromFile(
+        photo.path,
+        filename: photo.path.split('/').last,
+      ),
+      if (caption != null && caption.isNotEmpty) 'caption': caption,
+    });
+    final r = await _dio.post(
+      '/api/sitter-bookings/$bookingId/walk-photos',
+      data: formData,
+    );
+    return r.data['photo']?['url']?.toString() ?? '';
+  });
 
   // Walk fotoğraflarını getir
   Future<List<Map<String, dynamic>>> getWalkPhotos(String bookingId) =>
@@ -250,22 +304,30 @@ class PetSitterRepository {
     String bookingId, {
     required bool active,
     String? reason,
-  }) =>
-      _guard(() async {
-        await _dio.patch('/api/sitter-bookings/$bookingId/tracking', data: {
-          'active': active,
-          if (reason != null && reason.isNotEmpty) 'reason': reason,
-        });
-      });
+  }) => _guard(() async {
+    await _dio.patch(
+      '/api/sitter-bookings/$bookingId/tracking',
+      data: {
+        'active': active,
+        if (reason != null && reason.isNotEmpty) 'reason': reason,
+      },
+    );
+  });
 
   // Bakıcıya yorum/puan ekle
-  Future<void> addSitterReview(String sitterId, {required int rating, String? comment}) =>
-      _guard(() async {
-        await _dio.post('/api/pet-sitters/$sitterId/reviews', data: {
-          'rating': rating,
-          if (comment != null && comment.isNotEmpty) 'comment': comment,
-        });
-      });
+  Future<void> addSitterReview(
+    String sitterId, {
+    required int rating,
+    String? comment,
+  }) => _guard(() async {
+    await _dio.post(
+      '/api/pet-sitters/$sitterId/reviews',
+      data: {
+        'rating': rating,
+        if (comment != null && comment.isNotEmpty) 'comment': comment,
+      },
+    );
+  });
 }
 
 // Providers

@@ -8,6 +8,8 @@ import Pets from './pages/Pets.jsx'
 import Reports from './pages/Reports.jsx'
 import Orders from './pages/Orders.jsx'
 import Returns from './pages/Returns.jsx'
+import ModerationQueue from './pages/ModerationQueue.jsx'
+import PlatformSettings from './pages/PlatformSettings.jsx'
 import Posts from './pages/Posts.jsx'
 import Coupons from './pages/Coupons.jsx'
 import Support from './pages/Support.jsx'
@@ -69,8 +71,10 @@ export default function App() {
               <Route path="reports" element={<Reports />} />
               <Route path="orders" element={<Orders />} />
               <Route path="returns" element={<Returns />} />
+              <Route path="moderation-queue" element={<ModerationQueue />} />
               <Route path="posts" element={<Posts />} />
               <Route path="coupons" element={<Coupons />} />
+              <Route path="platform-settings" element={<PlatformSettings />} />
               <Route path="support" element={<Support />} />
               <Route path="sitters" element={<Sitters />} />
               <Route path="vets" element={<Vets />} />
