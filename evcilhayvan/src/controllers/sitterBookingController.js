@@ -23,6 +23,23 @@ const SERVICE_LABELS = {
   grooming: "Timar/Bakim",
 };
 
+function normalizeReviewPayload(review) {
+  if (!review || review.rating === undefined || review.rating === null) {
+    return null;
+  }
+
+  const rating = Number(review.rating);
+  if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
+    throw new Error("Gecerli bir puan girin (1-5)");
+  }
+
+  return {
+    rating: Math.min(5, Math.max(1, rating)),
+    comment: String(review.comment || "").trim().slice(0, 1000),
+    createdAt: new Date(),
+  };
+}
+
 function getMonthKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
@@ -460,20 +477,48 @@ export async function updateBookingStatus(req, res) {
     const isOwner = String(booking.petOwnerId?._id || booking.petOwnerId) === userId;
     const isSitter = String(booking.sitterUserId) === userId;
 
-    if (
-      booking.status === "completed" &&
-      status === "completed" &&
-      isOwner &&
-      review?.rating &&
-      !booking.ownerReview
-    ) {
-      booking.ownerReview = {
-        rating: Math.min(5, Math.max(1, review.rating)),
-        comment: review.comment || "",
-      };
-      await booking.save();
-      await _updateSitterRating(booking.sitterId);
-      return sendOk(res, 200, { booking });
+    let normalizedReview = null;
+    try {
+      normalizedReview = normalizeReviewPayload(review);
+    } catch (reviewError) {
+      return sendError(res, 400, reviewError.message, "validation_error");
+    }
+
+    if (booking.status === "completed" && status === "completed" && normalizedReview) {
+      if (isOwner) {
+        if (booking.ownerReview) {
+          return sendError(res, 409, "Bakici icin zaten yorum biraktiniz", "duplicate_review");
+        }
+        booking.ownerReview = normalizedReview;
+        await booking.save();
+        await _updateSitterRating(booking.sitterId);
+        sendPush([String(booking.sitterUserId)], {
+          title: "Yeni Bakici Degerlendirmesi",
+          body: `${booking.petOwnerId?.name || "Musteri"} sizin icin yorum birakti.`,
+          data: {
+            type: "sitter_owner_review",
+            bookingId: String(booking._id),
+          },
+        }).catch(() => {});
+        return sendOk(res, 200, { booking });
+      }
+
+      if (isSitter) {
+        if (booking.sitterReview) {
+          return sendError(res, 409, "Bu musteri icin zaten degerlendirme yaptiniz", "duplicate_review");
+        }
+        booking.sitterReview = normalizedReview;
+        await booking.save();
+        sendPush([String(booking.petOwnerId?._id || booking.petOwnerId)], {
+          title: "Yeni Musteri Degerlendirmesi",
+          body: `${booking.sitterId?.displayName || "Bakici"} sizin icin bir degerlendirme birakti.`,
+          data: {
+            type: "sitter_review_received",
+            bookingId: String(booking._id),
+          },
+        }).catch(() => {});
+        return sendOk(res, 200, { booking });
+      }
     }
 
     // Durum gecis matrisi
@@ -527,11 +572,8 @@ export async function updateBookingStatus(req, res) {
     } else if (status === "completed") {
       cancelTrackingGrace(booking.id);
       markServiceCompleted(booking, { now: new Date() });
-      if (review?.rating) {
-        booking.ownerReview = {
-          rating: Math.min(5, Math.max(1, review.rating)),
-          comment: review.comment || "",
-        };
+      if (normalizedReview && isSitter && !booking.sitterReview) {
+        booking.sitterReview = normalizedReview;
       }
     } else {
       booking.status = status;

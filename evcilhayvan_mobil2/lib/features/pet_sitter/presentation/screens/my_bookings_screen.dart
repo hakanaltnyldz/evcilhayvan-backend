@@ -28,7 +28,8 @@ class MyBookingsScreen extends ConsumerStatefulWidget {
   ConsumerState<MyBookingsScreen> createState() => _MyBookingsScreenState();
 }
 
-class _MyBookingsScreenState extends ConsumerState<MyBookingsScreen> with SingleTickerProviderStateMixin {
+class _MyBookingsScreenState extends ConsumerState<MyBookingsScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tab;
 
   @override
@@ -96,7 +97,10 @@ class _BookingsListState extends ConsumerState<_BookingsList> {
 
     return async.when(
       loading: () => const Center(child: PawLoading()),
-      error: (e, _) => ErrorView(message: e.toString(), onRetry: () => ref.invalidate(widget.provider)),
+      error: (e, _) => ErrorView(
+        message: e.toString(),
+        onRetry: () => ref.invalidate(widget.provider),
+      ),
       data: (bookings) {
         final l10n = AppLocalizations.of(context)!;
 
@@ -107,8 +111,8 @@ class _BookingsListState extends ConsumerState<_BookingsList> {
           eventMap.putIfAbsent(day, () => []).add(b);
         }
 
-        List<SitterBookingModel> Function(DateTime) getForDay =
-            (day) => eventMap[_norm(day)] ?? [];
+        List<SitterBookingModel> Function(DateTime) getForDay = (day) =>
+            eventMap[_norm(day)] ?? [];
 
         final visibleBookings = _selectedDay != null
             ? getForDay(_selectedDay!)
@@ -125,7 +129,8 @@ class _BookingsListState extends ConsumerState<_BookingsList> {
                   lastDay: DateTime.now().add(const Duration(days: 365)),
                   focusedDay: _focusedDay,
                   selectedDayPredicate: (day) =>
-                      _selectedDay != null && _norm(day) == _norm(_selectedDay!),
+                      _selectedDay != null &&
+                      _norm(day) == _norm(_selectedDay!),
                   eventLoader: getForDay,
                   calendarFormat: CalendarFormat.week,
                   availableCalendarFormats: const {
@@ -135,13 +140,15 @@ class _BookingsListState extends ConsumerState<_BookingsList> {
                   locale: 'tr_TR',
                   onDaySelected: (selected, focused) {
                     setState(() {
-                      _selectedDay = _norm(selected) == _norm(_selectedDay ?? DateTime(0))
+                      _selectedDay =
+                          _norm(selected) == _norm(_selectedDay ?? DateTime(0))
                           ? null
                           : selected;
                       _focusedDay = focused;
                     });
                   },
-                  onPageChanged: (focused) => setState(() => _focusedDay = focused),
+                  onPageChanged: (focused) =>
+                      setState(() => _focusedDay = focused),
                   calendarStyle: CalendarStyle(
                     todayDecoration: BoxDecoration(
                       color: const Color(0xFF52B788).withOpacity(0.35),
@@ -160,7 +167,10 @@ class _BookingsListState extends ConsumerState<_BookingsList> {
                     formatButtonVisible: true,
                     titleCentered: true,
                     formatButtonShowsNext: false,
-                    titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    titleTextStyle: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),
@@ -173,12 +183,19 @@ class _BookingsListState extends ConsumerState<_BookingsList> {
                       children: [
                         Text(
                           '${_selectedDay!.day}.${_selectedDay!.month}.${_selectedDay!.year} — ${visibleBookings.length} rezervasyon',
-                          style: const TextStyle(fontSize: 12, color: Color(0xFF2D6A4F), fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF2D6A4F),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         const Spacer(),
                         GestureDetector(
                           onTap: () => setState(() => _selectedDay = null),
-                          child: const Text('Tümü', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                          child: const Text(
+                            'Tümü',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
                         ),
                       ],
                     ),
@@ -189,8 +206,12 @@ class _BookingsListState extends ConsumerState<_BookingsList> {
                 SliverFillRemaining(
                   child: AnimatedEmptyState(
                     icon: Icons.calendar_today_outlined,
-                    title: _selectedDay != null ? 'Bu günde rezervasyon yok' : l10n.bookingsEmptyTitle,
-                    subtitle: _selectedDay == null ? l10n.bookingsEmptySubtitle : null,
+                    title: _selectedDay != null
+                        ? 'Bu günde rezervasyon yok'
+                        : l10n.bookingsEmptyTitle,
+                    subtitle: _selectedDay == null
+                        ? l10n.bookingsEmptySubtitle
+                        : null,
                   ),
                 )
               else
@@ -254,259 +275,373 @@ class _BookingCard extends StatelessWidget {
     final accent = _statusColor();
 
     return PremiumCard(
-      accentColor: accent,
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header row
-          Row(
+          accentColor: accent,
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  isSitter
-                      ? (booking.ownerName ?? l10n.bookingsOwnerLabel)
-                      : (booking.sitterName ?? l10n.bookingsSitterLabel),
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: accent.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: accent.withOpacity(0.3)),
-                ),
-                child: Text(
-                  booking.statusLabel,
-                  style: TextStyle(color: accent, fontWeight: FontWeight.bold, fontSize: 12),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          // Service & pet
-          Text(
-            '${booking.serviceLabel} - ${booking.petName ?? "Pet"}',
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
-          ),
-          const SizedBox(height: 4),
-          // Dates
-          Row(
-            children: [
-              Icon(Icons.date_range_rounded, size: 15, color: Colors.grey.shade500),
-              const SizedBox(width: 4),
-              Text(
-                '${fmt.format(booking.startDate)} - ${fmt.format(booking.endDate)}',
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          // Price
-          Text(
-            '${booking.totalPrice.toInt()} TL',
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17, color: Color(0xFF2D6A4F)),
-          ),
-          if (booking.isActive || booking.isCompleted || booking.earningsPaused)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                'Guncel odeme: ${booking.payableAmount.toStringAsFixed(0)} TL',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: booking.earningsPaused ? Colors.orange.shade800 : Colors.grey.shade700,
-                ),
-              ),
-            ),
-          if (booking.earningsPaused)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.orange.shade200),
-                ),
-                child: const Text(
-                  'Canli konum kesildi. Odeme gecici olarak durduruldu.',
-                  style: TextStyle(
-                    color: Colors.orange,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          // Notes
-          if (booking.notes?.isNotEmpty == true)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Text(
-                booking.notes!,
-                style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant),
-              ),
-            ),
-          // Actions — pending (sitter)
-          if (booking.isPending && isSitter)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Row(
+              // Header row
+              Row(
                 children: [
                   Expanded(
-                    child: SizedBox(
-                      height: 44,
-                      child: ElevatedButton(
-                        onPressed: () => _respond(context, 'accepted'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2D6A4F),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: Text(l10n.bookingsAccept),
+                    child: Text(
+                      isSitter
+                          ? (booking.ownerName ?? l10n.bookingsOwnerLabel)
+                          : (booking.sitterName ?? l10n.bookingsSitterLabel),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: SizedBox(
-                      height: 44,
-                      child: OutlinedButton(
-                        onPressed: () => _respond(context, 'rejected'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red,
-                          side: const BorderSide(color: Colors.red),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: Text(l10n.bookingsReject),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: accent.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: accent.withOpacity(0.3)),
+                    ),
+                    child: Text(
+                      booking.statusLabel,
+                      style: TextStyle(
+                        color: accent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
-          // Action — walk controls (sitter) + live tracking (owner)
-          if (booking.needsPickup || booking.canTrackLive) ...[
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: isSitter
-                  ? _SitterWalkControls(booking: booking, ref: ref)
-                  : booking.canTrackLive
+              const SizedBox(height: 10),
+              // Service & pet
+              Text(
+                '${booking.serviceLabel} - ${booking.petName ?? "Pet"}',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 4),
+              // Dates
+              Row(
+                children: [
+                  Icon(
+                    Icons.date_range_rounded,
+                    size: 15,
+                    color: Colors.grey.shade500,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${fmt.format(booking.startDate)} - ${fmt.format(booking.endDate)}',
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              // Price
+              Text(
+                '${booking.totalPrice.toInt()} TL',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 17,
+                  color: Color(0xFF2D6A4F),
+                ),
+              ),
+              if (booking.isActive ||
+                  booking.isCompleted ||
+                  booking.earningsPaused)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    'Guncel odeme: ${booking.payableAmount.toStringAsFixed(0)} TL',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: booking.earningsPaused
+                          ? Colors.orange.shade800
+                          : Colors.grey.shade700,
+                    ),
+                  ),
+                ),
+              if (booking.earningsPaused)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.orange.shade200),
+                    ),
+                    child: const Text(
+                      'Canli konum kesildi. Odeme gecici olarak durduruldu.',
+                      style: TextStyle(
+                        color: Colors.orange,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              // Notes
+              if (booking.notes?.isNotEmpty == true)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text(
+                    booking.notes!,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              // Actions — pending (sitter)
+              if (booking.isPending && isSitter)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 44,
+                          child: ElevatedButton(
+                            onPressed: () => _respond(context, 'accepted'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2D6A4F),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(l10n.bookingsAccept),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: SizedBox(
+                          height: 44,
+                          child: OutlinedButton(
+                            onPressed: () => _respond(context, 'rejected'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red,
+                              side: const BorderSide(color: Colors.red),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(l10n.bookingsReject),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              // Action — walk controls (sitter) + live tracking (owner)
+              if (booking.needsPickup || booking.canTrackLive) ...[
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: isSitter
+                      ? _SitterWalkControls(booking: booking, ref: ref)
+                      : booking.canTrackLive
                       ? _OwnerTrackButton(booking: booking)
                       : const _OwnerWaitingCard(),
-            ),
-          ],
-          // Action — mark complete (sitter)
-          // Action — care report + timeline (boarding/home_sitting)
-          if ((booking.isAccepted || booking.isActive) &&
-              (booking.serviceType == 'boarding' || booking.serviceType == 'home_sitting'))
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Row(
-                children: [
-                  if (isSitter)
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          final res = await context.pushNamed<bool>(
-                            'care-report',
-                            extra: {'booking': booking, 'dayNumber': 1},
-                          );
-                          if (res == true) ref.invalidate(myBookingsProvider);
-                        },
-                        icon: const Icon(Icons.assignment_add, size: 18),
-                        label: const Text('Günlük Rapor'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF2D6A4F),
-                          side: const BorderSide(color: Color(0xFF2D6A4F)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ],
+              // Action — mark complete (sitter)
+              // Action — care report + timeline (boarding/home_sitting)
+              if ((booking.isAccepted || booking.isActive) &&
+                  (booking.serviceType == 'boarding' ||
+                      booking.serviceType == 'home_sitting'))
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    children: [
+                      if (isSitter)
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () async {
+                              final res = await context.pushNamed<bool>(
+                                'care-report',
+                                extra: {'booking': booking, 'dayNumber': 1},
+                              );
+                              if (res == true)
+                                ref.invalidate(myBookingsProvider);
+                            },
+                            icon: const Icon(Icons.assignment_add, size: 18),
+                            label: const Text('Günlük Rapor'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF2D6A4F),
+                              side: const BorderSide(color: Color(0xFF2D6A4F)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (isSitter) const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  BookingTimelineScreen(booking: booking),
+                            ),
+                          ),
+                          icon: const Icon(Icons.timeline, size: 18),
+                          label: const Text('Bakım Günlüğü'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF52B788),
+                            side: const BorderSide(color: Color(0xFF52B788)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              // Walk photo sharing (sitter) + gallery (both)
+              if (booking.isActive || booking.isCompleted)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    children: [
+                      if (isSitter)
+                        Expanded(
+                          child: _WalkPhotoUploadButton(
+                            booking: booking,
+                            ref: ref,
+                          ),
+                        ),
+                      if (isSitter) const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => _WalkPhotoGalleryScreen(
+                                bookingId: booking.id,
+                              ),
+                            ),
+                          ),
+                          icon: const Icon(Icons.photo_library, size: 18),
+                          label: const Text('Fotoğraf Günlüğü'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.deepPurple,
+                            side: const BorderSide(color: Colors.deepPurple),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              // Action — review (owner)
+              if (booking.isCompleted && !booking.hasOwnerReview && !isSitter)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showReviewSheet(context),
+                      icon: const Icon(Icons.star_rounded, size: 20),
+                      label: Text(l10n.bookingsReview),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF2D6A4F),
+                        side: const BorderSide(color: Color(0xFF2D6A4F)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                     ),
-                  if (isSitter) const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => BookingTimelineScreen(booking: booking)),
-                      ),
-                      icon: const Icon(Icons.timeline, size: 18),
-                      label: const Text('Bakım Günlüğü'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF52B788),
-                        side: const BorderSide(color: Color(0xFF52B788)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          // Walk photo sharing (sitter) + gallery (both)
-          if (booking.isActive || booking.isCompleted)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Row(
-                children: [
-                  if (isSitter)
-                    Expanded(
-                      child: _WalkPhotoUploadButton(booking: booking, ref: ref),
-                    ),
-                  if (isSitter) const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => _WalkPhotoGalleryScreen(bookingId: booking.id)),
-                      ),
-                      icon: const Icon(Icons.photo_library, size: 18),
-                      label: const Text('Fotoğraf Günlüğü'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.deepPurple,
-                        side: const BorderSide(color: Colors.deepPurple),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          // Action — review (owner)
-          if (booking.isCompleted && !booking.hasReview && !isSitter)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: SizedBox(
-                width: double.infinity,
-                height: 44,
-                child: OutlinedButton.icon(
-                  onPressed: () => _showReviewSheet(context),
-                  icon: const Icon(Icons.star_rounded, size: 20),
-                  label: Text(l10n.bookingsReview),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF2D6A4F),
-                    side: const BorderSide(color: Color(0xFF2D6A4F)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
-              ),
-            ),
-        ],
-      ),
-    ).animate(delay: Duration(milliseconds: index * 60)).fadeIn(duration: 280.ms).slideY(begin: 0.05);
+              if (booking.isCompleted && !booking.hasSitterReview && isSitter)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showCustomerReviewSheet(context),
+                      icon: const Icon(Icons.rate_review_outlined, size: 20),
+                      label: const Text('Musteriyi Degerlendir'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF1D3557),
+                        side: const BorderSide(color: Color(0xFF1D3557)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              if (booking.hasOwnerReview || booking.hasSitterReview)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Column(
+                    children: [
+                      if (booking.hasOwnerReview)
+                        _reviewSummaryCard(
+                          context,
+                          title: isSitter
+                              ? 'Musterinin degerlendirmesi'
+                              : 'Senin bakici degerlendirmen',
+                          icon: Icons.star_rounded,
+                          accent: const Color(0xFF2D6A4F),
+                          rating: booking.ownerReviewRating!,
+                          comment: booking.ownerReviewComment,
+                        ),
+                      if (booking.hasOwnerReview && booking.hasSitterReview)
+                        const SizedBox(height: 8),
+                      if (booking.hasSitterReview)
+                        _reviewSummaryCard(
+                          context,
+                          title: isSitter
+                              ? 'Senin musteri degerlendirmen'
+                              : 'Bakicinin senin icin notu',
+                          icon: Icons.rate_review_outlined,
+                          accent: const Color(0xFF1D3557),
+                          rating: booking.sitterReviewRating!,
+                          comment: booking.sitterReviewComment,
+                        ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        )
+        .animate(delay: Duration(milliseconds: index * 60))
+        .fadeIn(duration: 280.ms)
+        .slideY(begin: 0.05);
   }
 
   Future<void> _respond(BuildContext context, String status) async {
     try {
-      await ref.read(petSitterRepositoryProvider).updateBookingStatus(booking.id, status);
+      await ref
+          .read(petSitterRepositoryProvider)
+          .updateBookingStatus(booking.id, status);
       ref.invalidate(myBookingsProvider);
       ref.invalidate(incomingBookingsProvider);
     } catch (e) {
       if (context.mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.bookingsActionErr(e.toString()))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.bookingsActionErr(e.toString()))),
+        );
       }
     }
   }
@@ -523,7 +658,12 @@ class _BookingCard extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
+        padding: EdgeInsets.fromLTRB(
+          24,
+          24,
+          24,
+          MediaQuery.of(ctx).viewInsets.bottom + 24,
+        ),
         child: StatefulBuilder(
           builder: (ctx, setS) => Column(
             mainAxisSize: MainAxisSize.min,
@@ -540,28 +680,41 @@ class _BookingCard extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 l10n.bookingsReviewDialogTitle,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
               const SizedBox(height: 16),
               // Animated stars
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (i) => GestureDetector(
-                  onTap: () => setS(() => rating = i + 1.0),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Icon(
-                      i < rating ? Icons.star_rounded : Icons.star_outline_rounded,
-                      color: i < rating ? Colors.amber : Colors.grey.shade300,
-                      size: 36,
-                    ).animate(delay: Duration(milliseconds: i * 80)).scale(
-                      begin: const Offset(0, 0),
-                      end: const Offset(1, 1),
-                      duration: 300.ms,
-                      curve: Curves.elasticOut,
+                children: List.generate(
+                  5,
+                  (i) => GestureDetector(
+                    onTap: () => setS(() => rating = i + 1.0),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child:
+                          Icon(
+                                i < rating
+                                    ? Icons.star_rounded
+                                    : Icons.star_outline_rounded,
+                                color: i < rating
+                                    ? Colors.amber
+                                    : Colors.grey.shade300,
+                                size: 36,
+                              )
+                              .animate(delay: Duration(milliseconds: i * 80))
+                              .scale(
+                                begin: const Offset(0, 0),
+                                end: const Offset(1, 1),
+                                duration: 300.ms,
+                                curve: Curves.elasticOut,
+                              ),
                     ),
                   ),
-                )),
+                ),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -586,7 +739,9 @@ class _BookingCard extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.grey.shade600,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: Text(l10n.bookingsReviewCancel),
                     ),
@@ -597,16 +752,24 @@ class _BookingCard extends StatelessWidget {
                       onPressed: () async {
                         Navigator.pop(ctx);
                         try {
-                          await ref.read(petSitterRepositoryProvider).updateBookingStatus(
-                            booking.id, 'completed',
-                            rating: rating, comment: commentCtrl.text.trim(),
-                          );
+                          await ref
+                              .read(petSitterRepositoryProvider)
+                              .updateBookingStatus(
+                                booking.id,
+                                'completed',
+                                rating: rating,
+                                comment: commentCtrl.text.trim(),
+                              );
                           ref.invalidate(myBookingsProvider);
                         } catch (e) {
                           if (context.mounted) {
                             final l10n2 = AppLocalizations.of(context)!;
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(l10n2.bookingsActionErr(e.toString()))),
+                              SnackBar(
+                                content: Text(
+                                  l10n2.bookingsActionErr(e.toString()),
+                                ),
+                              ),
                             );
                           }
                         }
@@ -615,7 +778,9 @@ class _BookingCard extends StatelessWidget {
                         backgroundColor: const Color(0xFF2D6A4F),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: Text(l10n.bookingsReviewSend),
                     ),
@@ -625,6 +790,178 @@ class _BookingCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showCustomerReviewSheet(BuildContext context) {
+    double rating = 5;
+    final commentCtrl = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          24,
+          24,
+          24,
+          MediaQuery.of(ctx).viewInsets.bottom + 24,
+        ),
+        child: StatefulBuilder(
+          builder: (ctx, setS) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Musteriyi Degerlendir',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Rezervasyon deneyimine gore pet sahibini puanlayin.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  5,
+                  (i) => GestureDetector(
+                    onTap: () => setS(() => rating = i + 1.0),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Icon(
+                        i < rating
+                            ? Icons.star_rounded
+                            : Icons.star_outline_rounded,
+                        color: i < rating ? Colors.amber : Colors.grey.shade300,
+                        size: 36,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: commentCtrl,
+                decoration: InputDecoration(
+                  hintText: 'Iletisim, hazirlik ve guvenilirlik notun',
+                  filled: true,
+                  fillColor: const Color(0xFFF4FAF6),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Vazgec'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(ctx);
+                        try {
+                          await ref
+                              .read(petSitterRepositoryProvider)
+                              .updateBookingStatus(
+                                booking.id,
+                                'completed',
+                                rating: rating,
+                                comment: commentCtrl.text.trim(),
+                              );
+                          ref.invalidate(myBookingsProvider);
+                          ref.invalidate(incomingBookingsProvider);
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(
+                              context,
+                            ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1D3557),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Gonder'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _reviewSummaryCard(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Color accent,
+    required double rating,
+    String? comment,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: accent.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: accent.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: accent, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.w700, color: accent),
+                ),
+              ),
+              Text(
+                rating.toStringAsFixed(1),
+                style: TextStyle(fontWeight: FontWeight.w800, color: accent),
+              ),
+            ],
+          ),
+          if ((comment ?? '').isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              comment!,
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -644,15 +981,21 @@ class _SitterWalkControls extends StatelessWidget {
       child: ElevatedButton.icon(
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => LiveTrackingScreen(booking: booking, isSitter: true),
+            builder: (_) =>
+                LiveTrackingScreen(booking: booking, isSitter: true),
           ),
         ),
-        icon: Icon(booking.needsPickup ? Icons.pets : Icons.location_on, size: 20),
+        icon: Icon(
+          booking.needsPickup ? Icons.pets : Icons.location_on,
+          size: 20,
+        ),
         label: const Text('Gezi Ekranına Geç'),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF2D6A4F),
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
     );
@@ -674,15 +1017,17 @@ class _WalkPhotoUploadButtonState extends State<_WalkPhotoUploadButton> {
 
   Future<void> _pick() async {
     final picker = ImagePicker();
-    final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    final file = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
     if (file == null || !mounted) return;
 
     setState(() => _uploading = true);
     try {
-      await widget.ref.read(petSitterRepositoryProvider).uploadWalkPhoto(
-        widget.booking.id,
-        File(file.path),
-      );
+      await widget.ref
+          .read(petSitterRepositoryProvider)
+          .uploadWalkPhoto(widget.booking.id, File(file.path));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Fotoğraf pet sahibine gönderildi!')),
@@ -690,7 +1035,9 @@ class _WalkPhotoUploadButtonState extends State<_WalkPhotoUploadButton> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Hata: $e')));
       }
     } finally {
       if (mounted) setState(() => _uploading = false);
@@ -702,7 +1049,11 @@ class _WalkPhotoUploadButtonState extends State<_WalkPhotoUploadButton> {
     return OutlinedButton.icon(
       onPressed: _uploading ? null : _pick,
       icon: _uploading
-          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+          ? const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
           : const Icon(Icons.camera_alt, size: 18),
       label: Text(_uploading ? 'Yükleniyor...' : 'Foto Paylaş'),
       style: OutlinedButton.styleFrom(
@@ -738,9 +1089,16 @@ class _WalkPhotoGalleryScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.photo_library_outlined, size: 64, color: Colors.grey),
+                  Icon(
+                    Icons.photo_library_outlined,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   SizedBox(height: 16),
-                  Text('Henüz fotoğraf paylaşılmadı', style: TextStyle(color: Colors.grey)),
+                  Text(
+                    'Henüz fotoğraf paylaşılmadı',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ],
               ),
             );
@@ -756,7 +1114,9 @@ class _WalkPhotoGalleryScreen extends ConsumerWidget {
             itemBuilder: (ctx, i) {
               final photo = photos[i];
               final rawUrl = photo['url']?.toString() ?? '';
-              final url = rawUrl.startsWith('http') ? rawUrl : '$apiBaseUrl$rawUrl';
+              final url = rawUrl.startsWith('http')
+                  ? rawUrl
+                  : '$apiBaseUrl$rawUrl';
               return GestureDetector(
                 onTap: () => showDialog(
                   context: context,
@@ -774,7 +1134,10 @@ class _WalkPhotoGalleryScreen extends ConsumerWidget {
                             padding: const EdgeInsets.all(12),
                             child: Text(
                               photo['caption'].toString(),
-                              style: const TextStyle(color: Colors.white, fontSize: 14),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -795,9 +1158,11 @@ class _WalkPhotoGalleryScreen extends ConsumerWidget {
   }
 }
 
-final _walkPhotosProvider = FutureProvider.autoDispose.family<List<Map<String, dynamic>>, String>(
-  (ref, bookingId) => ref.read(petSitterRepositoryProvider).getWalkPhotos(bookingId),
-);
+final _walkPhotosProvider = FutureProvider.autoDispose
+    .family<List<Map<String, dynamic>>, String>(
+      (ref, bookingId) =>
+          ref.read(petSitterRepositoryProvider).getWalkPhotos(bookingId),
+    );
 
 class _OwnerWaitingCard extends StatelessWidget {
   const _OwnerWaitingCard();
@@ -843,16 +1208,15 @@ class _OwnerTrackButton extends StatelessWidget {
       width: double.infinity,
       height: 44,
       child: ElevatedButton.icon(
-        onPressed: () => context.pushNamed(
-          'live-tracking',
-          extra: booking,
-        ),
+        onPressed: () => context.pushNamed('live-tracking', extra: booking),
         icon: const Icon(Icons.location_on, size: 20),
         label: const Text('Canlı Konum Takip'),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF52B788),
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
     );

@@ -31,6 +31,7 @@ const SitterBookingSchema = new mongoose.Schema(
       default: "pending",
     },
     ownerReview: { type: ReviewSchema },
+    sitterReview: { type: ReviewSchema },
     emergencyContact: {
       name: { type: String, trim: true, maxlength: 100 },
       phone: { type: String, trim: true, maxlength: 20 },

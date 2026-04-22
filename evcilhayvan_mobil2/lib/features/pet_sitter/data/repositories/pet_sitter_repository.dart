@@ -221,6 +221,50 @@ class PetSitterRepository {
     );
   });
 
+  Future<List<String>> uploadPortfolioPhotos(
+    String sitterId,
+    List<File> photos,
+  ) => _guard(() async {
+    final formData = FormData.fromMap({
+      'photos': [
+        for (final photo in photos)
+          await MultipartFile.fromFile(
+            photo.path,
+            filename: photo.path.split('/').last,
+          ),
+      ],
+    });
+    final response = await _dio.post(
+      '/api/pet-sitters/$sitterId/photos',
+      data: formData,
+    );
+    final list = response.data['photos'] as List? ?? const [];
+    return list.map((item) => item.toString()).toList();
+  });
+
+  Future<List<String>> deletePortfolioPhoto(String sitterId, String photoUrl) =>
+      _guard(() async {
+        final response = await _dio.delete(
+          '/api/pet-sitters/$sitterId/photos',
+          data: {'photoUrl': photoUrl},
+        );
+        final list = response.data['photos'] as List? ?? const [];
+        return list.map((item) => item.toString()).toList();
+      });
+
+  Future<PetSitterModel> reorderPortfolioPhotos(
+    String sitterId,
+    List<String> photos,
+  ) => _guard(() async {
+    final response = await _dio.put(
+      '/api/pet-sitters/$sitterId',
+      data: {'photos': photos},
+    );
+    return PetSitterModel.fromJson(
+      Map<String, dynamic>.from(response.data['sitter']),
+    );
+  });
+
   // Sitter request ilanlarını listele (evcil hayvan sahiplerinin açtığı)
   Future<List<Map<String, dynamic>>> listSitterRequests({
     double? lat,

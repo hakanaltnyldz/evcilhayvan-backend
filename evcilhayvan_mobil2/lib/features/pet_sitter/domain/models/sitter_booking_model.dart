@@ -16,8 +16,12 @@ class SitterBookingModel {
   final double totalPrice;
   final String? notes;
   final String status;
-  final double? reviewRating;
-  final String? reviewComment;
+  final double? ownerReviewRating;
+  final String? ownerReviewComment;
+  final DateTime? ownerReviewAt;
+  final double? sitterReviewRating;
+  final String? sitterReviewComment;
+  final DateTime? sitterReviewAt;
   final DateTime? createdAt;
   final bool liveTrackingActive;
   final double? lastLat;
@@ -46,8 +50,12 @@ class SitterBookingModel {
     this.totalPrice = 0,
     this.notes,
     this.status = 'pending',
-    this.reviewRating,
-    this.reviewComment,
+    this.ownerReviewRating,
+    this.ownerReviewComment,
+    this.ownerReviewAt,
+    this.sitterReviewRating,
+    this.sitterReviewComment,
+    this.sitterReviewAt,
     this.createdAt,
     this.liveTrackingActive = false,
     this.lastLat,
@@ -61,24 +69,37 @@ class SitterBookingModel {
 
   String get serviceLabel {
     switch (serviceType) {
-      case 'walking': return 'Gezdirme';
-      case 'home_sitting': return 'Ev Bakimi';
-      case 'boarding': return 'Pansiyonda Bakim';
-      case 'daycare': return 'Gunduz Bakimi';
-      case 'grooming': return 'Timar/Bakim';
-      default: return serviceType;
+      case 'walking':
+        return 'Gezdirme';
+      case 'home_sitting':
+        return 'Ev Bakimi';
+      case 'boarding':
+        return 'Pansiyonda Bakim';
+      case 'daycare':
+        return 'Gunduz Bakimi';
+      case 'grooming':
+        return 'Timar/Bakim';
+      default:
+        return serviceType;
     }
   }
 
   String get statusLabel {
     switch (status) {
-      case 'pending': return 'Bekliyor';
-      case 'accepted': return 'Kabul Edildi';
-      case 'active': return 'Bakim Aktif';
-      case 'rejected': return 'Reddedildi';
-      case 'cancelled': return 'Iptal';
-      case 'completed': return 'Tamamlandi';
-      default: return status;
+      case 'pending':
+        return 'Bekliyor';
+      case 'accepted':
+        return 'Kabul Edildi';
+      case 'active':
+        return 'Bakim Aktif';
+      case 'rejected':
+        return 'Reddedildi';
+      case 'cancelled':
+        return 'Iptal';
+      case 'completed':
+        return 'Tamamlandi';
+      default:
+        return status;
     }
   }
 
@@ -86,7 +107,9 @@ class SitterBookingModel {
   bool get isAccepted => status == 'accepted';
   bool get isActive => status == 'active';
   bool get isCompleted => status == 'completed';
-  bool get hasReview => reviewRating != null;
+  bool get hasReview => ownerReviewRating != null;
+  bool get hasOwnerReview => ownerReviewRating != null;
+  bool get hasSitterReview => sitterReviewRating != null;
   bool get canTrackLive => status == 'active' || liveTrackingActive;
   bool get needsPickup => status == 'accepted';
   bool get earningsPaused => earningsStatus == 'paused';
@@ -127,11 +150,27 @@ class SitterBookingModel {
     }
 
     final review = json['ownerReview'];
-    double? reviewRating;
-    String? reviewComment;
+    double? ownerReviewRating;
+    String? ownerReviewComment;
+    DateTime? ownerReviewAt;
     if (review is Map<String, dynamic>) {
-      reviewRating = (review['rating'] as num?)?.toDouble();
-      reviewComment = review['comment']?.toString();
+      ownerReviewRating = (review['rating'] as num?)?.toDouble();
+      ownerReviewComment = review['comment']?.toString();
+      ownerReviewAt = review['createdAt'] != null
+          ? DateTime.tryParse(review['createdAt'].toString())
+          : null;
+    }
+
+    final sitterReview = json['sitterReview'];
+    double? sitterReviewRating;
+    String? sitterReviewComment;
+    DateTime? sitterReviewAt;
+    if (sitterReview is Map<String, dynamic>) {
+      sitterReviewRating = (sitterReview['rating'] as num?)?.toDouble();
+      sitterReviewComment = sitterReview['comment']?.toString();
+      sitterReviewAt = sitterReview['createdAt'] != null
+          ? DateTime.tryParse(sitterReview['createdAt'].toString())
+          : null;
     }
 
     return SitterBookingModel(
@@ -147,14 +186,24 @@ class SitterBookingModel {
       petName: petName,
       petPhoto: petPhoto,
       serviceType: json['serviceType']?.toString() ?? '',
-      startDate: json['startDate'] != null ? DateTime.tryParse(json['startDate'].toString()) ?? DateTime.now() : DateTime.now(),
-      endDate: json['endDate'] != null ? DateTime.tryParse(json['endDate'].toString()) ?? DateTime.now() : DateTime.now(),
+      startDate: json['startDate'] != null
+          ? DateTime.tryParse(json['startDate'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+      endDate: json['endDate'] != null
+          ? DateTime.tryParse(json['endDate'].toString()) ?? DateTime.now()
+          : DateTime.now(),
       totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0,
       notes: json['notes']?.toString(),
       status: json['status']?.toString() ?? 'pending',
-      reviewRating: reviewRating,
-      reviewComment: reviewComment,
-      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
+      ownerReviewRating: ownerReviewRating,
+      ownerReviewComment: ownerReviewComment,
+      ownerReviewAt: ownerReviewAt,
+      sitterReviewRating: sitterReviewRating,
+      sitterReviewComment: sitterReviewComment,
+      sitterReviewAt: sitterReviewAt,
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'].toString())
+          : null,
       liveTrackingActive: json['liveTracking']?['isActive'] == true,
       lastLat: (json['liveTracking']?['lastLat'] as num?)?.toDouble(),
       lastLng: (json['liveTracking']?['lastLng'] as num?)?.toDouble(),
@@ -168,7 +217,8 @@ class SitterBookingModel {
       earningsPausedAt: json['earnings']?['pausedAt'] != null
           ? DateTime.tryParse(json['earnings']['pausedAt'].toString())
           : null,
-      payableAmount: (json['earnings']?['payableAmount'] as num?)?.toDouble() ??
+      payableAmount:
+          (json['earnings']?['payableAmount'] as num?)?.toDouble() ??
           (json['totalPrice'] as num?)?.toDouble() ??
           0,
     );

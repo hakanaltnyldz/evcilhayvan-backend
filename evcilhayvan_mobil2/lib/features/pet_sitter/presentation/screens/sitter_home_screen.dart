@@ -489,6 +489,12 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
             ),
           if (user != null && hasSitterProfile)
             IconButton(
+              icon: const Icon(Icons.collections_bookmark_outlined),
+              tooltip: 'Portfolio Yonetimi',
+              onPressed: () => context.pushNamed('sitter-portfolio'),
+            ),
+          if (user != null && hasSitterProfile)
+            IconButton(
               icon: const Icon(Icons.dashboard_customize_outlined),
               tooltip: 'Bakici Dashboard',
               onPressed: () => context.pushNamed('sitter-dashboard'),

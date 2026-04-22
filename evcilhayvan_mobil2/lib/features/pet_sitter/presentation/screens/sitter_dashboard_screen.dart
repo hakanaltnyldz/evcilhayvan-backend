@@ -225,6 +225,11 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
                         ),
                       ),
                       _actionChip(
+                        'Portfolio',
+                        Icons.collections_bookmark_outlined,
+                        () => context.pushNamed('sitter-portfolio'),
+                      ),
+                      _actionChip(
                         'Kazanc Raporu',
                         Icons.insights_outlined,
                         () => Navigator.of(context).push(

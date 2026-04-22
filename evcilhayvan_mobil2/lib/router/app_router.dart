@@ -83,6 +83,7 @@ import '../features/pet_sitter/domain/models/sitter_booking_model.dart';
 import '../features/pet_sitter/presentation/screens/my_bookings_screen.dart';
 import '../features/pet_sitter/presentation/screens/become_sitter_screen.dart';
 import '../features/pet_sitter/presentation/screens/sitter_dashboard_screen.dart';
+import '../features/pet_sitter/presentation/screens/sitter_portfolio_screen.dart';
 import '../features/pet_sitter/presentation/screens/sitter_request_form_screen.dart';
 import '../features/pet_sitter/domain/models/pet_sitter_model.dart';
 
@@ -764,6 +765,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'sitter-dashboard',
         pageBuilder: (context, state) =>
             _buildPage(state, const SitterDashboardScreen()),
+      ),
+      GoRoute(
+        path: '/sitters/portfolio',
+        name: 'sitter-portfolio',
+        pageBuilder: (context, state) =>
+            _buildPage(state, const SitterPortfolioScreen()),
       ),
       GoRoute(
         path: '/sitters/become',
