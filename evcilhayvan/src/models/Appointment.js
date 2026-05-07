@@ -64,7 +64,15 @@ const AppointmentSchema = new mongoose.Schema(
 );
 
 AppointmentSchema.index({ userId: 1, date: -1 });
-AppointmentSchema.index({ veterinaryId: 1, date: 1 }, { unique: true });
+AppointmentSchema.index(
+  { veterinaryId: 1, date: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      status: { $in: ["pending", "confirmed"] },
+    },
+  }
+);
 AppointmentSchema.index({ petId: 1, date: -1 });
 AppointmentSchema.index({ status: 1 });
 

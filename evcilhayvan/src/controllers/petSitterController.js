@@ -61,7 +61,7 @@ export async function listSitters(req, res) {
         },
       });
 
-      const match = {};
+      const match = { isActive: true, availability: true };
       if (service) match["services.type"] = service;
       if (species) match.speciesServed = species;
       if (Number(minRating) > 0) match.rating = { $gte: Number(minRating) };
@@ -89,6 +89,8 @@ export async function listSitters(req, res) {
 
       const fallbackFilter = {
         _id: { $nin: geoSitters.map((s) => s._id) },
+        isActive: true,
+        availability: true,
         $or: [
           { location: { $exists: false } },
           { "location.coordinates": { $exists: false } },
@@ -116,7 +118,7 @@ export async function listSitters(req, res) {
     }
 
     // Normal query
-    const filter = {};
+    const filter = { isActive: true, availability: true };
     if (service) filter["services.type"] = service;
     if (species) filter.speciesServed = species;
     if (Number(minRating) > 0) filter.rating = { $gte: Number(minRating) };

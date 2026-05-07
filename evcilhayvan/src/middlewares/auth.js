@@ -2,12 +2,19 @@ import { verifyToken } from "../utils/jwt.js";
 import { sendError } from "../utils/apiResponse.js";
 import User from "../models/User.js";
 
-/**
- * Rol bazlı auth middleware.
- * allowedRoles verildiğinde kullanıcının güncel rolünü DB'den doğrular;
- * böylece ban/rol değişiklikleri mevcut token'ları geçersiz kılar.
- * @param {Array<string>} allowedRoles
- */
+async function loadActiveUserRole(userId, res) {
+  const dbUser = await User.findById(userId).select("role").lean();
+  if (!dbUser) {
+    sendError(res, 401, "Kullanici bulunamadi", "user_not_found");
+    return null;
+  }
+  if (dbUser.role === "banned") {
+    sendError(res, 403, "Hesabiniz askiya alinmistir", "account_banned");
+    return null;
+  }
+  return dbUser.role;
+}
+
 export function authRequired(allowedRoles = []) {
   return async (req, res, next) => {
     if (process.env.NODE_ENV !== "test") {
@@ -25,38 +32,20 @@ export function authRequired(allowedRoles = []) {
     try {
       payload = verifyToken(token);
     } catch (err) {
-      return sendError(res, 401, "Geçersiz veya süresi dolmuş token", "invalid_token");
+      return sendError(res, 401, "Gecersiz veya suresi dolmus token", "invalid_token");
     }
 
-    // Rol kısıtlaması olan endpoint'lerde DB'den güncel rolü doğrula
-    // (ban, rol değişikliği vb. anlık etkili olsun)
-    if (allowedRoles.length > 0) {
-      try {
-        const dbUser = await User.findById(payload.sub).select("role").lean();
-        if (!dbUser) {
-          return sendError(res, 401, "Kullanıcı bulunamadı", "user_not_found");
-        }
-        if (dbUser.role === "banned") {
-          return sendError(res, 403, "Hesabınız askıya alınmıştır", "account_banned");
-        }
-        if (!allowedRoles.includes(dbUser.role)) {
-          return sendError(res, 403, "Erişim reddedildi. Bu işlem için yetkiniz yok.", "forbidden");
-        }
-        // payload'ı güncel DB rolüyle güncelle
-        payload = { ...payload, role: dbUser.role };
-      } catch (err) {
-        return sendError(res, 500, "Yetki doğrulama hatası", "auth_error");
+    try {
+      const currentRole = await loadActiveUserRole(payload.sub, res);
+      if (!currentRole) return;
+
+      if (allowedRoles.length > 0 && !allowedRoles.includes(currentRole)) {
+        return sendError(res, 403, "Erisim reddedildi. Bu islem icin yetkiniz yok.", "forbidden");
       }
-    } else {
-      // Rol kısıtlaması olmasa bile banned kullanıcıyı engelle
-      if (payload.role === "banned") {
-        try {
-          const dbUser = await User.findById(payload.sub).select("role").lean();
-          if (dbUser?.role === "banned") {
-            return sendError(res, 403, "Hesabınız askıya alınmıştır", "account_banned");
-          }
-        } catch (_) { /* DB hatası → token'daki role'e güven */ }
-      }
+
+      payload = { ...payload, role: currentRole };
+    } catch (err) {
+      return sendError(res, 500, "Yetki dogrulama hatasi", "auth_error");
     }
 
     req.user = { ...payload, _id: payload.sub };
@@ -64,7 +53,6 @@ export function authRequired(allowedRoles = []) {
   };
 }
 
-// Basit auth middleware (rol kontrolü olmadan)
 export const protect = async (req, res, next) => {
   if (process.env.NODE_ENV !== "test") {
     console.log(`[Auth] ${req.method} ${req.path}`);
@@ -81,17 +69,15 @@ export const protect = async (req, res, next) => {
   try {
     payload = verifyToken(token);
   } catch (err) {
-    return sendError(res, 401, "Geçersiz veya süresi dolmuş token", "invalid_token");
+    return sendError(res, 401, "Gecersiz veya suresi dolmus token", "invalid_token");
   }
 
-  // Banned kullanıcıyı engelle
-  if (payload.role === "banned") {
-    try {
-      const dbUser = await User.findById(payload.sub).select("role").lean();
-      if (dbUser?.role === "banned") {
-        return sendError(res, 403, "Hesabınız askıya alınmıştır", "account_banned");
-      }
-    } catch (_) { /* DB hatası → devam et */ }
+  try {
+    const currentRole = await loadActiveUserRole(payload.sub, res);
+    if (!currentRole) return;
+    payload = { ...payload, role: currentRole };
+  } catch (err) {
+    return sendError(res, 500, "Yetki dogrulama hatasi", "auth_error");
   }
 
   req.user = { ...payload, _id: payload.sub };

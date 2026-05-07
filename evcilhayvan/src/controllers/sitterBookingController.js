@@ -52,6 +52,72 @@ function getDateKey(date) {
   ].join("-");
 }
 
+function getDocumentId(value) {
+  return String(value?._id || value || "");
+}
+
+function parseTimeOnDate(baseDate, time) {
+  const [hourRaw, minuteRaw] = String(time || "").split(":");
+  const hour = Number(hourRaw);
+  const minute = Number(minuteRaw);
+  if (!Number.isInteger(hour) || !Number.isInteger(minute)) return null;
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+  const date = new Date(baseDate);
+  date.setHours(hour, minute, 0, 0);
+  return date;
+}
+
+function hasBlockedDate(sitter, start, end) {
+  const blockedKeys = new Set(
+    (sitter.blockedDates || []).map((date) => getDateKey(new Date(date)))
+  );
+  if (blockedKeys.size === 0) return false;
+
+  const cursor = new Date(start);
+  cursor.setHours(0, 0, 0, 0);
+  const endDay = new Date(end);
+  endDay.setHours(0, 0, 0, 0);
+
+  while (cursor <= endDay) {
+    if (blockedKeys.has(getDateKey(cursor))) return true;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return false;
+}
+
+function isWithinWorkingHours(sitter, start, end, serviceType) {
+  if (["boarding", "home_sitting"].includes(serviceType)) return true;
+  const workingHours = Array.isArray(sitter.workingHours) ? sitter.workingHours : [];
+  if (workingHours.length === 0) return true;
+
+  const startDay = start.getDay();
+  const endDay = end.getDay();
+  if (startDay !== endDay) return false;
+
+  const window = workingHours.find((item) => Number(item.day) === startDay);
+  if (!window) return false;
+
+  const windowStart = parseTimeOnDate(start, window.start || "09:00");
+  const windowEnd = parseTimeOnDate(start, window.end || "18:00");
+  if (!windowStart || !windowEnd || windowEnd <= windowStart) return true;
+
+  return start >= windowStart && end <= windowEnd;
+}
+
+function calculateBookingPrice(serviceInfo, serviceType, start, end) {
+  const durationMs = end.getTime() - start.getTime();
+  const hours = Math.max(1, Math.ceil(durationMs / (1000 * 60 * 60)));
+  const days = Math.max(1, Math.ceil(durationMs / (1000 * 60 * 60 * 24)));
+
+  if (["boarding", "home_sitting"].includes(serviceType) && serviceInfo.pricePerDay > 0) {
+    return days * serviceInfo.pricePerDay;
+  }
+  if (serviceInfo.pricePerHour > 0) {
+    return hours * serviceInfo.pricePerHour;
+  }
+  return days * (serviceInfo.pricePerDay || 0);
+}
+
 function buildSeriesMap(startDate, length, keyBuilder) {
   const map = new Map();
   for (let index = 0; index < length; index += 1) {
@@ -97,13 +163,23 @@ export async function createBooking(req, res) {
 
     const start = new Date(startDate);
     const end = new Date(endDate);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      return sendError(res, 400, "Gecersiz tarih", "invalid_dates");
+    }
+    if (start < new Date()) {
+      return sendError(res, 400, "Gecmis tarihe rezervasyon yapilamaz", "past_date");
+    }
     if (end <= start) return sendError(res, 400, "Bitis tarihi baslangictan once olamaz", "invalid_dates");
 
-    const hours = Math.ceil((end - start) / (1000 * 60 * 60));
-    const days = Math.ceil(hours / 24);
-    const totalPrice = days >= 1 && serviceInfo.pricePerDay > 0
-      ? days * serviceInfo.pricePerDay
-      : hours * (serviceInfo.pricePerHour || 0);
+    if (hasBlockedDate(sitter, start, end)) {
+      return sendError(res, 409, "Bakici secilen tarihte musait degil", "blocked_date");
+    }
+
+    if (!isWithinWorkingHours(sitter, start, end, serviceType)) {
+      return sendError(res, 409, "Secilen saat bakicinin calisma saatleri disinda", "outside_working_hours");
+    }
+
+    const totalPrice = calculateBookingPrice(serviceInfo, serviceType, start, end);
 
     // Tarih cakisma kontrolu
     const overlap = await SitterBooking.findOne({
@@ -177,7 +253,8 @@ export async function myBookings(req, res) {
     const petOwnerId = req.user.sub;
     const bookings = await SitterBooking.find({ petOwnerId })
       .sort({ createdAt: -1 })
-      .populate("sitterId", "displayName avatar rating")
+      .populate("sitterId", "displayName avatar rating userId")
+      .populate("sitterUserId", "name avatarUrl email phone")
       .populate("petId", "name species photos images")
       .lean();
 
@@ -193,7 +270,8 @@ export async function incomingBookings(req, res) {
     const sitterUserId = req.user.sub;
     const bookings = await SitterBooking.find({ sitterUserId })
       .sort({ createdAt: -1 })
-      .populate("petOwnerId", "name avatarUrl")
+      .populate("petOwnerId", "name avatarUrl email phone")
+      .populate("sitterUserId", "name avatarUrl email phone")
       .populate("petId", "name species photos images")
       .lean();
 
@@ -440,15 +518,16 @@ export async function getBooking(req, res) {
     if (!errors.isEmpty()) return sendError(res, 400, "Gecersiz ID", "validation_error", errors.array());
     const userId = req.user.sub;
     const booking = await SitterBooking.findById(req.params.id)
-      .populate("petOwnerId", "name avatarUrl")
-      .populate("sitterId", "displayName avatar rating")
+      .populate("petOwnerId", "name avatarUrl email phone")
+      .populate("sitterId", "displayName avatar rating userId")
+      .populate("sitterUserId", "name avatarUrl email phone")
       .populate("petId", "name species photos images")
       .lean();
 
     if (!booking) return sendError(res, 404, "Rezervasyon bulunamadi", "not_found");
 
     const isOwner = String(booking.petOwnerId?._id) === userId;
-    const isSitter = String(booking.sitterUserId) === userId;
+    const isSitter = getDocumentId(booking.sitterUserId) === userId;
     if (!isOwner && !isSitter) return sendError(res, 403, "Yetkiniz yok", "forbidden");
 
     return sendOk(res, 200, { booking: { ...booking, id: booking._id } });
@@ -470,12 +549,13 @@ export async function updateBookingStatus(req, res) {
     }
 
     const booking = await SitterBooking.findById(req.params.id)
-      .populate("petOwnerId", "name")
+      .populate("petOwnerId", "name avatarUrl email phone")
+      .populate("sitterUserId", "name avatarUrl email phone")
       .populate("sitterId", "displayName");
     if (!booking) return sendError(res, 404, "Rezervasyon bulunamadi", "not_found");
 
     const isOwner = String(booking.petOwnerId?._id || booking.petOwnerId) === userId;
-    const isSitter = String(booking.sitterUserId) === userId;
+    const isSitter = getDocumentId(booking.sitterUserId) === userId;
 
     let normalizedReview = null;
     try {
@@ -492,7 +572,7 @@ export async function updateBookingStatus(req, res) {
         booking.ownerReview = normalizedReview;
         await booking.save();
         await _updateSitterRating(booking.sitterId);
-        sendPush([String(booking.sitterUserId)], {
+        sendPush([getDocumentId(booking.sitterUserId)], {
           title: "Yeni Bakici Degerlendirmesi",
           body: `${booking.petOwnerId?.name || "Musteri"} sizin icin yorum birakti.`,
           data: {
@@ -590,7 +670,7 @@ export async function updateBookingStatus(req, res) {
     if (io) {
       const targetUserId = isSitter
         ? String(booking.petOwnerId?._id || booking.petOwnerId)
-        : String(booking.sitterUserId);
+        : getDocumentId(booking.sitterUserId);
       io.to(`user:${targetUserId}`).emit("sitter:booking_update", {
         bookingId: booking.id,
         status,
@@ -620,7 +700,7 @@ export async function updateBookingStatus(req, res) {
     {
       const targetUserId = isSitter
         ? String(booking.petOwnerId?._id || booking.petOwnerId)
-        : String(booking.sitterUserId);
+        : getDocumentId(booking.sitterUserId);
       const statusLabels = {
         accepted: "Rezervasyonunuz kabul edildi",
         active: "Bakici kopegi teslim aldi. Canli konum acildi",

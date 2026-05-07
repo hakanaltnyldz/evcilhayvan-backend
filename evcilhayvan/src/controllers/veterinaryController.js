@@ -662,7 +662,7 @@ export async function startVetConversation(req, res) {
     if (!conversation) {
       conversation = await Conversation.create({
         participants: [myUserId, vetUserId],
-        contextType: "VET",
+        contextType: "vet",
         contextId: vet._id,
         lastMessage: "",
         lastMessageAt: new Date(),
