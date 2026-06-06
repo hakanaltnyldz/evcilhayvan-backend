@@ -81,6 +81,7 @@ export default function Orders() {
   })
   const [savingTracking, setSavingTracking] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [guestSensitiveModal, setGuestSensitiveModal] = useState(null)
 
   useEffect(() => {
     loadOrders(page, status)
@@ -132,6 +133,44 @@ export default function Orders() {
     })
   }
 
+  function openGuestSensitiveModal(order) {
+    setGuestSensitiveModal({
+      order,
+      password: '',
+      data: null,
+      loading: false,
+      error: '',
+    })
+  }
+
+  async function fetchGuestSensitiveData(event) {
+    event.preventDefault()
+    if (!guestSensitiveModal?.order || !guestSensitiveModal.password.trim()) {
+      setGuestSensitiveModal((current) => current ? { ...current, error: 'Ek veri sifresi gerekli' } : current)
+      return
+    }
+
+    setGuestSensitiveModal((current) => current ? { ...current, loading: true, error: '' } : current)
+    try {
+      const response = await api.get(`/admin/orders/${guestSensitiveModal.order._id}/guest-sensitive`, {
+        headers: { 'x-admin-data-password': guestSensitiveModal.password },
+      })
+      setGuestSensitiveModal((current) =>
+        current ? { ...current, data: response.data || {}, loading: false, password: '' } : current
+      )
+    } catch (error) {
+      setGuestSensitiveModal((current) =>
+        current
+          ? {
+              ...current,
+              loading: false,
+              error: error.response?.data?.message || 'Misafir verisi acilamadi',
+            }
+          : current
+      )
+    }
+  }
+
   async function saveTracking() {
     if (!trackingModal) return
 
@@ -165,10 +204,19 @@ export default function Orders() {
 
         if (row.guestInfo?.name) {
           return (
-            <span className="flex items-center gap-1">
-              <span className="rounded bg-orange-100 px-1.5 py-0.5 text-xs font-semibold text-orange-700">Misafir</span>
-              <span className="text-sm">{row.guestInfo.name}</span>
-            </span>
+            <div className="space-y-1">
+              <span className="flex items-center gap-1">
+                <span className="rounded bg-orange-100 px-1.5 py-0.5 text-xs font-semibold text-orange-700">Misafir</span>
+                <span className="text-sm">{row.guestInfo.name}</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => openGuestSensitiveModal(row)}
+                className="rounded-lg bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100"
+              >
+                Hassas veri
+              </button>
+            </div>
           )
         }
 
@@ -433,6 +481,76 @@ export default function Orders() {
           </div>
         </div>
       ) : null}
+
+      {guestSensitiveModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4">
+              <h2 className="text-lg font-bold text-slate-900">Misafir Siparis Verisi</h2>
+              <p className="mt-1 text-xs text-slate-500">
+                Siparis #{guestSensitiveModal.order?._id?.slice(-6)}
+              </p>
+            </div>
+
+            {guestSensitiveModal.data ? (
+              <div className="space-y-3">
+                <SensitiveRow label="Ad" value={guestSensitiveModal.data.name} />
+                <SensitiveRow label="Telefon" value={guestSensitiveModal.data.phone} />
+                <SensitiveRow label="E-posta" value={guestSensitiveModal.data.email} />
+                <SensitiveRow label="TC Kimlik" value={guestSensitiveModal.data.nationalId} />
+              </div>
+            ) : (
+              <form onSubmit={fetchGuestSensitiveData} className="space-y-3">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-600">
+                    Ek veri sifresi
+                  </label>
+                  <input
+                    type="password"
+                    value={guestSensitiveModal.password}
+                    onChange={(event) =>
+                      setGuestSensitiveModal((current) =>
+                        current ? { ...current, password: event.target.value, error: '' } : current
+                      )
+                    }
+                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-200"
+                    autoFocus
+                  />
+                </div>
+                {guestSensitiveModal.error ? (
+                  <p className="rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+                    {guestSensitiveModal.error}
+                  </p>
+                ) : null}
+                <button
+                  type="submit"
+                  disabled={guestSensitiveModal.loading}
+                  className="w-full rounded-xl bg-amber-600 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-50"
+                >
+                  {guestSensitiveModal.loading ? 'Aciluyor...' : 'Veriyi Ac'}
+                </button>
+              </form>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setGuestSensitiveModal(null)}
+              className="mt-4 w-full rounded-xl border border-slate-200 py-2 text-sm text-slate-600 hover:bg-slate-50"
+            >
+              Kapat
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function SensitiveRow({ label, value }) {
+  return (
+    <div className="rounded-2xl bg-slate-50 px-4 py-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{label}</p>
+      <p className="mt-1 font-mono text-sm font-semibold text-slate-900">{value || '-'}</p>
     </div>
   )
 }

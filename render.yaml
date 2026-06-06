@@ -31,6 +31,8 @@ services:
   - type: web
     name: evcilhayvan-admin
     env: static
+    # Unified web panel: admin workspace + seller workspace under /seller/*
+    # Legacy standalone seller app in evcilhayvan_seller/ is not deployed here.
     buildCommand: cd evcilhayvan_admin && npm install && npm run build
     staticPublishPath: evcilhayvan_admin/dist
     routes:

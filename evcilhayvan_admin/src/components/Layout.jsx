@@ -57,6 +57,7 @@ export default function Layout() {
       '/moderation-queue': 'Sikayet, support ve icerik akislarini tek moderasyon kuyruunda toplayin.',
       '/reports': 'Sikayet ve moderasyon akisini hizli sekilde sonuclandirin.',
       '/support': 'Destek taleplerine ic not ve durum guncellemesi ekleyin.',
+      '/sitter-operations': 'Bakici rezervasyonlari, yuruyus akisi ve bakim raporlarini izleyin.',
       '/seller': 'Magaza performansi, siparisler ve urunler burada toplandi.',
       '/seller/products': 'Urun katalounu guncelleyin, stok ve gorunurlugu kontrol edin.',
       '/seller/orders': 'Satici siparislerini filtreleyin ve kargo akisini yonetin.',

@@ -1,5 +1,16 @@
 # EvcilHayvan Monorepo
 
+## Web Panelleri
+- Ana web paneli: `evcilhayvan_admin/`
+  - Admin ve satici workspace'leri ayni React/Vite uygulamasinda toplanir.
+  - Render deploy akisi yalnizca bu paneli yayinlar.
+  - Admin route'lari `/dashboard`, `/users`, `/orders` gibi ana path'lerdedir.
+  - Satici route'lari `/seller`, `/seller/products`, `/seller/orders`, `/seller/coupons`, `/seller/analytics`, `/seller/store-profile` altindadir.
+- Legacy standalone panel: `evcilhayvan_seller/`
+  - Ayri deploy edilmez; eski uyumluluk ve karsilastirma icin repo icinde tutulur.
+  - Yeni seller ozellikleri once `evcilhayvan_admin/src/pages/seller/` altina eklenmelidir.
+- Karar ve gerekce: `docs/PANEL_STRATEGY.md`.
+
 ## Backend (Node/Mongo)
 - Konfig: `evcilhayvan/.env.example` dosyasını kopyalayıp değerleri doldurun (JWT, Mongo URI, SendGrid vb.).
 - Çalıştırma: `cd evcilhayvan && npm install && npm start`

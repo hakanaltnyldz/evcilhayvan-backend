@@ -14,6 +14,7 @@ import Posts from './pages/Posts.jsx'
 import Coupons from './pages/Coupons.jsx'
 import Support from './pages/Support.jsx'
 import Sitters from './pages/Sitters.jsx'
+import SitterOperations from './pages/SitterOperations.jsx'
 import Vets from './pages/Vets.jsx'
 import VetClaims from './pages/VetClaims.jsx'
 import SellerApplications from './pages/SellerApplications.jsx'
@@ -77,6 +78,7 @@ export default function App() {
               <Route path="platform-settings" element={<PlatformSettings />} />
               <Route path="support" element={<Support />} />
               <Route path="sitters" element={<Sitters />} />
+              <Route path="sitter-operations" element={<SitterOperations />} />
               <Route path="vets" element={<Vets />} />
               <Route path="vet-claims" element={<VetClaims />} />
               <Route path="seller-applications" element={<SellerApplications />} />

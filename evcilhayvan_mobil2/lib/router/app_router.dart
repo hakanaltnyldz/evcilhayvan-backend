@@ -143,6 +143,7 @@ const _guestBrowseRoutes = {
   '/',
   '/veterinary',
   '/store',
+  '/store-new',
   '/lost-found',
   '/events',
   '/sitters',
@@ -162,10 +163,14 @@ bool _isGuestBrowsable(String location) {
   if (location.startsWith('/event/')) return true;
   if (location.startsWith('/lost-found/')) return true;
   if (location.startsWith('/store/')) return true;
+  if (location.startsWith('/store-new/')) return true;
+  if (location.startsWith('/product/')) return true;
   if (location.startsWith('/user/')) return true;
   if (location.startsWith('/order-tracking')) return true;
   return false;
 }
+
+bool isGuestBrowsableRoute(String location) => _isGuestBrowsable(location);
 
 /// MongoDB ObjectId format doğrulama (24 hex karakter).
 bool _isValidObjectId(String id) =>
@@ -284,6 +289,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/';
       }
 
+      if (!isLoggedIn &&
+          !isPublicRoute &&
+          _isGuestBrowsable(state.matchedLocation)) {
+        return null;
+      }
+
       // Giriş yapmamış kullanıcı: misafir modu aktif değilse login'e yönlendir
       // Misafir modu aktifse gezinme rotalarına izin ver, korumalı sayfalara değil
       if (!isLoggedIn && !isPublicRoute) {
@@ -319,7 +330,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/store',
             name: 'store',
-            builder: (context, state) => const StoreHomeScreen(),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: StoreHomeScreen()),
           ),
           GoRoute(
             path: '/profile',
@@ -643,7 +655,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/store-new',
         name: 'store-new',
         pageBuilder: (context, state) =>
-            _buildPage(state, const StoreHomeScreen()),
+            const NoTransitionPage(child: StoreHomeScreen()),
       ),
       GoRoute(
         path: '/store-new/product/:id',

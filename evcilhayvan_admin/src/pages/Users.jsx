@@ -13,6 +13,7 @@ export default function Users() {
   const [banning, setBanning] = useState(null)
   const [changingRole, setChangingRole] = useState(null)
   const [deleting, setDeleting] = useState(null)
+  const [sensitiveModal, setSensitiveModal] = useState(null)
 
   useEffect(() => {
     setLoading(true)
@@ -82,6 +83,45 @@ export default function Users() {
     setPage(1)
   }
 
+  function openSensitiveModal(user) {
+    setSensitiveModal({
+      user,
+      password: '',
+      data: null,
+      loading: false,
+      error: '',
+    })
+  }
+
+  async function fetchSensitiveData(event) {
+    event.preventDefault()
+    if (!sensitiveModal?.user || !sensitiveModal.password.trim()) {
+      setSensitiveModal((current) => current ? { ...current, error: 'Ek veri sifresi gerekli' } : current)
+      return
+    }
+
+    const uid = sensitiveModal.user.id || sensitiveModal.user._id
+    setSensitiveModal((current) => current ? { ...current, loading: true, error: '' } : current)
+    try {
+      const response = await api.get(`/admin/users/${uid}/sensitive`, {
+        headers: { 'x-admin-data-password': sensitiveModal.password },
+      })
+      setSensitiveModal((current) =>
+        current ? { ...current, data: response.data || {}, loading: false, password: '' } : current
+      )
+    } catch (error) {
+      setSensitiveModal((current) =>
+        current
+          ? {
+              ...current,
+              loading: false,
+              error: error.response?.data?.message || 'Hassas veri acilamadi',
+            }
+          : current
+      )
+    }
+  }
+
   const columns = [
     { key: 'name', label: 'Ad' },
     { key: 'email', label: 'E-posta' },
@@ -125,6 +165,13 @@ export default function Users() {
           <option value="vet">vet</option>
           <option value="admin">admin</option>
         </select>
+        <button
+          type="button"
+          onClick={() => openSensitiveModal(u)}
+          className="px-2 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors"
+        >
+          Hassas
+        </button>
         {u.role !== 'admin' && (
           <button
             onClick={() => deleteUser(u)}
@@ -184,6 +231,74 @@ export default function Users() {
           </button>
         </div>
       )}
+
+      {sensitiveModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4">
+              <h2 className="text-lg font-bold text-slate-900">Hassas Kullanici Verisi</h2>
+              <p className="mt-1 text-xs text-slate-500">
+                {sensitiveModal.user?.name || sensitiveModal.user?.email || 'Kullanici'}
+              </p>
+            </div>
+
+            {sensitiveModal.data ? (
+              <div className="space-y-3">
+                <SensitiveRow label="Telefon" value={sensitiveModal.data.phone} />
+                <SensitiveRow label="TC Kimlik" value={sensitiveModal.data.nationalId} />
+              </div>
+            ) : (
+              <form onSubmit={fetchSensitiveData} className="space-y-3">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-600">
+                    Ek veri sifresi
+                  </label>
+                  <input
+                    type="password"
+                    value={sensitiveModal.password}
+                    onChange={(event) =>
+                      setSensitiveModal((current) =>
+                        current ? { ...current, password: event.target.value, error: '' } : current
+                      )
+                    }
+                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-200"
+                    autoFocus
+                  />
+                </div>
+                {sensitiveModal.error ? (
+                  <p className="rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+                    {sensitiveModal.error}
+                  </p>
+                ) : null}
+                <button
+                  type="submit"
+                  disabled={sensitiveModal.loading}
+                  className="w-full rounded-xl bg-amber-600 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-50"
+                >
+                  {sensitiveModal.loading ? 'Aciluyor...' : 'Veriyi Ac'}
+                </button>
+              </form>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setSensitiveModal(null)}
+              className="mt-4 w-full rounded-xl border border-slate-200 py-2 text-sm text-slate-600 hover:bg-slate-50"
+            >
+              Kapat
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function SensitiveRow({ label, value }) {
+  return (
+    <div className="rounded-2xl bg-slate-50 px-4 py-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{label}</p>
+      <p className="mt-1 font-mono text-sm font-semibold text-slate-900">{value || '-'}</p>
     </div>
   )
 }

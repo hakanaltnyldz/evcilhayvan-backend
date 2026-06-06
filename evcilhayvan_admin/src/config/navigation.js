@@ -8,6 +8,7 @@ import {
   DocumentMagnifyingGlassIcon,
   FlagIcon,
   HomeIcon,
+  MapIcon,
   QueueListIcon,
   ReceiptPercentIcon,
   ArrowUturnLeftIcon,
@@ -44,6 +45,7 @@ export const adminNavigation = [
     title: 'Partnerler',
     items: [
       { to: '/sitters', label: 'Bakicilar', icon: ShieldCheckIcon },
+      { to: '/sitter-operations', label: 'Bakici Operasyon', icon: MapIcon },
       { to: '/vets', label: 'Veterinerler', icon: ShieldCheckIcon },
       { to: '/vet-claims', label: 'Klinik Talepleri', icon: ClipboardDocumentListIcon },
       { to: '/seller-applications', label: 'Satici Basvurulari', icon: ShoppingBagIcon },

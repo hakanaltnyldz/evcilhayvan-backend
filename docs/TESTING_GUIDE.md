@@ -37,7 +37,13 @@ Mevcut otomasyon:
 - `PlatformSettings` veri yukleme ve kaydetme
 - `ModerationQueue` listeleme ve aksiyon uygulama
 
-## 3. Seller Panel
+Not:
+
+- `evcilhayvan_admin` aktif web panel kaynagidir.
+- Admin workspace ve seller workspace ayni uygulamadadir.
+- Seller workspace route'lari `/seller/*` altindadir.
+
+## 3. Legacy Seller Panel
 
 Calistirma:
 
@@ -51,6 +57,12 @@ Mevcut otomasyon:
 
 - `Dashboard` ozet veri ve son siparisler
 - `Orders` liste filtreleme
+
+Not:
+
+- `evcilhayvan_seller` legacy standalone uygulamadir.
+- Yeni seller web ozellikleri once `evcilhayvan_admin/src/pages/seller/` altina eklenmelidir.
+- Bu testler legacy uyumlulugu kontrol etmek icin tutulur.
 
 ## 4. Flutter Widget Testleri
 

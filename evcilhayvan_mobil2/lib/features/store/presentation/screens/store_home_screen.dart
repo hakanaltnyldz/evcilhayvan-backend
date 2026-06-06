@@ -13,6 +13,7 @@ import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart'
     as store_data;
+import 'package:evcilhayvan_mobil2/features/store/domain/models/product_model.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/store_model.dart';
 import 'package:evcilhayvan_mobil2/features/store/presentation/widgets/store_category_chips.dart';
 import 'package:evcilhayvan_mobil2/features/store/presentation/widgets/store_product_card.dart';
@@ -165,7 +166,7 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                         _Header(
                           controller: _searchController,
                           onChanged: _onSearchChanged,
-                          onCartTap: () => context.pushNamed('store-new-cart'),
+                          onCartTap: () => context.pushNamed('store-cart'),
                           onFavoritesTap: () => context.pushNamed('favorites'),
                           onOrdersTap: () => context.pushNamed('my-orders'),
                         ),
@@ -181,7 +182,7 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                                   );
                               setState(() => _query = product.title.trim());
                               context.pushNamed(
-                                'store-new-product',
+                                'product-detail',
                                 pathParameters: {'id': product.id},
                               );
                             },
@@ -202,7 +203,7 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                                 _RecentViewedRail(
                                   products: recentProducts,
                                   onTapProduct: (product) => context.pushNamed(
-                                    'store-new-product',
+                                    'product-detail',
                                     pathParameters: {'id': product.id},
                                   ),
                                 ),
@@ -482,7 +483,7 @@ class _StoreHomeScreenState extends ConsumerState<StoreHomeScreen> {
                                         )!.storeHomeLastStock(product.stock)
                                       : null),
                             onTap: () => context.pushNamed(
-                              'store-new-product',
+                              'product-detail',
                               pathParameters: {'id': product.id},
                             ),
                           );
@@ -1005,58 +1006,131 @@ class _MyStoreMiniCard extends StatelessWidget {
           color: context.cardColor,
           borderRadius: BorderRadius.circular(18),
         ),
-        child: Row(
+        child: Column(
           children: [
-            Container(
-              height: 54,
-              width: 54,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
-                gradient: const LinearGradient(colors: _storeCardGradientA),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                store.name.isNotEmpty ? store.name[0].toUpperCase() : 'M',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 22,
+            Row(
+              children: [
+                Container(
+                  height: 54,
+                  width: 54,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: const LinearGradient(colors: _storeCardGradientA),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    store.name.isNotEmpty ? store.name[0].toUpperCase() : 'M',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 22,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    store.name,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        store.name,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        description.isNotEmpty
+                            ? description
+                            : l10n.storeNoDescAdded,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: AppPalette.onSurfaceVariant,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description.isNotEmpty
-                        ? description
-                        : l10n.storeNoDescAdded,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppPalette.onSurfaceVariant,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                ),
+                IconButton(
+                  onPressed: () => context.pushNamed(
+                    'store-detail',
+                    pathParameters: {'storeId': store.id},
                   ),
-                ],
-              ),
+                  icon: const Icon(Icons.chevron_right),
+                ),
+              ],
             ),
-            IconButton(
-              onPressed: () => context.pushNamed(
-                'store-detail',
-                pathParameters: {'storeId': store.id},
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _StoreManageButton(
+                  icon: Icons.dashboard_outlined,
+                  label: 'Panel',
+                  onTap: () => context.pushNamed('seller-dashboard'),
+                ),
+                _StoreManageButton(
+                  icon: Icons.inventory_2_outlined,
+                  label: 'Urunler',
+                  onTap: () => context.pushNamed('product-management'),
+                ),
+                _StoreManageButton(
+                  icon: Icons.receipt_long_outlined,
+                  label: 'Siparisler',
+                  onTap: () => context.pushNamed('seller-orders'),
+                ),
+                _StoreManageButton(
+                  icon: Icons.edit_outlined,
+                  label: 'Duzenle',
+                  onTap: () => context.pushNamed('store-edit', extra: store),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StoreManageButton extends StatelessWidget {
+  const _StoreManageButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppPalette.storePrimary.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppPalette.storePrimary.withOpacity(0.12)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: AppPalette.storePrimary),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: AppPalette.storePrimary,
+                fontWeight: FontWeight.w800,
               ),
-              icon: const Icon(Icons.chevron_right),
             ),
           ],
         ),

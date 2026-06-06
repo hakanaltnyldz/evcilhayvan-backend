@@ -1,5 +1,14 @@
 # Evcilhayvan Projesi — Claude Kılavuzu
 
+## Panel Strategy
+
+- Active web panel source of truth: `evcilhayvan_admin/`.
+- `evcilhayvan_admin/` contains both admin workspace and seller workspace.
+- Seller web routes live under `/seller/*` and page code lives under `evcilhayvan_admin/src/pages/seller/`.
+- `evcilhayvan_seller/` is a legacy standalone seller panel. Keep it buildable, but do not add new seller features there unless explicitly asked.
+- Current deploy (`render.yaml`) publishes only `evcilhayvan_admin/dist`.
+- Full decision record: `docs/PANEL_STRATEGY.md`.
+
 Bu dosya her yeni oturumda otomatik okunur. Projeyi tekrar anlatmana gerek yok.
 
 ---
