@@ -566,8 +566,14 @@ export async function updateBookingStatus(req, res) {
 
     if (booking.status === "completed" && status === "completed" && normalizedReview) {
       if (isOwner) {
-        if (booking.ownerReview) {
-          return sendError(res, 409, "Bakici icin zaten yorum biraktiniz", "duplicate_review");
+        const alreadyReviewed = await SitterBooking.findOne({
+          sitterId: booking.sitterId,
+          petOwnerId: booking.petOwnerId?._id || booking.petOwnerId,
+          ownerReview: { $exists: true, $ne: null },
+          _id: { $ne: booking._id },
+        });
+        if (alreadyReviewed || booking.ownerReview) {
+          return sendError(res, 409, "Bu bakici icin zaten yorum biraktiniz", "duplicate_review");
         }
         booking.ownerReview = normalizedReview;
         await booking.save();

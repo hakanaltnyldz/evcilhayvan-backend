@@ -291,6 +291,7 @@ export async function createPost(req, res) {
     if (!user) return sendError(res, 404, "Kullanici bulunamadi", "not_found");
 
     const { content, photos, petId, petName, hashtags } = req.body;
+    const trimmedContent = content?.trim() || "";
 
     if (!trimmedContent && (!photos || photos.length === 0)) {
       return sendError(
@@ -302,8 +303,8 @@ export async function createPost(req, res) {
     }
 
     // Otomatik hashtag çıkarma (içerikten #kelime)
-    const extractedTags = content
-      ? [...content.matchAll(/#(\w+)/g)].map(m => m[1].toLowerCase())
+    const extractedTags = trimmedContent
+      ? [...trimmedContent.matchAll(/#(\w+)/g)].map(m => m[1].toLowerCase())
       : [];
     const allHashtags = [...new Set([...(hashtags || []), ...extractedTags])];
 
@@ -312,7 +313,6 @@ export async function createPost(req, res) {
       userName: user.name,
       userAvatar: user.avatarUrl,
       content: trimmedContent,
-      hashtags: extractHashtags(trimmedContent),
       photos: photos || [],
       petId: petId || null,
       petName: petName || null,

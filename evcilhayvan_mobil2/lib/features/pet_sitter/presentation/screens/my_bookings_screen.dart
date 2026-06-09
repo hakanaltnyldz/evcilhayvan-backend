@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:evcilhayvan_mobil2/core/widgets/state_views.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/premium_card.dart';
@@ -16,6 +17,8 @@ import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:evcilhayvan_mobil2/core/providers/socket_provider.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
+import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
+import 'package:evcilhayvan_mobil2/features/messages/data/repositories/message_repository.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
 import '../../domain/models/sitter_booking_model.dart';
 import '../../domain/models/pet_sitter_model.dart';
@@ -133,11 +136,11 @@ class _BookingsListState extends ConsumerState<_BookingsList> {
                       _norm(day) == _norm(_selectedDay!),
                   eventLoader: getForDay,
                   calendarFormat: CalendarFormat.week,
-                  availableCalendarFormats: const {
-                    CalendarFormat.week: 'Hafta',
-                    CalendarFormat.month: 'Ay',
+                  availableCalendarFormats: {
+                    CalendarFormat.week: l10n.bookingsCalendarWeek,
+                    CalendarFormat.month: l10n.bookingsCalendarMonth,
                   },
-                  locale: 'tr_TR',
+                  locale: Localizations.localeOf(context).toString(),
                   onDaySelected: (selected, focused) {
                     setState(() {
                       _selectedDay =
@@ -182,7 +185,13 @@ class _BookingsListState extends ConsumerState<_BookingsList> {
                     child: Row(
                       children: [
                         Text(
-                          '${_selectedDay!.day}.${_selectedDay!.month}.${_selectedDay!.year} — ${visibleBookings.length} rezervasyon',
+                          l10n.bookingsSelectedDayCount(
+                            DateFormat(
+                              'dd.MM.yyyy',
+                              Localizations.localeOf(context).toString(),
+                            ).format(_selectedDay!),
+                            visibleBookings.length,
+                          ),
                           style: const TextStyle(
                             fontSize: 12,
                             color: Color(0xFF2D6A4F),
@@ -192,9 +201,12 @@ class _BookingsListState extends ConsumerState<_BookingsList> {
                         const Spacer(),
                         GestureDetector(
                           onTap: () => setState(() => _selectedDay = null),
-                          child: const Text(
-                            'Tümü',
-                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          child: Text(
+                            l10n.bookingsAll,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
                           ),
                         ),
                       ],
@@ -207,7 +219,7 @@ class _BookingsListState extends ConsumerState<_BookingsList> {
                   child: AnimatedEmptyState(
                     icon: Icons.calendar_today_outlined,
                     title: _selectedDay != null
-                        ? 'Bu günde rezervasyon yok'
+                        ? l10n.bookingsEmptyForDay
                         : l10n.bookingsEmptyTitle,
                     subtitle: _selectedDay == null
                         ? l10n.bookingsEmptySubtitle
@@ -268,6 +280,69 @@ class _BookingCard extends StatelessWidget {
     }
   }
 
+  String? _clean(String? value) {
+    final trimmed = value?.trim();
+    return trimmed == null || trimmed.isEmpty ? null : trimmed;
+  }
+
+  String? get _contactUserId =>
+      _clean(isSitter ? booking.petOwnerId : booking.sitterUserId);
+
+  String? get _contactPhone =>
+      _clean(isSitter ? booking.ownerPhone : booking.sitterPhone);
+
+  String? get _contactEmail =>
+      _clean(isSitter ? booking.ownerEmail : booking.sitterEmail);
+
+  String _contactName(AppLocalizations l10n) => isSitter
+      ? (booking.ownerName ?? l10n.bookingsCustomerLabel)
+      : (booking.sitterName ?? l10n.bookingsSitterLabel);
+
+  String _serviceLabel(AppLocalizations l10n) {
+    switch (booking.serviceType) {
+      case 'walking':
+        return l10n.sitterServiceWalkingLabel;
+      case 'home_sitting':
+        return l10n.sitterServiceHomeSittingLabel;
+      case 'boarding':
+        return l10n.sitterServiceBoardingLabel;
+      case 'daycare':
+        return l10n.sitterServiceDaycareLabel;
+      case 'grooming':
+        return l10n.sitterServiceGroomingLabel;
+      default:
+        return booking.serviceType;
+    }
+  }
+
+  String _statusLabel(AppLocalizations l10n) {
+    switch (booking.status) {
+      case 'pending':
+        return l10n.bookingsStatusPending;
+      case 'accepted':
+        return l10n.bookingsStatusAccepted;
+      case 'active':
+        return l10n.bookingsStatusActive;
+      case 'rejected':
+        return l10n.bookingsStatusRejected;
+      case 'cancelled':
+        return l10n.bookingsStatusCancelled;
+      case 'completed':
+        return l10n.bookingsStatusCompleted;
+      default:
+        return booking.status;
+    }
+  }
+
+  bool get _hasContactActions {
+    if (booking.status == 'cancelled' || booking.status == 'rejected') {
+      return false;
+    }
+    return _contactUserId != null ||
+        _contactPhone != null ||
+        _contactEmail != null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final fmt = DateFormat('dd.MM.yyyy');
@@ -306,7 +381,7 @@ class _BookingCard extends StatelessWidget {
                       border: Border.all(color: accent.withOpacity(0.3)),
                     ),
                     child: Text(
-                      booking.statusLabel,
+                      _statusLabel(l10n),
                       style: TextStyle(
                         color: accent,
                         fontWeight: FontWeight.bold,
@@ -319,7 +394,7 @@ class _BookingCard extends StatelessWidget {
               const SizedBox(height: 10),
               // Service & pet
               Text(
-                '${booking.serviceLabel} - ${booking.petName ?? "Pet"}',
+                '${_serviceLabel(l10n)} - ${booking.petName ?? l10n.bookingsPetFallback}',
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 13,
@@ -357,7 +432,9 @@ class _BookingCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    'Guncel odeme: ${booking.payableAmount.toStringAsFixed(0)} TL',
+                    l10n.bookingsCurrentPayment(
+                      booking.payableAmount.toStringAsFixed(0),
+                    ),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -381,9 +458,9 @@ class _BookingCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.orange.shade200),
                     ),
-                    child: const Text(
-                      'Canli konum kesildi. Odeme gecici olarak durduruldu.',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.bookingsLiveLocationPaused,
+                      style: const TextStyle(
                         color: Colors.orange,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -404,6 +481,11 @@ class _BookingCard extends StatelessWidget {
                   ),
                 ),
               // Actions — pending (sitter)
+              if (_hasContactActions)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: _contactActions(context),
+                ),
               if (booking.isPending && isSitter)
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
@@ -478,7 +560,7 @@ class _BookingCard extends StatelessWidget {
                                 ref.invalidate(myBookingsProvider);
                             },
                             icon: const Icon(Icons.assignment_add, size: 18),
-                            label: const Text('Günlük Rapor'),
+                            label: Text(l10n.bookingsDailyReport),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: const Color(0xFF2D6A4F),
                               side: const BorderSide(color: Color(0xFF2D6A4F)),
@@ -498,7 +580,7 @@ class _BookingCard extends StatelessWidget {
                             ),
                           ),
                           icon: const Icon(Icons.timeline, size: 18),
-                          label: const Text('Bakım Günlüğü'),
+                          label: Text(l10n.bookingsCareTimeline),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFF52B788),
                             side: const BorderSide(color: Color(0xFF52B788)),
@@ -535,7 +617,7 @@ class _BookingCard extends StatelessWidget {
                             ),
                           ),
                           icon: const Icon(Icons.photo_library, size: 18),
-                          label: const Text('Fotoğraf Günlüğü'),
+                          label: Text(l10n.bookingsPhotoTimeline),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.deepPurple,
                             side: const BorderSide(color: Colors.deepPurple),
@@ -546,6 +628,49 @@ class _BookingCard extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                ),
+              // Action — cancel (owner)
+              if (!isSitter && (booking.isPending || booking.isAccepted))
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        final l10n = AppLocalizations.of(context)!;
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Rezervasyonu İptal Et'),
+                            content: const Text('Bu rezervasyonu iptal etmek istediğinize emin misiniz?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('Vazgeç'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('İptal Et', style: TextStyle(color: Colors.red)),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmed == true && context.mounted) {
+                          await _respond(context, 'cancelled');
+                        }
+                      },
+                      icon: const Icon(Icons.cancel_outlined, size: 18, color: Colors.red),
+                      label: const Text('Rezervasyonu İptal Et'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.red),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               // Action — review (owner)
@@ -578,7 +703,7 @@ class _BookingCard extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: () => _showCustomerReviewSheet(context),
                       icon: const Icon(Icons.rate_review_outlined, size: 20),
-                      label: const Text('Musteriyi Degerlendir'),
+                      label: Text(l10n.bookingsReviewCustomer),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF1D3557),
                         side: const BorderSide(color: Color(0xFF1D3557)),
@@ -598,8 +723,8 @@ class _BookingCard extends StatelessWidget {
                         _reviewSummaryCard(
                           context,
                           title: isSitter
-                              ? 'Musterinin degerlendirmesi'
-                              : 'Senin bakici degerlendirmen',
+                              ? l10n.bookingsCustomerReviewTitle
+                              : l10n.bookingsYourSitterReviewTitle,
                           icon: Icons.star_rounded,
                           accent: const Color(0xFF2D6A4F),
                           rating: booking.ownerReviewRating!,
@@ -611,8 +736,8 @@ class _BookingCard extends StatelessWidget {
                         _reviewSummaryCard(
                           context,
                           title: isSitter
-                              ? 'Senin musteri degerlendirmen'
-                              : 'Bakicinin senin icin notu',
+                              ? l10n.bookingsYourCustomerReviewTitle
+                              : l10n.bookingsSitterNoteForYou,
                           icon: Icons.rate_review_outlined,
                           accent: const Color(0xFF1D3557),
                           rating: booking.sitterReviewRating!,
@@ -627,6 +752,149 @@ class _BookingCard extends StatelessWidget {
         .animate(delay: Duration(milliseconds: index * 60))
         .fadeIn(duration: 280.ms)
         .slideY(begin: 0.05);
+  }
+
+  Widget _contactActions(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.35),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.contact_phone_outlined, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  l10n.bookingsContactTitle(_contactName(l10n)),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              if (_contactUserId != null)
+                _contactButton(
+                  icon: Icons.chat_bubble_outline,
+                  label: l10n.bookingsContactMessage,
+                  onPressed: () => _openChat(context),
+                ),
+              if (_contactPhone != null)
+                _contactButton(
+                  icon: Icons.phone_outlined,
+                  label: l10n.bookingsContactCall,
+                  onPressed: () => _launchContact(
+                    context,
+                    Uri(scheme: 'tel', path: _contactPhone),
+                    l10n.bookingsPhoneLaunchError,
+                  ),
+                ),
+              if (_contactEmail != null)
+                _contactButton(
+                  icon: Icons.email_outlined,
+                  label: l10n.bookingsContactEmail,
+                  onPressed: () => _launchContact(
+                    context,
+                    Uri(scheme: 'mailto', path: _contactEmail),
+                    l10n.bookingsEmailLaunchError,
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _contactButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      height: 36,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 16),
+        label: Text(label),
+        style: OutlinedButton.styleFrom(
+          visualDensity: VisualDensity.compact,
+          foregroundColor: const Color(0xFF2D6A4F),
+          side: const BorderSide(color: Color(0xFF52B788)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openChat(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final participantId = _contactUserId;
+    final currentUser = ref.read(authProvider);
+    if (participantId == null || currentUser == null) {
+      _showContactError(context, l10n.bookingsChatStartError);
+      return;
+    }
+
+    try {
+      final conversation = await ref
+          .read(messageRepositoryProvider)
+          .createOrGetConversation(
+            participantId: participantId,
+            currentUserId: currentUser.id,
+            relatedPetId: booking.petId,
+          );
+      if (context.mounted) {
+        context.pushNamed(
+          'chat',
+          pathParameters: {'conversationId': conversation.id},
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        _showContactError(context, l10n.bookingsChatOpenError(e.toString()));
+      }
+    }
+  }
+
+  Future<void> _launchContact(
+    BuildContext context,
+    Uri uri,
+    String errorMessage,
+  ) async {
+    try {
+      final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!opened && context.mounted) {
+        _showContactError(context, errorMessage);
+      }
+    } catch (_) {
+      if (context.mounted) {
+        _showContactError(context, errorMessage);
+      }
+    }
+  }
+
+  void _showContactError(BuildContext context, String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _respond(BuildContext context, String status) async {
@@ -795,6 +1063,7 @@ class _BookingCard extends StatelessWidget {
   }
 
   void _showCustomerReviewSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     double rating = 5;
     final commentCtrl = TextEditingController();
 
@@ -824,13 +1093,16 @@ class _BookingCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Musteriyi Degerlendir',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              Text(
+                l10n.bookingsReviewCustomer,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Rezervasyon deneyimine gore pet sahibini puanlayin.',
+              Text(
+                l10n.bookingsCustomerReviewSubtitle,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -857,7 +1129,7 @@ class _BookingCard extends StatelessWidget {
               TextField(
                 controller: commentCtrl,
                 decoration: InputDecoration(
-                  hintText: 'Iletisim, hazirlik ve guvenilirlik notun',
+                  hintText: l10n.bookingsCustomerReviewHint,
                   filled: true,
                   fillColor: const Color(0xFFF4FAF6),
                   border: OutlineInputBorder(
@@ -873,7 +1145,7 @@ class _BookingCard extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text('Vazgec'),
+                      child: Text(l10n.bookingsReviewCancel),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -894,9 +1166,13 @@ class _BookingCard extends StatelessWidget {
                           ref.invalidate(incomingBookingsProvider);
                         } catch (e) {
                           if (context.mounted) {
-                            ScaffoldMessenger.of(
-                              context,
-                            ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  l10n.bookingsActionErr(e.toString()),
+                                ),
+                              ),
+                            );
                           }
                         }
                       },
@@ -904,7 +1180,7 @@ class _BookingCard extends StatelessWidget {
                         backgroundColor: const Color(0xFF1D3557),
                         foregroundColor: Colors.white,
                       ),
-                      child: const Text('Gonder'),
+                      child: Text(l10n.bookingsReviewSend),
                     ),
                   ),
                 ],
@@ -975,6 +1251,7 @@ class _SitterWalkControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       width: double.infinity,
       height: 44,
@@ -989,7 +1266,7 @@ class _SitterWalkControls extends StatelessWidget {
           booking.needsPickup ? Icons.pets : Icons.location_on,
           size: 20,
         ),
-        label: const Text('Gezi Ekranına Geç'),
+        label: Text(l10n.bookingsWalkScreen),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF2D6A4F),
           foregroundColor: Colors.white,
@@ -1016,6 +1293,7 @@ class _WalkPhotoUploadButtonState extends State<_WalkPhotoUploadButton> {
   bool _uploading = false;
 
   Future<void> _pick() async {
+    final l10n = AppLocalizations.of(context)!;
     final picker = ImagePicker();
     final file = await picker.pickImage(
       source: ImageSource.gallery,
@@ -1029,15 +1307,15 @@ class _WalkPhotoUploadButtonState extends State<_WalkPhotoUploadButton> {
           .read(petSitterRepositoryProvider)
           .uploadWalkPhoto(widget.booking.id, File(file.path));
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fotoğraf pet sahibine gönderildi!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.bookingsPhotoSent)));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.bookingsActionErr(e.toString()))),
+        );
       }
     } finally {
       if (mounted) setState(() => _uploading = false);
@@ -1046,6 +1324,7 @@ class _WalkPhotoUploadButtonState extends State<_WalkPhotoUploadButton> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return OutlinedButton.icon(
       onPressed: _uploading ? null : _pick,
       icon: _uploading
@@ -1055,7 +1334,9 @@ class _WalkPhotoUploadButtonState extends State<_WalkPhotoUploadButton> {
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           : const Icon(Icons.camera_alt, size: 18),
-      label: Text(_uploading ? 'Yükleniyor...' : 'Foto Paylaş'),
+      label: Text(
+        _uploading ? l10n.bookingsPhotoUploading : l10n.bookingsPhotoUpload,
+      ),
       style: OutlinedButton.styleFrom(
         foregroundColor: const Color(0xFF2D6A4F),
         side: const BorderSide(color: Color(0xFF2D6A4F)),
@@ -1072,32 +1353,34 @@ class _WalkPhotoGalleryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final photosAsync = ref.watch(_walkPhotosProvider(bookingId));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fotoğraf Günlüğü'),
+        title: Text(l10n.bookingsPhotoTimeline),
         backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
       ),
       body: photosAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Yüklenemedi: $e')),
+        error: (e, _) =>
+            Center(child: Text(l10n.bookingsPhotosLoadError(e.toString()))),
         data: (photos) {
           if (photos.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.photo_library_outlined,
                     size: 64,
                     color: Colors.grey,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
-                    'Henüz fotoğraf paylaşılmadı',
-                    style: TextStyle(color: Colors.grey),
+                    l10n.bookingsNoPhotos,
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ],
               ),
@@ -1169,6 +1452,7 @@ class _OwnerWaitingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -1177,14 +1461,14 @@ class _OwnerWaitingCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE9C46A)),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.schedule, color: Color(0xFFB08900), size: 18),
-          SizedBox(width: 8),
+          const Icon(Icons.schedule, color: Color(0xFFB08900), size: 18),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Bakici henuz kopegi teslim almadi. Teslim alindiginda canli konum otomatik acilacak.',
-              style: TextStyle(
+              l10n.bookingsOwnerWaiting,
+              style: const TextStyle(
                 color: Color(0xFF7A5C00),
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -1204,13 +1488,14 @@ class _OwnerTrackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       width: double.infinity,
       height: 44,
       child: ElevatedButton.icon(
         onPressed: () => context.pushNamed('live-tracking', extra: booking),
         icon: const Icon(Icons.location_on, size: 20),
-        label: const Text('Canlı Konum Takip'),
+        label: Text(l10n.bookingsLiveTracking),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF52B788),
           foregroundColor: Colors.white,

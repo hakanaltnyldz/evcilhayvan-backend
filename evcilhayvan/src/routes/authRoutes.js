@@ -134,10 +134,6 @@ router.post("/avatar", authRequired(), upload.single("avatar"), uploadAvatar);
 
 router.get("/users", authRequired(), getAllUsers);
 
-router.get("/users/:userId/followers", authRequired(), getUserFollowers);
-router.get("/users/:userId/following", authRequired(), getUserFollowing);
-router.post("/users/:userId/follow", authRequired(), followUser);
-router.delete("/users/:userId/follow", authRequired(), unfollowUser);
 router.get("/users/:userId", authRequired(), getUserPublicProfile);
 
 // === TAKİP SİSTEMİ ===
