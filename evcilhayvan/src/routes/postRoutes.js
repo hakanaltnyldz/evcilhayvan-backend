@@ -29,7 +29,7 @@ router.post("/posts/:id/save", authRequired(), toggleSavePost);
 router.post("/posts/:id/comment", authRequired(), addComment);
 
 // POST /api/posts/:id/comments/:commentId/reply — yoruma yanıt ver
-router.post("/posts/:id/comments/:commentId/reply", authRequired, async (req, res) => {
+router.post("/posts/:id/comments/:commentId/reply", authRequired(), async (req, res) => {
   try {
     const userId = req.user.sub || req.user._id || req.user.id;
     const { text } = req.body;
@@ -89,7 +89,7 @@ router.get("/posts/hashtags/trending", async (req, res) => {
 });
 
 // GET /api/posts/saved — kaydedilen gönderiler
-router.get("/posts/saved", authRequired, async (req, res) => {
+router.get("/posts/saved", authRequired(), async (req, res) => {
   try {
     const userId = req.user.sub || req.user._id || req.user.id;
     const posts = await Post.find({ saves: userId, isActive: true })
@@ -102,7 +102,7 @@ router.get("/posts/saved", authRequired, async (req, res) => {
 });
 
 // POST /api/posts/:id/save — kaydet/çıkar (toggle)
-router.post("/posts/:id/save", authRequired, async (req, res) => {
+router.post("/posts/:id/save", authRequired(), async (req, res) => {
   try {
     const userId = req.user.sub || req.user._id || req.user.id;
     const post = await Post.findById(req.params.id);

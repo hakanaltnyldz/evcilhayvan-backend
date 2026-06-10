@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
 import '../../domain/models/sitter_financial_summary_model.dart';
 
@@ -17,12 +18,13 @@ class SitterFinancialsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final summaryAsync = ref.watch(_sitterFinancialsProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Kazanc Raporu'),
+        title: Text(l10n.sitterFinanceTitle),
         backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         actions: [
@@ -38,7 +40,7 @@ class SitterFinancialsScreen extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Text(
-              'Finans raporu yuklenemedi: $error',
+              l10n.sitterFinanceLoadError(error.toString()),
               textAlign: TextAlign.center,
             ),
           ),
@@ -62,33 +64,33 @@ class SitterFinancialsScreen extends ConsumerWidget {
                   children: [
                     _metricCard(
                       context,
-                      'Bu Ay',
-                      _currency(summary.thisMonthRevenue),
-                      'Aylik tahsil edilen gelir',
+                      l10n.sitterFinanceThisMonth,
+                      _currency(context, summary.thisMonthRevenue),
+                      l10n.sitterFinanceThisMonthSub,
                       Icons.calendar_month_outlined,
                       const Color(0xFF2D6A4F),
                     ),
                     _metricCard(
                       context,
-                      'Pipeline',
-                      _currency(summary.pipelineRevenue),
-                      'Aktif ve onayli islerden beklenen',
+                      l10n.sitterFinancePipeline,
+                      _currency(context, summary.pipelineRevenue),
+                      l10n.sitterFinancePipelineSub,
                       Icons.trending_up_rounded,
                       const Color(0xFF1D3557),
                     ),
                     _metricCard(
                       context,
-                      'Duraklayan',
-                      _currency(summary.pausedRevenue),
-                      '${summary.pausedBookings} is odemesi durdu',
+                      l10n.sitterFinancePaused,
+                      _currency(context, summary.pausedRevenue),
+                      l10n.sitterFinancePausedSub(summary.pausedBookings),
                       Icons.pause_circle_outline,
                       Colors.orange.shade700,
                     ),
                     _metricCard(
                       context,
-                      'Tamamlanan',
+                      l10n.sitterFinanceCompleted,
                       '${summary.completedBookings}',
-                      'Gelire donusen is sayisi',
+                      l10n.sitterFinanceCompletedSub,
                       Icons.task_alt_outlined,
                       Colors.blue.shade700,
                     ),
@@ -97,8 +99,8 @@ class SitterFinancialsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 _section(
                   context,
-                  'Son 14 Gun',
-                  'Gunluk kazanclari ve tamamlanan is adetlerini izleyin.',
+                  l10n.sitterFinanceLast14Days,
+                  l10n.sitterFinanceLast14DaysDesc,
                   Column(
                     children: [
                       Row(
@@ -144,8 +146,8 @@ class SitterFinancialsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 _section(
                   context,
-                  'Aylik Trend',
-                  'Son 6 aydaki gelir dagilimi.',
+                  l10n.sitterFinanceMonthlyTrend,
+                  l10n.sitterFinanceMonthlyTrendDesc,
                   Column(
                     children: summary.monthlyTrend.map((item) {
                       return Padding(
@@ -174,7 +176,7 @@ class SitterFinancialsScreen extends ConsumerWidget {
                             SizedBox(
                               width: 92,
                               child: Text(
-                                _currency(item.revenue),
+                                _currency(context, item.revenue),
                                 textAlign: TextAlign.right,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w700,
@@ -190,12 +192,12 @@ class SitterFinancialsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 _section(
                   context,
-                  'Hizmet Bazli Gelir',
-                  'Hangi hizmetin daha cok ciro ve hacim uretdigini gosterir.',
+                  l10n.sitterFinanceServiceRevenue,
+                  l10n.sitterFinanceServiceRevenueDesc,
                   summary.serviceBreakdown.isEmpty
-                      ? const Text(
-                          'Henuz finansal hareket bulunmuyor.',
-                          style: TextStyle(color: Colors.grey),
+                      ? Text(
+                          l10n.sitterFinanceNoMovements,
+                          style: const TextStyle(color: Colors.grey),
                         )
                       : Column(
                           children: summary.serviceBreakdown.map((item) {
@@ -209,13 +211,15 @@ class SitterFinancialsScreen extends ConsumerWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          item.serviceLabel,
+                                          _serviceLabel(l10n, item.serviceType),
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
                                         Text(
-                                          '${item.bookings} is tamamlandi',
+                                          l10n.sitterFinanceCompletedJobs(
+                                            item.bookings,
+                                          ),
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Theme.of(
@@ -227,7 +231,7 @@ class SitterFinancialsScreen extends ConsumerWidget {
                                     ),
                                   ),
                                   Text(
-                                    _currency(item.revenue),
+                                    _currency(context, item.revenue),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w800,
                                     ),
@@ -241,12 +245,12 @@ class SitterFinancialsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 _section(
                   context,
-                  'Son Tahsilatlar',
-                  'Yeni tamamlanan islerden olusan yakin gelir kayitlari.',
+                  l10n.sitterFinanceRecentPayments,
+                  l10n.sitterFinanceRecentPaymentsDesc,
                   summary.recentCompleted.isEmpty
-                      ? const Text(
-                          'Tamamlanmis is kaydi yok.',
-                          style: TextStyle(color: Colors.grey),
+                      ? Text(
+                          l10n.sitterFinanceNoCompleted,
+                          style: const TextStyle(color: Colors.grey),
                         )
                       : Column(
                           children: summary.recentCompleted.map((item) {
@@ -276,14 +280,14 @@ class SitterFinancialsScreen extends ConsumerWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          item.serviceLabel,
+                                          _serviceLabel(l10n, item.serviceType),
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          '${item.petName} • ${item.ownerName}',
+                                          '${_fallbackPetName(l10n, item.petName)} • ${_fallbackOwnerName(l10n, item.ownerName)}',
                                           style: TextStyle(
                                             color: Theme.of(
                                               context,
@@ -294,7 +298,9 @@ class SitterFinancialsScreen extends ConsumerWidget {
                                           Text(
                                             DateFormat(
                                               'dd MMM yyyy',
-                                              'tr_TR',
+                                              Localizations.localeOf(
+                                                context,
+                                              ).toString(),
                                             ).format(
                                               item.completedAt!.toLocal(),
                                             ),
@@ -307,7 +313,7 @@ class SitterFinancialsScreen extends ConsumerWidget {
                                     ),
                                   ),
                                   Text(
-                                    _currency(item.revenue),
+                                    _currency(context, item.revenue),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w800,
                                     ),
@@ -328,6 +334,7 @@ class SitterFinancialsScreen extends ConsumerWidget {
   }
 
   Widget _hero(BuildContext context, SitterFinancialSummaryModel summary) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -343,23 +350,27 @@ class SitterFinancialsScreen extends ConsumerWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _heroChip('Toplam ${summary.totalBookings} rezervasyon'),
-              _heroChip('${summary.pendingBookings} bekleyen talep'),
-              _heroChip('${summary.activeBookings} aktif hizmet'),
+              _heroChip(l10n.sitterFinanceTotalBookings(summary.totalBookings)),
+              _heroChip(
+                l10n.sitterFinancePendingRequests(summary.pendingBookings),
+              ),
+              _heroChip(
+                l10n.sitterFinanceActiveServices(summary.activeBookings),
+              ),
             ],
           ),
           const SizedBox(height: 18),
           Text(
-            _currency(summary.totalRevenue),
+            _currency(context, summary.totalRevenue),
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w900,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Toplam tahsil edilen gelir',
-            style: TextStyle(color: Colors.white70),
+          Text(
+            l10n.sitterFinanceTotalRevenueLabel,
+            style: const TextStyle(color: Colors.white70),
           ),
         ],
       ),
@@ -470,8 +481,37 @@ Widget _section(
   );
 }
 
-String _currency(double value) => NumberFormat.currency(
-  locale: 'tr_TR',
+String _currency(BuildContext context, double value) => NumberFormat.currency(
+  locale: Localizations.localeOf(context).toString(),
   symbol: 'TL',
   decimalDigits: 0,
 ).format(value);
+
+String _serviceLabel(AppLocalizations l10n, String serviceType) {
+  switch (serviceType) {
+    case 'walking':
+      return l10n.sitterServiceWalkingLabel;
+    case 'home_sitting':
+      return l10n.sitterServiceHomeSittingLabel;
+    case 'boarding':
+      return l10n.sitterServiceBoardingLabel;
+    case 'daycare':
+      return l10n.sitterServiceDaycareLabel;
+    case 'grooming':
+      return l10n.sitterServiceGroomingLabel;
+    default:
+      return serviceType;
+  }
+}
+
+String _fallbackPetName(AppLocalizations l10n, String value) {
+  final trimmed = value.trim();
+  return trimmed.isEmpty || trimmed == 'Pet' ? l10n.bookingsPetFallback : value;
+}
+
+String _fallbackOwnerName(AppLocalizations l10n, String value) {
+  final trimmed = value.trim();
+  return trimmed.isEmpty || trimmed == 'Musteri'
+      ? l10n.bookingsCustomerLabel
+      : value;
+}

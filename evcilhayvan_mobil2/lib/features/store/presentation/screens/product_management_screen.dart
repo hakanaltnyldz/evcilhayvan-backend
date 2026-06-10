@@ -11,16 +11,18 @@ import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/product_model.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
-import 'package:evcilhayvan_mobil2/core/constants.dart';;
+import 'package:evcilhayvan_mobil2/core/constants.dart';
 
 class ProductManagementScreen extends ConsumerStatefulWidget {
   const ProductManagementScreen({super.key});
 
   @override
-  ConsumerState<ProductManagementScreen> createState() => _ProductManagementScreenState();
+  ConsumerState<ProductManagementScreen> createState() =>
+      _ProductManagementScreenState();
 }
 
-class _ProductManagementScreenState extends ConsumerState<ProductManagementScreen> {
+class _ProductManagementScreenState
+    extends ConsumerState<ProductManagementScreen> {
   String _filter = 'all'; // all, active, inactive, lowstock, outofstock
 
   @override
@@ -112,17 +114,30 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                 if (filteredProducts.isEmpty) {
                   return AnimatedEmptyState(
                     icon: Icons.inventory_2_outlined,
-                    title: _filter == 'all' ? l10n.productMgmtNoProducts : l10n.productMgmtNoCategoryProducts,
+                    title: _filter == 'all'
+                        ? l10n.productMgmtNoProducts
+                        : l10n.productMgmtNoCategoryProducts,
                     action: _filter == 'all'
                         ? ElevatedButton.icon(
-                            onPressed: () => context.pushNamed('store-add-product'),
+                            onPressed: () =>
+                                context.pushNamed('store-add-product'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppPalette.storePrimary,
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 14,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                             icon: const Icon(Icons.add),
-                            label: Text(l10n.productMgmtAddFirst, style: const TextStyle(fontWeight: FontWeight.w700)),
+                            label: Text(
+                              l10n.productMgmtAddFirst,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           )
                         : null,
                   );
@@ -151,7 +166,11 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Colors.red,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       l10n.productMgmtLoadErr,
@@ -182,7 +201,9 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
       case 'inactive':
         return products.where((p) => !p.isActive).toList();
       case 'lowstock':
-        return products.where((p) => p.stock > 0 && p.stock <= kLowStockThreshold).toList();
+        return products
+            .where((p) => p.stock > 0 && p.stock <= kLowStockThreshold)
+            .toList();
       case 'outofstock':
         return products.where((p) => p.stock <= 0).toList();
       default:
@@ -201,7 +222,9 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              wasActive ? l10n.productMgmtToggleDeactivated : l10n.productMgmtToggleActivated,
+              wasActive
+                  ? l10n.productMgmtToggleDeactivated
+                  : l10n.productMgmtToggleActivated,
             ),
             backgroundColor: Colors.green,
           ),
@@ -221,7 +244,9 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
 
   Future<void> _showStockDialog(ProductModel product) async {
     final l10n = AppLocalizations.of(context)!;
-    final stockController = TextEditingController(text: product.stock.toString());
+    final stockController = TextEditingController(
+      text: product.stock.toString(),
+    );
     String action = 'set';
 
     await showModalBottomSheet(
@@ -232,213 +257,223 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
         builder: (context, setModalState) {
           final ml10n = AppLocalizations.of(context)!;
           return Container(
-          decoration: BoxDecoration(
-            color: context.cardColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          padding: EdgeInsets.only(
-            left: 24,
-            right: 24,
-            top: 24,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppPalette.storePrimary.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.inventory_2,
-                      color: AppPalette.storePrimary,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          ml10n.productMgmtUpdateStockTitle,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        Text(
-                          product.displayName,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+            decoration: BoxDecoration(
+              color: context.cardColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
               ),
-              const SizedBox(height: 24),
-              // Current stock info
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: context.cardColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ),
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              top: 24,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text(
-                      ml10n.productMgmtCurrentStock,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppPalette.storePrimary.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.inventory_2,
+                        color: AppPalette.storePrimary,
+                        size: 24,
+                      ),
                     ),
-                    Text(
-                      '${product.stock} ${ml10n.productMgmtStockUnit}',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: product.stock <= 0
-                            ? Colors.red
-                            : product.stock <= kLowStockThreshold
-                                ? Colors.orange
-                                : Colors.green,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            ml10n.productMgmtUpdateStockTitle,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          Text(
+                            product.displayName,
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 20),
-              // Action selection
-              Row(
-                children: [
-                  Expanded(
-                    child: _ActionButton(
-                      label: ml10n.productMgmtStockChange,
-                      icon: Icons.edit,
-                      isSelected: action == 'set',
-                      onTap: () => setModalState(() => action = 'set'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _ActionButton(
-                      label: ml10n.productMgmtStockIncrease,
-                      icon: Icons.add_circle_outline,
-                      isSelected: action == 'increase',
-                      color: Colors.green,
-                      onTap: () => setModalState(() => action = 'increase'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _ActionButton(
-                      label: ml10n.productMgmtStockDecrease,
-                      icon: Icons.remove_circle_outline,
-                      isSelected: action == 'decrease',
-                      color: Colors.orange,
-                      onTap: () => setModalState(() => action = 'decrease'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              // Stock input
-              TextField(
-                controller: stockController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: InputDecoration(
-                  labelText: action == 'set'
-                      ? ml10n.productMgmtNewStockAmt
-                      : action == 'increase'
-                          ? ml10n.productMgmtAddAmt
-                          : ml10n.productMgmtSubtractAmt,
-                  hintText: ml10n.productMgmtEnterAmt,
-                  border: OutlineInputBorder(
+                const SizedBox(height: 24),
+                // Current stock info
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: context.cardColor,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppPalette.storePrimary,
-                      width: 2,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        ml10n.productMgmtCurrentStock,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      Text(
+                        '${product.stock} ${ml10n.productMgmtStockUnit}',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: product.stock <= 0
+                              ? Colors.red
+                              : product.stock <= kLowStockThreshold
+                              ? Colors.orange
+                              : Colors.green,
+                        ),
+                      ),
+                    ],
                   ),
-                  suffixText: ml10n.productMgmtStockUnit,
                 ),
-              ),
-              const SizedBox(height: 24),
-              // Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                const SizedBox(height: 20),
+                // Action selection
+                Row(
+                  children: [
+                    Expanded(
+                      child: _ActionButton(
+                        label: ml10n.productMgmtStockChange,
+                        icon: Icons.edit,
+                        isSelected: action == 'set',
+                        onTap: () => setModalState(() => action = 'set'),
                       ),
-                      child: Text(ml10n.cancel),
                     ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _ActionButton(
+                        label: ml10n.productMgmtStockIncrease,
+                        icon: Icons.add_circle_outline,
+                        isSelected: action == 'increase',
+                        color: Colors.green,
+                        onTap: () => setModalState(() => action = 'increase'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _ActionButton(
+                        label: ml10n.productMgmtStockDecrease,
+                        icon: Icons.remove_circle_outline,
+                        isSelected: action == 'decrease',
+                        color: Colors.orange,
+                        onTap: () => setModalState(() => action = 'decrease'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Stock input
+                TextField(
+                  controller: stockController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: InputDecoration(
+                    labelText: action == 'set'
+                        ? ml10n.productMgmtNewStockAmt
+                        : action == 'increase'
+                        ? ml10n.productMgmtAddAmt
+                        : ml10n.productMgmtSubtractAmt,
+                    hintText: ml10n.productMgmtEnterAmt,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppPalette.storePrimary,
+                        width: 2,
+                      ),
+                    ),
+                    suffixText: ml10n.productMgmtStockUnit,
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 2,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        final parsed = int.tryParse(stockController.text.trim());
-                        if (parsed == null || parsed < 0) {
-                          setModalState(() {});
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(ml10n.productMgmtEnterAmt),
-                              backgroundColor: Colors.orange,
-                            ),
+                ),
+                const SizedBox(height: 24),
+                // Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(ml10n.cancel),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final parsed = int.tryParse(
+                            stockController.text.trim(),
                           );
-                          return;
-                        }
-                        Navigator.pop(context);
-                        await _updateStock(
-                          product,
-                          parsed,
-                          action == 'set' ? null : action,
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppPalette.storePrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          if (parsed == null || parsed < 0) {
+                            setModalState(() {});
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(ml10n.productMgmtEnterAmt),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                            return;
+                          }
+                          Navigator.pop(context);
+                          await _updateStock(
+                            product,
+                            parsed,
+                            action == 'set' ? null : action,
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppPalette.storePrimary,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          ml10n.productMgmtUpdate,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                       ),
-                      child: Text(
-                        ml10n.productMgmtUpdate,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
+                  ],
+                ),
+              ],
+            ),
+          );
         },
       ),
     );
   }
 
-  Future<void> _updateStock(ProductModel product, int stock, String? action) async {
+  Future<void> _updateStock(
+    ProductModel product,
+    int stock,
+    String? action,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
     try {
       final repo = ref.read(storeRepositoryProvider);
@@ -475,60 +510,62 @@ class _ProductManagementScreenState extends ConsumerState<ProductManagementScree
       builder: (ctx) {
         final dl10n = AppLocalizations.of(ctx)!;
         return AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
-            const SizedBox(width: 12),
-            Text(dl10n.productMgmtDeleteTitle),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              dl10n.productMgmtDeleteContent(product.displayName),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.red,
+                size: 28,
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.info_outline, color: Colors.red, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      dl10n.productMgmtDeleteWarning,
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.w600,
+              const SizedBox(width: 12),
+              Text(dl10n.productMgmtDeleteTitle),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(dl10n.productMgmtDeleteContent(product.displayName)),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, color: Colors.red, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        dl10n.productMgmtDeleteWarning,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(dl10n.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: Text(dl10n.delete),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(dl10n.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
-            child: Text(dl10n.delete),
-          ),
-        ],
-      );
+        );
       },
     );
 
@@ -591,7 +628,9 @@ class _FilterChip extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
+            color: isSelected
+                ? Colors.white
+                : Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -625,7 +664,9 @@ class _ActionButton extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? btnColor.withOpacity(0.1) : context.subtleBackground,
+          color: isSelected
+              ? btnColor.withOpacity(0.1)
+              : context.subtleBackground,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? btnColor : Theme.of(context).dividerColor,
@@ -636,7 +677,9 @@ class _ActionButton extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? btnColor : Theme.of(context).colorScheme.onSurfaceVariant,
+              color: isSelected
+                  ? btnColor
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
               size: 24,
             ),
             const SizedBox(height: 4),
@@ -644,7 +687,9 @@ class _ActionButton extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: 12,
-                color: isSelected ? btnColor : Theme.of(context).colorScheme.onSurfaceVariant,
+                color: isSelected
+                    ? btnColor
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
@@ -675,8 +720,8 @@ class _ProductCard extends StatelessWidget {
     final hasImage = product.photos.isNotEmpty;
     final imageUrl = hasImage
         ? (product.photos.first.startsWith('http')
-            ? product.photos.first
-            : '${AppConfig.current.apiBaseUrl}${product.photos.first}')
+              ? product.photos.first
+              : '${AppConfig.current.apiBaseUrl}${product.photos.first}')
         : null;
 
     return Container(
@@ -753,13 +798,21 @@ class _ProductCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              product.isActive ? AppLocalizations.of(context)!.productMgmtStatusActive : AppLocalizations.of(context)!.productMgmtStatusInactive,
+                              product.isActive
+                                  ? AppLocalizations.of(
+                                      context,
+                                    )!.productMgmtStatusActive
+                                  : AppLocalizations.of(
+                                      context,
+                                    )!.productMgmtStatusInactive,
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: product.isActive
                                     ? Colors.green.shade700
-                                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                                    : Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ),
@@ -786,7 +839,9 @@ class _ProductCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            AppLocalizations.of(context)!.productMgmtStock(product.stock),
+                            AppLocalizations.of(
+                              context,
+                            )!.productMgmtStock(product.stock),
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -805,7 +860,9 @@ class _ProductCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                AppLocalizations.of(context)!.productMgmtStockOutBadge,
+                                AppLocalizations.of(
+                                  context,
+                                )!.productMgmtStockOutBadge,
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
@@ -825,7 +882,9 @@ class _ProductCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                AppLocalizations.of(context)!.productMgmtStockLowBadge,
+                                AppLocalizations.of(
+                                  context,
+                                )!.productMgmtStockLowBadge,
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
@@ -856,7 +915,9 @@ class _ProductCard extends StatelessWidget {
                   icon: product.isActive
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  label: product.isActive ? AppLocalizations.of(context)!.productMgmtDeactivate : AppLocalizations.of(context)!.productMgmtActivate,
+                  label: product.isActive
+                      ? AppLocalizations.of(context)!.productMgmtDeactivate
+                      : AppLocalizations.of(context)!.productMgmtActivate,
                   color: product.isActive ? Colors.grey : Colors.green,
                   onTap: onToggleActive,
                 ),

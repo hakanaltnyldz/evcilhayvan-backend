@@ -1,0 +1,23 @@
+@startuml
+actor Gonderen
+boundary "Mobil Uygulama" as Mobile
+control "Message API" as API
+control "Socket Gateway" as Socket
+database "MongoDB Atlas" as DB
+collections "FCM Service" as FCM
+actor Alici
+
+Gonderen -> Mobile : mesaj yazar
+Mobile -> API : POST /conversations/:id/messages
+API -> DB : konusma yetkisini kontrol et
+DB --> API : yetki uygun
+API -> DB : mesaj kaydini olustur
+DB --> API : messageId
+API -> Socket : message:new olayini yayinla
+Socket -> Alici : anlik mesaj
+alt Alici cevrimdisi
+  API -> FCM : push bildirim gonder
+end
+API --> Mobile : mesaj basarili
+Mobile --> Gonderen : mesaj listede gorunur
+@enduml

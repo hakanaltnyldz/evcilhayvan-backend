@@ -31,10 +31,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       duration: const Duration(milliseconds: 400),
     );
     _shakeAnim = TweenSequence<Offset>([
-      TweenSequenceItem(tween: Tween(begin: Offset.zero, end: const Offset(0.025, 0)), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: const Offset(0.025, 0), end: const Offset(-0.025, 0)), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: const Offset(-0.025, 0), end: const Offset(0.025, 0)), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: const Offset(0.025, 0), end: Offset.zero), weight: 1),
+      TweenSequenceItem(
+        tween: Tween(begin: Offset.zero, end: const Offset(0.025, 0)),
+        weight: 1,
+      ),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: const Offset(0.025, 0),
+          end: const Offset(-0.025, 0),
+        ),
+        weight: 2,
+      ),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: const Offset(-0.025, 0),
+          end: const Offset(0.025, 0),
+        ),
+        weight: 2,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: const Offset(0.025, 0), end: Offset.zero),
+        weight: 1,
+      ),
     ]).animate(CurvedAnimation(parent: _shakeCtrl, curve: Curves.easeInOut));
   }
 
@@ -54,14 +72,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     setState(() => _loading = true);
     try {
       final repo = ref.read(authRepositoryProvider);
-      final user = await repo.login(
-        _emailCtrl.text.trim(),
-        _passCtrl.text,
-      );
+      final user = await repo.login(_emailCtrl.text.trim(), _passCtrl.text);
       if (mounted) {
         ref.read(authProvider.notifier).loginSuccess(user);
         ref.read(guestModeProvider.notifier).state = false;
-        context.go('/');
+        final from = GoRouterState.of(context).uri.queryParameters['from'];
+        final target =
+            from != null &&
+                from.startsWith('/') &&
+                !from.startsWith('//') &&
+                !from.startsWith('/login') &&
+                !from.startsWith('/register')
+            ? from
+            : '/';
+        context.go(target);
       }
     } on VerificationRequiredException {
       if (mounted) {
@@ -71,7 +95,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       if (mounted) {
         _shakeCtrl.forward(from: 0);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', '')), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(e.toString().replaceFirst('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -167,8 +194,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                 TextFormField(
                                   controller: _emailCtrl,
                                   keyboardType: TextInputType.emailAddress,
-                                  decoration: _deco(l10n.email, Icons.email_outlined),
-                                  validator: (v) => (v == null || !v.contains('@'))
+                                  decoration: _deco(
+                                    l10n.email,
+                                    Icons.email_outlined,
+                                  ),
+                                  validator: (v) =>
+                                      (v == null || !v.contains('@'))
                                       ? l10n.loginEmailError
                                       : null,
                                 ),
@@ -177,15 +208,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   controller: _passCtrl,
                                   obscureText: _obscure,
                                   decoration:
-                                      _deco(l10n.password, Icons.lock_outline).copyWith(
-                                    suffixIcon: IconButton(
-                                      icon: Icon(_obscure
-                                          ? Icons.visibility_off
-                                          : Icons.visibility),
-                                      onPressed: () =>
-                                          setState(() => _obscure = !_obscure),
-                                    ),
-                                  ),
+                                      _deco(
+                                        l10n.password,
+                                        Icons.lock_outline,
+                                      ).copyWith(
+                                        suffixIcon: IconButton(
+                                          icon: Icon(
+                                            _obscure
+                                                ? Icons.visibility_off
+                                                : Icons.visibility,
+                                          ),
+                                          onPressed: () => setState(
+                                            () => _obscure = !_obscure,
+                                          ),
+                                        ),
+                                      ),
                                   validator: (v) => (v == null || v.length < 6)
                                       ? l10n.loginPasswordError
                                       : null,
@@ -193,7 +230,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                 Align(
                                   alignment: Alignment.centerRight,
                                   child: TextButton(
-                                    onPressed: () => context.go('/forgot-password'),
+                                    onPressed: () =>
+                                        context.go('/forgot-password'),
                                     style: TextButton.styleFrom(
                                       foregroundColor: const Color(0xFF52B788),
                                     ),
@@ -206,7 +244,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF2D6A4F),
                                     foregroundColor: Colors.white,
-                                    minimumSize: const Size(double.infinity, 52),
+                                    minimumSize: const Size(
+                                      double.infinity,
+                                      52,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
@@ -217,12 +258,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                           height: 20,
                                           width: 20,
                                           child: CircularProgressIndicator(
-                                              strokeWidth: 2, color: Colors.white),
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
                                         )
-                                      : Text(l10n.login,
+                                      : Text(
+                                          l10n.login,
                                           style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold)),
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                 ),
                                 const SizedBox(height: 16),
                                 Row(
@@ -232,11 +278,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     TextButton(
                                       onPressed: () => context.go('/register'),
                                       style: TextButton.styleFrom(
-                                        foregroundColor: const Color(0xFF52B788),
+                                        foregroundColor: const Color(
+                                          0xFF52B788,
+                                        ),
                                       ),
-                                      child: Text(l10n.register,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold)),
+                                      child: Text(
+                                        l10n.register,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -271,10 +322,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   InputDecoration _deco(String label, IconData icon) => InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
-        filled: true,
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-      );
+    labelText: label,
+    prefixIcon: Icon(icon),
+    filled: true,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide.none,
+    ),
+  );
 }

@@ -26,11 +26,24 @@ const storePopulate = {
 
 const ownerSelect = { path: "owner", select: "name avatarUrl city" };
 
-export async function discoverStores(_req, res) {
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export async function discoverStores(req, res) {
   try {
-    const stores = await Store.find({ isActive: true })
+    const { q, limit } = req.query || {};
+    const filter = { isActive: true };
+    if (q) {
+      const search = new RegExp(escapeRegex(q), "i");
+      filter.$or = [{ name: search }, { description: search }];
+    }
+
+    const parsedLimit = Math.min(Math.max(Number(limit) || 40, 1), 50);
+    const stores = await Store.find(filter)
       .populate(ownerSelect)
       .sort({ createdAt: -1 })
+      .limit(parsedLimit)
       .lean();
     return sendOk(res, 200, { stores });
   } catch (err) {

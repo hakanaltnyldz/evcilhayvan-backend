@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import 'package:evcilhayvan_mobil2/config/app_config.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../domain/models/care_report_model.dart';
 import '../../domain/models/sitter_booking_model.dart';
 
@@ -23,24 +24,17 @@ class CareReportDetailScreen extends StatelessWidget {
     'tired': '😴',
   };
 
-  static const Map<String, String> _activityLabels = {
-    'walk': 'Yuruyus',
-    'play': 'Oyun',
-    'grooming': 'Bakim',
-    'vet_visit': 'Veteriner',
-    'bath': 'Banyo',
-    'training': 'Egitim',
-  };
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toString();
     final theme = Theme.of(context);
     final sentAt = report.sharedWithOwnerAt;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('${report.day}. Gun Raporu'),
+        title: Text(l10n.careReportDetailTitle(report.day)),
         backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
       ),
@@ -64,17 +58,17 @@ class CareReportDetailScreen extends StatelessWidget {
                   children: [
                     _pill(
                       icon: Icons.pets_outlined,
-                      label: booking.petName ?? 'Evcil hayvan',
+                      label: booking.petName ?? l10n.bookingsPetFallback,
                     ),
                     _pill(
                       icon: Icons.room_service_outlined,
-                      label: booking.serviceLabel,
+                      label: _serviceLabel(l10n, booking.serviceType),
                     ),
                     _pill(
                       icon: Icons.send_outlined,
                       label: sentAt != null
-                          ? 'Musteriye gonderildi'
-                          : 'Henuz gonderilmedi',
+                          ? l10n.careReportDetailShared
+                          : l10n.careReportDetailNotShared,
                     ),
                   ],
                 ),
@@ -91,7 +85,7 @@ class CareReportDetailScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${report.day}. Gun Ozeti',
+                            l10n.careReportDetailSummary(report.day),
                             style: theme.textTheme.headlineSmall?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w900,
@@ -101,7 +95,7 @@ class CareReportDetailScreen extends StatelessWidget {
                           Text(
                             DateFormat(
                               'dd MMM yyyy, HH:mm',
-                              'tr_TR',
+                              locale,
                             ).format(report.timestamp.toLocal()),
                             style: const TextStyle(color: Colors.white70),
                           ),
@@ -113,7 +107,12 @@ class CareReportDetailScreen extends StatelessWidget {
                 if (sentAt != null) ...[
                   const SizedBox(height: 14),
                   Text(
-                    'Paylasim zamani: ${DateFormat('dd MMM yyyy, HH:mm', 'tr_TR').format(sentAt.toLocal())}',
+                    l10n.careReportDetailSharedAt(
+                      DateFormat(
+                        'dd MMM yyyy, HH:mm',
+                        locale,
+                      ).format(sentAt.toLocal()),
+                    ),
                     style: const TextStyle(color: Colors.white70),
                   ),
                 ],
@@ -123,13 +122,15 @@ class CareReportDetailScreen extends StatelessWidget {
           const SizedBox(height: 16),
           _section(
             context,
-            'Bakim Durumu',
+            l10n.careReportDetailStatus,
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
                 _statusChip(
-                  report.foodEaten ? 'Yemek yedi' : 'Yemek yemedi',
+                  report.foodEaten
+                      ? l10n.careReportDetailFoodEaten
+                      : l10n.careReportDetailFoodNotEaten,
                   report.foodEaten ? Colors.green : Colors.red,
                   report.foodEaten
                       ? Icons.check_circle_outline
@@ -137,7 +138,7 @@ class CareReportDetailScreen extends StatelessWidget {
                 ),
                 ...report.activities.map(
                   (activity) => _statusChip(
-                    _activityLabels[activity] ?? activity,
+                    _activityLabel(l10n, activity),
                     const Color(0xFF2D6A4F),
                     Icons.check,
                   ),
@@ -148,10 +149,10 @@ class CareReportDetailScreen extends StatelessWidget {
           const SizedBox(height: 16),
           _section(
             context,
-            'Bakici Notu',
+            l10n.careReportDetailSitterNote,
             Text(
               (report.notes ?? '').trim().isEmpty
-                  ? 'Bu rapor icin not eklenmemis.'
+                  ? l10n.careReportDetailNoNote
                   : report.notes!,
               style: TextStyle(
                 height: 1.45,
@@ -162,11 +163,11 @@ class CareReportDetailScreen extends StatelessWidget {
           const SizedBox(height: 16),
           _section(
             context,
-            'Fotograflar',
+            l10n.careReportDetailPhotos,
             report.photos.isEmpty
-                ? const Text(
-                    'Bu rapor icin fotograf eklenmemis.',
-                    style: TextStyle(color: Colors.grey),
+                ? Text(
+                    l10n.careReportDetailNoPhotos,
+                    style: const TextStyle(color: Colors.grey),
                   )
                 : GridView.builder(
                     shrinkWrap: true,
@@ -289,5 +290,41 @@ class CareReportDetailScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+String _serviceLabel(AppLocalizations l10n, String serviceType) {
+  switch (serviceType) {
+    case 'walking':
+      return l10n.sitterServiceWalkingLabel;
+    case 'home_sitting':
+      return l10n.sitterServiceHomeSittingLabel;
+    case 'boarding':
+      return l10n.sitterServiceBoardingLabel;
+    case 'daycare':
+      return l10n.sitterServiceDaycareLabel;
+    case 'grooming':
+      return l10n.sitterServiceGroomingLabel;
+    default:
+      return serviceType;
+  }
+}
+
+String _activityLabel(AppLocalizations l10n, String activity) {
+  switch (activity) {
+    case 'walk':
+      return l10n.careReportActivityWalk;
+    case 'play':
+      return l10n.careReportActivityPlay;
+    case 'grooming':
+      return l10n.careReportActivityGrooming;
+    case 'vet_visit':
+      return l10n.careReportActivityVetVisit;
+    case 'bath':
+      return l10n.careReportActivityBath;
+    case 'training':
+      return l10n.careReportActivityTraining;
+    default:
+      return activity;
   }
 }

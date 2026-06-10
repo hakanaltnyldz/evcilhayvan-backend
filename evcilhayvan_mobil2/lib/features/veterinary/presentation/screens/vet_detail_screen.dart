@@ -17,10 +17,10 @@ import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_reposito
 import '../../data/repositories/veterinary_repository.dart';
 import '../../domain/models/vet_review_model.dart';
 
-final vetReviewsProvider =
-    FutureProvider.autoDispose.family<Map<String, dynamic>, String>((ref, vetId) {
-  return ref.read(veterinaryRepositoryProvider).getVetReviews(vetId);
-});
+final vetReviewsProvider = FutureProvider.autoDispose
+    .family<Map<String, dynamic>, String>((ref, vetId) {
+      return ref.read(veterinaryRepositoryProvider).getVetReviews(vetId);
+    });
 
 class VetDetailScreen extends ConsumerStatefulWidget {
   final String vetId;
@@ -45,7 +45,9 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
         loading: () => const Center(child: PawLoading()),
         error: (e, _) => Center(child: Text('${l10n.error}: $e')),
         data: (vet) {
-          final photos = vet.photos.map((p) => p.startsWith('http') ? p : '$apiBaseUrl$p').toList();
+          final photos = vet.photos
+              .map((p) => p.startsWith('http') ? p : '$apiBaseUrl$p')
+              .toList();
 
           return CustomScrollView(
             slivers: [
@@ -70,11 +72,13 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                           children: [
                             PageView.builder(
                               itemCount: photos.length,
-                              onPageChanged: (i) => setState(() => _photoIndex = i),
+                              onPageChanged: (i) =>
+                                  setState(() => _photoIndex = i),
                               itemBuilder: (_, i) => Image.network(
                                 photos[i],
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => _heroPlaceholder(),
+                                errorBuilder: (_, __, ___) =>
+                                    _heroPlaceholder(),
                               ),
                             ),
                             // Gradient overlay for text readability
@@ -104,16 +108,28 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                                   children: List.generate(photos.length, (i) {
                                     final isActive = _photoIndex == i;
                                     return AnimatedContainer(
-                                      duration: const Duration(milliseconds: 250),
+                                      duration: const Duration(
+                                        milliseconds: 250,
+                                      ),
                                       curve: Curves.easeOut,
                                       width: isActive ? 24 : 8,
                                       height: 8,
-                                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 3,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: isActive ? Colors.white : Colors.white54,
+                                        color: isActive
+                                            ? Colors.white
+                                            : Colors.white54,
                                         borderRadius: BorderRadius.circular(20),
                                         boxShadow: isActive
-                                            ? [BoxShadow(color: Colors.white.withOpacity(0.4), blurRadius: 4)]
+                                            ? [
+                                                BoxShadow(
+                                                  color: Colors.white
+                                                      .withOpacity(0.4),
+                                                  blurRadius: 4,
+                                                ),
+                                              ]
                                             : null,
                                       ),
                                     );
@@ -138,54 +154,114 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                         runSpacing: 8,
                         children: [
                           if (vet.isVerified)
-                            _buildBadge(Icons.verified, l10n.vetVerified, const Color(0xFF2D6A4F)),
+                            _buildBadge(
+                              Icons.verified,
+                              l10n.vetVerified,
+                              const Color(0xFF2D6A4F),
+                            ),
                           if (vet.isVerified && vet.userId != null)
-                            _buildBadge(Icons.calendar_today_rounded, 'Randevu Kabul Ediyor', const Color(0xFF52B788)),
+                            _buildBadge(
+                              Icons.calendar_today_rounded,
+                              'Randevu Kabul Ediyor',
+                              const Color(0xFF52B788),
+                            ),
                           if (vet.source == 'google_places')
-                            _buildBadge(Icons.map, 'Google Places', Colors.orange),
+                            _buildBadge(
+                              Icons.map,
+                              'Google Places',
+                              Colors.orange,
+                            ),
                         ],
                       ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05),
                       const SizedBox(height: 16),
 
                       // ── Animated Rating ──
                       if (vet.googleRating != null)
-                        _AnimatedRating(rating: vet.googleRating!, reviewCount: vet.googleReviewCount, l10n: l10n)
-                            .animate(delay: 100.ms).fadeIn(duration: 400.ms),
+                        _AnimatedRating(
+                          rating: vet.googleRating!,
+                          reviewCount: vet.googleReviewCount,
+                          l10n: l10n,
+                        ).animate(delay: 100.ms).fadeIn(duration: 400.ms),
 
                       // ── Contact Info ──
                       PremiumCard(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                        child: Column(
-                          children: [
-                            if (vet.address != null) _infoRow(Icons.location_on, vet.address!, theme,
-                              onTap: (vet.latitude != null && vet.longitude != null)
-                                ? () => _launchUrl('https://www.google.com/maps/search/?api=1&query=${vet.latitude},${vet.longitude}')
-                                : () => _launchUrl('https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(vet.address!)}'),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 4,
                             ),
-                            if (vet.phone != null) _infoRow(Icons.phone, vet.phone!, theme, onTap: () => _launchUrl('tel:${vet.phone}')),
-                            if (vet.email != null) _infoRow(Icons.email, vet.email!, theme, onTap: () => _launchUrl('mailto:${vet.email}')),
-                            if (vet.website != null) _infoRow(Icons.language, vet.website!, theme, onTap: () => _launchUrl(vet.website!)),
-                          ],
-                        ),
-                      ).animate(delay: 200.ms).fadeIn(duration: 400.ms).slideY(begin: 0.05),
+                            child: Column(
+                              children: [
+                                if (vet.address != null)
+                                  _infoRow(
+                                    Icons.location_on,
+                                    vet.address!,
+                                    theme,
+                                    onTap:
+                                        (vet.latitude != null &&
+                                            vet.longitude != null)
+                                        ? () => _launchUrl(
+                                            'https://www.google.com/maps/search/?api=1&query=${vet.latitude},${vet.longitude}',
+                                          )
+                                        : () => _launchUrl(
+                                            'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(vet.address!)}',
+                                          ),
+                                  ),
+                                if (vet.phone != null)
+                                  _infoRow(
+                                    Icons.phone,
+                                    vet.phone!,
+                                    theme,
+                                    onTap: () => _launchUrl('tel:${vet.phone}'),
+                                  ),
+                                if (vet.email != null)
+                                  _infoRow(
+                                    Icons.email,
+                                    vet.email!,
+                                    theme,
+                                    onTap: () =>
+                                        _launchUrl('mailto:${vet.email}'),
+                                  ),
+                                if (vet.website != null)
+                                  _infoRow(
+                                    Icons.language,
+                                    vet.website!,
+                                    theme,
+                                    onTap: () => _launchUrl(vet.website!),
+                                  ),
+                              ],
+                            ),
+                          )
+                          .animate(delay: 200.ms)
+                          .fadeIn(duration: 400.ms)
+                          .slideY(begin: 0.05),
                       const SizedBox(height: 16),
 
                       // ── Description ──
                       if (vet.description != null) ...[
                         _sectionTitle(l10n.vetAbout, Icons.info_outline),
                         const SizedBox(height: 8),
-                        Text(vet.description!, style: theme.textTheme.bodyMedium?.copyWith(height: 1.5)),
+                        Text(
+                          vet.description!,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            height: 1.5,
+                          ),
+                        ),
                         const SizedBox(height: 16),
                       ],
 
                       // ── Services ──
                       if (vet.services.isNotEmpty) ...[
-                        _sectionTitle(l10n.vetServices, Icons.medical_services_outlined),
+                        _sectionTitle(
+                          l10n.vetServices,
+                          Icons.medical_services_outlined,
+                        ),
                         const SizedBox(height: 10),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: vet.services.map((s) => _serviceChip(s)).toList(),
+                          children: vet.services
+                              .map((s) => _serviceChip(s))
+                              .toList(),
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -197,10 +273,14 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: vet.speciesServed.map((s) => Chip(
-                            avatar: Icon(_speciesIcon(s), size: 18),
-                            label: Text(_speciesLabel(s, l10n)),
-                          )).toList(),
+                          children: vet.speciesServed
+                              .map(
+                                (s) => Chip(
+                                  avatar: Icon(_speciesIcon(s), size: 18),
+                                  label: Text(_speciesLabel(s, l10n)),
+                                ),
+                              )
+                              .toList(),
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -212,23 +292,43 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                         PremiumCard(
                           enableScale: false,
                           child: Column(
-                            children: vet.workingHours.map((wh) => Padding(
-                              padding: const EdgeInsets.only(bottom: 6),
-                              child: Row(
-                                children: [
-                                  SizedBox(width: 100, child: Text(wh.dayName, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600))),
-                                  Expanded(
-                                    child: Text(
-                                      wh.isClosed ? l10n.vetClosed : '${wh.open ?? '-'} - ${wh.close ?? '-'}',
-                                      style: theme.textTheme.bodyMedium?.copyWith(
-                                        color: wh.isClosed ? Colors.red.shade400 : const Color(0xFF2D6A4F),
-                                        fontWeight: wh.isClosed ? FontWeight.w500 : FontWeight.w600,
-                                      ),
+                            children: vet.workingHours
+                                .map(
+                                  (wh) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 6),
+                                    child: Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 100,
+                                          child: Text(
+                                            wh.dayName,
+                                            style: theme.textTheme.bodyMedium
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Text(
+                                            wh.isClosed
+                                                ? l10n.vetClosed
+                                                : '${wh.open ?? '-'} - ${wh.close ?? '-'}',
+                                            style: theme.textTheme.bodyMedium
+                                                ?.copyWith(
+                                                  color: wh.isClosed
+                                                      ? Colors.red.shade400
+                                                      : const Color(0xFF2D6A4F),
+                                                  fontWeight: wh.isClosed
+                                                      ? FontWeight.w500
+                                                      : FontWeight.w600,
+                                                ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ],
-                              ),
-                            )).toList(),
+                                )
+                                .toList(),
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -250,13 +350,24 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
       bottomNavigationBar: vetAsync.whenOrNull(
         data: (vet) {
           final currentUser = ref.watch(authProvider);
-          final isMyVet = vet.userId != null && currentUser != null && vet.userId == currentUser.id;
+          final isMyVet =
+              vet.userId != null &&
+              currentUser != null &&
+              vet.userId == currentUser.id;
 
           return Container(
             decoration: BoxDecoration(
               color: context.cardColor,
-              border: Border(top: BorderSide(color: const Color(0xFFD8F3DC), width: 1)),
-              boxShadow: [BoxShadow(color: const Color(0xFF2D6A4F).withOpacity(0.06), blurRadius: 12, offset: const Offset(0, -4))],
+              border: Border(
+                top: BorderSide(color: const Color(0xFFD8F3DC), width: 1),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2D6A4F).withOpacity(0.06),
+                  blurRadius: 12,
+                  offset: const Offset(0, -4),
+                ),
+              ],
             ),
             child: SafeArea(
               child: Padding(
@@ -269,13 +380,19 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                       GradientButton(
                         label: l10n.vetAppointment,
                         icon: Icons.calendar_today_rounded,
-                        onPressed: () => context.pushNamed('appointment-create', extra: {'vetId': vet.id, 'vetName': vet.name}),
+                        onPressed: () => context.pushNamed(
+                          'appointment-create',
+                          extra: {'vetId': vet.id, 'vetName': vet.name},
+                        ),
                       ),
                       const SizedBox(height: 10),
                     ] else if (isMyVet) ...[
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFD8F3DC),
                           borderRadius: BorderRadius.circular(14),
@@ -284,11 +401,19 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.store_rounded, color: Color(0xFF2D6A4F), size: 18),
+                            Icon(
+                              Icons.store_rounded,
+                              color: Color(0xFF2D6A4F),
+                              size: 18,
+                            ),
                             SizedBox(width: 8),
                             Text(
                               'Bu kliniğin sahibisiniz',
-                              style: TextStyle(color: Color(0xFF1B4332), fontSize: 13, fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                color: Color(0xFF1B4332),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ],
                         ),
@@ -297,7 +422,10 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                     ] else ...[
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(14),
@@ -306,11 +434,18 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.info_outline, color: Colors.grey.shade500, size: 18),
+                            Icon(
+                              Icons.info_outline,
+                              color: Colors.grey.shade500,
+                              size: 18,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               'Bu klinik henüz online randevu almıyor',
-                              style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 13,
+                              ),
                             ),
                           ],
                         ),
@@ -325,7 +460,9 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: () {
-                                final url = (vet.latitude != null && vet.longitude != null)
+                                final url =
+                                    (vet.latitude != null &&
+                                        vet.longitude != null)
                                     ? 'https://www.google.com/maps/search/?api=1&query=${vet.latitude},${vet.longitude}'
                                     : 'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(vet.address!)}';
                                 _launchUrl(url);
@@ -334,13 +471,19 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
                               label: Text(l10n.vetOpenInMaps),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFF2D6A4F),
-                                side: const BorderSide(color: Color(0xFF2D6A4F)),
+                                side: const BorderSide(
+                                  color: Color(0xFF2D6A4F),
+                                ),
                                 minimumSize: const Size(0, 44),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
                             ),
                           ),
-                        if ((vet.address != null || vet.latitude != null) && vet.userId != null && !isMyVet)
+                        if ((vet.address != null || vet.latitude != null) &&
+                            vet.userId != null &&
+                            !isMyVet)
                           const SizedBox(width: 10),
                         if (vet.userId != null && !isMyVet)
                           Expanded(child: _MessageVetButton(vet: vet)),
@@ -375,7 +518,12 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
           child: Icon(icon, size: 18, color: const Color(0xFF2D6A4F)),
         ),
         const SizedBox(width: 10),
-        Text(text, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          text,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
       ],
     );
   }
@@ -393,7 +541,14 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
         children: [
           Icon(icon, size: 16, color: color),
           const SizedBox(width: 6),
-          Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 12)),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+          ),
         ],
       ),
     );
@@ -405,7 +560,10 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [const Color(0xFFD8F3DC), const Color(0xFFD8F3DC).withOpacity(0.5)],
+          colors: [
+            const Color(0xFFD8F3DC),
+            const Color(0xFFD8F3DC).withOpacity(0.5),
+          ],
         ),
         borderRadius: BorderRadius.circular(12),
       ),
@@ -414,7 +572,14 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
         children: [
           Icon(icon, size: 16, color: const Color(0xFF2D6A4F)),
           const SizedBox(width: 6),
-          Text(service, style: const TextStyle(color: Color(0xFF1B4332), fontWeight: FontWeight.w600, fontSize: 13)),
+          Text(
+            service,
+            style: const TextStyle(
+              color: Color(0xFF1B4332),
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
         ],
       ),
     );
@@ -423,14 +588,21 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
   IconData _serviceIcon(String service) {
     final s = service.toLowerCase();
     if (s.contains('aşı') || s.contains('vaccin')) return Icons.vaccines;
-    if (s.contains('ameliyat') || s.contains('surg')) return Icons.medical_services;
+    if (s.contains('ameliyat') || s.contains('surg'))
+      return Icons.medical_services;
     if (s.contains('diş') || s.contains('dent')) return Icons.mood;
     if (s.contains('acil') || s.contains('emerg')) return Icons.emergency;
-    if (s.contains('muayene') || s.contains('exam')) return Icons.health_and_safety;
+    if (s.contains('muayene') || s.contains('exam'))
+      return Icons.health_and_safety;
     return Icons.local_hospital;
   }
 
-  Widget _infoRow(IconData icon, String text, ThemeData theme, {VoidCallback? onTap}) {
+  Widget _infoRow(
+    IconData icon,
+    String text,
+    ThemeData theme, {
+    VoidCallback? onTap,
+  }) {
     return InteractiveScale(
       onTap: onTap,
       enabled: onTap != null,
@@ -448,12 +620,16 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(text, style: theme.textTheme.bodyMedium?.copyWith(
-                color: onTap != null ? const Color(0xFF2D6A4F) : null,
-                fontWeight: onTap != null ? FontWeight.w500 : null,
-              )),
+              child: Text(
+                text,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: onTap != null ? const Color(0xFF2D6A4F) : null,
+                  fontWeight: onTap != null ? FontWeight.w500 : null,
+                ),
+              ),
             ),
-            if (onTap != null) Icon(Icons.chevron_right, size: 18, color: Colors.grey.shade400),
+            if (onTap != null)
+              Icon(Icons.chevron_right, size: 18, color: Colors.grey.shade400),
           ],
         ),
       ),
@@ -469,7 +645,9 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
           end: Alignment.bottomCenter,
         ),
       ),
-      child: const Center(child: Icon(Icons.local_hospital, size: 80, color: Colors.white24)),
+      child: const Center(
+        child: Icon(Icons.local_hospital, size: 80, color: Colors.white24),
+      ),
     );
   }
 
@@ -482,21 +660,31 @@ class _VetDetailScreenState extends ConsumerState<VetDetailScreen> {
 
   IconData _speciesIcon(String species) {
     switch (species) {
-      case 'dog': return Icons.pets;
-      case 'cat': return Icons.pets;
-      case 'bird': return Icons.flutter_dash;
-      default: return Icons.pets;
+      case 'dog':
+        return Icons.pets;
+      case 'cat':
+        return Icons.pets;
+      case 'bird':
+        return Icons.flutter_dash;
+      default:
+        return Icons.pets;
     }
   }
 
   String _speciesLabel(String species, AppLocalizations l10n) {
     switch (species) {
-      case 'dog': return l10n.vetSpeciesDog;
-      case 'cat': return l10n.vetSpeciesCat;
-      case 'bird': return l10n.vetSpeciesBird;
-      case 'fish': return l10n.vetSpeciesFish;
-      case 'rodent': return l10n.vetSpeciesRodent;
-      default: return l10n.vetSpeciesOther;
+      case 'dog':
+        return l10n.vetSpeciesDog;
+      case 'cat':
+        return l10n.vetSpeciesCat;
+      case 'bird':
+        return l10n.vetSpeciesBird;
+      case 'fish':
+        return l10n.vetSpeciesFish;
+      case 'rodent':
+        return l10n.vetSpeciesRodent;
+      default:
+        return l10n.vetSpeciesOther;
     }
   }
 }
@@ -507,7 +695,11 @@ class _AnimatedRating extends StatelessWidget {
   final int reviewCount;
   final AppLocalizations l10n;
 
-  const _AnimatedRating({required this.rating, required this.reviewCount, required this.l10n});
+  const _AnimatedRating({
+    required this.rating,
+    required this.reviewCount,
+    required this.l10n,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -527,10 +719,18 @@ class _AnimatedRating extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 2),
                   child: Stack(
                     children: [
-                      Icon(Icons.star_border, color: Colors.amber.shade200, size: 24),
+                      Icon(
+                        Icons.star_border,
+                        color: Colors.amber.shade200,
+                        size: 24,
+                      ),
                       ClipRect(
                         clipper: _StarClipper(fill),
-                        child: Icon(Icons.star, color: Colors.amber.shade700, size: 24),
+                        child: Icon(
+                          Icons.star,
+                          color: Colors.amber.shade700,
+                          size: 24,
+                        ),
                       ),
                     ],
                   ),
@@ -539,12 +739,17 @@ class _AnimatedRating extends StatelessWidget {
               const SizedBox(width: 10),
               Text(
                 value.toStringAsFixed(1),
-                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: Colors.amber.shade700),
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: Colors.amber.shade700,
+                ),
               ),
               const SizedBox(width: 6),
               Text(
                 '($reviewCount ${l10n.vetReviews})',
-                style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.grey.shade600,
+                ),
               ),
             ],
           );
@@ -559,7 +764,8 @@ class _StarClipper extends CustomClipper<Rect> {
   _StarClipper(this.fraction);
 
   @override
-  Rect getClip(Size size) => Rect.fromLTWH(0, 0, size.width * fraction, size.height);
+  Rect getClip(Size size) =>
+      Rect.fromLTWH(0, 0, size.width * fraction, size.height);
 
   @override
   bool shouldReclip(_StarClipper old) => old.fraction != fraction;
@@ -583,22 +789,29 @@ class _VetReviewsSectionState extends ConsumerState<_VetReviewsSection> {
     if (result == null) return;
     try {
       final repo = ref.read(veterinaryRepositoryProvider);
-      await repo.addVetReview(widget.vetId, result['rating'] as int,
-          comment: result['comment'] as String?,
-          subRatings: result['subRatings'] as Map<String, dynamic>?);
+      await repo.addVetReview(
+        widget.vetId,
+        result['rating'] as int,
+        comment: result['comment'] as String?,
+        subRatings: result['subRatings'] as Map<String, dynamic>?,
+      );
       ref.invalidate(vetReviewsProvider(widget.vetId));
       ref.invalidate(vetDetailProvider(widget.vetId));
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.vetReviewAdded)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.vetReviewAdded)));
       }
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('${l10n.error}: $e'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${l10n.error}: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -611,8 +824,12 @@ class _VetReviewsSectionState extends ConsumerState<_VetReviewsSection> {
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.vetReviewDeleteError(e.toString())), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.vetReviewDeleteError(e.toString())),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -637,10 +854,19 @@ class _VetReviewsSectionState extends ConsumerState<_VetReviewsSection> {
                   color: const Color(0xFFD8F3DC),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.rate_review, size: 18, color: Color(0xFF2D6A4F)),
+                child: const Icon(
+                  Icons.rate_review,
+                  size: 18,
+                  color: Color(0xFF2D6A4F),
+                ),
               ),
               const SizedBox(width: 10),
-              Text(l10n.vetReviews, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                l10n.vetReviews,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const Spacer(),
               if (currentUser != null)
                 TextButton.icon(
@@ -665,9 +891,18 @@ class _VetReviewsSectionState extends ConsumerState<_VetReviewsSection> {
                   child: Center(
                     child: Column(
                       children: [
-                        Icon(Icons.rate_review_outlined, size: 48, color: Colors.grey.shade300),
+                        Icon(
+                          Icons.rate_review_outlined,
+                          size: 48,
+                          color: Colors.grey.shade300,
+                        ),
                         const SizedBox(height: 8),
-                        Text(l10n.vetReviewsEmpty, style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade500)),
+                        Text(
+                          l10n.vetReviewsEmpty,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -682,20 +917,36 @@ class _VetReviewsSectionState extends ConsumerState<_VetReviewsSection> {
                     enableScale: false,
                     child: Row(
                       children: [
-                        Text(avg.toStringAsFixed(1),
-                            style: theme.textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold, color: Colors.amber[700])),
+                        Text(
+                          avg.toStringAsFixed(1),
+                          style: theme.textTheme.displaySmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.amber[700],
+                          ),
+                        ),
                         const SizedBox(width: 16),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              children: List.generate(5, (i) => Icon(
-                                i < avg.round() ? Icons.star : Icons.star_border,
-                                color: Colors.amber[700], size: 20,
-                              )),
+                              children: List.generate(
+                                5,
+                                (i) => Icon(
+                                  i < avg.round()
+                                      ? Icons.star
+                                      : Icons.star_border,
+                                  color: Colors.amber[700],
+                                  size: 20,
+                                ),
+                              ),
                             ),
                             const SizedBox(height: 2),
-                            Text(l10n.vetReviewCount(count), style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600)),
+                            Text(
+                              l10n.vetReviewCount(count),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -707,76 +958,127 @@ class _VetReviewsSectionState extends ConsumerState<_VetReviewsSection> {
                   ...reviews.asMap().entries.map((entry) {
                     final index = entry.key;
                     final r = entry.value;
-                    final isOwn = currentUser != null && r.userId == currentUser.id;
+                    final isOwn =
+                        currentUser != null && r.userId == currentUser.id;
                     final avatarUrl = r.userAvatarUrl != null
-                        ? (r.userAvatarUrl!.startsWith('http') ? r.userAvatarUrl! : '$apiBaseUrl${r.userAvatarUrl}')
+                        ? (r.userAvatarUrl!.startsWith('http')
+                              ? r.userAvatarUrl!
+                              : '$apiBaseUrl${r.userAvatarUrl}')
                         : null;
 
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: PremiumCard(
-                        enableScale: false,
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: PremiumCard(
+                            enableScale: false,
+                            padding: const EdgeInsets.all(14),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                CircleAvatar(
-                                  radius: 18,
-                                  backgroundColor: const Color(0xFFD8F3DC),
-                                  foregroundColor: const Color(0xFF2D6A4F),
-                                  backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
-                                  child: avatarUrl == null
-                                      ? Text(r.userName.isNotEmpty ? r.userName[0].toUpperCase() : '?',
-                                          style: const TextStyle(fontWeight: FontWeight.bold))
-                                      : null,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(r.userName, style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600)),
-                                      Row(
-                                        children: List.generate(5, (i) => Icon(
-                                          i < r.rating ? Icons.star : Icons.star_border,
-                                          color: Colors.amber[700], size: 14,
-                                        )),
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 18,
+                                      backgroundColor: const Color(0xFFD8F3DC),
+                                      foregroundColor: const Color(0xFF2D6A4F),
+                                      backgroundImage: avatarUrl != null
+                                          ? NetworkImage(avatarUrl)
+                                          : null,
+                                      child: avatarUrl == null
+                                          ? Text(
+                                              r.userName.isNotEmpty
+                                                  ? r.userName[0].toUpperCase()
+                                                  : '?',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            )
+                                          : null,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            r.userName,
+                                            style: theme.textTheme.labelLarge
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                          ),
+                                          Row(
+                                            children: List.generate(
+                                              5,
+                                              (i) => Icon(
+                                                i < r.rating
+                                                    ? Icons.star
+                                                    : Icons.star_border,
+                                                color: Colors.amber[700],
+                                                size: 14,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
+                                    ),
+                                    if (isOwn)
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.delete_outline,
+                                          size: 18,
+                                        ),
+                                        color: Colors.red.shade300,
+                                        onPressed: () => _deleteReview(r.id),
+                                      ),
+                                  ],
+                                ),
+                                if (r.subRatings != null &&
+                                    r.subRatings!.hasAny) ...[
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 6,
+                                    children: [
+                                      if (r.subRatings!.cleanliness != null)
+                                        _SubRatingChip(
+                                          label:
+                                              '🧹 ${r.subRatings!.cleanliness}',
+                                          color: Colors.teal.shade50,
+                                          textColor: Colors.teal.shade700,
+                                        ),
+                                      if (r.subRatings!.communication != null)
+                                        _SubRatingChip(
+                                          label:
+                                              '💬 ${r.subRatings!.communication}',
+                                          color: Colors.blue.shade50,
+                                          textColor: Colors.blue.shade700,
+                                        ),
+                                      if (r.subRatings!.value != null)
+                                        _SubRatingChip(
+                                          label: '💰 ${r.subRatings!.value}',
+                                          color: Colors.orange.shade50,
+                                          textColor: Colors.orange.shade700,
+                                        ),
                                     ],
                                   ),
-                                ),
-                                if (isOwn)
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline, size: 18),
-                                    color: Colors.red.shade300,
-                                    onPressed: () => _deleteReview(r.id),
+                                ],
+                                if (r.comment != null &&
+                                    r.comment!.isNotEmpty) ...[
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    r.comment!,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      height: 1.4,
+                                    ),
                                   ),
+                                ],
                               ],
                             ),
-                            if (r.subRatings != null && r.subRatings!.hasAny) ...[
-                              const SizedBox(height: 8),
-                              Wrap(
-                                spacing: 6,
-                                children: [
-                                  if (r.subRatings!.cleanliness != null)
-                                    _SubRatingChip(label: '🧹 ${r.subRatings!.cleanliness}', color: Colors.teal.shade50, textColor: Colors.teal.shade700),
-                                  if (r.subRatings!.communication != null)
-                                    _SubRatingChip(label: '💬 ${r.subRatings!.communication}', color: Colors.blue.shade50, textColor: Colors.blue.shade700),
-                                  if (r.subRatings!.value != null)
-                                    _SubRatingChip(label: '💰 ${r.subRatings!.value}', color: Colors.orange.shade50, textColor: Colors.orange.shade700),
-                                ],
-                              ),
-                            ],
-                            if (r.comment != null && r.comment!.isNotEmpty) ...[
-                              const SizedBox(height: 10),
-                              Text(r.comment!, style: theme.textTheme.bodyMedium?.copyWith(height: 1.4)),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ).animate(delay: Duration(milliseconds: 80 * index)).fadeIn(duration: 280.ms).slideY(begin: 0.04);
+                          ),
+                        )
+                        .animate(delay: Duration(milliseconds: 80 * index))
+                        .fadeIn(duration: 280.ms)
+                        .slideY(begin: 0.04);
                   }),
                 ],
               );
@@ -809,21 +1111,32 @@ class _AddReviewDialogState extends State<_AddReviewDialog> {
     super.dispose();
   }
 
-  Widget _subRatingRow(String label, String emoji, int current, ValueChanged<int> onChanged) {
+  Widget _subRatingRow(
+    String label,
+    String emoji,
+    int current,
+    ValueChanged<int> onChanged,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Text('$emoji $label', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+          Text(
+            '$emoji $label',
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+          ),
           const Spacer(),
-          ...List.generate(5, (i) => GestureDetector(
-            onTap: () => setState(() => onChanged(i + 1)),
-            child: Icon(
-              i < current ? Icons.star : Icons.star_border,
-              color: Colors.amber[600],
-              size: 20,
+          ...List.generate(
+            5,
+            (i) => GestureDetector(
+              onTap: () => setState(() => onChanged(i + 1)),
+              child: Icon(
+                i < current ? Icons.star : Icons.star_border,
+                color: Colors.amber[600],
+                size: 20,
+              ),
             ),
-          )),
+          ),
         ],
       ),
     );
@@ -847,12 +1160,19 @@ class _AddReviewDialogState extends State<_AddReviewDialog> {
                   onTap: () => setState(() => _rating = i + 1),
                   child: Padding(
                     padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      i < _rating ? Icons.star : Icons.star_border,
-                      color: Colors.amber[700],
-                      size: 36,
-                    ).animate(delay: Duration(milliseconds: i * 60))
-                        .scale(begin: const Offset(0.5, 0.5), end: const Offset(1, 1), duration: 300.ms, curve: Curves.elasticOut),
+                    child:
+                        Icon(
+                              i < _rating ? Icons.star : Icons.star_border,
+                              color: Colors.amber[700],
+                              size: 36,
+                            )
+                            .animate(delay: Duration(milliseconds: i * 60))
+                            .scale(
+                              begin: const Offset(0.5, 0.5),
+                              end: const Offset(1, 1),
+                              duration: 300.ms,
+                              curve: Curves.elasticOut,
+                            ),
                   ),
                 );
               }),
@@ -867,9 +1187,24 @@ class _AddReviewDialogState extends State<_AddReviewDialog> {
               ),
               child: Column(
                 children: [
-                  _subRatingRow('Temizlik', '🧹', _cleanliness, (v) => _cleanliness = v),
-                  _subRatingRow('İletişim', '💬', _communication, (v) => _communication = v),
-                  _subRatingRow('Fiyat/Performans', '💰', _value, (v) => _value = v),
+                  _subRatingRow(
+                    'Temizlik',
+                    '🧹',
+                    _cleanliness,
+                    (v) => _cleanliness = v,
+                  ),
+                  _subRatingRow(
+                    'İletişim',
+                    '💬',
+                    _communication,
+                    (v) => _communication = v,
+                  ),
+                  _subRatingRow(
+                    'Fiyat/Performans',
+                    '💰',
+                    _value,
+                    (v) => _value = v,
+                  ),
                 ],
               ),
             ),
@@ -882,7 +1217,10 @@ class _AddReviewDialogState extends State<_AddReviewDialog> {
                 alignLabelWithHint: true,
                 filled: true,
                 fillColor: const Color(0xFFF4FAF6),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
           ],
@@ -896,14 +1234,18 @@ class _AddReviewDialogState extends State<_AddReviewDialog> {
         FilledButton(
           onPressed: () => Navigator.pop(context, {
             'rating': _rating,
-            'comment': _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
+            'comment': _commentCtrl.text.trim().isEmpty
+                ? null
+                : _commentCtrl.text.trim(),
             'subRatings': {
               'cleanliness': _cleanliness,
               'communication': _communication,
               'value': _value,
             },
           }),
-          style: FilledButton.styleFrom(backgroundColor: const Color(0xFF2D6A4F)),
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFF2D6A4F),
+          ),
           child: Text(l10n.send),
         ),
       ],
@@ -924,6 +1266,7 @@ class _MessageVetButtonState extends ConsumerState<_MessageVetButton> {
   bool _loading = false;
 
   Future<void> _startConversation() async {
+    final l10n = AppLocalizations.of(context)!;
     // Auth gate
     final currentUser = ref.read(authProvider);
     if (currentUser == null) {
@@ -931,14 +1274,25 @@ class _MessageVetButtonState extends ConsumerState<_MessageVetButton> {
         showDialog(
           context: context,
           builder: (_) => AlertDialog(
-            title: const Text('Giriş Gerekli'),
-            content: const Text('Veterinerle iletişime geçmek için giriş yapmalısınız.'),
+            title: Text(l10n.vetDetailLoginRequiredTitle),
+            content: Text(l10n.vetDetailMessageLoginRequired),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Vazgeç')),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.cancel),
+              ),
               FilledButton(
-                onPressed: () { Navigator.pop(context); context.pushNamed('login'); },
-                style: FilledButton.styleFrom(backgroundColor: const Color(0xFF2D6A4F)),
-                child: const Text('Giriş Yap'),
+                onPressed: () {
+                  Navigator.pop(context);
+                  final from = Uri.encodeComponent(
+                    '/veterinary/detail/${widget.vet.id}',
+                  );
+                  context.push('/login?from=$from');
+                },
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF2D6A4F),
+                ),
+                child: Text(l10n.login),
               ),
             ],
           ),
@@ -956,15 +1310,19 @@ class _MessageVetButtonState extends ConsumerState<_MessageVetButton> {
           pathParameters: {'conversationId': conversationId},
           extra: {
             'name': widget.vet.name,
-            'avatar': widget.vet.photos.isNotEmpty ? widget.vet.photos.first : null,
+            'avatar': widget.vet.photos.isNotEmpty
+                ? widget.vet.photos.first
+                : null,
           },
         );
       }
     } catch (e) {
       if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('${l10n.error}: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -978,7 +1336,11 @@ class _MessageVetButtonState extends ConsumerState<_MessageVetButton> {
     return OutlinedButton.icon(
       onPressed: _loading ? null : _startConversation,
       icon: _loading
-          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
           : const Icon(Icons.message_outlined, size: 18),
       label: Text(l10n.vetSendMessage),
       style: OutlinedButton.styleFrom(
@@ -1018,18 +1380,23 @@ class _ClaimVetButtonState extends ConsumerState<_ClaimVetButton> {
       final repo = ref.read(veterinaryRepositoryProvider);
       await repo.claimVetProfile(widget.vet.id, claimData: result);
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Talebiniz alındı. Admin onayı sonrası profilinize atanacak.'),
-            backgroundColor: Color(0xFF2D6A4F),
-            duration: Duration(seconds: 4),
+          SnackBar(
+            content: Text(l10n.vetClaimRequestSubmitted),
+            backgroundColor: const Color(0xFF2D6A4F),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('${l10n.error}: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -1039,14 +1406,19 @@ class _ClaimVetButtonState extends ConsumerState<_ClaimVetButton> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       width: double.infinity,
       child: TextButton.icon(
         onPressed: _loading ? null : _claim,
         icon: _loading
-            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
             : const Icon(Icons.verified_outlined, size: 16),
-        label: const Text('Bu Kliniği Sahiplen', style: TextStyle(fontSize: 12)),
+        label: Text(l10n.vetClaimProfile, style: const TextStyle(fontSize: 12)),
         style: TextButton.styleFrom(foregroundColor: const Color(0xFF40916C)),
       ),
     );
@@ -1066,9 +1438,9 @@ class _ClaimFormSheetState extends State<_ClaimFormSheet> {
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _noteCtrl = TextEditingController();
-  String _role = 'Veteriner';
+  String _role = 'vet';
 
-  static const _roles = ['Veteriner', 'Klinik Sahibi', 'Çalışan', 'Diğer'];
+  static const _roles = ['vet', 'owner', 'staff', 'other'];
 
   @override
   void dispose() {
@@ -1079,19 +1451,23 @@ class _ClaimFormSheetState extends State<_ClaimFormSheet> {
   }
 
   void _submit() {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
     Navigator.pop(context, {
       'fullName': _nameCtrl.text.trim(),
       'phone': _phoneCtrl.text.trim(),
-      'role': _role,
+      'role': _roleLabel(l10n, _role),
       'note': _noteCtrl.text.trim(),
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -1106,41 +1482,73 @@ class _ClaimFormSheetState extends State<_ClaimFormSheet> {
             children: [
               Center(
                 child: Container(
-                  width: 40, height: 4,
-                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
-              const Text('Klinik Sahiplenme Talebi',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1B4332))),
+              Text(
+                l10n.vetClaimRequestTitle,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1B4332),
+                ),
+              ),
               const SizedBox(height: 4),
-              const Text('Bilgileriniz admin tarafından doğrulanacak ve onay sonrası klinik profilinize atanacak.',
-                  style: TextStyle(fontSize: 12, color: Colors.grey)),
+              Text(
+                l10n.vetClaimRequestDesc,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
               const SizedBox(height: 20),
               TextFormField(
                 controller: _nameCtrl,
-                decoration: _inputDecor('Ad Soyad', Icons.person_outline),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Ad soyad gerekli' : null,
+                decoration: _inputDecor(
+                  l10n.vetClaimFullName,
+                  Icons.person_outline,
+                ),
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? l10n.vetClaimFullNameRequired
+                    : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _phoneCtrl,
                 keyboardType: TextInputType.phone,
-                decoration: _inputDecor('Telefon Numarası', Icons.phone_outlined),
-                validator: (v) => (v == null || v.trim().length < 10) ? 'Geçerli telefon girin' : null,
+                decoration: _inputDecor(
+                  l10n.vetClaimPhone,
+                  Icons.phone_outlined,
+                ),
+                validator: (v) => (v == null || v.trim().length < 10)
+                    ? l10n.vetClaimPhoneInvalid
+                    : null,
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 value: _role,
-                decoration: _inputDecor('Klinikteki Rolünüz', Icons.work_outline),
-                items: _roles.map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
+                decoration: _inputDecor(l10n.vetClaimRole, Icons.work_outline),
+                items: _roles
+                    .map(
+                      (r) => DropdownMenuItem(
+                        value: r,
+                        child: Text(_roleLabel(l10n, r)),
+                      ),
+                    )
+                    .toList(),
                 onChanged: (v) => setState(() => _role = v ?? _role),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _noteCtrl,
                 maxLines: 2,
-                decoration: _inputDecor('Ek Açıklama (opsiyonel)', Icons.notes_outlined),
+                decoration: _inputDecor(
+                  l10n.vetClaimNote,
+                  Icons.notes_outlined,
+                ),
               ),
               const SizedBox(height: 20),
               SizedBox(
@@ -1150,9 +1558,14 @@ class _ClaimFormSheetState extends State<_ClaimFormSheet> {
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF2D6A4F),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                  child: const Text('Talebi Gönder', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(
+                    l10n.vetClaimSubmit,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
@@ -1163,13 +1576,29 @@ class _ClaimFormSheetState extends State<_ClaimFormSheet> {
   }
 
   InputDecoration _inputDecor(String label, IconData icon) => InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, size: 20, color: const Color(0xFF40916C)),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD8F3DC))),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD8F3DC))),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2D6A4F), width: 1.5)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      );
+    labelText: label,
+    prefixIcon: Icon(icon, size: 20, color: const Color(0xFF40916C)),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: Color(0xFFD8F3DC)),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: Color(0xFFD8F3DC)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: Color(0xFF2D6A4F), width: 1.5),
+    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  );
+
+  String _roleLabel(AppLocalizations l10n, String role) => switch (role) {
+    'vet' => l10n.vetClaimRoleVet,
+    'owner' => l10n.vetClaimRoleOwner,
+    'staff' => l10n.vetClaimRoleStaff,
+    _ => l10n.vetClaimRoleOther,
+  };
 }
 
 class _SubRatingChip extends StatelessWidget {
@@ -1177,7 +1606,11 @@ class _SubRatingChip extends StatelessWidget {
   final Color color;
   final Color textColor;
 
-  const _SubRatingChip({required this.label, required this.color, required this.textColor});
+  const _SubRatingChip({
+    required this.label,
+    required this.color,
+    required this.textColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1187,7 +1620,14 @@ class _SubRatingChip extends StatelessWidget {
         color: color,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textColor)),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: textColor,
+        ),
+      ),
     );
   }
 }

@@ -87,7 +87,10 @@ class _VetHomeScreenState extends ConsumerState<VetHomeScreen>
               icon: const Icon(Icons.vaccines),
               text: AppLocalizations.of(context)!.vetHomeTabVaccine,
             ),
-            const Tab(icon: Icon(Icons.local_hospital_rounded), text: 'Klinik'),
+            Tab(
+              icon: const Icon(Icons.local_hospital_rounded),
+              text: AppLocalizations.of(context)!.vetHomeTabClinic,
+            ),
           ],
         ),
       ),
@@ -144,7 +147,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
       );
       final repo = ref.read(veterinaryRepositoryProvider);
       final isGuest = ref.read(authProvider) == null;
-      // Guest modda public endpoint kullan; giriş yapılmışsa Google Places ile upsert et
+      // Guest modda public endpoint kullan; giriÅŸ yapÄ±lmÄ±ÅŸsa Google Places ile upsert et
       final vets = isGuest
           ? await repo.searchVets(
               lat: pos.latitude,
@@ -188,7 +191,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
       ),
       _QuickActionData(
         icon: Icons.assignment_ind_outlined,
-        label: 'Talep Durumum',
+        label: l10n.vetHomeClaimStatus,
         onTap: () => context.pushNamed('vet-claim-status'),
       ),
       _QuickActionData(
@@ -199,7 +202,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
       ),
       _QuickActionData(
         icon: Icons.dashboard_customize_outlined,
-        label: 'Klinik Panelim',
+        label: l10n.clinicPanelTitle,
         onTap: () => context.pushNamed('vet-clinic-panel'),
       ),
       _QuickActionData(
@@ -209,7 +212,7 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
       ),
       _QuickActionData(
         icon: Icons.payments_outlined,
-        label: 'Kazanc Raporu',
+        label: l10n.vetEarningsTitle,
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(builder: (_) => const VetEarningsScreen()),
         ),
@@ -461,7 +464,7 @@ class _AppointmentsTabState extends ConsumerState<_AppointmentsTab> {
         ),
       ),
       data: (appointments) {
-        // Günlere göre grupla
+        // GÃ¼nlere gÃ¶re grupla
         final Map<DateTime, List<dynamic>> eventMap = {};
         for (final apt in appointments) {
           final day = _normalizeDay(apt.date);
@@ -490,14 +493,16 @@ class _AppointmentsTabState extends ConsumerState<_AppointmentsTab> {
                       _normalizeDay(day) == _normalizeDay(_selectedDay!),
                   eventLoader: getEventsForDay,
                   calendarFormat: CalendarFormat.month,
-                  availableCalendarFormats: const {CalendarFormat.month: 'Ay'},
-                  locale: 'tr_TR',
+                  availableCalendarFormats: {
+                    CalendarFormat.month: l10n.bookingsCalendarMonth,
+                  },
+                  locale: Localizations.localeOf(context).toString(),
                   onDaySelected: (selected, focused) {
                     setState(() {
                       _selectedDay =
                           _normalizeDay(selected) ==
                               _normalizeDay(_selectedDay ?? DateTime(0))
-                          ? null // ikinci tıklayınca seçimi kaldır
+                          ? null // ikinci tÄ±klayÄ±nca seÃ§imi kaldÄ±r
                           : selected;
                       _focusedDay = focused;
                     });
@@ -543,7 +548,12 @@ class _AppointmentsTabState extends ConsumerState<_AppointmentsTab> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          '${_selectedDay!.day}.${_selectedDay!.month}.${_selectedDay!.year} — ${visibleAppointments.length} randevu',
+                          l10n.vetHomeSelectedAppointments(
+                            MaterialLocalizations.of(
+                              context,
+                            ).formatShortDate(_selectedDay!),
+                            visibleAppointments.length,
+                          ),
                           style: const TextStyle(
                             fontSize: 13,
                             color: Color(0xFF2D6A4F),
@@ -553,9 +563,12 @@ class _AppointmentsTabState extends ConsumerState<_AppointmentsTab> {
                         const Spacer(),
                         GestureDetector(
                           onTap: () => setState(() => _selectedDay = null),
-                          child: const Text(
-                            'Tümünü Göster',
-                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          child: Text(
+                            l10n.vetHomeShowAll,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
                           ),
                         ),
                       ],
@@ -567,7 +580,7 @@ class _AppointmentsTabState extends ConsumerState<_AppointmentsTab> {
                   child: AnimatedEmptyState(
                     icon: Icons.calendar_today,
                     title: _selectedDay != null
-                        ? 'Bu günde randevu yok'
+                        ? l10n.vetHomeSelectedDayEmpty
                         : l10n.vetHomeApptsEmpty,
                     subtitle: _selectedDay == null
                         ? l10n.vetHomeApptsEmptyDesc
@@ -702,7 +715,9 @@ class _VaccinationTab extends ConsumerWidget {
                                         ),
                                         if (r.nextDueDate != null)
                                           Text(
-                                            '${r.nextDueDate!.day}.${r.nextDueDate!.month}.${r.nextDueDate!.year}',
+                                            MaterialLocalizations.of(
+                                              context,
+                                            ).formatShortDate(r.nextDueDate!),
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodySmall
@@ -752,6 +767,8 @@ class _GuestLockedTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -759,7 +776,7 @@ class _GuestLockedTab extends StatelessWidget {
           const Icon(Icons.lock_outline, size: 56, color: Colors.grey),
           const SizedBox(height: 16),
           Text(
-            'Bu özellik için giriş yapmalısın',
+            l10n.vetHomeLoginRequired,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(color: Colors.grey[700]),
@@ -768,7 +785,7 @@ class _GuestLockedTab extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: () => context.pushNamed('login'),
             icon: const Icon(Icons.login, size: 18),
-            label: const Text('Giriş Yap'),
+            label: Text(l10n.login),
           ),
         ],
       ),
@@ -776,7 +793,7 @@ class _GuestLockedTab extends StatelessWidget {
   }
 }
 
-// ─── Vet Schedule Tab (Klinik sahibi için) ───────────────────────
+// â”€â”€â”€ Vet Schedule Tab (Klinik sahibi iÃ§in) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _VetScheduleTab extends ConsumerStatefulWidget {
   @override
@@ -830,36 +847,41 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
     String newStatus, {
     String? vetNotes,
   }) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final repo = ref.read(appointmentRepositoryProvider);
       await repo.updateStatus(apt.id, newStatus);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_statusLabel(newStatus) + ' olarak güncellendi'),
+            content: Text(
+              l10n.vetHomeStatusUpdated(_statusLabel(l10n, newStatus)),
+            ),
           ),
         );
         _load();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Güncelleme hatası: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.vetHomeUpdateError(e.toString()))),
+        );
       }
     }
   }
 
-  String _statusLabel(String s) {
+  String _statusLabel(AppLocalizations l10n, String s) {
     switch (s) {
+      case 'pending':
+        return l10n.apptStatusPending;
       case 'confirmed':
-        return 'Onaylandı';
+        return l10n.apptStatusConfirmed;
       case 'cancelled':
-        return 'İptal edildi';
+        return l10n.apptStatusCancelled;
       case 'completed':
-        return 'Tamamlandı';
+        return l10n.apptStatusCompleted;
       case 'no_show':
-        return 'Gelmedi';
+        return l10n.apptStatusNoShow;
       default:
         return s;
     }
@@ -882,10 +904,12 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (_loading) return const Center(child: PawLoading());
 
     if (_error != null) {
-      // Klinik bulunamadı durumu
+      // Klinik bulunamadÄ± durumu
       final noClinic =
           _error!.contains('404') ||
           _error!.toLowerCase().contains('bulunamadi');
@@ -902,7 +926,9 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
               ),
               const SizedBox(height: 16),
               Text(
-                noClinic ? 'Kayıtlı kliniğiniz yok' : 'Randevular yüklenemedi',
+                noClinic
+                    ? l10n.vetHomeNoRegisteredClinic
+                    : l10n.vetHomeScheduleLoadFailed,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: Colors.grey.shade600,
@@ -911,9 +937,7 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
               ),
               const SizedBox(height: 8),
               Text(
-                noClinic
-                    ? 'Veteriner olarak klinik kaydı yapın veya\nbir kliniği sahiplenin.'
-                    : _error!,
+                noClinic ? l10n.vetHomeNoClinicDesc : _error!,
                 style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
                 textAlign: TextAlign.center,
               ),
@@ -922,7 +946,7 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                 ElevatedButton.icon(
                   onPressed: () => context.pushNamed('vet-register'),
                   icon: const Icon(Icons.add_business, size: 18),
-                  label: const Text('Klinik Kaydet'),
+                  label: Text(l10n.vetHomeSaveClinic),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2D6A4F),
                     foregroundColor: Colors.white,
@@ -935,7 +959,7 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                 ElevatedButton.icon(
                   onPressed: _load,
                   icon: const Icon(Icons.refresh),
-                  label: const Text('Tekrar Dene'),
+                  label: Text(l10n.retry),
                 ),
             ],
           ),
@@ -943,7 +967,7 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
       );
     }
 
-    // Takvim için event map
+    // Takvim iÃ§in event map
     final Map<DateTime, List<AppointmentModel>> eventMap = {};
     for (final apt in _appointments) {
       final day = _normalizeDay(apt.date);
@@ -957,7 +981,7 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
         ? getEvents(_selectedDay!)
         : List<AppointmentModel>.from(_appointments);
 
-    // Durum bazlı filtre
+    // Durum bazlÄ± filtre
     final filtered = _statusFilter == null
         ? visible
         : visible.where((a) => a.status == _statusFilter).toList();
@@ -966,7 +990,7 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
       onRefresh: _load,
       child: CustomScrollView(
         slivers: [
-          // Klinik başlığı + filtreler
+          // Klinik baÅŸlÄ±ÄŸÄ± + filtreler
           SliverToBoxAdapter(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -993,7 +1017,7 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                           ),
                         ),
                         Text(
-                          '${_appointments.length} randevu',
+                          l10n.vetHomeAppointmentCount(_appointments.length),
                           style: TextStyle(
                             color: Colors.grey.shade500,
                             fontSize: 12,
@@ -1008,15 +1032,15 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
                   child: Row(
                     children: [
-                      _filterChip(null, 'Tümü'),
+                      _filterChip(null, l10n.vetHomeFilterAll),
                       const SizedBox(width: 8),
-                      _filterChip('pending', 'Bekleyen'),
+                      _filterChip('pending', l10n.apptStatusPending),
                       const SizedBox(width: 8),
-                      _filterChip('confirmed', 'Onaylı'),
+                      _filterChip('confirmed', l10n.apptStatusConfirmed),
                       const SizedBox(width: 8),
-                      _filterChip('completed', 'Tamamlandı'),
+                      _filterChip('completed', l10n.apptStatusCompleted),
                       const SizedBox(width: 8),
-                      _filterChip('cancelled', 'İptal'),
+                      _filterChip('cancelled', l10n.apptStatusCancelled),
                     ],
                   ),
                 ),
@@ -1030,11 +1054,11 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                       _normalizeDay(day) == _normalizeDay(_selectedDay!),
                   eventLoader: getEvents,
                   calendarFormat: CalendarFormat.twoWeeks,
-                  availableCalendarFormats: const {
-                    CalendarFormat.twoWeeks: '2 Hafta',
-                    CalendarFormat.month: 'Ay',
+                  availableCalendarFormats: {
+                    CalendarFormat.twoWeeks: l10n.vetHomeCalendarTwoWeeks,
+                    CalendarFormat.month: l10n.bookingsCalendarMonth,
                   },
-                  locale: 'tr_TR',
+                  locale: Localizations.localeOf(context).toString(),
                   onDaySelected: (selected, focused) {
                     setState(() {
                       _selectedDay =
@@ -1082,7 +1106,12 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '${_selectedDay!.day}.${_selectedDay!.month}.${_selectedDay!.year} — ${getEvents(_selectedDay!).length} randevu',
+                          l10n.vetHomeSelectedAppointments(
+                            MaterialLocalizations.of(
+                              context,
+                            ).formatShortDate(_selectedDay!),
+                            getEvents(_selectedDay!).length,
+                          ),
                           style: const TextStyle(
                             fontSize: 12,
                             color: Color(0xFF2D6A4F),
@@ -1093,7 +1122,7 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                         GestureDetector(
                           onTap: () => setState(() => _selectedDay = null),
                           child: Text(
-                            'Tümü',
+                            l10n.vetHomeFilterAll,
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade500,
@@ -1113,10 +1142,10 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
               child: AnimatedEmptyState(
                 icon: Icons.event_available,
                 title: _statusFilter != null
-                    ? 'Bu durumda randevu yok'
+                    ? l10n.vetHomeNoStatusAppointments
                     : _selectedDay != null
-                    ? 'Bu günde randevu yok'
-                    : 'Henüz randevu alınmamış',
+                    ? l10n.vetHomeSelectedDayEmpty
+                    : l10n.vetHomeNoAppointmentsReceived,
               ),
             )
           else
@@ -1163,6 +1192,7 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
   }
 
   Widget _buildAppointmentCard(AppointmentModel apt, int index) {
+    final l10n = AppLocalizations.of(context)!;
     final statusColor = _statusColor(apt.status);
     final isPending = apt.status == 'pending';
     final isConfirmed = apt.status == 'confirmed';
@@ -1173,7 +1203,7 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Üst satır: saat + durum badge
+              // Ãœst satÄ±r: saat + durum badge
               Row(
                 children: [
                   Container(
@@ -1221,7 +1251,7 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      _statusLabel(apt.status),
+                      _statusLabel(l10n, apt.status),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -1246,14 +1276,14 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                     child: Text(
                       apt.pet?.name != null
                           ? '${apt.pet!.name} (${apt.pet!.species})'
-                          : 'Hayvan bilgisi yok',
+                          : l10n.vetHomePetInfoMissing,
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
                     ),
                   ),
-                  // Randevu türü
+                  // Randevu tÃ¼rÃ¼
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -1266,7 +1296,9 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        apt.type == 'online' ? 'Online' : 'Klinikte',
+                        apt.type == 'online'
+                            ? l10n.apptTypeOnline
+                            : l10n.vetHomeClinicVisit,
                         style: TextStyle(
                           fontSize: 11,
                           color: Colors.grey.shade500,
@@ -1302,7 +1334,7 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                 ),
               ],
 
-              // Aksiyon butonları
+              // Aksiyon butonlarÄ±
               if (isPending || isConfirmed) ...[
                 const SizedBox(height: 10),
                 const Divider(height: 1),
@@ -1314,9 +1346,9 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                         child: OutlinedButton.icon(
                           onPressed: () => _updateStatus(apt, 'cancelled'),
                           icon: const Icon(Icons.close, size: 16),
-                          label: const Text(
-                            'Reddet',
-                            style: TextStyle(fontSize: 13),
+                          label: Text(
+                            l10n.apptRejectAction,
+                            style: const TextStyle(fontSize: 13),
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.red,
@@ -1333,9 +1365,9 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                         child: ElevatedButton.icon(
                           onPressed: () => _updateStatus(apt, 'confirmed'),
                           icon: const Icon(Icons.check, size: 16),
-                          label: const Text(
-                            'Onayla',
-                            style: TextStyle(fontSize: 13),
+                          label: Text(
+                            l10n.apptApproveAction,
+                            style: const TextStyle(fontSize: 13),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2D6A4F),
@@ -1353,9 +1385,9 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                         child: OutlinedButton.icon(
                           onPressed: () => _updateStatus(apt, 'no_show'),
                           icon: const Icon(Icons.person_off_outlined, size: 16),
-                          label: const Text(
-                            'Gelmedi',
-                            style: TextStyle(fontSize: 13),
+                          label: Text(
+                            l10n.apptNoShowAction,
+                            style: const TextStyle(fontSize: 13),
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.grey,
@@ -1372,9 +1404,9 @@ class _VetScheduleTabState extends ConsumerState<_VetScheduleTab> {
                         child: ElevatedButton.icon(
                           onPressed: () => _updateStatus(apt, 'completed'),
                           icon: const Icon(Icons.task_alt, size: 16),
-                          label: const Text(
-                            'Tamamlandı',
-                            style: TextStyle(fontSize: 13),
+                          label: Text(
+                            l10n.apptCompleteAction,
+                            style: const TextStyle(fontSize: 13),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,

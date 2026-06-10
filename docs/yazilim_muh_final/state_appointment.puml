@@ -1,0 +1,9 @@
+@startuml
+[*] --> Beklemede
+Beklemede --> Onaylandi : veteriner onaylar
+Beklemede --> Iptal : kullanici/veteriner iptal eder
+Onaylandi --> Tamamlandi : randevu gerceklesir
+Onaylandi --> Iptal : iptal edilir
+Tamamlandi --> [*]
+Iptal --> [*]
+@enduml

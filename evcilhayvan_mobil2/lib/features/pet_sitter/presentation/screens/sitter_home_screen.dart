@@ -170,7 +170,7 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
           foregroundColor: Colors.white,
           elevation: 0,
           icon: const Icon(Icons.add),
-          label: const Text('İlan Aç'),
+          label: Text(l10n.sitterOpenRequest),
         ),
       );
     }
@@ -207,6 +207,7 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
 
   // Kendi bakıcı profil kartı — verified olsun olmasın göster
   Widget _buildMyProfileCard(BuildContext context, PetSitterModel sitter) {
+    final l10n = AppLocalizations.of(context)!;
     final isVerified = sitter.isVerified;
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
@@ -255,7 +256,7 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Bakıcı Profilim',
+                  l10n.sitterMyProfile,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
@@ -283,7 +284,9 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              isVerified ? '✓ Aktif' : '⏳ Onay Bekleniyor',
+              isVerified
+                  ? l10n.sitterProfileActiveShort
+                  : l10n.sitterProfilePendingShort,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -484,19 +487,19 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
           if (user != null && _tabController.index == 1)
             IconButton(
               icon: const Icon(Icons.list_alt),
-              tooltip: 'Kendi İlanlarım',
+              tooltip: l10n.sitterMyRequests,
               onPressed: () => _showMyRequests(context),
             ),
           if (user != null && hasSitterProfile)
             IconButton(
               icon: const Icon(Icons.collections_bookmark_outlined),
-              tooltip: 'Portfolio Yonetimi',
+              tooltip: l10n.sitterDashboardPortfolio,
               onPressed: () => context.pushNamed('sitter-portfolio'),
             ),
           if (user != null && hasSitterProfile)
             IconButton(
               icon: const Icon(Icons.dashboard_customize_outlined),
-              tooltip: 'Bakici Dashboard',
+              tooltip: l10n.sitterDashboardTitle,
               onPressed: () => context.pushNamed('sitter-dashboard'),
             ),
           if (user != null)
@@ -516,9 +519,9 @@ class _SitterHomeScreenState extends ConsumerState<SitterHomeScreen>
             fontWeight: FontWeight.w700,
             fontSize: 13,
           ),
-          tabs: const [
-            Tab(text: 'Bakıcılar'),
-            Tab(text: 'Bakıcı Aranıyor'),
+          tabs: [
+            Tab(text: l10n.sitterTabSitters),
+            Tab(text: l10n.sitterTabRequests),
           ],
         ),
       ),
@@ -595,18 +598,18 @@ class _SitterRequestsTabContentState
     }
   }
 
-  String _serviceLabel(String? type) {
+  String _serviceLabel(AppLocalizations l10n, String? type) {
     switch (type) {
       case 'walking':
-        return 'Yürüyüş';
+        return l10n.sitterServiceWalkingLabel;
       case 'home_sitting':
-        return 'Ev Bakımı';
+        return l10n.sitterServiceHomeSittingLabel;
       case 'boarding':
-        return 'Pansiyon';
+        return l10n.sitterServiceBoardingLabel;
       case 'daycare':
-        return 'Günlük Bakım';
+        return l10n.sitterServiceDaycareLabel;
       case 'grooming':
-        return 'Tımar';
+        return l10n.sitterServiceGroomingLabel;
       default:
         return type ?? '';
     }
@@ -614,6 +617,7 @@ class _SitterRequestsTabContentState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_loading) return const Center(child: PawLoading());
     if (_error != null) return ErrorView(message: _error!, onRetry: _load);
     if (_requests == null || _requests!.isEmpty) {
@@ -621,21 +625,25 @@ class _SitterRequestsTabContentState
         onRefresh: _load,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          children: const [
-            SizedBox(height: 80),
+          children: [
+            const SizedBox(height: 80),
             Center(
               child: Column(
                 children: [
-                  Icon(Icons.search_off_rounded, size: 64, color: Colors.grey),
-                  SizedBox(height: 12),
-                  Text(
-                    'Henüz bakıcı ilanı yok',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                  const Icon(
+                    Icons.search_off_rounded,
+                    size: 64,
+                    color: Colors.grey,
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 12),
                   Text(
-                    'Birisi bakıcı aradığında burada görünecek',
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                    l10n.sitterRequestsEmptyTitle,
+                    style: const TextStyle(color: Colors.grey, fontSize: 16),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.sitterRequestsEmptySubtitle,
+                    style: const TextStyle(color: Colors.grey, fontSize: 13),
                   ),
                 ],
               ),
@@ -693,7 +701,7 @@ class _SitterRequestsTabContentState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  owner?['name'] ?? 'Kullanıcı',
+                                  owner?['name'] ?? l10n.userProfileDefaultName,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -719,7 +727,7 @@ class _SitterRequestsTabContentState
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              _serviceLabel(serviceType),
+                              _serviceLabel(l10n, serviceType),
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
@@ -775,19 +783,25 @@ class _SitterRequestsTabContentState
                                 'chat',
                                 pathParameters: {'conversationId': convId},
                                 extra: {
-                                  'name': owner?['name'] ?? 'Kullanıcı',
+                                  'name':
+                                      owner?['name'] ??
+                                      l10n.userProfileDefaultName,
                                   'avatar': owner?['avatarUrl'],
                                 },
                               );
                             } catch (e) {
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Hata: $e')),
+                                SnackBar(
+                                  content: Text(
+                                    l10n.sitterSubmitErr(e.toString()),
+                                  ),
+                                ),
                               );
                             }
                           },
                           icon: const Icon(Icons.message_outlined, size: 18),
-                          label: const Text('İletişime Geç'),
+                          label: Text(l10n.sitterContactOwner),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2D6A4F),
                             foregroundColor: Colors.white,
@@ -847,18 +861,18 @@ class _MyRequestsSheetState extends State<_MyRequestsSheet> {
     }
   }
 
-  String _serviceLabel(String? type) {
+  String _serviceLabel(AppLocalizations l10n, String? type) {
     switch (type) {
       case 'walking':
-        return 'Yürüyüş';
+        return l10n.sitterServiceWalkingLabel;
       case 'home_sitting':
-        return 'Ev Bakımı';
+        return l10n.sitterServiceHomeSittingLabel;
       case 'boarding':
-        return 'Pansiyon';
+        return l10n.sitterServiceBoardingLabel;
       case 'daycare':
-        return 'Günlük Bakım';
+        return l10n.sitterServiceDaycareLabel;
       case 'grooming':
-        return 'Tımar';
+        return l10n.sitterServiceGroomingLabel;
       default:
         return type ?? '';
     }
@@ -880,6 +894,7 @@ class _MyRequestsSheetState extends State<_MyRequestsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
       minChildSize: 0.3,
@@ -902,15 +917,18 @@ class _MyRequestsSheetState extends State<_MyRequestsSheet> {
               ),
             ),
             const SizedBox(height: 16),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  Icon(Icons.list_alt, color: Color(0xFF2D6A4F)),
-                  SizedBox(width: 8),
+                  const Icon(Icons.list_alt, color: Color(0xFF2D6A4F)),
+                  const SizedBox(width: 8),
                   Text(
-                    'Kendi İlanlarım',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
+                    l10n.sitterMyRequests,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 17,
+                    ),
                   ),
                 ],
               ),
@@ -920,10 +938,10 @@ class _MyRequestsSheetState extends State<_MyRequestsSheet> {
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _requests == null || _requests!.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text(
-                        'Henüz ilan açmadınız',
-                        style: TextStyle(color: Colors.grey),
+                        l10n.sitterNoOwnRequests,
+                        style: const TextStyle(color: Colors.grey),
                       ),
                     )
                   : ListView.builder(
@@ -961,6 +979,7 @@ class _MyRequestsSheetState extends State<_MyRequestsSheet> {
                                     children: [
                                       Text(
                                         _serviceLabel(
+                                          l10n,
                                           req['serviceType'] as String?,
                                         ),
                                         style: const TextStyle(
@@ -993,7 +1012,9 @@ class _MyRequestsSheetState extends State<_MyRequestsSheet> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
-                                    isOpen ? 'Aktif' : 'Kapalı',
+                                    isOpen
+                                        ? l10n.sitterDashboardAvailabilityOpen
+                                        : l10n.sitterDashboardAvailabilityClosed,
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,
@@ -1013,7 +1034,9 @@ class _MyRequestsSheetState extends State<_MyRequestsSheet> {
                                         ? Colors.orange
                                         : const Color(0xFF2D6A4F),
                                   ),
-                                  tooltip: isOpen ? 'İlanı Kapat' : 'İlanı Aç',
+                                  tooltip: isOpen
+                                      ? l10n.sitterRequestClose
+                                      : l10n.sitterRequestOpen,
                                   onPressed: () =>
                                       isOpen ? _close(id) : _open(id),
                                 ),

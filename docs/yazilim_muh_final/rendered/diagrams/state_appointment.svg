@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1050" height="420" viewBox="0 0 1050 420">
+  <defs><style>.s{fill:#e0f2fe;stroke:#0369a1;stroke-width:2}.end{fill:#111827}.txt{font:17px Arial,sans-serif;fill:#0f172a}.line{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#a)}.lab{font:13px Arial,sans-serif;fill:#475569}</style><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#334155"/></marker></defs>
+  <text class="txt" x="525" y="35" text-anchor="middle" style="font-size:24px">Randevu Durum Diyagrami</text>
+  <circle class="end" cx="60" cy="200" r="12"/>
+  <rect class="s" x="120" y="165" width="145" height="70" rx="30"/><text class="txt" x="192" y="206" text-anchor="middle">Beklemede</text>
+  <rect class="s" x="330" y="165" width="145" height="70" rx="30"/><text class="txt" x="402" y="206" text-anchor="middle">Onaylandi</text>
+  <rect class="s" x="540" y="165" width="145" height="70" rx="30"/><text class="txt" x="612" y="206" text-anchor="middle">Tamamlandi</text>
+  <rect class="s" x="330" y="300" width="145" height="70" rx="30"/><text class="txt" x="402" y="341" text-anchor="middle">Iptal</text>
+  <circle class="end" cx="740" cy="200" r="15"/><circle cx="740" cy="200" r="22" fill="none" stroke="#111827" stroke-width="2"/>
+  <circle class="end" cx="540" cy="335" r="15"/><circle cx="540" cy="335" r="22" fill="none" stroke="#111827" stroke-width="2"/>
+  <path class="line" d="M72 200 L120 200"/><path class="line" d="M265 200 L330 200"/><path class="line" d="M475 200 L540 200"/><path class="line" d="M685 200 L718 200"/>
+  <path class="line" d="M192 235 C220 300 280 335 330 335"/><path class="line" d="M402 235 L402 300"/><path class="line" d="M475 335 L518 335"/>
+  <text class="lab" x="283" y="190">onay</text><text class="lab" x="488" y="190">gerceklesir</text><text class="lab" x="245" y="315">iptal</text>
+</svg>

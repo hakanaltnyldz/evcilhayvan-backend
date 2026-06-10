@@ -1,0 +1,22 @@
+@startuml
+actor Satici
+actor Musteri
+participant "Satici Paneli" as SellerPanel
+participant "Mobil Uygulama" as Mobile
+participant "API Sunucusu" as API
+database "MongoDB" as DB
+participant "Bildirim Servisi" as Notify
+
+Satici -> SellerPanel : Siparis detayini acar
+SellerPanel -> API : GET /orders/{id}
+API -> DB : Siparis ve kalemleri oku
+DB --> API : Siparis detayi
+API --> SellerPanel : Siparis detayi
+Satici -> SellerPanel : Durumu kargoya verildi yapar
+SellerPanel -> API : PATCH /orders/{id}/status
+API -> DB : Durum ve takip kodu guncelle
+API -> Notify : Musteriye bildirim gonder
+Notify -> Mobile : Push bildirim
+Mobile -> Musteri : Siparis durumu gosterilir
+API --> SellerPanel : Guncelleme basarili
+@enduml

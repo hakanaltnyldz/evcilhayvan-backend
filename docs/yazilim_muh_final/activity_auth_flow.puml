@@ -1,0 +1,22 @@
+@startuml
+start
+:Uygulama acilir;
+if (Kullanici oturumu var mi?) then (Evet)
+  :Token dogrulanir;
+  if (Token gecerli mi?) then (Evet)
+    :Ana sayfaya yonlendir;
+  else (Hayir)
+    :Giris ekranini ac;
+  endif
+else (Hayir)
+  :Giris / Kayit secimi goster;
+endif
+:E-posta ve sifre alinir;
+if (Bilgiler gecerli mi?) then (Evet)
+  :Rol bilgisi okunur;
+  :Mobil/Admin/Satici arayuzune yonlendir;
+else (Hayir)
+  :Hata mesaji goster;
+endif
+stop
+@enduml

@@ -1,0 +1,46 @@
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+
+actor Kullanici
+actor Admin
+actor Satici
+actor Veteriner
+actor Bakici
+
+rectangle "1. Kimlik ve Yetki Yonetimi" as P1
+rectangle "2. Pet ve Ilan Yonetimi" as P2
+rectangle "3. Hizmet Yonetimi\nVeteriner / Bakici" as P3
+rectangle "4. Ticaret Yonetimi\nMagaza / Siparis" as P4
+rectangle "5. Mesaj ve Bildirim" as P5
+rectangle "6. Admin ve Moderasyon" as P6
+
+database "D1 Kullanici Verisi" as D1
+database "D2 Pet/Ilan Verisi" as D2
+database "D3 Hizmet Verisi" as D3
+database "D4 Ticaret Verisi" as D4
+database "D5 Mesaj/Bildirim Verisi" as D5
+database "D6 Audit Log" as D6
+
+Kullanici --> P1 : kayit/giris
+Kullanici --> P2 : pet/ilan islemleri
+Kullanici --> P3 : randevu/rezervasyon
+Kullanici --> P4 : sepet/siparis
+Kullanici --> P5 : mesaj
+
+Veteriner --> P3 : randevu durumu
+Bakici --> P3 : rezervasyon durumu
+Satici --> P4 : urun/siparis
+Admin --> P6 : moderasyon
+
+P1 <--> D1
+P2 <--> D2
+P3 <--> D3
+P4 <--> D4
+P5 <--> D5
+P6 <--> D6
+
+P3 --> P5 : hizmet bildirimi
+P4 --> P5 : siparis bildirimi
+P6 --> P1 : kullanici kisitlama
+@enduml

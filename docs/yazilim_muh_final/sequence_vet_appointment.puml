@@ -1,0 +1,21 @@
+@startuml
+actor Kullanici
+boundary "Mobil Uygulama" as Mobile
+control "Appointment API" as API
+entity "Veterinary Service" as VetService
+database "MongoDB Atlas" as DB
+collections "FCM Service" as FCM
+
+Kullanici -> Mobile : Veteriner sec ve randevu iste
+Mobile -> API : POST /appointments
+API -> VetService : Musait slot kontrolu
+VetService -> DB : Veteriner ve takvim verisini sorgula
+DB --> VetService : Musait slotlar
+VetService --> API : Slot uygun
+API -> DB : Randevu kaydini olustur
+DB --> API : appointmentId, status=pending
+API -> FCM : Veterinere bildirim gonder
+FCM --> API : Bildirim sonucu
+API --> Mobile : 201 Created
+Mobile --> Kullanici : Randevu olusturuldu
+@enduml

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="900" viewBox="0 0 1500 900">
+  <defs>
+    <style>
+      .bg{fill:#ffffff}.proc{fill:#dbeafe;stroke:#1d4ed8;stroke-width:2}.store{fill:#f5f3ff;stroke:#7c3aed;stroke-width:2}.actor{fill:#ecfccb;stroke:#4d7c0f;stroke-width:2}.txt{font:17px Arial, sans-serif;fill:#0f172a}.small{font:14px Arial, sans-serif;fill:#334155}.line{stroke:#475569;stroke-width:2;fill:none;marker-end:url(#arrow)}
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1500" height="900"/>
+  <text class="txt" x="750" y="45" text-anchor="middle" style="font-size:26px">Level 0 Veri Akis Diyagrami</text>
+  <rect class="actor" x="50" y="120" width="170" height="55" rx="8"/><text class="txt" x="135" y="154" text-anchor="middle">Kullanici</text>
+  <rect class="actor" x="50" y="260" width="170" height="55" rx="8"/><text class="txt" x="135" y="294" text-anchor="middle">Veteriner</text>
+  <rect class="actor" x="50" y="400" width="170" height="55" rx="8"/><text class="txt" x="135" y="434" text-anchor="middle">Bakici</text>
+  <rect class="actor" x="50" y="540" width="170" height="55" rx="8"/><text class="txt" x="135" y="574" text-anchor="middle">Satici</text>
+  <rect class="actor" x="50" y="680" width="170" height="55" rx="8"/><text class="txt" x="135" y="714" text-anchor="middle">Admin</text>
+  <rect class="proc" x="360" y="95" width="260" height="75" rx="12"/><text class="txt" x="490" y="128" text-anchor="middle">1. Kimlik ve Yetki</text><text class="small" x="490" y="152" text-anchor="middle">kayit, giris, roller</text>
+  <rect class="proc" x="360" y="225" width="260" height="75" rx="12"/><text class="txt" x="490" y="258" text-anchor="middle">2. Pet ve Ilan</text><text class="small" x="490" y="282" text-anchor="middle">pet, ilan, basvuru</text>
+  <rect class="proc" x="360" y="355" width="260" height="75" rx="12"/><text class="txt" x="490" y="388" text-anchor="middle">3. Hizmet Yonetimi</text><text class="small" x="490" y="412" text-anchor="middle">veteriner, bakici</text>
+  <rect class="proc" x="360" y="485" width="260" height="75" rx="12"/><text class="txt" x="490" y="518" text-anchor="middle">4. Ticaret</text><text class="small" x="490" y="542" text-anchor="middle">magaza, siparis</text>
+  <rect class="proc" x="360" y="615" width="260" height="75" rx="12"/><text class="txt" x="490" y="648" text-anchor="middle">5. Mesaj ve Bildirim</text><text class="small" x="490" y="672" text-anchor="middle">socket, push</text>
+  <rect class="proc" x="360" y="745" width="260" height="75" rx="12"/><text class="txt" x="490" y="778" text-anchor="middle">6. Admin Moderasyon</text><text class="small" x="490" y="802" text-anchor="middle">rapor, denetim</text>
+  <rect class="store" x="930" y="95" width="300" height="55" rx="8"/><text class="txt" x="1080" y="130" text-anchor="middle">D1 Kullanici Verisi</text>
+  <rect class="store" x="930" y="225" width="300" height="55" rx="8"/><text class="txt" x="1080" y="260" text-anchor="middle">D2 Pet / Ilan Verisi</text>
+  <rect class="store" x="930" y="355" width="300" height="55" rx="8"/><text class="txt" x="1080" y="390" text-anchor="middle">D3 Hizmet Verisi</text>
+  <rect class="store" x="930" y="485" width="300" height="55" rx="8"/><text class="txt" x="1080" y="520" text-anchor="middle">D4 Ticaret Verisi</text>
+  <rect class="store" x="930" y="615" width="300" height="55" rx="8"/><text class="txt" x="1080" y="650" text-anchor="middle">D5 Mesaj Verisi</text>
+  <rect class="store" x="930" y="745" width="300" height="55" rx="8"/><text class="txt" x="1080" y="780" text-anchor="middle">D6 Audit Log</text>
+  <path class="line" d="M220 148 L360 132"/><path class="line" d="M220 148 L360 262"/><path class="line" d="M220 148 L360 392"/><path class="line" d="M220 148 L360 522"/><path class="line" d="M220 148 L360 652"/>
+  <path class="line" d="M220 288 L360 392"/><path class="line" d="M220 428 L360 392"/><path class="line" d="M220 568 L360 522"/><path class="line" d="M220 708 L360 782"/>
+  <path class="line" d="M620 132 L930 122"/><path class="line" d="M620 262 L930 252"/><path class="line" d="M620 392 L930 382"/><path class="line" d="M620 522 L930 512"/><path class="line" d="M620 652 L930 642"/><path class="line" d="M620 782 L930 772"/>
+  <path class="line" d="M620 392 C710 430 720 585 360 652"/>
+  <path class="line" d="M620 522 C720 540 720 630 620 652"/>
+</svg>

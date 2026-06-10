@@ -87,8 +87,8 @@ class _GlobalSearchRepository {
 
   Future<List<_SearchResult>> _searchPets(String q) async {
     try {
-      final res = await _dio.get('/adverts', queryParameters: {'q': q, 'limit': 6});
-      final raw = res.data['pets'] ?? res.data['adverts'] ?? [];
+      final res = await _dio.get('/api/adverts', queryParameters: {'q': q, 'limit': 6});
+      final raw = res.data['items'] ?? res.data['pets'] ?? res.data['adverts'] ?? [];
       return (raw as List).map((json) {
         final pet = Pet.fromJson(Map<String, dynamic>.from(json));
         return _SearchResult(
@@ -107,7 +107,7 @@ class _GlobalSearchRepository {
 
   Future<List<_SearchResult>> _searchStores(String q) async {
     try {
-      final res = await _dio.get('/stores', queryParameters: {'q': q, 'limit': 4});
+      final res = await _dio.get('/api/stores/discover', queryParameters: {'q': q, 'limit': 4});
       final raw = res.data['stores'] ?? [];
       return (raw as List).map<_SearchResult>((json) {
         return _SearchResult(
@@ -125,7 +125,7 @@ class _GlobalSearchRepository {
 
   Future<List<_SearchResult>> _searchVets(String q) async {
     try {
-      final res = await _dio.get('/veterinaries', queryParameters: {'q': q, 'limit': 4});
+      final res = await _dio.get('/api/veterinaries', queryParameters: {'q': q, 'limit': 4});
       final raw = res.data['vets'] ?? [];
       return (raw as List).map<_SearchResult>((json) {
         return _SearchResult(

@@ -81,6 +81,7 @@ class ProductModel {
         (json['photos'] as List<dynamic>?) ??
         const <dynamic>[];
     final dynamic categoryRaw = json['category'];
+    final dynamic sellerRaw = json['seller'];
 
     return ProductModel(
       id: json['_id'] ?? json['id'] ?? '',
@@ -93,7 +94,9 @@ class ProductModel {
       categoryId: categoryRaw is Map<String, dynamic>
           ? categoryRaw['_id'] as String?
           : categoryRaw as String?,
-      sellerId: json['seller'] as String?,
+      sellerId: sellerRaw is Map<String, dynamic>
+          ? sellerRaw['_id']?.toString()
+          : sellerRaw?.toString(),
       store: json['store'] != null && json['store'] is Map<String, dynamic>
           ? StoreModel.fromJson(json['store'] as Map<String, dynamic>)
           : null,

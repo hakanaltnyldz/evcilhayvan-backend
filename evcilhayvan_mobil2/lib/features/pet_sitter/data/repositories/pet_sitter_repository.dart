@@ -89,6 +89,23 @@ class PetSitterRepository {
         );
       });
 
+  Future<PetSitterModel> uploadSitterAvatar(String sitterId, File photo) =>
+      _guard(() async {
+        final formData = FormData.fromMap({
+          'avatar': await MultipartFile.fromFile(
+            photo.path,
+            filename: photo.path.split('/').last,
+          ),
+        });
+        final r = await _dio.post(
+          '/api/pet-sitters/$sitterId/avatar',
+          data: formData,
+        );
+        return PetSitterModel.fromJson(
+          Map<String, dynamic>.from(r.data['sitter']),
+        );
+      });
+
   Future<bool> toggleAvailability(String id) => _guard(() async {
     final r = await _dio.patch('/api/pet-sitters/$id/availability');
     return r.data['availability'] == true;

@@ -1,0 +1,24 @@
+@startuml
+start
+:Kullanici kayip/buluntu ilan formunu acar;
+:Hayvan bilgilerini ve konumu girer;
+:Fotograf yukler;
+if (Ilan tipi nedir?) then (Kayip)
+  :Kayip hayvan ilani olusturulur;
+else (Buluntu)
+  :Buluntu hayvan ilani olusturulur;
+endif
+:Konum bazli eslesme taranir;
+if (Olası eslesme var mi?) then (Evet)
+  :Ilgili kullanicilara bildirim gonderilir;
+  :Mesajlasma kanali acilir;
+else (Hayir)
+  :Ilan aktif listede yayinlanir;
+endif
+if (Hayvan sahibine ulasildi mi?) then (Evet)
+  :Ilan cozuldu olarak isaretlenir;
+else (Hayir)
+  :Periyodik hatirlatma yapilir;
+endif
+stop
+@enduml

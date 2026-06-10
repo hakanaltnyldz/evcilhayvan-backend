@@ -3,10 +3,14 @@ class SitterBookingModel {
   final String? petOwnerId;
   final String? ownerName;
   final String? ownerAvatar;
+  final String? ownerPhone;
+  final String? ownerEmail;
   final String? sitterId;
   final String? sitterUserId;
   final String? sitterName;
   final String? sitterAvatar;
+  final String? sitterPhone;
+  final String? sitterEmail;
   final String? petId;
   final String? petName;
   final String? petPhoto;
@@ -37,10 +41,14 @@ class SitterBookingModel {
     this.petOwnerId,
     this.ownerName,
     this.ownerAvatar,
+    this.ownerPhone,
+    this.ownerEmail,
     this.sitterId,
     this.sitterUserId,
     this.sitterName,
     this.sitterAvatar,
+    this.sitterPhone,
+    this.sitterEmail,
     this.petId,
     this.petName,
     this.petPhoto,
@@ -114,10 +122,17 @@ class SitterBookingModel {
   bool get needsPickup => status == 'accepted';
   bool get earningsPaused => earningsStatus == 'paused';
 
+  static String _extractId(dynamic value) {
+    if (value is Map<String, dynamic>) {
+      return value['_id']?.toString() ?? value['id']?.toString() ?? '';
+    }
+    return value?.toString() ?? '';
+  }
+
   factory SitterBookingModel.fromJson(Map<String, dynamic> json) {
     // Populate edilmis sitter
     final sitterRaw = json['sitterId'];
-    String? sitterId, sitterName, sitterAvatar;
+    String? sitterId, sitterName, sitterAvatar, sitterPhone, sitterEmail;
     if (sitterRaw is Map<String, dynamic>) {
       sitterId = sitterRaw['_id']?.toString() ?? sitterRaw['id']?.toString();
       sitterName = sitterRaw['displayName']?.toString();
@@ -126,13 +141,28 @@ class SitterBookingModel {
       sitterId = sitterRaw;
     }
 
+    final sitterUserRaw = json['sitterUserId'];
+    String? sitterUserId;
+    if (sitterUserRaw is Map<String, dynamic>) {
+      sitterUserId =
+          sitterUserRaw['_id']?.toString() ?? sitterUserRaw['id']?.toString();
+      sitterName ??= sitterUserRaw['name']?.toString();
+      sitterAvatar ??= sitterUserRaw['avatarUrl']?.toString();
+      sitterPhone = sitterUserRaw['phone']?.toString();
+      sitterEmail = sitterUserRaw['email']?.toString();
+    } else if (sitterUserRaw is String) {
+      sitterUserId = sitterUserRaw;
+    }
+
     // Populate edilmis owner
     final ownerRaw = json['petOwnerId'];
-    String? petOwnerId, ownerName, ownerAvatar;
+    String? petOwnerId, ownerName, ownerAvatar, ownerPhone, ownerEmail;
     if (ownerRaw is Map<String, dynamic>) {
       petOwnerId = ownerRaw['_id']?.toString() ?? ownerRaw['id']?.toString();
       ownerName = ownerRaw['name']?.toString();
       ownerAvatar = ownerRaw['avatarUrl']?.toString();
+      ownerPhone = ownerRaw['phone']?.toString();
+      ownerEmail = ownerRaw['email']?.toString();
     } else if (ownerRaw is String) {
       petOwnerId = ownerRaw;
     }
@@ -178,10 +208,14 @@ class SitterBookingModel {
       petOwnerId: petOwnerId,
       ownerName: ownerName,
       ownerAvatar: ownerAvatar,
+      ownerPhone: ownerPhone,
+      ownerEmail: ownerEmail,
       sitterId: sitterId,
-      sitterUserId: json['sitterUserId']?.toString(),
+      sitterUserId: sitterUserId,
       sitterName: sitterName,
       sitterAvatar: sitterAvatar,
+      sitterPhone: sitterPhone,
+      sitterEmail: sitterEmail,
       petId: petId,
       petName: petName,
       petPhoto: petPhoto,

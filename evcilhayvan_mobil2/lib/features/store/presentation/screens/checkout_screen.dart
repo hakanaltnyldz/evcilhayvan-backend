@@ -158,14 +158,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       if (isGuest) {
         ref.read(checkoutCouponProvider.notifier)
           ..setApplying(false)
-          ..setError('Kupon kullanmak icin giris yapmalisiniz');
+          ..setError(l10n.checkoutErrCouponLoginRequired);
         return;
       }
       final total = _currentSubtotal(isGuest);
       if (total == 0) {
         ref.read(checkoutCouponProvider.notifier)
           ..setApplying(false)
-          ..setError('Sepet toplami hesaplanamadi, lutfen sayfayi yenileyin');
+          ..setError(l10n.checkoutErrCartTotalUnavailable);
         return;
       }
 
@@ -220,10 +220,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         notifier.clear();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Sepet degistigi icin kupon kaldirildi. Yeni tutara gore tekrar uygulayin.',
-              ),
+            SnackBar(
+              content: Text(l10n.checkoutCouponRemovedCartChanged),
               backgroundColor: Colors.orange,
             ),
           );
@@ -296,8 +294,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final tc = _guestNationalIdCtrl.text.trim();
       if (name.isEmpty || phone.isEmpty || email.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Ad, telefon ve email zorunludur'),
+          SnackBar(
+            content: Text(l10n.checkoutErrGuestRequired),
             backgroundColor: Colors.red,
           ),
         );
@@ -306,8 +304,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       if (tc.isNotEmpty &&
           (tc.length != 11 || !RegExp(r'^\d{11}$').hasMatch(tc))) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('TC Kimlik No 11 haneli olmalıdır'),
+          SnackBar(
+            content: Text(l10n.checkoutErrGuestNationalId),
             backgroundColor: Colors.red,
           ),
         );
@@ -485,9 +483,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       ),
                       child: Column(
                         children: [
-                          const Text(
-                            'Takip Numaranız',
-                            style: TextStyle(
+                          Text(
+                            l10n.checkoutTrackingNumber,
+                            style: const TextStyle(
                               fontSize: 11,
                               color: Color(0xFF2D6A4F),
                             ),
@@ -508,7 +506,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
-                          'Takip linki ${_guestEmailCtrl.text.trim()} adresine gönderildi.',
+                          l10n.checkoutTrackingEmailSent(
+                            _guestEmailCtrl.text.trim(),
+                          ),
                           style: const TextStyle(
                             fontSize: 12,
                             color: Colors.grey,
@@ -531,7 +531,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           queryParameters: {'t': trackingNumber},
                         );
                       },
-                      child: const Text('Siparişi Takip Et'),
+                      child: Text(l10n.checkoutTrackOrder),
                     ),
                   ),
                 SizedBox(
@@ -550,7 +550,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(
-                      isGuest ? 'Alışverişe Devam' : l10n.checkoutGoToOrders,
+                      isGuest
+                          ? l10n.checkoutContinueShopping
+                          : l10n.checkoutGoToOrders,
                     ),
                   ),
                 ),
@@ -573,93 +575,98 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
   }
 
-  Widget _buildGuestForm() => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _buildSectionCard(
-        title: 'Kişisel Bilgiler',
-        icon: Icons.person,
-        child: Column(
-          children: [
-            TextField(
-              controller: _guestNameCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Ad Soyad *',
-                prefixIcon: Icon(Icons.person_outline),
+  Widget _buildGuestForm() {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionCard(
+          title: l10n.checkoutGuestPersonalInfo,
+          icon: Icons.person,
+          child: Column(
+            children: [
+              TextField(
+                controller: _guestNameCtrl,
+                decoration: InputDecoration(
+                  labelText: l10n.checkoutGuestName,
+                  prefixIcon: const Icon(Icons.person_outline),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _guestPhoneCtrl,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Telefon *',
-                prefixIcon: Icon(Icons.phone_outlined),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _guestPhoneCtrl,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  labelText: l10n.checkoutGuestPhone,
+                  prefixIcon: const Icon(Icons.phone_outlined),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _guestEmailCtrl,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'E-posta * (takip linki gönderilecek)',
-                prefixIcon: Icon(Icons.email_outlined),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _guestEmailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: l10n.checkoutGuestEmail,
+                  prefixIcon: const Icon(Icons.email_outlined),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _guestNationalIdCtrl,
-              keyboardType: TextInputType.number,
-              maxLength: 11,
-              decoration: const InputDecoration(
-                labelText: 'TC Kimlik No (opsiyonel)',
-                prefixIcon: Icon(Icons.badge_outlined),
-                helperText: 'Şifreli olarak saklanır',
+              const SizedBox(height: 12),
+              TextField(
+                controller: _guestNationalIdCtrl,
+                keyboardType: TextInputType.number,
+                maxLength: 11,
+                decoration: InputDecoration(
+                  labelText: l10n.checkoutGuestNationalId,
+                  prefixIcon: const Icon(Icons.badge_outlined),
+                  helperText: l10n.checkoutGuestNationalIdHelper,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      const SizedBox(height: 8),
-      _buildSectionCard(
-        title: 'Teslimat Adresi',
-        icon: Icons.location_on,
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _guestCityCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Şehir',
-                      prefixIcon: Icon(Icons.location_city),
+        const SizedBox(height: 8),
+        _buildSectionCard(
+          title: l10n.checkoutDeliveryAddress,
+          icon: Icons.location_on,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _guestCityCtrl,
+                      decoration: InputDecoration(
+                        labelText: l10n.checkoutGuestCity,
+                        prefixIcon: const Icon(Icons.location_city),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _guestDistrictCtrl,
-                    decoration: const InputDecoration(labelText: 'İlçe'),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _guestDistrictCtrl,
+                      decoration: InputDecoration(
+                        labelText: l10n.checkoutGuestDistrict,
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _guestStreetCtrl,
-              maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: 'Açık Adres',
-                prefixIcon: Icon(Icons.home_outlined),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              TextField(
+                controller: _guestStreetCtrl,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  labelText: l10n.checkoutGuestStreet,
+                  prefixIcon: const Icon(Icons.home_outlined),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
+  }
 
   Widget _buildGuestOrderSummary(
     AppLocalizations l10n,

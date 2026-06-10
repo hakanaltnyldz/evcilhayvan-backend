@@ -1,0 +1,38 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+actor "Admin" as Admin
+actor "Satici" as Seller
+actor "Veteriner" as Vet
+actor "Bakici" as Sitter
+actor "Kullanici" as User
+actor "Raporlama Servisi" as Reporting
+
+rectangle "Admin Paneli" {
+  usecase "Kullanici Yonetimi" as UC1
+  usecase "Rol ve Yetki Atama" as UC2
+  usecase "Satici Basvurusu Inceleme" as UC3
+  usecase "Veteriner/Bakici Dogrulama" as UC4
+  usecase "Ilan ve Urun Moderasyonu" as UC5
+  usecase "Sikayet Inceleme" as UC6
+  usecase "Sistem Parametrelerini Yonetme" as UC7
+  usecase "Rapor ve KPI Izleme" as UC8
+}
+
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC4
+Admin --> UC5
+Admin --> UC6
+Admin --> UC7
+Admin --> UC8
+Seller --> UC3
+Vet --> UC4
+Sitter --> UC4
+User --> UC6
+Reporting --> UC8
+UC1 .> UC2 : <<include>>
+UC3 .> UC5 : <<extend>>
+UC6 .> UC5 : <<extend>>
+@enduml

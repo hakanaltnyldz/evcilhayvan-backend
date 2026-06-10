@@ -38,14 +38,19 @@ class _AvailabilityScreenState extends ConsumerState<AvailabilityScreen> {
         setState(() {
           _blockedDates.clear();
           _blockedDates.addAll(
-            raw.map((d) => DateTime.tryParse(d.toString())).whereType<DateTime>(),
+            raw
+                .map((d) => DateTime.tryParse(d.toString()))
+                .whereType<DateTime>(),
           );
         });
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Takvim yüklenemedi: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Takvim yüklenemedi: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -60,7 +65,8 @@ class _AvailabilityScreenState extends ConsumerState<AvailabilityScreen> {
 
   void _toggleDay(DateTime day) {
     final d = DateTime(day.year, day.month, day.day);
-    if (day.isBefore(DateTime.now().subtract(const Duration(days: 1)))) return; // Geçmiş günler seçilemez
+    if (day.isBefore(DateTime.now().subtract(const Duration(days: 1))))
+      return; // Geçmiş günler seçilemez
 
     setState(() {
       if (_isBlocked(d)) {
@@ -77,33 +83,43 @@ class _AvailabilityScreenState extends ConsumerState<AvailabilityScreen> {
 
   Future<void> _saveChanges() async {
     if (_pendingAdd.isEmpty && _pendingRemove.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Değişiklik yok')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Değişiklik yok')));
       return;
     }
 
     setState(() => _saving = true);
     try {
       final dio = ApiClient().dio;
-      String fmt(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+      String fmt(DateTime d) =>
+          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-      await dio.patch('/api/pet-sitters/${widget.sitterId}/blocked-dates', data: {
-        'add': _pendingAdd.map(fmt).toList(),
-        'remove': _pendingRemove.map(fmt).toList(),
-      });
+      await dio.patch(
+        '/api/pet-sitters/${widget.sitterId}/blocked-dates',
+        data: {
+          'add': _pendingAdd.map(fmt).toList(),
+          'remove': _pendingRemove.map(fmt).toList(),
+        },
+      );
 
       if (mounted) {
         _pendingAdd.clear();
         _pendingRemove.clear();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Müsaitlik takvimi kaydedildi!'), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text('Müsaitlik takvimi kaydedildi!'),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Kaydetme başarısız: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Kaydetme başarısız: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -127,8 +143,21 @@ class _AvailabilityScreenState extends ConsumerState<AvailabilityScreen> {
             TextButton(
               onPressed: _saving ? null : _saveChanges,
               child: _saving
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Kaydet', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      'Kaydet',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
             ),
         ],
       ),
@@ -140,10 +169,16 @@ class _AvailabilityScreenState extends ConsumerState<AvailabilityScreen> {
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
-                  color: isDark ? const Color(0xFF1E2E28) : const Color(0xFFD8F3DC),
+                  color: isDark
+                      ? const Color(0xFF1E2E28)
+                      : const Color(0xFFD8F3DC),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline, size: 18, color: AppPalette.primary),
+                      Icon(
+                        Icons.info_outline,
+                        size: 18,
+                        color: AppPalette.primary,
+                      ),
                       const SizedBox(width: 8),
                       const Expanded(
                         child: Text(
@@ -159,7 +194,7 @@ class _AvailabilityScreenState extends ConsumerState<AvailabilityScreen> {
                   firstDay: DateTime.now(),
                   lastDay: DateTime.now().add(const Duration(days: 365)),
                   focusedDay: DateTime.now(),
-                  locale: 'tr_TR',
+                  locale: Localizations.localeOf(context).toString(),
                   headerStyle: const HeaderStyle(
                     formatButtonVisible: false,
                     titleCentered: true,
@@ -187,14 +222,18 @@ class _AvailabilityScreenState extends ConsumerState<AvailabilityScreen> {
                           ),
                           child: Text(
                             '${day.day}',
-                            style: TextStyle(color: Colors.red.shade600, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              color: Colors.red.shade600,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         );
                       }
                       return null;
                     },
                   ),
-                  onDaySelected: (selectedDay, focusedDay) => _toggleDay(selectedDay),
+                  onDaySelected: (selectedDay, focusedDay) =>
+                      _toggleDay(selectedDay),
                 ),
 
                 const SizedBox(height: 16),
@@ -204,11 +243,21 @@ class _AvailabilityScreenState extends ConsumerState<AvailabilityScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: [
-                      _Legend(color: AppPalette.primary.withOpacity(0.3), label: 'Bugün'),
+                      _Legend(
+                        color: AppPalette.primary.withOpacity(0.3),
+                        label: 'Bugün',
+                      ),
                       const SizedBox(width: 16),
-                      _Legend(color: Colors.red.withOpacity(0.3), label: 'Müsait Değil'),
+                      _Legend(
+                        color: Colors.red.withOpacity(0.3),
+                        label: 'Müsait Değil',
+                      ),
                       const SizedBox(width: 16),
-                      _Legend(color: Colors.white, label: 'Müsait', border: true),
+                      _Legend(
+                        color: Colors.white,
+                        label: 'Müsait',
+                        border: true,
+                      ),
                     ],
                   ),
                 ),
@@ -219,7 +268,10 @@ class _AvailabilityScreenState extends ConsumerState<AvailabilityScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       '${_blockedDates.length} gün bloke edildi',
-                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ),
                 ],
@@ -234,14 +286,19 @@ class _Legend extends StatelessWidget {
   final String label;
   final bool border;
 
-  const _Legend({required this.color, required this.label, this.border = false});
+  const _Legend({
+    required this.color,
+    required this.label,
+    this.border = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Container(
-          width: 16, height: 16,
+          width: 16,
+          height: 16,
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,

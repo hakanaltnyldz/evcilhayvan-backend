@@ -39,15 +39,16 @@ class ReviewsSection extends ConsumerWidget {
             children: [
               Text(
                 AppLocalizations.of(context)!.reviewsSectionTitle,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w900,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
               ),
               const Spacer(),
               canReviewAsync.when(
                 data: (result) {
                   final canReview = result['canReview'] == true;
-                  final existingReview = result['existingReview'] as ReviewModel?;
+                  final existingReview =
+                      result['existingReview'] as ReviewModel?;
 
                   if (!canReview && existingReview == null) {
                     return const SizedBox.shrink();
@@ -75,7 +76,9 @@ class ReviewsSection extends ConsumerWidget {
                       size: 18,
                     ),
                     label: Text(
-                      existingReview != null ? AppLocalizations.of(context)!.reviewsSectionEdit : AppLocalizations.of(context)!.reviewsSectionAdd,
+                      existingReview != null
+                          ? AppLocalizations.of(context)!.reviewsSectionEdit
+                          : AppLocalizations.of(context)!.reviewsSectionAdd,
                     ),
                   );
                 },
@@ -118,10 +121,7 @@ class ReviewsSection extends ConsumerWidget {
             );
           },
           loading: () => Column(
-            children: List.generate(
-              3,
-              (_) => const _ReviewCardSkeleton(),
-            ),
+            children: List.generate(3, (_) => const _ReviewCardSkeleton()),
           ),
           error: (error, _) => Padding(
             padding: const EdgeInsets.all(16),
@@ -165,10 +165,7 @@ class _StatsSummary extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              StarRating(
-                rating: stats.averageRating,
-                size: 18,
-              ),
+              StarRating(rating: stats.averageRating, size: 18),
               const SizedBox(height: 4),
               Text(
                 AppLocalizations.of(context)!.reviewsCount(stats.totalReviews),
@@ -238,9 +235,12 @@ class _ReviewCard extends StatelessWidget {
 
   const _ReviewCard({required this.review});
 
-  String _formatDate(DateTime date) {
+  String _formatDate(BuildContext context, DateTime date) {
     try {
-      return DateFormat('dd MMM yyyy', 'tr').format(date);
+      return DateFormat(
+        'dd MMM yyyy',
+        Localizations.localeOf(context).toString(),
+      ).format(date);
     } catch (_) {
       return DateFormat('dd MMM yyyy').format(date);
     }
@@ -256,10 +256,7 @@ class _ReviewCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: context.subtleBorder,
-          width: 1,
-        ),
+        border: Border.all(color: context.subtleBorder, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,7 +315,9 @@ class _ReviewCard extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  AppLocalizations.of(context)!.reviewsVerifiedBuyer,
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.reviewsVerifiedBuyer,
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700,
@@ -340,7 +339,7 @@ class _ReviewCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          _formatDate(review.createdAt),
+                          _formatDate(context, review.createdAt),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: AppPalette.onSurfaceVariant,
                           ),
@@ -354,10 +353,7 @@ class _ReviewCard extends StatelessWidget {
           ),
           if (review.comment.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text(
-              review.comment,
-              style: theme.textTheme.bodyMedium,
-            ),
+            Text(review.comment, style: theme.textTheme.bodyMedium),
           ],
         ],
       ),
@@ -386,16 +382,16 @@ class _EmptyReviews extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               AppLocalizations.of(context)!.reviewsEmptyTitle,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
             Text(
               AppLocalizations.of(context)!.reviewsEmptySubtitle,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppPalette.onSurfaceVariant,
-                  ),
+                color: AppPalette.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -431,10 +427,7 @@ class _ReviewCardSkeleton extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: context.subtleBorder,
-          width: 1,
-        ),
+        border: Border.all(color: context.subtleBorder, width: 1),
       ),
     );
   }

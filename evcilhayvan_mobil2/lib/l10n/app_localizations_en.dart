@@ -51,6 +51,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirm => 'Confirm';
 
   @override
+  String get ok => 'OK';
+
+  @override
   String get back => 'Back';
 
   @override
@@ -216,6 +219,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get matingVaccinated => 'Vaccinated';
+
+  @override
+  String get matingDetailUnavailable => 'Listing details could not be opened.';
+
+  @override
+  String get matingLoginRequired =>
+      'You need to sign in before sending a match request.';
+
+  @override
+  String get matingSelectAdvertTitle => 'Select a listing for matching';
+
+  @override
+  String get matingUnnamedAdvert => 'Unnamed listing';
+
+  @override
+  String get matingNoDetails => 'No details';
+
+  @override
+  String get matingContinue => 'Continue';
+
+  @override
+  String get matingAdvertRequiredTitle => 'Matching listing required';
+
+  @override
+  String get matingAdvertRequiredDesc =>
+      'You need to create your own matching listing before sending a match request.';
+
+  @override
+  String matingAdvertRequiredForSpecies(String species) {
+    return 'You need to create a listing for the same species before sending a match request: $species.';
+  }
+
+  @override
+  String get matingCreateAdvertNow => 'Create listing now';
+
+  @override
+  String get matingClearFilter => 'Clear filter';
+
+  @override
+  String get matingErrorTitle => 'Something went wrong';
 
   @override
   String get messagesTitle => 'Messages';
@@ -938,6 +981,97 @@ class AppLocalizationsEn extends AppLocalizations {
       'Profile claimed successfully! You can now receive messages.';
 
   @override
+  String get vetDetailLoginRequiredTitle => 'Login Required';
+
+  @override
+  String get vetDetailMessageLoginRequired =>
+      'You must log in to contact the veterinarian.';
+
+  @override
+  String get vetClaimRequestSubmitted =>
+      'Your request was received. The profile will be assigned to you after admin approval.';
+
+  @override
+  String get vetClaimRequestTitle => 'Clinic Ownership Request';
+
+  @override
+  String get vetClaimRequestDesc =>
+      'Your details will be verified by an admin, and the clinic will be assigned to your profile after approval.';
+
+  @override
+  String get vetClaimFullName => 'Full Name';
+
+  @override
+  String get vetClaimFullNameRequired => 'Full name is required';
+
+  @override
+  String get vetClaimPhone => 'Phone Number';
+
+  @override
+  String get vetClaimPhoneInvalid => 'Enter a valid phone number';
+
+  @override
+  String get vetClaimRole => 'Your Role at the Clinic';
+
+  @override
+  String get vetClaimRoleVet => 'Veterinarian';
+
+  @override
+  String get vetClaimRoleOwner => 'Clinic Owner';
+
+  @override
+  String get vetClaimRoleStaff => 'Staff';
+
+  @override
+  String get vetClaimRoleOther => 'Other';
+
+  @override
+  String get vetClaimNote => 'Additional Note (optional)';
+
+  @override
+  String get vetClaimSubmit => 'Send Request';
+
+  @override
+  String get vetClaimStatusTitle => 'My Clinic Ownership Requests';
+
+  @override
+  String get vetClaimStatusEmpty =>
+      'You do not have any clinic ownership requests yet.';
+
+  @override
+  String vetClaimStatusLoadError(String error) {
+    return 'Could not load requests: $error';
+  }
+
+  @override
+  String get vetClaimStatusClinicFallback => 'Clinic';
+
+  @override
+  String get vetClaimStatusApproved => 'Approved';
+
+  @override
+  String get vetClaimStatusRejected => 'Rejected';
+
+  @override
+  String get vetClaimStatusPending => 'Under Review';
+
+  @override
+  String get vetClaimStatusRole => 'Role';
+
+  @override
+  String get vetClaimStatusNote => 'Description';
+
+  @override
+  String get vetClaimStatusSubmittedAt => 'Submitted At';
+
+  @override
+  String get vetClaimStatusReviewedAt => 'Decision Date';
+
+  @override
+  String get vetClaimStatusPendingMessage =>
+      'Your request is being reviewed by an admin. The result will be sent as a notification.';
+
+  @override
   String get vetReviews => 'Reviews';
 
   @override
@@ -1119,6 +1253,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get checkoutErrCouponUsageLimit => 'Coupon usage limit reached';
+
+  @override
+  String get checkoutErrCouponLoginRequired => 'You must log in to use coupons';
+
+  @override
+  String get checkoutErrCartTotalUnavailable =>
+      'Cart total could not be calculated. Please refresh the page.';
+
+  @override
+  String get checkoutCouponRemovedCartChanged =>
+      'The coupon was removed because the cart changed. Apply it again for the new total.';
+
+  @override
+  String get checkoutErrGuestRequired => 'Name, phone and email are required';
+
+  @override
+  String get checkoutErrGuestNationalId => 'National ID must be 11 digits';
+
+  @override
+  String get checkoutTrackingNumber => 'Tracking Number';
+
+  @override
+  String checkoutTrackingEmailSent(String email) {
+    return 'The tracking link was sent to $email.';
+  }
+
+  @override
+  String get checkoutTrackOrder => 'Track Order';
+
+  @override
+  String get checkoutContinueShopping => 'Continue Shopping';
+
+  @override
+  String get checkoutGuestPersonalInfo => 'Personal Information';
+
+  @override
+  String get checkoutGuestName => 'Full Name *';
+
+  @override
+  String get checkoutGuestPhone => 'Phone *';
+
+  @override
+  String get checkoutGuestEmail => 'Email * (tracking link will be sent)';
+
+  @override
+  String get checkoutGuestNationalId => 'National ID (optional)';
+
+  @override
+  String get checkoutGuestNationalIdHelper => 'Stored encrypted';
+
+  @override
+  String get checkoutGuestCity => 'City';
+
+  @override
+  String get checkoutGuestDistrict => 'District';
+
+  @override
+  String get checkoutGuestStreet => 'Full Address';
 
   @override
   String get couponsMyCouponsTitle => 'My Coupons';
@@ -1620,6 +1812,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get petDetailHealthJournal => 'Health Journal';
 
   @override
+  String get petDetailOpenHealthCard => 'Open Health Card';
+
+  @override
+  String get petDetailActivityHistory => 'Activity History';
+
+  @override
   String get petDetailMessage => 'Message';
 
   @override
@@ -1658,6 +1856,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get petDetailErrMatingLogin =>
       'You must be logged in to send a mating request.';
+
+  @override
+  String get petDetailErrAdoptionLogin =>
+      'You must be logged in to submit an adoption application.';
 
   @override
   String get petDetailNoPetDialog => 'Listing Required';
@@ -1756,6 +1958,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatSearchHint => 'Search messages...';
+
+  @override
+  String get chatRecording => 'Recording...';
 
   @override
   String get chatErrMicPermission => 'Microphone permission required.';
@@ -1931,6 +2136,102 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String orderMyRating(int rating) {
     return 'Your rating: $rating';
+  }
+
+  @override
+  String get orderDetailTitle => 'Order Detail';
+
+  @override
+  String orderDetailLoadError(String error) {
+    return 'Could not load order: $error';
+  }
+
+  @override
+  String get orderDetailOrderNo => 'Order No';
+
+  @override
+  String get orderDetailCopied => 'Order ID copied';
+
+  @override
+  String get orderDetailOrderDate => 'Order Date';
+
+  @override
+  String get orderDetailPayment => 'Payment';
+
+  @override
+  String get orderDetailTotal => 'Total Amount';
+
+  @override
+  String get orderDetailNote => 'Note';
+
+  @override
+  String get orderTrackAction => 'Track';
+
+  @override
+  String get orderDetailCancelling => 'Cancelling...';
+
+  @override
+  String get orderDetailReturnRequest => 'Create Return Request';
+
+  @override
+  String get orderDetailAction => 'Details';
+
+  @override
+  String get returnRequestTitle => 'Return Request';
+
+  @override
+  String get returnRequestSuccess =>
+      'Your return request was received. Our team will get back to you as soon as possible.';
+
+  @override
+  String returnRequestSubmitError(String error) {
+    return 'Could not submit return request: $error';
+  }
+
+  @override
+  String get returnRequestReasonLabel => 'Return Reason';
+
+  @override
+  String get returnRequestReasonHint => 'Select a reason';
+
+  @override
+  String get returnRequestReasonRequired => 'Please select a reason';
+
+  @override
+  String get returnRequestReasonWrongProduct => 'Wrong product was sent';
+
+  @override
+  String get returnRequestReasonDamaged => 'Arrived damaged / broken';
+
+  @override
+  String get returnRequestReasonMismatch =>
+      'Product does not match the description';
+
+  @override
+  String get returnRequestReasonExpectation => 'Did not meet my expectations';
+
+  @override
+  String get returnRequestReasonOther => 'Other';
+
+  @override
+  String get returnRequestDescriptionLabel => 'Description (optional)';
+
+  @override
+  String get returnRequestDescriptionHint => 'Add more details...';
+
+  @override
+  String get returnRequestInfo =>
+      'After you create a return request, our team will contact you within 1-3 business days. If approved, you can ship the product in its original packaging.';
+
+  @override
+  String get returnRequestSubmitting => 'Submitting...';
+
+  @override
+  String get returnRequestSubmit => 'Submit Return Request';
+
+  @override
+  String returnRequestMoreItems(int count) {
+    return '+$count more items';
   }
 
   @override
@@ -2285,6 +2586,116 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sellerRetry => 'Refresh';
+
+  @override
+  String get sellerStockLoadErr => 'Could not load stock data.';
+
+  @override
+  String get sellerStoreProfileEdit => 'Edit Store Profile';
+
+  @override
+  String get sellerStoreProfileUpdated => 'Store profile updated';
+
+  @override
+  String sellerStoreProfileUpdateErr(String error) {
+    return 'Update failed: $error';
+  }
+
+  @override
+  String get sellerStoreNameLabel => 'Store Name';
+
+  @override
+  String get sellerStoreDescLabel => 'Description';
+
+  @override
+  String get sellerStorePhoneLabel => 'Phone';
+
+  @override
+  String get sellerStoreWebsiteLabel => 'Website';
+
+  @override
+  String get sellerStoreInstagramLabel => 'Instagram (username)';
+
+  @override
+  String get sellerStoreTwitterLabel => 'Twitter/X (username)';
+
+  @override
+  String get sellerStoreFacebookLabel => 'Facebook (username)';
+
+  @override
+  String get sellerStoreWorkingHoursLabel =>
+      'Working Hours (e.g. Mon-Fri 09:00-18:00)';
+
+  @override
+  String get editStoreTabBasic => 'Basic';
+
+  @override
+  String get editStoreTabContact => 'Contact';
+
+  @override
+  String get editStoreTabHours => 'Hours';
+
+  @override
+  String get editStoreNameHint => 'Enter your store name';
+
+  @override
+  String get editStoreNameRequired => 'Store name is required';
+
+  @override
+  String get editStoreNameMin => 'Must be at least 2 characters';
+
+  @override
+  String get editStoreDescHint => 'Write a short description about your store';
+
+  @override
+  String get editStoreDescInfo =>
+      'The description is shown to customers on your store profile.';
+
+  @override
+  String get editStoreSocialMedia => 'Social Media';
+
+  @override
+  String get editStoreInstagramHint => 'Instagram username';
+
+  @override
+  String get editStoreTwitterHint => 'Twitter/X username';
+
+  @override
+  String get editStoreFacebookHint => 'Facebook page name';
+
+  @override
+  String get editStoreWorkingHoursInfo =>
+      'Your working hours are shown on your store profile.';
+
+  @override
+  String get editStoreOpenTime => 'Open';
+
+  @override
+  String get editStoreCloseTime => 'Close';
+
+  @override
+  String get editStoreClosed => 'Closed';
+
+  @override
+  String get editStoreDayMon => 'Mon';
+
+  @override
+  String get editStoreDayTue => 'Tue';
+
+  @override
+  String get editStoreDayWed => 'Wed';
+
+  @override
+  String get editStoreDayThu => 'Thu';
+
+  @override
+  String get editStoreDayFri => 'Fri';
+
+  @override
+  String get editStoreDaySat => 'Sat';
+
+  @override
+  String get editStoreDaySun => 'Sun';
 
   @override
   String get productMgmtTitle => 'Product Management';
@@ -2647,10 +3058,314 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shellGuideFab => 'Guide Pati';
 
   @override
+  String get shellMatchRequestTitle => 'Match Request';
+
+  @override
+  String shellMatchRequestBody(String senderName, String petName) {
+    return '$senderName sent you a match request for $petName.';
+  }
+
+  @override
+  String get shellMatchAcceptedTitle => 'Match Accepted';
+
+  @override
+  String shellMatchAcceptedBody(String partnerName) {
+    return '$partnerName accepted your match request. You can now chat.';
+  }
+
+  @override
+  String get shellMatchRejectedTitle => 'Match Rejected';
+
+  @override
+  String shellMatchRejectedBody(String rejectorName) {
+    return '$rejectorName rejected your match request.';
+  }
+
+  @override
+  String get shellNewMessageTitle => 'New Message';
+
+  @override
+  String get shellUnknownPet => 'Unknown';
+
+  @override
+  String get shellUnknownVaccine => 'unknown';
+
+  @override
+  String get shellVaccinationReminderTitle => 'Vaccination Reminder';
+
+  @override
+  String shellVaccinationReminderBody(
+    String petName,
+    String vaccineName,
+    String days,
+  ) {
+    return '$petName\'s $vaccineName vaccine is due within $days days.';
+  }
+
+  @override
+  String get shellSomeone => 'Someone';
+
+  @override
+  String get shellAdoptionNewTitle => 'New Adoption Application';
+
+  @override
+  String shellAdoptionNewBody(String applicantName) {
+    return '$applicantName applied to your listing.';
+  }
+
+  @override
+  String get shellAdoptionAcceptedTitle => 'Application Accepted';
+
+  @override
+  String get shellAdoptionAcceptedBody =>
+      'Your adoption application has been accepted!';
+
+  @override
+  String get shellSitterNewBookingTitle => 'New Booking Request';
+
+  @override
+  String shellSitterNewBookingBody(String ownerName, String serviceType) {
+    return '$ownerName requested a booking for $serviceType.';
+  }
+
+  @override
+  String get shellSitterNameDefault => 'Sitter';
+
+  @override
+  String get shellSitterAcceptedTitle => 'Booking Accepted';
+
+  @override
+  String get shellSitterActiveTitle => 'Care Started';
+
+  @override
+  String get shellSitterRejectedTitle => 'Booking Rejected';
+
+  @override
+  String get shellSitterUpdatedTitle => 'Booking Updated';
+
+  @override
+  String shellSitterAcceptedBody(String sitterName) {
+    return '$sitterName accepted your booking!';
+  }
+
+  @override
+  String shellSitterActiveBody(String sitterName) {
+    return '$sitterName picked up your pet. Live location is now active.';
+  }
+
+  @override
+  String shellSitterRejectedBody(String sitterName) {
+    return '$sitterName rejected your booking.';
+  }
+
+  @override
+  String shellSitterUpdatedBody(String status) {
+    return 'Your booking was updated to $status.';
+  }
+
+  @override
+  String get shellBirthdayTitle => 'Birthday! 🎂';
+
+  @override
+  String get shellVetDefault => 'Veterinarian';
+
+  @override
+  String get shellAppointmentReminderTitle => '🗓️ Appointment Reminder';
+
+  @override
+  String shellAppointmentReminderBody(
+    String petName,
+    String vetName,
+    String dateStr,
+  ) {
+    return '$petName has an appointment with $vetName tomorrow. $dateStr';
+  }
+
+  @override
+  String shellAppointmentReminderSnack(String petName, String vetName) {
+    return '🗓️ $petName has an appointment with $vetName tomorrow!';
+  }
+
+  @override
+  String get shellSitterLocationOfflineTitle => 'Sitter Location Lost';
+
+  @override
+  String get shellSitterLocationOfflineBody =>
+      'Location has not been received for 1 minute. The last seen location is shown and payment has been paused.';
+
+  @override
+  String get shellSitterLocationOfflineSnack =>
+      'Sitter location was lost. Payment has been paused.';
+
+  @override
+  String get shellView => 'View';
+
+  @override
+  String get shellAppointmentUpdatedTitle => 'Appointment Updated';
+
+  @override
+  String shellAppointmentUpdatedBody(String vetName, String status) {
+    return '$vetName appointment: $status';
+  }
+
+  @override
+  String get shellStatusConfirmed => '✅ Confirmed';
+
+  @override
+  String get shellStatusCancelled => '❌ Cancelled';
+
+  @override
+  String get shellStatusCompleted => '🎉 Completed';
+
+  @override
+  String get shellStatusNoShow => '⚠️ No-show';
+
+  @override
+  String get shellAnimalDefault => 'An animal';
+
+  @override
+  String get shellLostPetTitle => 'Lost Pet Listing';
+
+  @override
+  String get shellFoundPetTitle => 'Found Pet Listing';
+
+  @override
+  String shellLostPetBody(String petName, String address) {
+    return '$petName is lost! $address';
+  }
+
+  @override
+  String shellFoundPetBody(String species, String address) {
+    return '$species was found! $address';
+  }
+
+  @override
+  String get shellOrderProcessing => 'Preparing';
+
+  @override
+  String get shellOrderShipped => 'Shipped';
+
+  @override
+  String get shellOrderDelivered => 'Delivered';
+
+  @override
+  String get shellOrderCancelled => 'Cancelled';
+
+  @override
+  String get shellOrderUpdatedTitle => 'Order Updated';
+
+  @override
+  String shellOrderUpdatedBody(String status) {
+    return 'Your order: $status';
+  }
+
+  @override
+  String shellOrderUpdatedSnack(String status) {
+    return '📦 Your order was updated: $status';
+  }
+
+  @override
+  String get shellNewBookingDefault => 'New booking';
+
+  @override
+  String shellPetBookingBody(String petName) {
+    return 'A booking request arrived for $petName.';
+  }
+
+  @override
+  String get shellNewBookingSnack => '🐾 You have a new booking request!';
+
+  @override
+  String get shellBookingAccepted => 'Accepted';
+
+  @override
+  String get shellBookingActive => 'Care Active';
+
+  @override
+  String get shellBookingRejected => 'Rejected';
+
+  @override
+  String get shellBookingCompleted => 'Completed';
+
+  @override
+  String get shellBookingCancelled => 'Cancelled';
+
+  @override
+  String shellBookingUpdatedBody(String status) {
+    return 'Your booking: $status';
+  }
+
+  @override
+  String shellBookingUpdatedSnack(String status) {
+    return '🐾 Booking updated: $status';
+  }
+
+  @override
+  String get shellAdvertExpiryTitle => 'Listing Expiring Soon';
+
+  @override
+  String shellAdvertExpiryBody(String petName) {
+    return '\"$petName\" listing is expiring soon.';
+  }
+
+  @override
+  String get shellLoginRequiredTitle => 'Sign In Required';
+
+  @override
+  String get shellMessagesLoginRequired =>
+      'You need to sign in to access messages.';
+
+  @override
+  String get shellProfileLoginRequired =>
+      'You need to sign in to view your profile.';
+
+  @override
+  String shellCartExitMessage(int count) {
+    return 'You have $count items in your cart. Do you still want to exit?';
+  }
+
+  @override
+  String get shellExitMessage => 'Are you sure you want to exit the app?';
+
+  @override
+  String get shellCartExitTitle => 'Items in your cart!';
+
+  @override
+  String get shellExitTitle => 'Exit';
+
+  @override
   String get addressEditTitle => 'Edit Address';
 
   @override
   String get addressNewTitle => 'New Address';
+
+  @override
+  String get myAddressesTitle => 'My Addresses';
+
+  @override
+  String myAddressesLoadError(String error) {
+    return 'Could not load addresses: $error';
+  }
+
+  @override
+  String get myAddressesEmpty => 'No address has been added yet';
+
+  @override
+  String get myAddressesAdd => 'Add Address';
+
+  @override
+  String get myAddressesDeleteTitle => 'Delete Address';
+
+  @override
+  String myAddressesDeleteConfirm(String title) {
+    return 'Are you sure you want to delete \"$title\"?';
+  }
+
+  @override
+  String get myAddressesDefault => 'Default';
+
+  @override
+  String get myAddressesSetDefault => 'Set as Default';
 
   @override
   String get addressUpdated => 'Address updated';
@@ -2946,6 +3661,96 @@ class AppLocalizationsEn extends AppLocalizations {
   String vetHomeLoadError(String error) {
     return 'Error: $error';
   }
+
+  @override
+  String get vetHomeTabClinic => 'Clinic';
+
+  @override
+  String get vetHomeClaimStatus => 'My Claim Status';
+
+  @override
+  String get vetHomeCalendarTwoWeeks => '2 Weeks';
+
+  @override
+  String vetHomeSelectedAppointments(String date, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# appointments',
+      one: '# appointment',
+    );
+    return '$date - $_temp0';
+  }
+
+  @override
+  String get vetHomeShowAll => 'Show All';
+
+  @override
+  String get vetHomeSelectedDayEmpty => 'No appointments on this day';
+
+  @override
+  String get vetHomeLoginRequired => 'You need to log in for this feature';
+
+  @override
+  String vetHomeAppointmentCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# appointments',
+      one: '# appointment',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get vetHomeFilterAll => 'All';
+
+  @override
+  String vetHomeStatusUpdated(String status) {
+    return 'Updated as $status';
+  }
+
+  @override
+  String vetHomeUpdateError(String error) {
+    return 'Update error: $error';
+  }
+
+  @override
+  String get vetHomeNoRegisteredClinic => 'You do not have a registered clinic';
+
+  @override
+  String get vetHomeScheduleLoadFailed => 'Could not load appointments';
+
+  @override
+  String get vetHomeNoClinicDesc =>
+      'Register as a veterinarian or claim an existing clinic.';
+
+  @override
+  String get vetHomeNoStatusAppointments => 'No appointments with this status';
+
+  @override
+  String get vetHomeNoAppointmentsReceived => 'No appointments received yet';
+
+  @override
+  String get vetHomePetInfoMissing => 'Pet information missing';
+
+  @override
+  String get vetHomeClinicVisit => 'In clinic';
+
+  @override
+  String get vacStatusCompleted => 'Completed';
+
+  @override
+  String get vacStatusOverdue => 'Overdue';
+
+  @override
+  String get vacStatusDueSoon => 'Due soon';
+
+  @override
+  String get vacStatusUpcoming => 'Upcoming';
+
+  @override
+  String get vacStatusNotStarted => 'Not started';
 
   @override
   String get storeHomeLive => 'Live Store';
@@ -3246,18 +4051,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get applySellerStepContract => 'Agreement';
 
   @override
-  String get applySellerOpenBtn => 'Open My Store';
+  String get applySellerOpenBtn => 'Submit Application';
 
   @override
   String get applySellerApprovalNote =>
-      'You can start adding products after your store is approved.';
+      'We will notify you after your application is reviewed.';
 
   @override
-  String get applySellerSuccessTitle => 'Congratulations!';
+  String get applySellerSuccessTitle => 'Application Submitted!';
 
   @override
   String applySellerSuccessDesc(String storeName) {
-    return 'Your store \"$storeName\" has been successfully created!';
+    return 'Your application for \"$storeName\" has been sent. Your store will be activated after admin approval.';
   }
 
   @override
@@ -3321,13 +4126,67 @@ class AppLocalizationsEn extends AppLocalizations {
   String get applySellerIbanRequired => 'IBAN is required';
 
   @override
-  String get applySellerIbanInvalid => 'Enter a valid IBAN (must start with TR)';
+  String get applySellerIbanInvalid =>
+      'Enter a valid IBAN (must start with TR)';
 
   @override
   String get applySellerNameTooLong => 'Must be at most 120 characters';
 
   @override
   String get applySellerLegalInfoSection => 'Legal Information';
+
+  @override
+  String get sellerAppStatusTitle => 'My Application Status';
+
+  @override
+  String get sellerAppStatusLoadError =>
+      'Application information could not be loaded.';
+
+  @override
+  String get sellerAppStatusNoneTitle => 'No application submitted yet';
+
+  @override
+  String get sellerAppStatusNoneDesc => 'Apply to become a seller.';
+
+  @override
+  String get sellerAppStatusApply => 'Apply';
+
+  @override
+  String get sellerAppStatusReapply => 'Submit New Application';
+
+  @override
+  String get sellerAppStatusApprovedTitle => 'Your Application Was Approved';
+
+  @override
+  String get sellerAppStatusApprovedDesc =>
+      'Congratulations! Your store is active.';
+
+  @override
+  String get sellerAppStatusRejectedTitle => 'Your Application Was Rejected';
+
+  @override
+  String get sellerAppStatusRejectedDesc => 'You can submit a new application.';
+
+  @override
+  String get sellerAppStatusPendingTitle => 'Your Application Is Under Review';
+
+  @override
+  String get sellerAppStatusPendingDesc =>
+      'Our team is reviewing your application.';
+
+  @override
+  String sellerAppStatusSubmittedAt(String date) {
+    return 'Submitted at: $date';
+  }
+
+  @override
+  String get sellerAppStatusInfoTitle => 'Application Information';
+
+  @override
+  String get sellerAppStatusCompanyName => 'Company Name';
+
+  @override
+  String get sellerAppStatusRejectionReason => 'Rejection Reason';
 
   @override
   String get addProductTitle => 'Add Product';
@@ -3552,6 +4411,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get apptCreateValidation => 'Please select pet, date and time';
 
   @override
+  String get apptCreateStepPet => 'Pet';
+
+  @override
+  String get apptCreateStepDateTime => 'Date & Time';
+
+  @override
+  String get apptCreateStepConfirm => 'Confirm';
+
+  @override
+  String get apptCreateNoSlotsDay => 'No available times for this day';
+
+  @override
+  String get apptCreateChooseAnotherDay => 'Choose another day';
+
+  @override
+  String apptCreateAvailableSlots(int count) {
+    return '$count available times';
+  }
+
+  @override
+  String get apptCreateMorning => 'Morning';
+
+  @override
+  String get apptCreateAfternoon => 'Afternoon';
+
+  @override
+  String get apptCreateEvening => 'Evening';
+
+  @override
+  String get apptCreateType => 'Appointment Type';
+
+  @override
+  String get apptCreateClinicType => 'In Clinic';
+
+  @override
+  String get apptCreateOnlineType => 'Online';
+
+  @override
+  String get apptCreateClinicSummary => 'Clinic Appointment';
+
+  @override
+  String get apptCreateOnlineSummary => 'Online Appointment';
+
+  @override
+  String get apptCreateContinue => 'Continue';
+
+  @override
   String apptCreateSlotsError(String error) {
     return 'Could not get slots: $error';
   }
@@ -3605,6 +4511,296 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get apptDetailCancelSuccess => 'Appointment cancelled';
+
+  @override
+  String get apptVetFallback => 'Veterinarian';
+
+  @override
+  String get apptFallbackTitle => 'Appointment';
+
+  @override
+  String get apptStatusPending => 'Pending';
+
+  @override
+  String get apptStatusConfirmed => 'Confirmed';
+
+  @override
+  String get apptStatusCancelled => 'Cancelled';
+
+  @override
+  String get apptStatusCompleted => 'Completed';
+
+  @override
+  String get apptStatusNoShow => 'No-show';
+
+  @override
+  String get apptTypeClinic => 'Clinic';
+
+  @override
+  String get apptTypeOnline => 'Online';
+
+  @override
+  String apptCompletedAt(String date) {
+    return 'Completed at: $date';
+  }
+
+  @override
+  String get apptVetActions => 'Veterinary Actions';
+
+  @override
+  String get apptClinicalRecordAction => 'Clinical Record';
+
+  @override
+  String get apptPrescriptionAddAction => 'Add Prescription';
+
+  @override
+  String get apptApproveAction => 'Approve';
+
+  @override
+  String get apptRejectAction => 'Reject';
+
+  @override
+  String get apptCompleteAction => 'Complete';
+
+  @override
+  String get apptNoShowAction => 'No-show';
+
+  @override
+  String apptDetailLoadError(String error) {
+    return 'Could not load appointment detail:\n$error';
+  }
+
+  @override
+  String get apptCustomerInfo => 'Customer Information';
+
+  @override
+  String get apptCustomer => 'Customer';
+
+  @override
+  String get apptPhone => 'Phone';
+
+  @override
+  String get apptEmail => 'Email';
+
+  @override
+  String get apptInfo => 'Appointment Information';
+
+  @override
+  String get apptMeetingType => 'Meeting Type';
+
+  @override
+  String get apptOnlineMeeting => 'Online meeting';
+
+  @override
+  String get apptClinicExam => 'Clinic examination';
+
+  @override
+  String get apptOwnerNote => 'Owner Note';
+
+  @override
+  String get apptMeetingLink => 'Meeting Link';
+
+  @override
+  String get apptMeetingLinkError => 'Could not open the meeting link.';
+
+  @override
+  String get apptClinicalRecord => 'Clinical Record';
+
+  @override
+  String get apptDiagnosis => 'Diagnosis';
+
+  @override
+  String get apptTreatmentSummary => 'Treatment Summary';
+
+  @override
+  String get apptFollowUpDate => 'Follow-up Date';
+
+  @override
+  String get apptExamFee => 'Examination Fee';
+
+  @override
+  String get apptPrescriptions => 'Prescriptions';
+
+  @override
+  String apptPrescriptionsLoadError(String error) {
+    return 'Could not load prescriptions: $error';
+  }
+
+  @override
+  String get apptNoPrescriptions =>
+      'No prescription has been created for this appointment yet.';
+
+  @override
+  String get apptPrepareFirstPrescription => 'Prepare First Prescription';
+
+  @override
+  String get apptRetry => 'Try Again';
+
+  @override
+  String get apptPrescription => 'Prescription';
+
+  @override
+  String get apptPrescriptionStatusActive => 'Active';
+
+  @override
+  String get apptMedicationList => 'Medication List';
+
+  @override
+  String apptMedicationDurationDays(int count) {
+    return '$count days';
+  }
+
+  @override
+  String apptStatusUpdated(String status) {
+    return 'Updated as $status';
+  }
+
+  @override
+  String apptActionFailed(String error) {
+    return 'Action failed: $error';
+  }
+
+  @override
+  String get apptConfirmApproveTitle => 'Approve appointment';
+
+  @override
+  String get apptConfirmCompleteTitle => 'Complete appointment';
+
+  @override
+  String get apptConfirmNoShowTitle => 'Mark as no-show';
+
+  @override
+  String get apptConfirmCancelTitle => 'Cancel appointment';
+
+  @override
+  String get apptConfirmDefaultTitle => 'Update status';
+
+  @override
+  String get apptConfirmApproveDesc =>
+      'This appointment will be approved and the user will be notified.';
+
+  @override
+  String get apptConfirmCompleteDesc =>
+      'This appointment will be marked as completed.';
+
+  @override
+  String get apptConfirmNoShowDesc =>
+      'The patient will be recorded as no-show.';
+
+  @override
+  String get apptConfirmCancelDesc =>
+      'This action cannot be undone. The appointment will be cancelled.';
+
+  @override
+  String get apptConfirmDefaultDesc => 'Do you want to continue?';
+
+  @override
+  String get apptClinicalRecordEdit => 'Edit Clinical Record';
+
+  @override
+  String get apptClinicalRecordEditDesc =>
+      'Save vet notes, diagnosis and follow-up plan for this appointment.';
+
+  @override
+  String get apptDiagnosisHint => 'E.g. suspected gastritis';
+
+  @override
+  String get apptVetNotesHint => 'Notable findings during the examination';
+
+  @override
+  String get apptTreatmentHint =>
+      'Treatment, recommendations and follow-up plan';
+
+  @override
+  String get apptExamFeeField => 'Examination Fee (TL)';
+
+  @override
+  String get apptFollowUpNotSelected => 'Not selected yet';
+
+  @override
+  String get apptSelect => 'Select';
+
+  @override
+  String get apptFeeNumericError => 'Fee must be numeric.';
+
+  @override
+  String get apptClinicalRecordUpdated => 'Clinical record updated.';
+
+  @override
+  String apptClinicalRecordUpdateError(String error) {
+    return 'Could not update record: $error';
+  }
+
+  @override
+  String get apptSaving => 'Saving...';
+
+  @override
+  String get apptPrescriptionCreate => 'Create Prescription';
+
+  @override
+  String get apptPrescriptionCreateDesc =>
+      'Add medications and usage plan to the appointment record.';
+
+  @override
+  String get apptExtraNotes => 'Extra Notes';
+
+  @override
+  String get apptPrescriptionNotesHint => 'Usage warning or follow-up note';
+
+  @override
+  String get apptMedications => 'Medications';
+
+  @override
+  String get apptAddMedication => 'Add Medication';
+
+  @override
+  String apptMedicationNumber(int index) {
+    return 'Medication $index';
+  }
+
+  @override
+  String get apptMedicationName => 'Medication Name';
+
+  @override
+  String get apptMedicationNameHint => 'E.g. Amoxicillin';
+
+  @override
+  String get apptMedicationDose => 'Dose';
+
+  @override
+  String get apptMedicationFrequency => 'Frequency';
+
+  @override
+  String get apptMedicationFrequencyHint => 'Twice a day';
+
+  @override
+  String get apptMedicationDay => 'Day';
+
+  @override
+  String get apptMedicationUse => 'Usage';
+
+  @override
+  String get apptMedicationUseHint => 'After meals';
+
+  @override
+  String get apptOptional => 'Optional';
+
+  @override
+  String get apptDiagnosisRequired => 'Diagnosis is required.';
+
+  @override
+  String get apptMedicationRequired => 'Enter at least one medication.';
+
+  @override
+  String get apptPrescriptionCreated => 'Prescription created.';
+
+  @override
+  String apptPrescriptionCreateError(String error) {
+    return 'Could not create prescription: $error';
+  }
+
+  @override
+  String get apptSavePrescription => 'Save Prescription';
 
   @override
   String apptDetailError(String error) {
@@ -3672,6 +4868,73 @@ class AppLocalizationsEn extends AppLocalizations {
   String vetRegisterError(String error) {
     return 'Error: $error';
   }
+
+  @override
+  String get vetRegisterSubmittedTitle => 'Clinic Submitted';
+
+  @override
+  String get vetRegisterSubmittedContent =>
+      'Your clinic registration was received and your ownership claim was sent for admin approval.\n\nYou can track the request from the \"Claim Status\" screen.';
+
+  @override
+  String get vetRegisterClaimOwnerRole => 'Clinic Owner';
+
+  @override
+  String get vetRegisterAutoClaimNote =>
+      'Automatically created by the user who added the clinic to the system.';
+
+  @override
+  String get vacAddTitle => 'Add Vaccination Record';
+
+  @override
+  String get vacAddDateRequired => 'Select administration date';
+
+  @override
+  String get vacAddSuccess => 'Vaccination record added!';
+
+  @override
+  String vacAddError(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get vacAddVaccineName => 'Vaccine Name *';
+
+  @override
+  String get vacAddVaccineNameRequired => 'Vaccine name is required';
+
+  @override
+  String get vacAddVaccineCode => 'Vaccine Code';
+
+  @override
+  String get vacAddBatchNumber => 'Batch Number';
+
+  @override
+  String get vacAddVetOptional => 'Veterinarian (Optional)';
+
+  @override
+  String get vacAddNoVets => 'No registered veterinarian found';
+
+  @override
+  String get vacAddSelectVet => 'Select veterinarian';
+
+  @override
+  String get vacAddNoSelection => 'No selection';
+
+  @override
+  String get vacAddAdminDate => 'Administration Date *';
+
+  @override
+  String get vacAddSelectDate => 'Select date';
+
+  @override
+  String get vacAddNextDueDate => 'Next Dose Date';
+
+  @override
+  String get vacAddOptional => 'Optional';
+
+  @override
+  String get vacAddNotes => 'Notes';
 
   @override
   String get searchHint => 'Search listings, stores or vets...';
@@ -3853,6 +5116,81 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sitterServiceGrooming => 'Grooming';
+
+  @override
+  String get sitterOpenRequest => 'Create Request';
+
+  @override
+  String get sitterMyProfile => 'My Sitter Profile';
+
+  @override
+  String get sitterProfileActiveShort => '✓ Active';
+
+  @override
+  String get sitterProfilePendingShort => '⏳ Pending Approval';
+
+  @override
+  String get sitterMyRequests => 'My Requests';
+
+  @override
+  String get sitterTabSitters => 'Sitters';
+
+  @override
+  String get sitterTabRequests => 'Sitter Requests';
+
+  @override
+  String get sitterRequestsEmptyTitle => 'No sitter requests yet';
+
+  @override
+  String get sitterRequestsEmptySubtitle =>
+      'Requests from people looking for a sitter will appear here';
+
+  @override
+  String get sitterContactOwner => 'Contact';
+
+  @override
+  String get sitterNoOwnRequests => 'You have not created a request yet';
+
+  @override
+  String get sitterRequestClose => 'Close Request';
+
+  @override
+  String get sitterRequestOpen => 'Open Request';
+
+  @override
+  String get sitterRequestFormTitle => 'Create Sitter Request';
+
+  @override
+  String get sitterRequestDateRequired => 'Please select a date range';
+
+  @override
+  String get sitterRequestPublished => 'Your request has been published!';
+
+  @override
+  String get sitterRequestPetTypeMulti =>
+      'Pet Type (multiple selection allowed)';
+
+  @override
+  String get sitterRequestServiceDates => 'Service Dates';
+
+  @override
+  String get sitterRequestStartDate => 'Start';
+
+  @override
+  String get sitterRequestEndDate => 'End';
+
+  @override
+  String get sitterRequestSelectDate => 'Select';
+
+  @override
+  String get sitterRequestExtraInfo => 'Additional Info (optional)';
+
+  @override
+  String get sitterRequestDescHint =>
+      'Example: My pet is a dog and needs two walks per day...';
+
+  @override
+  String get sitterRequestPublish => 'Publish Request';
 
   @override
   String get sitterEmptyTitle => 'No sitters found nearby';
@@ -4058,6 +5396,462 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get bookingsCalendarWeek => 'Week';
+
+  @override
+  String get bookingsCalendarMonth => 'Month';
+
+  @override
+  String bookingsSelectedDayCount(String date, int count) {
+    return '$date - $count bookings';
+  }
+
+  @override
+  String get bookingsAll => 'All';
+
+  @override
+  String get bookingsEmptyForDay => 'No bookings on this day';
+
+  @override
+  String get bookingsCustomerLabel => 'Customer';
+
+  @override
+  String get bookingsPetFallback => 'Pet';
+
+  @override
+  String get bookingsStatusPending => 'Pending';
+
+  @override
+  String get bookingsStatusAccepted => 'Accepted';
+
+  @override
+  String get bookingsStatusActive => 'Care Active';
+
+  @override
+  String get bookingsStatusRejected => 'Rejected';
+
+  @override
+  String get bookingsStatusCancelled => 'Cancelled';
+
+  @override
+  String get bookingsStatusCompleted => 'Completed';
+
+  @override
+  String bookingsCurrentPayment(String amount) {
+    return 'Current payout: $amount TL';
+  }
+
+  @override
+  String get bookingsLiveLocationPaused =>
+      'Live location was interrupted. Payment is temporarily paused.';
+
+  @override
+  String get bookingsDailyReport => 'Daily Report';
+
+  @override
+  String get bookingsCareTimeline => 'Care Timeline';
+
+  @override
+  String get bookingsPhotoTimeline => 'Photo Timeline';
+
+  @override
+  String get bookingsReviewCustomer => 'Review Customer';
+
+  @override
+  String get bookingsCustomerReviewSubtitle =>
+      'Rate the pet owner based on the reservation experience.';
+
+  @override
+  String get bookingsCustomerReviewHint =>
+      'Your notes about communication, preparation, and reliability';
+
+  @override
+  String get bookingsCustomerReviewTitle => 'Customer\'s review';
+
+  @override
+  String get bookingsYourSitterReviewTitle => 'Your sitter review';
+
+  @override
+  String get bookingsYourCustomerReviewTitle => 'Your customer review';
+
+  @override
+  String get bookingsSitterNoteForYou => 'Sitter\'s note for you';
+
+  @override
+  String bookingsContactTitle(String name) {
+    return 'Contact: $name';
+  }
+
+  @override
+  String get bookingsContactMessage => 'Message';
+
+  @override
+  String get bookingsContactCall => 'Call';
+
+  @override
+  String get bookingsContactEmail => 'Email';
+
+  @override
+  String get bookingsPhoneLaunchError => 'Could not open the phone app';
+
+  @override
+  String get bookingsEmailLaunchError => 'Could not open the email app';
+
+  @override
+  String get bookingsChatStartError => 'Could not start chat';
+
+  @override
+  String bookingsChatOpenError(String error) {
+    return 'Could not open chat: $error';
+  }
+
+  @override
+  String get bookingsWalkScreen => 'Open Walk Screen';
+
+  @override
+  String get bookingsPhotoSent => 'Photo sent to the pet owner!';
+
+  @override
+  String get bookingsPhotoUpload => 'Share Photo';
+
+  @override
+  String get bookingsPhotoUploading => 'Uploading...';
+
+  @override
+  String bookingsPhotosLoadError(String error) {
+    return 'Could not load: $error';
+  }
+
+  @override
+  String get bookingsNoPhotos => 'No photos have been shared yet';
+
+  @override
+  String get bookingsOwnerWaiting =>
+      'The sitter has not picked up the dog yet. Live location will start automatically after pickup.';
+
+  @override
+  String get bookingsLiveTracking => 'Track Live Location';
+
+  @override
+  String get sitterDashboardTitle => 'Sitter Dashboard';
+
+  @override
+  String get sitterDashboardLoadError => 'Dashboard could not be loaded';
+
+  @override
+  String get sitterDashboardRetry => 'Try Again';
+
+  @override
+  String get sitterDashboardProfileRequiredTitle =>
+      'A sitter profile is required for the dashboard';
+
+  @override
+  String get sitterDashboardProfileRequiredSubtitle =>
+      'Create your profile first. Your reservations and performance will then be collected here.';
+
+  @override
+  String get sitterDashboardCreateProfile => 'Create Sitter Profile';
+
+  @override
+  String get sitterDashboardMetricPending => 'Pending';
+
+  @override
+  String get sitterDashboardMetricPendingSub =>
+      'Reservations waiting for approval';
+
+  @override
+  String get sitterDashboardMetricActive => 'Active';
+
+  @override
+  String get sitterDashboardMetricActiveSub => 'Ongoing service';
+
+  @override
+  String get sitterDashboardMetricCompleted => 'Completed';
+
+  @override
+  String get sitterDashboardMetricCompletedSub => 'Closed reservations';
+
+  @override
+  String get sitterDashboardMetricRating => 'Rating';
+
+  @override
+  String sitterDashboardReviewCount(int count) {
+    return '$count reviews';
+  }
+
+  @override
+  String get sitterDashboardQuickActions => 'Quick Actions';
+
+  @override
+  String get sitterDashboardQuickActionsDesc =>
+      'Open reservations, profile and calendar screens from here.';
+
+  @override
+  String get sitterDashboardBookingsAction => 'Reservations';
+
+  @override
+  String get sitterDashboardEditProfile => 'Edit Profile';
+
+  @override
+  String get sitterDashboardAvailabilityCalendar => 'Availability Calendar';
+
+  @override
+  String get sitterDashboardPortfolio => 'Portfolio';
+
+  @override
+  String get sitterDashboardEarningsReport => 'Earnings Report';
+
+  @override
+  String get sitterDashboardRevenueSummary => 'Revenue Summary';
+
+  @override
+  String get sitterDashboardRevenueSummaryDesc =>
+      'Operational financial view derived from current reservations.';
+
+  @override
+  String get sitterDashboardThisMonthEarned => 'Earned this month';
+
+  @override
+  String get sitterDashboardTotalCompletedRevenue => 'Total completed revenue';
+
+  @override
+  String get sitterDashboardPipeline => 'Expected revenue';
+
+  @override
+  String get sitterDashboardAcceptedJobs => 'Accepted jobs';
+
+  @override
+  String get sitterDashboardPausedPayment => 'Paused payment';
+
+  @override
+  String get sitterDashboardServiceDistribution => 'Service Distribution';
+
+  @override
+  String get sitterDashboardServiceDistributionDesc =>
+      'Shows which services demand is shifting toward.';
+
+  @override
+  String get sitterDashboardNoServiceHistory => 'No service history yet.';
+
+  @override
+  String sitterDashboardJobCount(int count) {
+    return '$count jobs';
+  }
+
+  @override
+  String get sitterDashboardUpcomingJobs => 'Upcoming Jobs';
+
+  @override
+  String get sitterDashboardUpcomingJobsDesc =>
+      'Active and approved reservations with upcoming start dates.';
+
+  @override
+  String get sitterDashboardNoUpcoming => 'No upcoming reservations.';
+
+  @override
+  String get sitterDashboardRecentReviews => 'Recent Reviews';
+
+  @override
+  String get sitterDashboardRecentReviewsDesc =>
+      'Track customer satisfaction from one panel.';
+
+  @override
+  String get sitterDashboardNoReviews => 'No reviews yet.';
+
+  @override
+  String get sitterDashboardAvailabilityOnMsg => 'Profile is now available.';
+
+  @override
+  String get sitterDashboardAvailabilityOffMsg =>
+      'Profile was marked unavailable.';
+
+  @override
+  String sitterDashboardAvailabilityError(String error) {
+    return 'Could not update availability: $error';
+  }
+
+  @override
+  String get sitterDashboardAddressMissing => 'No address added';
+
+  @override
+  String get sitterDashboardVerifiedProfile => 'Verified Profile';
+
+  @override
+  String get sitterDashboardPendingProfile => 'Profile Pending Approval';
+
+  @override
+  String sitterDashboardPendingQueue(int count) {
+    return '$count requests in queue';
+  }
+
+  @override
+  String sitterDashboardActiveService(int count) {
+    return '$count active services';
+  }
+
+  @override
+  String get sitterDashboardAvailabilityStatus => 'Availability Status';
+
+  @override
+  String get sitterDashboardAvailabilityOpen => 'Open';
+
+  @override
+  String get sitterDashboardAvailabilityClosed => 'Closed';
+
+  @override
+  String get sitterFinanceTitle => 'Earnings Report';
+
+  @override
+  String sitterFinanceLoadError(String error) {
+    return 'Could not load financial report: $error';
+  }
+
+  @override
+  String get sitterFinanceThisMonth => 'This Month';
+
+  @override
+  String get sitterFinanceThisMonthSub => 'Monthly collected revenue';
+
+  @override
+  String get sitterFinancePipeline => 'Expected';
+
+  @override
+  String get sitterFinancePipelineSub =>
+      'Expected from active and approved jobs';
+
+  @override
+  String get sitterFinancePaused => 'Paused';
+
+  @override
+  String sitterFinancePausedSub(int count) {
+    return '$count job payments paused';
+  }
+
+  @override
+  String get sitterFinanceCompleted => 'Completed';
+
+  @override
+  String get sitterFinanceCompletedSub => 'Number of jobs converted to revenue';
+
+  @override
+  String get sitterFinanceLast14Days => 'Last 14 Days';
+
+  @override
+  String get sitterFinanceLast14DaysDesc =>
+      'Track daily earnings and completed job counts.';
+
+  @override
+  String get sitterFinanceMonthlyTrend => 'Monthly Trend';
+
+  @override
+  String get sitterFinanceMonthlyTrendDesc =>
+      'Revenue distribution over the last 6 months.';
+
+  @override
+  String get sitterFinanceServiceRevenue => 'Revenue by Service';
+
+  @override
+  String get sitterFinanceServiceRevenueDesc =>
+      'Shows which services generate more revenue and volume.';
+
+  @override
+  String get sitterFinanceNoMovements => 'No financial activity yet.';
+
+  @override
+  String sitterFinanceCompletedJobs(int count) {
+    return '$count jobs completed';
+  }
+
+  @override
+  String get sitterFinanceRecentPayments => 'Recent Payments';
+
+  @override
+  String get sitterFinanceRecentPaymentsDesc =>
+      'Recent revenue records from newly completed jobs.';
+
+  @override
+  String get sitterFinanceNoCompleted => 'No completed job records.';
+
+  @override
+  String sitterFinanceTotalBookings(int count) {
+    return '$count total reservations';
+  }
+
+  @override
+  String sitterFinancePendingRequests(int count) {
+    return '$count pending requests';
+  }
+
+  @override
+  String sitterFinanceActiveServices(int count) {
+    return '$count active services';
+  }
+
+  @override
+  String get sitterFinanceTotalRevenueLabel => 'Total collected revenue';
+
+  @override
+  String careReportDetailTitle(int day) {
+    return 'Day $day Report';
+  }
+
+  @override
+  String careReportDetailSummary(int day) {
+    return 'Day $day Summary';
+  }
+
+  @override
+  String get careReportDetailShared => 'Sent to customer';
+
+  @override
+  String get careReportDetailNotShared => 'Not sent yet';
+
+  @override
+  String careReportDetailSharedAt(String date) {
+    return 'Shared at: $date';
+  }
+
+  @override
+  String get careReportDetailStatus => 'Care Status';
+
+  @override
+  String get careReportDetailFoodEaten => 'Ate food';
+
+  @override
+  String get careReportDetailFoodNotEaten => 'Did not eat';
+
+  @override
+  String get careReportDetailSitterNote => 'Sitter Note';
+
+  @override
+  String get careReportDetailNoNote => 'No note was added for this report.';
+
+  @override
+  String get careReportDetailPhotos => 'Photos';
+
+  @override
+  String get careReportDetailNoPhotos =>
+      'No photos were added for this report.';
+
+  @override
+  String get careReportActivityWalk => 'Walk';
+
+  @override
+  String get careReportActivityPlay => 'Play';
+
+  @override
+  String get careReportActivityGrooming => 'Grooming';
+
+  @override
+  String get careReportActivityVetVisit => 'Veterinary';
+
+  @override
+  String get careReportActivityBath => 'Bath';
+
+  @override
+  String get careReportActivityTraining => 'Training';
+
+  @override
   String get adoptionAppsTitle => 'Adoption Applications';
 
   @override
@@ -4140,6 +5934,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adoptionAppsStatusPending => 'Pending';
+
+  @override
+  String adoptionAppsRespondedAt(String date) {
+    return 'Responded: $date';
+  }
 
   @override
   String get adoptionAppsTimelineApplication => 'Application';
@@ -4911,6 +6710,428 @@ class AppLocalizationsEn extends AppLocalizations {
   String eventCreateErr(String error) {
     return 'Error: $error';
   }
+
+  @override
+  String get vetEarningsTitle => 'Veterinary Earnings Report';
+
+  @override
+  String vetEarningsLoadError(String error) {
+    return 'Could not load earnings report: $error';
+  }
+
+  @override
+  String get vetEarningsThisMonth => 'This Month';
+
+  @override
+  String get vetEarningsCompletedRevenue =>
+      'Revenue from completed appointments';
+
+  @override
+  String get vetEarningsPendingRevenue => 'Pending Revenue';
+
+  @override
+  String get vetEarningsExpectedFromConfirmed =>
+      'Expected from confirmed appointments';
+
+  @override
+  String get vetEarningsAverageExam => 'Avg. Exam';
+
+  @override
+  String get vetEarningsAverageCompleted => 'Average completed appointment fee';
+
+  @override
+  String get vetEarningsNoShow => 'No Show';
+
+  @override
+  String get vetEarningsNoShowCount => 'Patients who did not arrive';
+
+  @override
+  String get vetEarningsFeePolicy => 'Fee Policy';
+
+  @override
+  String get vetEarningsFeePolicyDesc =>
+      'Current appointment fees updated from the clinic panel.';
+
+  @override
+  String get vetEarningsClinicFee => 'Clinic examination fee';
+
+  @override
+  String get vetEarningsOnlineFee => 'Online consultation fee';
+
+  @override
+  String get vetEarningsLast14Days => 'Last 14 Days';
+
+  @override
+  String get vetEarningsLast14DaysDesc =>
+      'Completed appointments and revenue by day.';
+
+  @override
+  String get vetEarningsMonthlyTrend => 'Monthly Trend';
+
+  @override
+  String get vetEarningsMonthlyTrendDesc =>
+      'Completed appointment revenue over the last 6 months.';
+
+  @override
+  String get vetEarningsTypeBreakdown => 'Appointment Type Breakdown';
+
+  @override
+  String get vetEarningsTypeBreakdownDesc =>
+      'Revenue contribution of clinic and online appointments.';
+
+  @override
+  String get vetEarningsNoCompleted => 'No completed appointments yet.';
+
+  @override
+  String vetEarningsAppointmentCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# appointments',
+      one: '# appointment',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get vetEarningsRecentCompleted => 'Recently Completed';
+
+  @override
+  String get vetEarningsRecentCompletedDesc =>
+      'Revenue flow from the latest completed appointments.';
+
+  @override
+  String get vetEarningsNoRecords => 'No records found.';
+
+  @override
+  String vetEarningsTotalAppointments(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# appointments total',
+      one: '# appointment total',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String vetEarningsConfirmedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# confirmed',
+      one: '# confirmed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String vetEarningsCompletedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# completed',
+      one: '# completed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String vetEarningsTotalCompletedRevenue(String vetName) {
+    return 'Total completed revenue for $vetName';
+  }
+
+  @override
+  String get clinicPanelTitle => 'My Clinic Panel';
+
+  @override
+  String get clinicPanelAppScore => 'App Score';
+
+  @override
+  String clinicPanelReviewCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# reviews',
+      one: '# review',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get clinicPanelPending => 'Pending';
+
+  @override
+  String get clinicPanelPendingSubtitle => 'Appointments waiting for approval';
+
+  @override
+  String get clinicPanelConfirmed => 'Confirmed';
+
+  @override
+  String get clinicPanelConfirmedSubtitle => 'Active appointments on calendar';
+
+  @override
+  String get clinicPanelCompleted => 'Completed';
+
+  @override
+  String get clinicPanelCompletedSubtitle => 'Closed appointments';
+
+  @override
+  String get clinicPanelProfileTitle => 'Profile Information';
+
+  @override
+  String get clinicPanelProfileSubtitle =>
+      'Manage the clinic storefront, contact information and appointment preferences here.';
+
+  @override
+  String get clinicPanelClinicName => 'Clinic Name';
+
+  @override
+  String get clinicPanelClinicNameRequired => 'Clinic name is required';
+
+  @override
+  String get clinicPanelAddress => 'Address';
+
+  @override
+  String get clinicPanelAddressRequired => 'Address is required';
+
+  @override
+  String get clinicPanelPhone => 'Phone';
+
+  @override
+  String get clinicPanelEmail => 'Email';
+
+  @override
+  String get clinicPanelWebsite => 'Website';
+
+  @override
+  String get clinicPanelDescription => 'Description';
+
+  @override
+  String get clinicPanelAcceptOnline => 'Accept online appointments';
+
+  @override
+  String get clinicPanelAcceptOnlineSubtitle =>
+      'When enabled, users can create video consultation appointments.';
+
+  @override
+  String get clinicPanelSlotMinutes => 'Appointment Slot Minutes';
+
+  @override
+  String get clinicPanelClinicFee => 'Clinic Fee (TRY)';
+
+  @override
+  String get clinicPanelOnlineFee => 'Online Fee (TRY)';
+
+  @override
+  String get clinicPanelServicesTitle => 'Services';
+
+  @override
+  String get clinicPanelServicesSubtitle =>
+      'Select featured services. They are shown as chips on profile cards.';
+
+  @override
+  String get clinicPanelSpeciesTitle => 'Served Species';
+
+  @override
+  String get clinicPanelSpeciesSubtitle =>
+      'Select the animal species served for search and filter matching.';
+
+  @override
+  String get clinicPanelWorkingHoursTitle => 'Working Hours';
+
+  @override
+  String get clinicPanelWorkingHoursSubtitle =>
+      'This is the base for calendar management. Edit closed days and time ranges.';
+
+  @override
+  String get clinicPanelAvailabilityTitle => 'Calendar and Availability';
+
+  @override
+  String get clinicPanelAvailabilitySubtitle =>
+      'Close the clinic or define daily hour overrides for the next 14 days.';
+
+  @override
+  String get clinicPanelReviewsTitle => 'Review Panel';
+
+  @override
+  String get clinicPanelReviewsSubtitle =>
+      'Monitor all reviews, rating average and latest feedback from this area.';
+
+  @override
+  String get clinicPanelSaveChanges => 'Save Changes';
+
+  @override
+  String get clinicPanelSlotMinError =>
+      'Slot duration must be at least 10 minutes.';
+
+  @override
+  String clinicPanelAvailabilityRangeRequired(String date) {
+    return 'Opening and closing must be entered together for $date.';
+  }
+
+  @override
+  String clinicPanelAvailabilityCloseAfterOpen(String date) {
+    return 'Closing time must be after opening time for $date.';
+  }
+
+  @override
+  String get clinicPanelSaved => 'Clinic information updated.';
+
+  @override
+  String clinicPanelSaveFailed(String error) {
+    return 'Save failed: $error';
+  }
+
+  @override
+  String get clinicPanelClaimApproved => 'Ownership approved';
+
+  @override
+  String get clinicPanelClaimRejected => 'Request rejected';
+
+  @override
+  String get clinicPanelClaimPending => 'Waiting for approval';
+
+  @override
+  String get clinicPanelVerifiedClinic => 'Verified Clinic';
+
+  @override
+  String get clinicPanelOnlineOpen => 'Online Appointments Open';
+
+  @override
+  String get clinicPanelPhoneMissing => 'Phone not added';
+
+  @override
+  String get clinicPanelEmailMissing => 'Email not added';
+
+  @override
+  String get clinicPanelWebsiteMissing => 'Website not added';
+
+  @override
+  String get clinicPanelClosed => 'Closed';
+
+  @override
+  String get clinicPanelOpen => 'Open';
+
+  @override
+  String get clinicPanelOpening => 'Opening';
+
+  @override
+  String get clinicPanelClosing => 'Closing';
+
+  @override
+  String get clinicPanelDateClosed => 'This date is closed for appointments';
+
+  @override
+  String get clinicPanelDateCustomHours =>
+      'Overrides the weekly plan for this date';
+
+  @override
+  String get clinicPanelDateDefaultHours => 'Uses the weekly plan';
+
+  @override
+  String clinicPanelBookingLoad(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# appointments',
+      one: '# appointment',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get clinicPanelDefault => 'Default';
+
+  @override
+  String get clinicPanelResetWeeklyPlan => 'Return to weekly plan';
+
+  @override
+  String get clinicPanelReviewsEmpty => 'No in-app reviews yet.';
+
+  @override
+  String get clinicPanelRecentReviews => 'Recent reviews';
+
+  @override
+  String get clinicPanelQualityTracking => 'Quality tracking';
+
+  @override
+  String get clinicPanelAllReviews => 'All Clinic Reviews';
+
+  @override
+  String clinicPanelReviewSummary(int count, String rating) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# reviews',
+      one: '# review',
+    );
+    return '$_temp0 | Average $rating';
+  }
+
+  @override
+  String get clinicPanelSeeAllReviews => 'See all reviews';
+
+  @override
+  String get clinicPanelLoadFailed => 'Could not load clinic panel';
+
+  @override
+  String get clinicPanelNoClinicTitle => 'No manageable clinic found';
+
+  @override
+  String get clinicPanelNoClinicSubtitle =>
+      'Create a clinic record first or wait for your existing clinic request to be approved.';
+
+  @override
+  String get clinicPanelSpeciesFish => 'Fish';
+
+  @override
+  String get clinicPanelSpeciesRodent => 'Rodent';
+
+  @override
+  String get clinicPanelServiceExam => 'Examination';
+
+  @override
+  String get clinicPanelServiceVaccination => 'Vaccination';
+
+  @override
+  String get clinicPanelServiceSurgery => 'Surgery';
+
+  @override
+  String get clinicPanelServiceEmergencyCare => 'Emergency Care';
+
+  @override
+  String get clinicPanelServiceLaboratory => 'Laboratory';
+
+  @override
+  String get clinicPanelServiceDentalCare => 'Dental Care';
+
+  @override
+  String get clinicPanelServiceCheckup => 'Check-up';
+
+  @override
+  String get clinicPanelServiceOnlineConsultation => 'Online Consultation';
+
+  @override
+  String get weekdayMonday => 'Monday';
+
+  @override
+  String get weekdayTuesday => 'Tuesday';
+
+  @override
+  String get weekdayWednesday => 'Wednesday';
+
+  @override
+  String get weekdayThursday => 'Thursday';
+
+  @override
+  String get weekdayFriday => 'Friday';
+
+  @override
+  String get weekdaySaturday => 'Saturday';
+
+  @override
+  String get weekdaySunday => 'Sunday';
 
   @override
   String get themeSelectTitle => 'Choose Your Theme';

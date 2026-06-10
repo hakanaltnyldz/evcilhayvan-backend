@@ -8,6 +8,7 @@ import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/store/data/store_repository.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/store_model.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class EditStoreScreen extends ConsumerStatefulWidget {
   const EditStoreScreen({super.key, required this.store});
@@ -51,7 +52,9 @@ class _EditStoreScreenState extends ConsumerState<EditStoreScreen>
     _instagramCtrl = TextEditingController(text: widget.store.instagram ?? '');
     _twitterCtrl = TextEditingController(text: widget.store.twitter ?? '');
     _facebookCtrl = TextEditingController(text: widget.store.facebook ?? '');
-    _workingHoursCtrl = TextEditingController(text: widget.store.workingHours ?? '');
+    _workingHoursCtrl = TextEditingController(
+      text: widget.store.workingHours ?? '',
+    );
   }
 
   @override
@@ -69,27 +72,31 @@ class _EditStoreScreenState extends ConsumerState<EditStoreScreen>
   }
 
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSaving = true);
     try {
-      await ApiClient().dio.patch('/api/stores/me/profile', data: {
-        'name': _nameCtrl.text.trim(),
-        'description': _descCtrl.text.trim(),
-        'phone': _phoneCtrl.text.trim(),
-        'website': _websiteCtrl.text.trim(),
-        'instagram': _instagramCtrl.text.trim(),
-        'twitter': _twitterCtrl.text.trim(),
-        'facebook': _facebookCtrl.text.trim(),
-        'workingHours': _workingHoursCtrl.text.trim(),
-      });
+      await ApiClient().dio.patch(
+        '/api/stores/me/profile',
+        data: {
+          'name': _nameCtrl.text.trim(),
+          'description': _descCtrl.text.trim(),
+          'phone': _phoneCtrl.text.trim(),
+          'website': _websiteCtrl.text.trim(),
+          'instagram': _instagramCtrl.text.trim(),
+          'twitter': _twitterCtrl.text.trim(),
+          'facebook': _facebookCtrl.text.trim(),
+          'workingHours': _workingHoursCtrl.text.trim(),
+        },
+      );
 
       ref.invalidate(myStoreProvider);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mağaza profili güncellendi'),
+        SnackBar(
+          content: Text(l10n.sellerStoreProfileUpdated),
           backgroundColor: Colors.green,
         ),
       );
@@ -98,7 +105,7 @@ class _EditStoreScreenState extends ConsumerState<EditStoreScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Güncelleme başarısız: $e'),
+          content: Text(l10n.sellerStoreProfileUpdateErr(e.toString())),
           backgroundColor: Colors.red,
         ),
       );
@@ -109,13 +116,17 @@ class _EditStoreScreenState extends ConsumerState<EditStoreScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Mağazayı Düzenle', style: TextStyle(fontWeight: FontWeight.w800)),
+        title: Text(
+          l10n.sellerStoreProfileEdit,
+          style: const TextStyle(fontWeight: FontWeight.w800),
+        ),
         actions: [
           TextButton(
             onPressed: _isSaving ? null : _save,
@@ -123,19 +134,37 @@ class _EditStoreScreenState extends ConsumerState<EditStoreScreen>
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
                   )
-                : const Text('Kaydet', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                : Text(
+                    l10n.save,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
           ),
         ],
-        bottom: const TabBar(
+        bottom: TabBar(
           indicatorColor: Colors.white,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white60,
           tabs: [
-            Tab(icon: Icon(Icons.store_outlined, size: 18), text: 'Temel'),
-            Tab(icon: Icon(Icons.contact_phone_outlined, size: 18), text: 'İletişim'),
-            Tab(icon: Icon(Icons.schedule_outlined, size: 18), text: 'Saatler'),
+            Tab(
+              icon: const Icon(Icons.store_outlined, size: 18),
+              text: l10n.editStoreTabBasic,
+            ),
+            Tab(
+              icon: const Icon(Icons.contact_phone_outlined, size: 18),
+              text: l10n.editStoreTabContact,
+            ),
+            Tab(
+              icon: const Icon(Icons.schedule_outlined, size: 18),
+              text: l10n.editStoreTabHours,
+            ),
           ],
         ),
       ),
@@ -170,34 +199,36 @@ class _BasicInfoTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionLabel('Mağaza Adı'),
+          _SectionLabel(l10n.sellerStoreNameLabel),
           const SizedBox(height: 8),
           TextFormField(
             controller: nameCtrl,
             maxLength: 80,
-            decoration: _inputDeco('Mağaza adınızı girin', context),
+            decoration: _inputDeco(l10n.editStoreNameHint, context),
             validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'Mağaza adı zorunlu';
-              if (v.trim().length < 2) return 'En az 2 karakter olmalı';
+              if (v == null || v.trim().isEmpty)
+                return l10n.editStoreNameRequired;
+              if (v.trim().length < 2) return l10n.editStoreNameMin;
               return null;
             },
           ),
           const SizedBox(height: 16),
-          _SectionLabel('Açıklama'),
+          _SectionLabel(l10n.sellerStoreDescLabel),
           const SizedBox(height: 8),
           TextFormField(
             controller: descCtrl,
             maxLines: 5,
             maxLength: 500,
-            decoration: _inputDeco('Mağazanız hakkında kısa bir açıklama yazın', context),
+            decoration: _inputDeco(l10n.editStoreDescHint, context),
           ),
           const SizedBox(height: 8),
-          _InfoChip('Açıklama, mağaza profilinizde müşterilere gösterilir.'),
+          _InfoChip(l10n.editStoreDescInfo),
         ],
       ),
     );
@@ -223,36 +254,43 @@ class _ContactTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionLabel('Telefon'),
+          _SectionLabel(l10n.sellerStorePhoneLabel),
           const SizedBox(height: 8),
           TextFormField(
             controller: phoneCtrl,
             keyboardType: TextInputType.phone,
             maxLength: 20,
-            decoration: _inputDeco('0532 xxx xx xx', context,
-                prefixIcon: Icons.phone_outlined),
+            decoration: _inputDeco(
+              '0532 xxx xx xx',
+              context,
+              prefixIcon: Icons.phone_outlined,
+            ),
           ),
           const SizedBox(height: 16),
-          _SectionLabel('Web Sitesi'),
+          _SectionLabel(l10n.sellerStoreWebsiteLabel),
           const SizedBox(height: 8),
           TextFormField(
             controller: websiteCtrl,
             keyboardType: TextInputType.url,
             maxLength: 100,
-            decoration: _inputDeco('https://www.maganiz.com', context,
-                prefixIcon: Icons.language_outlined),
+            decoration: _inputDeco(
+              'https://www.maganiz.com',
+              context,
+              prefixIcon: Icons.language_outlined,
+            ),
           ),
           const SizedBox(height: 16),
-          _SectionLabel('Sosyal Medya'),
+          _SectionLabel(l10n.editStoreSocialMedia),
           const SizedBox(height: 8),
           _SocialField(
             ctrl: instagramCtrl,
-            hint: 'Instagram kullanıcı adı',
+            hint: l10n.editStoreInstagramHint,
             prefix: '@',
             icon: Icons.camera_alt_outlined,
             color: const Color(0xFFE1306C),
@@ -260,7 +298,7 @@ class _ContactTab extends StatelessWidget {
           const SizedBox(height: 10),
           _SocialField(
             ctrl: twitterCtrl,
-            hint: 'Twitter/X kullanıcı adı',
+            hint: l10n.editStoreTwitterHint,
             prefix: '@',
             icon: Icons.alternate_email,
             color: const Color(0xFF1DA1F2),
@@ -268,7 +306,7 @@ class _ContactTab extends StatelessWidget {
           const SizedBox(height: 10),
           _SocialField(
             ctrl: facebookCtrl,
-            hint: 'Facebook sayfa adı',
+            hint: l10n.editStoreFacebookHint,
             prefix: 'fb.com/',
             icon: Icons.facebook,
             color: const Color(0xFF1877F2),
@@ -312,7 +350,10 @@ class _SocialField extends StatelessWidget {
         ),
         filled: true,
         fillColor: context.cardColor,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 14,
+        ),
       ),
     );
   }
@@ -330,7 +371,7 @@ class _WorkingHoursTab extends StatefulWidget {
 }
 
 class _WorkingHoursTabState extends State<_WorkingHoursTab> {
-  static const _days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+  static const _days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 
   // State: gün adı → açılış/kapanış (null = kapalı)
   final Map<String, TimeOfDay?> _open = {};
@@ -350,35 +391,34 @@ class _WorkingHoursTabState extends State<_WorkingHoursTab> {
       _open[day] = const TimeOfDay(hour: 9, minute: 0);
       _close[day] = const TimeOfDay(hour: 18, minute: 0);
     }
-    // Pazartesi ve Pazar kapalı varsayılan
-    _enabled['Cmt'] = false;
-    _enabled['Paz'] = false;
+    // Weekend days are disabled by default.
+    _enabled['sat'] = false;
+    _enabled['sun'] = false;
   }
 
   String _buildText() {
+    final l10n = AppLocalizations.of(context)!;
     final parts = <String>[];
     for (final day in _days) {
       if (_enabled[day] == true && _open[day] != null && _close[day] != null) {
         final o = _open[day]!;
         final c = _close[day]!;
         parts.add(
-          '$day ${o.hour.toString().padLeft(2, '0')}:${o.minute.toString().padLeft(2, '0')}'
+          '${_dayLabel(l10n, day)} ${o.hour.toString().padLeft(2, '0')}:${o.minute.toString().padLeft(2, '0')}'
           '-${c.hour.toString().padLeft(2, '0')}:${c.minute.toString().padLeft(2, '0')}',
         );
       } else {
-        parts.add('$day Kapalı');
+        parts.add('${_dayLabel(l10n, day)} ${l10n.editStoreClosed}');
       }
     }
     return parts.join(', ');
   }
 
   Future<void> _pickTime(String day, bool isOpen) async {
-    final initial = isOpen ? (_open[day] ?? const TimeOfDay(hour: 9, minute: 0))
+    final initial = isOpen
+        ? (_open[day] ?? const TimeOfDay(hour: 9, minute: 0))
         : (_close[day] ?? const TimeOfDay(hour: 18, minute: 0));
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: initial,
-    );
+    final picked = await showTimePicker(context: context, initialTime: initial);
     if (picked == null) return;
     setState(() {
       if (isOpen) {
@@ -393,13 +433,14 @@ class _WorkingHoursTabState extends State<_WorkingHoursTab> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _InfoChip('Çalışma saatleriniz mağaza profilinizde gösterilir.'),
+          _InfoChip(l10n.editStoreWorkingHoursInfo),
           const SizedBox(height: 16),
           ...List.generate(_days.length, (i) {
             final day = _days[i];
@@ -421,10 +462,12 @@ class _WorkingHoursTabState extends State<_WorkingHoursTab> {
                   SizedBox(
                     width: 32,
                     child: Text(
-                      day,
+                      _dayLabel(l10n, day),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: isEnabled ? AppPalette.storePrimary : Colors.grey,
+                        color: isEnabled
+                            ? AppPalette.storePrimary
+                            : Colors.grey,
                       ),
                     ),
                   ),
@@ -441,7 +484,7 @@ class _WorkingHoursTabState extends State<_WorkingHoursTab> {
                     const Spacer(),
                     _TimeButton(
                       time: _open[day],
-                      label: 'Açılış',
+                      label: l10n.editStoreOpenTime,
                       onTap: () => _pickTime(day, true),
                     ),
                     const Padding(
@@ -450,12 +493,17 @@ class _WorkingHoursTabState extends State<_WorkingHoursTab> {
                     ),
                     _TimeButton(
                       time: _close[day],
-                      label: 'Kapanış',
+                      label: l10n.editStoreCloseTime,
                       onTap: () => _pickTime(day, false),
                     ),
                   ] else ...[
                     const Spacer(),
-                    Text('Kapalı', style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey)),
+                    Text(
+                      l10n.editStoreClosed,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.grey,
+                      ),
+                    ),
                   ],
                 ],
               ),
@@ -465,10 +513,24 @@ class _WorkingHoursTabState extends State<_WorkingHoursTab> {
       ),
     );
   }
+
+  String _dayLabel(AppLocalizations l10n, String day) => switch (day) {
+    'mon' => l10n.editStoreDayMon,
+    'tue' => l10n.editStoreDayTue,
+    'wed' => l10n.editStoreDayWed,
+    'thu' => l10n.editStoreDayThu,
+    'fri' => l10n.editStoreDayFri,
+    'sat' => l10n.editStoreDaySat,
+    _ => l10n.editStoreDaySun,
+  };
 }
 
 class _TimeButton extends StatelessWidget {
-  const _TimeButton({required this.time, required this.label, required this.onTap});
+  const _TimeButton({
+    required this.time,
+    required this.label,
+    required this.onTap,
+  });
 
   final TimeOfDay? time;
   final String label;
@@ -511,7 +573,9 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+      style: Theme.of(
+        context,
+      ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
     );
   }
 }
@@ -532,7 +596,11 @@ class _InfoChip extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline, size: 16, color: AppPalette.storePrimary),
+          const Icon(
+            Icons.info_outline,
+            size: 16,
+            color: AppPalette.storePrimary,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -549,7 +617,11 @@ class _InfoChip extends StatelessWidget {
   }
 }
 
-InputDecoration _inputDeco(String hint, BuildContext context, {IconData? prefixIcon}) {
+InputDecoration _inputDeco(
+  String hint,
+  BuildContext context, {
+  IconData? prefixIcon,
+}) {
   return InputDecoration(
     hintText: hint,
     prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 20) : null,

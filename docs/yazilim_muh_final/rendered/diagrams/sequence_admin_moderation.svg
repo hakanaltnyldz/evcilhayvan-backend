@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1250" height="760" viewBox="0 0 1250 760">
+  <defs>
+    <style>
+      .bg{fill:#f8fafc}.head{fill:#e2e8f0;stroke:#334155;stroke-width:2;rx:10}.life{stroke:#94a3b8;stroke-width:2;stroke-dasharray:8 7}.msg{stroke:#334155;stroke-width:2.2;fill:none}.ret{stroke:#64748b;stroke-width:2;stroke-dasharray:7 6;fill:none}.txt{font-family:Arial, sans-serif;font-size:18px;fill:#0f172a}.title{font-family:Arial, sans-serif;font-size:30px;font-weight:700;fill:#0f172a}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect class="bg" width="1250" height="760"/>
+  <text class="title" x="50" y="55">Admin Moderasyon Sıralama Diyagramı</text>
+  <rect class="head" x="70" y="95" width="145" height="48"/><text class="txt" x="118" y="125">Admin</text>
+  <rect class="head" x="300" y="95" width="155" height="48"/><text class="txt" x="323" y="125">Admin Panel</text>
+  <rect class="head" x="540" y="95" width="150" height="48"/><text class="txt" x="570" y="125">API Sunucu</text>
+  <rect class="head" x="775" y="95" width="130" height="48"/><text class="txt" x="812" y="125">MongoDB</text>
+  <rect class="head" x="990" y="95" width="180" height="48"/><text class="txt" x="1015" y="125">Bildirim Servisi</text>
+  <line class="life" x1="142" y1="143" x2="142" y2="705"/><line class="life" x1="377" y1="143" x2="377" y2="705"/><line class="life" x1="615" y1="143" x2="615" y2="705"/><line class="life" x1="840" y1="143" x2="840" y2="705"/><line class="life" x1="1080" y1="143" x2="1080" y2="705"/>
+  <line class="msg" x1="142" y1="200" x2="377" y2="200" marker-end="url(#arrow)"/><text class="txt" x="178" y="190">Bekleyen içerikleri aç</text>
+  <line class="msg" x1="377" y1="260" x2="615" y2="260" marker-end="url(#arrow)"/><text class="txt" x="410" y="250">GET /moderation/pending</text>
+  <line class="msg" x1="615" y1="320" x2="840" y2="320" marker-end="url(#arrow)"/><text class="txt" x="655" y="310">Kuyruk sorgusu</text>
+  <line class="ret" x1="840" y1="375" x2="615" y2="375" marker-end="url(#arrow)"/><text class="txt" x="680" y="365">Bekleyen kayıtlar</text>
+  <line class="ret" x1="615" y1="430" x2="377" y2="430" marker-end="url(#arrow)"/><text class="txt" x="430" y="420">Moderasyon listesi</text>
+  <line class="msg" x1="142" y1="490" x2="377" y2="490" marker-end="url(#arrow)"/><text class="txt" x="176" y="480">Onay / red kararı</text>
+  <line class="msg" x1="377" y1="545" x2="615" y2="545" marker-end="url(#arrow)"/><text class="txt" x="410" y="535">PATCH /moderation/{id}</text>
+  <line class="msg" x1="615" y1="600" x2="840" y2="600" marker-end="url(#arrow)"/><text class="txt" x="650" y="590">Karar ve denetim kaydı</text>
+  <line class="msg" x1="615" y1="655" x2="1080" y2="655" marker-end="url(#arrow)"/><text class="txt" x="735" y="645">Kullanıcıya bildirim</text>
+</svg>

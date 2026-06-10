@@ -1,0 +1,25 @@
+@startuml
+start
+:Kullanici sahiplendirme ilanini gorur;
+:Ilan detaylarini inceler;
+if (Basvuru yapmak istiyor mu?) then (Evet)
+  :Basvuru formunu doldurur;
+  :Ev kosullari ve deneyim bilgisi girilir;
+  :Basvuru kaydedilir;
+  :Ilan sahibine bildirim gonderilir;
+  if (Ilan sahibi uygun buldu mu?) then (Evet)
+    :Gorusme planlanir;
+    if (Gorusme olumlu mu?) then (Evet)
+      :Basvuru onaylanir;
+      :Ilan durumu kapatilir;
+    else (Hayir)
+      :Basvuru reddedilir;
+    endif
+  else (Hayir)
+    :Basvuru reddedilir;
+  endif
+else (Hayir)
+  :Ilan listesine donulur;
+endif
+stop
+@enduml

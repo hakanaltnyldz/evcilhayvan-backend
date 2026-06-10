@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1350" height="760" viewBox="0 0 1350 760">
+  <defs><style>.h{fill:#dbeafe;stroke:#2563eb;stroke-width:2}.txt{font:15px Arial,sans-serif;fill:#0f172a}.life{stroke:#94a3b8;stroke-width:2;stroke-dasharray:6 6}.msg{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#a)}.ret{stroke:#64748b;stroke-width:2;stroke-dasharray:5 5;fill:none;marker-end:url(#a)}</style><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#334155"/></marker></defs>
+  <text class="txt" x="675" y="35" text-anchor="middle" style="font-size:25px">Veteriner Randevusu Sequence Diyagrami</text>
+  <g><rect class="h" x="50" y="80" width="150" height="45" rx="8"/><text class="txt" x="125" y="108" text-anchor="middle">Kullanici</text><rect class="h" x="250" y="80" width="170" height="45" rx="8"/><text class="txt" x="335" y="108" text-anchor="middle">Mobil App</text><rect class="h" x="470" y="80" width="170" height="45" rx="8"/><text class="txt" x="555" y="108" text-anchor="middle">Appointment API</text><rect class="h" x="700" y="80" width="170" height="45" rx="8"/><text class="txt" x="785" y="108" text-anchor="middle">Vet Service</text><rect class="h" x="930" y="80" width="170" height="45" rx="8"/><text class="txt" x="1015" y="108" text-anchor="middle">MongoDB</text><rect class="h" x="1160" y="80" width="140" height="45" rx="8"/><text class="txt" x="1230" y="108" text-anchor="middle">FCM</text></g>
+  <g><line class="life" x1="125" y1="125" x2="125" y2="710"/><line class="life" x1="335" y1="125" x2="335" y2="710"/><line class="life" x1="555" y1="125" x2="555" y2="710"/><line class="life" x1="785" y1="125" x2="785" y2="710"/><line class="life" x1="1015" y1="125" x2="1015" y2="710"/><line class="life" x1="1230" y1="125" x2="1230" y2="710"/></g>
+  <path class="msg" d="M125 165 L335 165"/><text class="txt" x="230" y="155" text-anchor="middle">Randevu iste</text>
+  <path class="msg" d="M335 220 L555 220"/><text class="txt" x="445" y="210" text-anchor="middle">POST /appointments</text>
+  <path class="msg" d="M555 275 L785 275"/><text class="txt" x="670" y="265" text-anchor="middle">Slot kontrolu</text>
+  <path class="msg" d="M785 330 L1015 330"/><text class="txt" x="900" y="320" text-anchor="middle">Takvim sorgula</text>
+  <path class="ret" d="M1015 385 L785 385"/><text class="txt" x="900" y="375" text-anchor="middle">Slot uygun</text>
+  <path class="ret" d="M785 440 L555 440"/><text class="txt" x="670" y="430" text-anchor="middle">Onay</text>
+  <path class="msg" d="M555 495 L1015 495"/><text class="txt" x="785" y="485" text-anchor="middle">Randevu kaydet</text>
+  <path class="msg" d="M555 550 L1230 550"/><text class="txt" x="895" y="540" text-anchor="middle">Veterinere bildirim</text>
+  <path class="ret" d="M555 620 L335 620"/><text class="txt" x="445" y="610" text-anchor="middle">201 Created</text>
+  <path class="ret" d="M335 675 L125 675"/><text class="txt" x="230" y="665" text-anchor="middle">Randevu olusturuldu</text>
+</svg>

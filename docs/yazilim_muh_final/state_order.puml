@@ -1,0 +1,12 @@
+@startuml
+[*] --> Beklemede
+Beklemede --> Onaylandi : siparis dogrulanir
+Beklemede --> Iptal : stok/adres hatasi veya kullanici iptali
+Onaylandi --> Hazirlaniyor : satici isleme alir
+Hazirlaniyor --> Kargoda : teslimata verilir
+Kargoda --> TeslimEdildi : kullaniciya ulasir
+Onaylandi --> Iptal : satici/kullanici iptali
+Hazirlaniyor --> Iptal : operasyonel iptal
+TeslimEdildi --> [*]
+Iptal --> [*]
+@enduml

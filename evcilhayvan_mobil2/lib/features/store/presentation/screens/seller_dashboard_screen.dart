@@ -14,20 +14,11 @@ import 'package:evcilhayvan_mobil2/features/store/domain/models/order_model.dart
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/core/constants.dart';
 
-const List<Color> _dashboardGradientA = [
-  Color(0xFF2D6A4F),
-  Color(0xFF5FD9C1),
-];
+const List<Color> _dashboardGradientA = [Color(0xFF2D6A4F), Color(0xFF5FD9C1)];
 
-const List<Color> _dashboardGradientB = [
-  Color(0xFFFFB86C),
-  Color(0xFFFF8FA2),
-];
+const List<Color> _dashboardGradientB = [Color(0xFFFFB86C), Color(0xFFFF8FA2)];
 
-const List<Color> _dashboardGradientC = [
-  Color(0xFF2D6A4F),
-  Color(0xFFB06AFF),
-];
+const List<Color> _dashboardGradientC = [Color(0xFF2D6A4F), Color(0xFFB06AFF)];
 
 class SellerDashboardScreen extends ConsumerWidget {
   const SellerDashboardScreen({super.key});
@@ -61,10 +52,7 @@ class SellerDashboardScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
-                l10n.sellerBecomeSellerDesc,
-                textAlign: TextAlign.center,
-              ),
+              Text(l10n.sellerBecomeSellerDesc, textAlign: TextAlign.center),
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: () => context.pushNamed('store-apply'),
@@ -133,7 +121,8 @@ class SellerDashboardScreen extends ConsumerWidget {
                         data: (store) {
                           if (store == null) {
                             return _NoStoreCard(
-                              onCreateStore: () => context.pushNamed('store-apply'),
+                              onCreateStore: () =>
+                                  context.pushNamed('store-apply'),
                             );
                           }
                           return _StoreInfoCard(storeName: store.name);
@@ -151,7 +140,9 @@ class SellerDashboardScreen extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Consumer(
                         builder: (context, ref, _) {
-                          final orderStatsAsync = ref.watch(sellerOrderStatsProvider);
+                          final orderStatsAsync = ref.watch(
+                            sellerOrderStatsProvider,
+                          );
                           return orderStatsAsync.when(
                             data: (stats) => _OrderStatsCard(
                               totalRevenue: stats.totalRevenue,
@@ -164,7 +155,10 @@ class SellerDashboardScreen extends ConsumerWidget {
                               margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF11998e), Color(0xFF38ef7d)],
+                                  colors: [
+                                    Color(0xFF11998e),
+                                    Color(0xFF38ef7d),
+                                  ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
@@ -173,20 +167,39 @@ class SellerDashboardScreen extends ConsumerWidget {
                             ),
                             error: (e, _) => Container(
                               margin: const EdgeInsets.only(bottom: 16),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.orange.withOpacity(0.08),
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                                border: Border.all(
+                                  color: Colors.orange.withOpacity(0.3),
+                                ),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
+                                  const Icon(
+                                    Icons.warning_amber_rounded,
+                                    color: Colors.orange,
+                                    size: 20,
+                                  ),
                                   const SizedBox(width: 8),
-                                  Expanded(child: Text(AppLocalizations.of(context)!.sellerOrderStatsLoadErr)),
+                                  Expanded(
+                                    child: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.sellerOrderStatsLoadErr,
+                                    ),
+                                  ),
                                   TextButton(
-                                    onPressed: () => ref.invalidate(sellerOrderStatsProvider),
-                                    child: Text(AppLocalizations.of(context)!.sellerRetry),
+                                    onPressed: () => ref.invalidate(
+                                      sellerOrderStatsProvider,
+                                    ),
+                                    child: Text(
+                                      AppLocalizations.of(context)!.sellerRetry,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -202,17 +215,37 @@ class SellerDashboardScreen extends ConsumerWidget {
                       child: myProductsAsync.when(
                         data: (products) => _StatsGrid(
                           totalProducts: products.length,
-                          activeProducts: products.where((p) => p.isActive).length,
-                          lowStockProducts: products.where((p) => p.stock <= kLowStockThreshold).length,
+                          activeProducts: products
+                              .where((p) => p.isActive)
+                              .length,
+                          lowStockProducts: products
+                              .where((p) => p.stock <= kLowStockThreshold)
+                              .length,
                         ),
                         loading: () => const _StatsGridSkeleton(),
                         error: (e, _) => Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           child: Row(
                             children: [
-                              Icon(Icons.info_outline, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                              Icon(
+                                Icons.info_outline,
+                                size: 16,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
                               const SizedBox(width: 6),
-                              Text(AppLocalizations.of(context)!.sellerProductStatsLoadErr, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13)),
+                              Text(
+                                AppLocalizations.of(
+                                  context,
+                                )!.sellerProductStatsLoadErr,
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                  fontSize: 13,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -225,9 +258,18 @@ class SellerDashboardScreen extends ConsumerWidget {
                       child: myProductsAsync.when(
                         data: (products) {
                           if (products.isEmpty) return const SizedBox.shrink();
-                          final lowStockProducts = products.where((p) => p.stock <= kLowStockThreshold && p.stock > 0).toList();
-                          final outOfStockProducts = products.where((p) => p.stock <= 0).toList();
-                          if (lowStockProducts.isEmpty && outOfStockProducts.isEmpty) {
+                          final lowStockProducts = products
+                              .where(
+                                (p) =>
+                                    p.stock <= kLowStockThreshold &&
+                                    p.stock > 0,
+                              )
+                              .toList();
+                          final outOfStockProducts = products
+                              .where((p) => p.stock <= 0)
+                              .toList();
+                          if (lowStockProducts.isEmpty &&
+                              outOfStockProducts.isEmpty) {
                             return const SizedBox.shrink();
                           }
                           return Column(
@@ -235,7 +277,9 @@ class SellerDashboardScreen extends ConsumerWidget {
                             children: [
                               Text(
                                 l10n.sellerAttentionProducts,
-                                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                ),
                               ),
                               const SizedBox(height: 12),
                               if (outOfStockProducts.isNotEmpty)
@@ -265,9 +309,19 @@ class SellerDashboardScreen extends ConsumerWidget {
                             padding: const EdgeInsets.all(16),
                             child: Row(
                               children: [
-                                const Icon(Icons.warning_amber, color: Colors.orange),
+                                const Icon(
+                                  Icons.warning_amber,
+                                  color: Colors.orange,
+                                ),
                                 const SizedBox(width: 8),
-                                const Expanded(child: Text('Stok verileri yüklenemedi.', style: TextStyle(color: Colors.orange))),
+                                Expanded(
+                                  child: Text(
+                                    l10n.sellerStockLoadErr,
+                                    style: const TextStyle(
+                                      color: Colors.orange,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -294,7 +348,9 @@ class SellerDashboardScreen extends ConsumerWidget {
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                       child: Consumer(
                         builder: (context, ref, _) {
-                          final chartAsync = ref.watch(sellerRevenueChartProvider);
+                          final chartAsync = ref.watch(
+                            sellerRevenueChartProvider,
+                          );
                           return chartAsync.when(
                             data: (points) => _RevenueChartCard(points: points),
                             loading: () => const SizedBox(
@@ -306,9 +362,23 @@ class SellerDashboardScreen extends ConsumerWidget {
                                 padding: const EdgeInsets.all(16),
                                 child: Row(
                                   children: [
-                                    Icon(Icons.bar_chart, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                    Icon(
+                                      Icons.bar_chart,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                    ),
                                     const SizedBox(width: 8),
-                                    Text(AppLocalizations.of(context)!.sellerRevenueChartLoadErr, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                                    Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.sellerRevenueChartLoadErr,
+                                      style: TextStyle(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -324,21 +394,43 @@ class SellerDashboardScreen extends ConsumerWidget {
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                       child: Consumer(
                         builder: (context, ref, _) {
-                          final statsAsync = ref.watch(sellerProductStatsProvider);
+                          final statsAsync = ref.watch(
+                            sellerProductStatsProvider,
+                          );
                           return statsAsync.when(
                             data: (data) => Column(
                               children: [
-                                _OrderStatusPieCard(breakdown: data['orderStatusBreakdown'] as Map<String, dynamic>? ?? {}),
+                                _OrderStatusPieCard(
+                                  breakdown:
+                                      data['orderStatusBreakdown']
+                                          as Map<String, dynamic>? ??
+                                      {},
+                                ),
                                 const SizedBox(height: 16),
-                                _TopProductsCard(topProducts: (data['topProducts'] as List?)
-                                    ?.map((e) => Map<String, dynamic>.from(e as Map))
-                                    .toList() ?? []),
-                                if ((data['categoryBreakdown'] as List?)?.isNotEmpty == true) ...[
+                                _TopProductsCard(
+                                  topProducts:
+                                      (data['topProducts'] as List?)
+                                          ?.map(
+                                            (e) => Map<String, dynamic>.from(
+                                              e as Map,
+                                            ),
+                                          )
+                                          .toList() ??
+                                      [],
+                                ),
+                                if ((data['categoryBreakdown'] as List?)
+                                        ?.isNotEmpty ==
+                                    true) ...[
                                   const SizedBox(height: 16),
                                   _CategoryBreakdownCard(
-                                    categories: (data['categoryBreakdown'] as List)
-                                        .map((e) => Map<String, dynamic>.from(e as Map))
-                                        .toList(),
+                                    categories:
+                                        (data['categoryBreakdown'] as List)
+                                            .map(
+                                              (e) => Map<String, dynamic>.from(
+                                                e as Map,
+                                              ),
+                                            )
+                                            .toList(),
                                   ),
                                 ],
                               ],
@@ -349,9 +441,21 @@ class SellerDashboardScreen extends ConsumerWidget {
                                 padding: const EdgeInsets.all(16),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.warning_amber, color: Colors.orange),
+                                    const Icon(
+                                      Icons.warning_amber,
+                                      color: Colors.orange,
+                                    ),
                                     const SizedBox(width: 8),
-                                    const Expanded(child: Text('İstatistikler yüklenemedi.', style: TextStyle(color: Colors.orange))),
+                                    Expanded(
+                                      child: Text(
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.sellerProductStatsLoadErr,
+                                        style: const TextStyle(
+                                          color: Colors.orange,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -528,11 +632,7 @@ class _StoreInfoCard extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(
-            Icons.chevron_right,
-            color: Colors.white,
-            size: 28,
-          ),
+          const Icon(Icons.chevron_right, color: Colors.white, size: 28),
         ],
       ),
     );
@@ -663,7 +763,9 @@ class _OrderStatsCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        AppLocalizations.of(context)!.sellerTotalOrdersCount(totalOrders),
+                        AppLocalizations.of(
+                          context,
+                        )!.sellerTotalOrdersCount(totalOrders),
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 12,
@@ -674,11 +776,7 @@ class _OrderStatsCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(
-              Icons.chevron_right,
-              color: Colors.white,
-              size: 28,
-            ),
+            const Icon(Icons.chevron_right, color: Colors.white, size: 28),
           ],
         ),
       ),
@@ -823,8 +921,11 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
     final instagramCtrl = TextEditingController(text: store?.instagram ?? '');
     final twitterCtrl = TextEditingController(text: store?.twitter ?? '');
     final facebookCtrl = TextEditingController(text: store?.facebook ?? '');
-    final workingHoursCtrl = TextEditingController(text: store?.workingHours ?? '');
+    final workingHoursCtrl = TextEditingController(
+      text: store?.workingHours ?? '',
+    );
     bool saving = false;
+    final l10n = AppLocalizations.of(context)!;
 
     await showModalBottomSheet(
       context: context,
@@ -833,11 +934,14 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
+        final sheetL10n = AppLocalizations.of(ctx)!;
         return StatefulBuilder(
           builder: (ctx, setSheetState) {
             return Padding(
               padding: EdgeInsets.only(
-                left: 20, right: 20, top: 20,
+                left: 20,
+                right: 20,
+                top: 20,
                 bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
               ),
               child: SingleChildScrollView(
@@ -847,9 +951,14 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
                   children: [
                     Row(
                       children: [
-                        const Expanded(
-                          child: Text('Mağaza Profilini Düzenle',
-                            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                        Expanded(
+                          child: Text(
+                            sheetL10n.sellerStoreProfileEdit,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                         IconButton(
                           icon: const Icon(Icons.close),
@@ -858,14 +967,39 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    _EditField(ctrl: nameCtrl, label: 'Mağaza Adı'),
-                    _EditField(ctrl: descCtrl, label: 'Açıklama', maxLines: 3),
-                    _EditField(ctrl: phoneCtrl, label: 'Telefon'),
-                    _EditField(ctrl: websiteCtrl, label: 'Web Sitesi'),
-                    _EditField(ctrl: instagramCtrl, label: 'Instagram (kullanıcı adı)'),
-                    _EditField(ctrl: twitterCtrl, label: 'Twitter/X (kullanıcı adı)'),
-                    _EditField(ctrl: facebookCtrl, label: 'Facebook (kullanıcı adı)'),
-                    _EditField(ctrl: workingHoursCtrl, label: 'Çalışma Saatleri (örn: Pzt-Cum 09:00-18:00)'),
+                    _EditField(
+                      ctrl: nameCtrl,
+                      label: sheetL10n.sellerStoreNameLabel,
+                    ),
+                    _EditField(
+                      ctrl: descCtrl,
+                      label: sheetL10n.sellerStoreDescLabel,
+                      maxLines: 3,
+                    ),
+                    _EditField(
+                      ctrl: phoneCtrl,
+                      label: sheetL10n.sellerStorePhoneLabel,
+                    ),
+                    _EditField(
+                      ctrl: websiteCtrl,
+                      label: sheetL10n.sellerStoreWebsiteLabel,
+                    ),
+                    _EditField(
+                      ctrl: instagramCtrl,
+                      label: sheetL10n.sellerStoreInstagramLabel,
+                    ),
+                    _EditField(
+                      ctrl: twitterCtrl,
+                      label: sheetL10n.sellerStoreTwitterLabel,
+                    ),
+                    _EditField(
+                      ctrl: facebookCtrl,
+                      label: sheetL10n.sellerStoreFacebookLabel,
+                    ),
+                    _EditField(
+                      ctrl: workingHoursCtrl,
+                      label: sheetL10n.sellerStoreWorkingHoursLabel,
+                    ),
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
@@ -875,37 +1009,57 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
                             : () async {
                                 setSheetState(() => saving = true);
                                 try {
-                                  await ApiClient().dio.patch('/api/store/me/profile', data: {
-                                    'name': nameCtrl.text.trim(),
-                                    'description': descCtrl.text.trim(),
-                                    'phone': phoneCtrl.text.trim(),
-                                    'website': websiteCtrl.text.trim(),
-                                    'instagram': instagramCtrl.text.trim(),
-                                    'twitter': twitterCtrl.text.trim(),
-                                    'facebook': facebookCtrl.text.trim(),
-                                    'workingHours': workingHoursCtrl.text.trim(),
-                                  });
+                                  await ApiClient().dio.patch(
+                                    '/api/store/me/profile',
+                                    data: {
+                                      'name': nameCtrl.text.trim(),
+                                      'description': descCtrl.text.trim(),
+                                      'phone': phoneCtrl.text.trim(),
+                                      'website': websiteCtrl.text.trim(),
+                                      'instagram': instagramCtrl.text.trim(),
+                                      'twitter': twitterCtrl.text.trim(),
+                                      'facebook': facebookCtrl.text.trim(),
+                                      'workingHours': workingHoursCtrl.text
+                                          .trim(),
+                                    },
+                                  );
                                   ref.invalidate(myStoreProvider);
                                   if (ctx.mounted) Navigator.pop(ctx);
                                   if (mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Mağaza profili güncellendi'),
-                                          backgroundColor: Colors.green),
+                                      SnackBar(
+                                        content: Text(
+                                          l10n.sellerStoreProfileUpdated,
+                                        ),
+                                        backgroundColor: Colors.green,
+                                      ),
                                     );
                                   }
                                 } catch (e) {
                                   setSheetState(() => saving = false);
                                   if (mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Güncelleme başarısız: $e'),
-                                          backgroundColor: Colors.red),
+                                      SnackBar(
+                                        content: Text(
+                                          l10n.sellerStoreProfileUpdateErr(
+                                            e.toString(),
+                                          ),
+                                        ),
+                                        backgroundColor: Colors.red,
+                                      ),
                                     );
                                   }
                                 }
                               },
                         child: saving
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                            : const Text('Kaydet'),
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(sheetL10n.save),
                       ),
                     ),
                   ],
@@ -936,19 +1090,19 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
       builder: (ctx) {
         final dl10n = AppLocalizations.of(ctx)!;
         return AlertDialog(
-        title: Text(dl10n.sellerDemoProductsTitle),
-        content: Text(dl10n.sellerDemoProductsContent),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(dl10n.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(dl10n.sellerDemoProductsContinue),
-          ),
-        ],
-      );
+          title: Text(dl10n.sellerDemoProductsTitle),
+          content: Text(dl10n.sellerDemoProductsContent),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(dl10n.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(dl10n.sellerDemoProductsContinue),
+            ),
+          ],
+        );
       },
     );
 
@@ -969,9 +1123,7 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            l10n.sellerDemoProductsAdded(result.productsCreated),
-          ),
+          content: Text(l10n.sellerDemoProductsAdded(result.productsCreated)),
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 3),
         ),
@@ -1052,7 +1204,7 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
           const SizedBox(height: 12),
           _QuickActionButton(
             icon: Icons.edit_outlined,
-            label: 'Mağaza Profilini Düzenle',
+            label: l10n.sellerStoreProfileEdit,
             color: const Color(0xFF40916C),
             onTap: () {
               final store = ref.read(myStoreProvider).valueOrNull;
@@ -1077,8 +1229,12 @@ class _QuickActionsCardState extends ConsumerState<_QuickActionsCard> {
           ),
           const SizedBox(height: 12),
           _QuickActionButton(
-            icon: _isSeeding ? Icons.hourglass_empty : Icons.rocket_launch_outlined,
-            label: _isSeeding ? l10n.sellerDemoProductsLoading : l10n.sellerDemoProducts,
+            icon: _isSeeding
+                ? Icons.hourglass_empty
+                : Icons.rocket_launch_outlined,
+            label: _isSeeding
+                ? l10n.sellerDemoProductsLoading
+                : l10n.sellerDemoProducts,
             color: const Color(0xFF52B788),
             onTap: _isSeeding ? () {} : _handleSeedDemoProducts,
           ),
@@ -1093,7 +1249,11 @@ class _EditField extends StatelessWidget {
   final String label;
   final int maxLines;
 
-  const _EditField({required this.ctrl, required this.label, this.maxLines = 1});
+  const _EditField({
+    required this.ctrl,
+    required this.label,
+    this.maxLines = 1,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1135,10 +1295,7 @@ class _QuickActionButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: color.withOpacity(0.3),
-            width: 1,
-          ),
+          border: Border.all(color: color.withOpacity(0.3), width: 1),
         ),
         child: Row(
           children: [
@@ -1191,10 +1348,7 @@ class _AlertCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 2,
-        ),
+        border: Border.all(color: color.withOpacity(0.3), width: 2),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1223,38 +1377,42 @@ class _AlertCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ...products.map((product) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 4,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                      ),
+          ...products.map(
+            (product) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        product.displayName,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      product.displayName,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    Text(
-                      AppLocalizations.of(context)!.sellerStockLabel(product.stock as int),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: color,
-                        fontWeight: FontWeight.w700,
-                      ),
+                  ),
+                  Text(
+                    AppLocalizations.of(
+                      context,
+                    )!.sellerStockLabel(product.stock as int),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: color,
+                      fontWeight: FontWeight.w700,
                     ),
-                  ],
-                ),
-              )),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1262,10 +1420,7 @@ class _AlertCard extends StatelessWidget {
 }
 
 class _ErrorCard extends StatelessWidget {
-  const _ErrorCard({
-    required this.message,
-    required this.onRetry,
-  });
+  const _ErrorCard({required this.message, required this.onRetry});
 
   final String message;
   final VoidCallback onRetry;
@@ -1277,10 +1432,7 @@ class _ErrorCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.red.shade50,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.red.shade200,
-          width: 2,
-        ),
+        border: Border.all(color: Colors.red.shade200, width: 2),
       ),
       child: Column(
         children: [
@@ -1348,8 +1500,11 @@ class _RevenueChartCardState extends State<_RevenueChartCard> {
     final pts = widget.points;
     if (pts.isEmpty) return const SizedBox.shrink();
 
-    final maxRevenue = pts.fold<double>(0, (m, p) => p.revenue > m ? p.revenue : m);
-    final maxOrders  = pts.fold<int>(0, (m, p) => p.orders > m ? p.orders : m);
+    final maxRevenue = pts.fold<double>(
+      0,
+      (m, p) => p.revenue > m ? p.revenue : m,
+    );
+    final maxOrders = pts.fold<int>(0, (m, p) => p.orders > m ? p.orders : m);
     final maxY = _showRevenue
         ? (maxRevenue == 0 ? 1.0 : maxRevenue * 1.2)
         : (maxOrders == 0 ? 1.0 : maxOrders * 1.2);
@@ -1394,16 +1549,29 @@ class _RevenueChartCardState extends State<_RevenueChartCard> {
               Expanded(
                 child: Text(
                   AppLocalizations.of(context)!.sellerLast6Months,
-                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
               SegmentedButton<bool>(
                 segments: [
-                  ButtonSegment(value: true,  label: Text(AppLocalizations.of(context)!.sellerChartRevenue)),
-                  ButtonSegment(value: false, label: Text(AppLocalizations.of(context)!.sellerChartOrders)),
+                  ButtonSegment(
+                    value: true,
+                    label: Text(
+                      AppLocalizations.of(context)!.sellerChartRevenue,
+                    ),
+                  ),
+                  ButtonSegment(
+                    value: false,
+                    label: Text(
+                      AppLocalizations.of(context)!.sellerChartOrders,
+                    ),
+                  ),
                 ],
                 selected: {_showRevenue},
-                onSelectionChanged: (s) => setState(() => _showRevenue = s.first),
+                onSelectionChanged: (s) =>
+                    setState(() => _showRevenue = s.first),
                 style: SegmentedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   minimumSize: const Size(0, 32),
@@ -1445,7 +1613,12 @@ class _RevenueChartCardState extends State<_RevenueChartCard> {
                         }
                         return Text(
                           label,
-                          style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
                         );
                       },
                     ),
@@ -1455,19 +1628,27 @@ class _RevenueChartCardState extends State<_RevenueChartCard> {
                       showTitles: true,
                       getTitlesWidget: (val, meta) {
                         final idx = val.toInt();
-                        if (idx < 0 || idx >= pts.length) return const SizedBox.shrink();
+                        if (idx < 0 || idx >= pts.length)
+                          return const SizedBox.shrink();
                         return Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(
                             pts[idx].shortLabel,
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         );
                       },
                     ),
                   ),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles:    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
                 barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(
@@ -1475,10 +1656,15 @@ class _RevenueChartCardState extends State<_RevenueChartCard> {
                       final p = pts[group.x];
                       final label = _showRevenue
                           ? '₺${p.revenue.toStringAsFixed(0)}'
-                          : AppLocalizations.of(context)!.sellerOrderCountTooltip(p.orders);
+                          : AppLocalizations.of(
+                              context,
+                            )!.sellerOrderCountTooltip(p.orders);
                       return BarTooltipItem(
                         label,
-                        const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       );
                     },
                   ),
@@ -1499,19 +1685,19 @@ class _OrderStatusPieCard extends StatelessWidget {
   const _OrderStatusPieCard({required this.breakdown});
 
   static const _statusColors = {
-    'pending':    Color(0xFFFFB300),
+    'pending': Color(0xFFFFB300),
     'processing': Color(0xFF4895EF),
-    'shipped':    Color(0xFF7B2FBE),
-    'delivered':  Color(0xFF52B788),
-    'cancelled':  Color(0xFFE63946),
+    'shipped': Color(0xFF7B2FBE),
+    'delivered': Color(0xFF52B788),
+    'cancelled': Color(0xFFE63946),
   };
 
   static const _statusLabels = {
-    'pending':    'Bekliyor',
+    'pending': 'Bekliyor',
     'processing': 'Hazırlanıyor',
-    'shipped':    'Kargoda',
-    'delivered':  'Teslim',
-    'cancelled':  'İptal',
+    'shipped': 'Kargoda',
+    'delivered': 'Teslim',
+    'cancelled': 'İptal',
   };
 
   @override
@@ -1547,7 +1733,11 @@ class _OrderStatusPieCard extends StatelessWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -1555,7 +1745,9 @@ class _OrderStatusPieCard extends StatelessWidget {
         children: [
           Text(
             'Sipariş Durumları',
-            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -1578,7 +1770,9 @@ class _OrderStatusPieCard extends StatelessWidget {
                       children: [
                         Text(
                           '$total',
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         Text(
                           'sipariş',
@@ -1605,7 +1799,10 @@ class _OrderStatusPieCard extends StatelessWidget {
                           Container(
                             width: 10,
                             height: 10,
-                            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                           const SizedBox(width: 6),
                           Text(label, style: const TextStyle(fontSize: 12)),
@@ -1653,7 +1850,11 @@ class _TopProductsCard extends StatelessWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -1661,7 +1862,9 @@ class _TopProductsCard extends StatelessWidget {
         children: [
           Text(
             'En Çok Satan Ürünler',
-            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
           ...topProducts.asMap().entries.map((entry) {
@@ -1683,13 +1886,19 @@ class _TopProductsCard extends StatelessWidget {
                         width: 22,
                         height: 22,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2D6A4F).withOpacity(0.1 + i * 0.05),
+                          color: const Color(
+                            0xFF2D6A4F,
+                          ).withOpacity(0.1 + i * 0.05),
                           shape: BoxShape.circle,
                         ),
                         child: Center(
                           child: Text(
                             '${i + 1}',
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF2D6A4F)),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2D6A4F),
+                            ),
                           ),
                         ),
                       ),
@@ -1697,18 +1906,28 @@ class _TopProductsCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           name,
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Text(
                         '${sold}x',
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2D6A4F)),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2D6A4F),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         '₺${revenue.toStringAsFixed(0)}',
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -1718,8 +1937,12 @@ class _TopProductsCard extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: ratio,
                       minHeight: 5,
-                      backgroundColor: theme.colorScheme.outline.withOpacity(0.15),
-                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF52B788)),
+                      backgroundColor: theme.colorScheme.outline.withOpacity(
+                        0.15,
+                      ),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        Color(0xFF52B788),
+                      ),
                     ),
                   ),
                 ],
@@ -1745,9 +1968,14 @@ class _CategoryBreakdownCard extends StatelessWidget {
         .fold<double>(1.0, (m, v) => v > m ? v : m);
 
     const colors = [
-      Color(0xFF6C5CE7), Color(0xFF00B894), Color(0xFFFFB86C),
-      Color(0xFFFF7675), Color(0xFF74B9FF), Color(0xFFA29BFE),
-      Color(0xFFFECEAB), Color(0xFF55EFC4),
+      Color(0xFF6C5CE7),
+      Color(0xFF00B894),
+      Color(0xFFFFB86C),
+      Color(0xFFFF7675),
+      Color(0xFF74B9FF),
+      Color(0xFFA29BFE),
+      Color(0xFFFECEAB),
+      Color(0xFF55EFC4),
     ];
 
     return Container(
@@ -1756,7 +1984,11 @@ class _CategoryBreakdownCard extends StatelessWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -1764,7 +1996,9 @@ class _CategoryBreakdownCard extends StatelessWidget {
         children: [
           Text(
             'Kategori Bazlı Satışlar',
-            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
           ...categories.asMap().entries.map((entry) {
@@ -1784,16 +2018,39 @@ class _CategoryBreakdownCard extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        width: 10, height: 10,
-                        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(category, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                        child: Text(
+                          category,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
-                      Text('${soldCount}x', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color)),
+                      Text(
+                        '${soldCount}x',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: color,
+                        ),
+                      ),
                       const SizedBox(width: 8),
-                      Text('₺${revenue.toStringAsFixed(0)}', style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant)),
+                      Text(
+                        '₺${revenue.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -1802,7 +2059,9 @@ class _CategoryBreakdownCard extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: ratio,
                       minHeight: 6,
-                      backgroundColor: theme.colorScheme.outline.withOpacity(0.15),
+                      backgroundColor: theme.colorScheme.outline.withOpacity(
+                        0.15,
+                      ),
                       valueColor: AlwaysStoppedAnimation<Color>(color),
                     ),
                   ),

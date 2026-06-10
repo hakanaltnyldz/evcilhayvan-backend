@@ -12,11 +12,12 @@ import 'dart:math';
 
 // ── Providers ──────────────────────────────────────────────────────────────
 
-final sellerCouponsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
-  final dio = ApiClient().dio;
-  final res = await dio.get('/api/seller/coupons');
-  return List<Map<String, dynamic>>.from(res.data['coupons'] ?? []);
-});
+final sellerCouponsProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+      final dio = ApiClient().dio;
+      final res = await dio.get('/api/seller/coupons');
+      return List<Map<String, dynamic>>.from(res.data['coupons'] ?? []);
+    });
 
 // ── Screen ─────────────────────────────────────────────────────────────────
 
@@ -24,18 +25,24 @@ class SellerCouponsScreen extends ConsumerStatefulWidget {
   const SellerCouponsScreen({super.key});
 
   @override
-  ConsumerState<SellerCouponsScreen> createState() => _SellerCouponsScreenState();
+  ConsumerState<SellerCouponsScreen> createState() =>
+      _SellerCouponsScreenState();
 }
 
 class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
-  final _dateFmt = DateFormat('dd.MM.yyyy', 'tr');
   bool _showExpired = false;
+
+  DateFormat _dateFmt(BuildContext context) =>
+      DateFormat('dd.MM.yyyy', Localizations.localeOf(context).toString());
 
   String _generateCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     final rng = Random.secure();
     final prefix = ['PATI', 'PET', 'EVCIL', 'STORE'][rng.nextInt(4)];
-    final suffix = List.generate(4, (_) => chars[rng.nextInt(chars.length)]).join();
+    final suffix = List.generate(
+      4,
+      (_) => chars[rng.nextInt(chars.length)],
+    ).join();
     return '$prefix$suffix';
   }
 
@@ -62,7 +69,10 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
           Future<void> pickDate({required bool isFrom}) async {
             final picked = await showDatePicker(
               context: ctx,
-              initialDate: isFrom ? (validFrom ?? DateTime.now()) : (validUntil ?? DateTime.now()),
+              locale: Localizations.localeOf(ctx),
+              initialDate: isFrom
+                  ? (validFrom ?? DateTime.now())
+                  : (validUntil ?? DateTime.now()),
               firstDate: DateTime.now().subtract(const Duration(days: 1)),
               lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
             );
@@ -100,11 +110,18 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                       ),
                       const SizedBox(width: 8),
                       OutlinedButton(
-                        onPressed: () => setS(() => codeCtrl.text = _generateCode()),
+                        onPressed: () =>
+                            setS(() => codeCtrl.text = _generateCode()),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 12,
+                          ),
                         ),
-                        child: Text(dl10n.sellerCouponRandom, style: const TextStyle(fontSize: 12)),
+                        child: Text(
+                          dl10n.sellerCouponRandom,
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       ),
                     ],
                   ),
@@ -119,21 +136,33 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                   ),
                   const SizedBox(height: 12),
                   // Discount type
-                  Text(dl10n.sellerCouponTypeLabel, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(
+                    dl10n.sellerCouponTypeLabel,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
                   const SizedBox(height: 4),
                   SegmentedButton<String>(
                     segments: [
-                      ButtonSegment(value: 'percentage', label: Text(dl10n.sellerCouponPercent)),
-                      ButtonSegment(value: 'fixed', label: Text(dl10n.sellerCouponFixed)),
+                      ButtonSegment(
+                        value: 'percentage',
+                        label: Text(dl10n.sellerCouponPercent),
+                      ),
+                      ButtonSegment(
+                        value: 'fixed',
+                        label: Text(dl10n.sellerCouponFixed),
+                      ),
                     ],
                     selected: {discountType},
-                    onSelectionChanged: (v) => setS(() => discountType = v.first),
+                    onSelectionChanged: (v) =>
+                        setS(() => discountType = v.first),
                   ),
                   const SizedBox(height: 12),
                   // Value
                   TextFormField(
                     controller: valueCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: InputDecoration(
                       labelText: discountType == 'percentage'
                           ? dl10n.sellerCouponRateLabel
@@ -145,7 +174,9 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                   // Min purchase
                   TextFormField(
                     controller: minPurchaseCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: InputDecoration(
                       labelText: dl10n.sellerCouponMinPurchase,
                       isDense: true,
@@ -156,7 +187,9 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                   if (discountType == 'percentage') ...[
                     TextFormField(
                       controller: maxDiscountCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       decoration: InputDecoration(
                         labelText: dl10n.sellerCouponMaxDiscount,
                         isDense: true,
@@ -196,7 +229,9 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                               isDense: true,
                             ),
                             child: Text(
-                              validFrom != null ? _dateFmt.format(validFrom!) : '—',
+                              validFrom != null
+                                  ? _dateFmt(ctx).format(validFrom!)
+                                  : '—',
                               style: const TextStyle(fontSize: 13),
                             ),
                           ),
@@ -212,7 +247,9 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                               isDense: true,
                             ),
                             child: Text(
-                              validUntil != null ? _dateFmt.format(validUntil!) : '—',
+                              validUntil != null
+                                  ? _dateFmt(ctx).format(validUntil!)
+                                  : '—',
                               style: const TextStyle(fontSize: 13),
                             ),
                           ),
@@ -225,7 +262,10 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                   CheckboxListTile(
                     value: firstOrderOnly,
                     onChanged: (v) => setS(() => firstOrderOnly = v ?? false),
-                    title: Text(dl10n.sellerCouponFirstOrderOnly, style: const TextStyle(fontSize: 13)),
+                    title: Text(
+                      dl10n.sellerCouponFirstOrderOnly,
+                      style: const TextStyle(fontSize: 13),
+                    ),
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
                     dense: true,
@@ -246,7 +286,9 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                         final value = double.tryParse(valueCtrl.text.trim());
                         if (code.isEmpty || value == null || value <= 0) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.sellerCouponValidationError)),
+                            SnackBar(
+                              content: Text(l10n.sellerCouponValidationError),
+                            ),
                           );
                           return;
                         }
@@ -255,15 +297,22 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                           final dio = ApiClient().dio;
                           final body = {
                             'code': code,
-                            'description': descCtrl.text.trim().isEmpty ? null : descCtrl.text.trim(),
+                            'description': descCtrl.text.trim().isEmpty
+                                ? null
+                                : descCtrl.text.trim(),
                             'discountType': discountType,
                             'discountValue': value,
-                            'minPurchaseAmount': double.tryParse(minPurchaseCtrl.text) ?? 0,
+                            'minPurchaseAmount':
+                                double.tryParse(minPurchaseCtrl.text) ?? 0,
                             if (maxDiscountCtrl.text.trim().isNotEmpty)
-                              'maxDiscountAmount': double.tryParse(maxDiscountCtrl.text.trim()),
+                              'maxDiscountAmount': double.tryParse(
+                                maxDiscountCtrl.text.trim(),
+                              ),
                             'perUserLimit': int.tryParse(perUserCtrl.text) ?? 1,
                             if (totalLimitCtrl.text.trim().isNotEmpty)
-                              'totalUsageLimit': int.tryParse(totalLimitCtrl.text.trim()),
+                              'totalUsageLimit': int.tryParse(
+                                totalLimitCtrl.text.trim(),
+                              ),
                             'validFrom': validFrom?.toIso8601String(),
                             'validUntil': validUntil?.toIso8601String(),
                             'firstOrderOnly': firstOrderOnly,
@@ -273,20 +322,31 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                           ref.invalidate(sellerCouponsProvider);
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(l10n.sellerCouponCreated(code))),
+                              SnackBar(
+                                content: Text(l10n.sellerCouponCreated(code)),
+                              ),
                             );
                           }
                         } catch (e) {
                           setS(() => isSubmitting = false);
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(l10n.sellerCouponCreateFailed)),
+                              SnackBar(
+                                content: Text(l10n.sellerCouponCreateFailed),
+                              ),
                             );
                           }
                         }
                       },
                 child: isSubmitting
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
                     : Text(l10n.sellerCouponCreate),
               ),
             ],
@@ -304,9 +364,9 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
       ref.invalidate(sellerCouponsProvider);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.sellerCouponToggleFailed)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.sellerCouponToggleFailed)));
       }
     }
   }
@@ -321,10 +381,16 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
           title: Text(dl10n.sellerCouponDeleteTitle),
           content: Text(dl10n.sellerCouponDeleteConfirm(code)),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(dl10n.cancel)),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(dl10n.cancel),
+            ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: Text(dl10n.delete, style: const TextStyle(color: Colors.red)),
+              child: Text(
+                dl10n.delete,
+                style: const TextStyle(color: Colors.red),
+              ),
             ),
           ],
         );
@@ -336,15 +402,15 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
       await dio.delete('/api/seller/coupons/$couponId');
       ref.invalidate(sellerCouponsProvider);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.sellerCouponDeleted(code))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.sellerCouponDeleted(code))));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.sellerCouponDeleteFailed)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.sellerCouponDeleteFailed)));
       }
     }
   }
@@ -369,8 +435,12 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
         title: Text(l10n.sellerCouponManagementTitle),
         actions: [
           IconButton(
-            icon: Icon(_showExpired ? Icons.visibility : Icons.visibility_off_outlined),
-            tooltip: _showExpired ? l10n.sellerCouponHideExpired : l10n.sellerCouponShowExpired,
+            icon: Icon(
+              _showExpired ? Icons.visibility : Icons.visibility_off_outlined,
+            ),
+            tooltip: _showExpired
+                ? l10n.sellerCouponHideExpired
+                : l10n.sellerCouponShowExpired,
             onPressed: () => setState(() => _showExpired = !_showExpired),
           ),
         ],
@@ -398,7 +468,9 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
         ),
         data: (coupons) {
           final filtered = coupons.where((c) {
-            final until = c['validUntil'] != null ? DateTime.tryParse(c['validUntil']) : null;
+            final until = c['validUntil'] != null
+                ? DateTime.tryParse(c['validUntil'])
+                : null;
             final expired = until != null && until.isBefore(now);
             return _showExpired || !expired;
           }).toList();
@@ -408,12 +480,18 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.discount_outlined, size: 64, color: AppPalette.primary.withOpacity(0.3)),
+                  Icon(
+                    Icons.discount_outlined,
+                    size: 64,
+                    color: AppPalette.primary.withOpacity(0.3),
+                  ),
                   const SizedBox(height: 16),
                   Text(l10n.sellerCouponEmptyTitle),
                   const SizedBox(height: 8),
-                  Text(l10n.sellerCouponEmptySubtitle,
-                      style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text(
+                    l10n.sellerCouponEmptySubtitle,
+                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                  ),
                 ],
               ),
             );
@@ -436,10 +514,14 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                 final value = c['discountValue'];
                 final label = isPercent ? '%$value' : '₺$value';
                 final until = c['validUntil'] != null
-                    ? _dateFmt.format(DateTime.tryParse(c['validUntil']) ?? now)
+                    ? _dateFmt(
+                        context,
+                      ).format(DateTime.tryParse(c['validUntil']) ?? now)
                     : '—';
-                final expired = c['validUntil'] != null &&
-                    (DateTime.tryParse(c['validUntil'])?.isBefore(now) ?? false);
+                final expired =
+                    c['validUntil'] != null &&
+                    (DateTime.tryParse(c['validUntil'])?.isBefore(now) ??
+                        false);
                 final usageCount = c['usageCount'] ?? 0;
                 final totalLimit = c['totalUsageLimit'];
                 final perf = performanceMap[couponId];
@@ -454,13 +536,16 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
                               decoration: BoxDecoration(
                                 color: expired
                                     ? Colors.grey.withOpacity(0.15)
                                     : (isActive
-                                        ? AppPalette.primary.withOpacity(0.1)
-                                        : Colors.orange.withOpacity(0.1)),
+                                          ? AppPalette.primary.withOpacity(0.1)
+                                          : Colors.orange.withOpacity(0.1)),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -472,13 +557,18 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                                   letterSpacing: 1.2,
                                   color: expired
                                       ? Colors.grey
-                                      : (isActive ? AppPalette.primary : Colors.orange),
+                                      : (isActive
+                                            ? AppPalette.primary
+                                            : Colors.orange),
                                 ),
                               ),
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: isPercent
                                     ? const Color(0xFF2D6A4F).withOpacity(0.1)
@@ -490,7 +580,9 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: isPercent ? const Color(0xFF2D6A4F) : const Color(0xFFFF7A59),
+                                  color: isPercent
+                                      ? const Color(0xFF2D6A4F)
+                                      : const Color(0xFFFF7A59),
                                 ),
                               ),
                             ),
@@ -500,7 +592,9 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                               scale: 0.8,
                               child: Switch(
                                 value: isActive && !expired,
-                                onChanged: expired ? null : (v) => _toggleActive(couponId, isActive),
+                                onChanged: expired
+                                    ? null
+                                    : (v) => _toggleActive(couponId, isActive),
                               ),
                             ),
                           ],
@@ -510,15 +604,26 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                           spacing: 8,
                           runSpacing: 4,
                           children: [
-                            _Chip(icon: Icons.calendar_today_outlined, label: l10n.sellerCouponValidUntil(until)),
+                            _Chip(
+                              icon: Icons.calendar_today_outlined,
+                              label: l10n.sellerCouponValidUntil(until),
+                            ),
                             _Chip(
                               icon: Icons.bar_chart,
                               label: totalLimit != null
-                                  ? l10n.sellerCouponUsageLimited(usageCount.toString(), totalLimit.toString())
-                                  : l10n.sellerCouponUsage(usageCount.toString()),
+                                  ? l10n.sellerCouponUsageLimited(
+                                      usageCount.toString(),
+                                      totalLimit.toString(),
+                                    )
+                                  : l10n.sellerCouponUsage(
+                                      usageCount.toString(),
+                                    ),
                             ),
                             if (c['firstOrderOnly'] == true)
-                              _Chip(icon: Icons.star_outline, label: l10n.sellerCouponFirstOrderLabel),
+                              _Chip(
+                                icon: Icons.star_outline,
+                                label: l10n.sellerCouponFirstOrderLabel,
+                              ),
                             if (expired)
                               _Chip(
                                 icon: Icons.timer_off_outlined,
@@ -530,25 +635,39 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                         if (perf != null && perf.usageCount > 0) ...[
                           const SizedBox(height: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 8,
+                            ),
                             decoration: BoxDecoration(
                               color: AppPalette.primary.withOpacity(0.06),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.insights_outlined, size: 14, color: AppPalette.primary),
+                                Icon(
+                                  Icons.insights_outlined,
+                                  size: 14,
+                                  color: AppPalette.primary,
+                                ),
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
                                     '${perf.usageCount}x kullanıldı • ${perf.totalDiscount.toStringAsFixed(0)} ₺ indirim sağlandı',
-                                    style: TextStyle(fontSize: 11, color: AppPalette.primary, fontWeight: FontWeight.w600),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: AppPalette.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                                 if (perf.totalOrderValue > 0)
                                   Text(
                                     '${perf.totalOrderValue.toStringAsFixed(0)} ₺ ciro',
-                                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey[600],
+                                    ),
                                   ),
                               ],
                             ),
@@ -560,10 +679,22 @@ class _SellerCouponsScreenState extends ConsumerState<SellerCouponsScreen> {
                           children: [
                             TextButton.icon(
                               onPressed: () => _deleteCoupon(couponId, code),
-                              icon: const Icon(Icons.delete_outline, size: 16, color: Colors.red),
-                              label: Text(l10n.delete, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                size: 16,
+                                color: Colors.red,
+                              ),
+                              label: Text(
+                                l10n.delete,
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 12,
+                                ),
+                              ),
                               style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
                                 minimumSize: Size.zero,
                               ),
                             ),

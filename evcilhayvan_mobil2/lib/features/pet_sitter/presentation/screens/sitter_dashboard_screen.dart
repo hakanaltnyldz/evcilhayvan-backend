@@ -6,12 +6,12 @@ import 'package:intl/intl.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 import '../../data/repositories/pet_sitter_repository.dart';
 import '../../domain/models/pet_sitter_model.dart';
 import '../../domain/models/sitter_booking_model.dart';
 import '../../domain/models/sitter_financial_summary_model.dart';
-import 'sitter_financials_screen.dart';
 
 final _sitterDashboardProvider =
     FutureProvider.autoDispose<_SitterDashboardData?>((ref) async {
@@ -54,6 +54,7 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final dashboardAsync = ref.watch(_sitterDashboardProvider);
 
     return Scaffold(
@@ -61,7 +62,7 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
       appBar: AppBar(
         backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
-        title: const Text('Bakici Dashboard'),
+        title: Text(l10n.sitterDashboardTitle),
         actions: [
           IconButton(
             onPressed: () => ref.invalidate(_sitterDashboardProvider),
@@ -73,19 +74,18 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
         loading: () => const Center(child: PawLoading()),
         error: (error, _) => _DashboardMessage(
           icon: Icons.error_outline,
-          title: 'Dashboard yuklenemedi',
+          title: l10n.sitterDashboardLoadError,
           subtitle: error.toString(),
-          actionLabel: 'Tekrar Dene',
+          actionLabel: l10n.sitterDashboardRetry,
           onAction: () => ref.invalidate(_sitterDashboardProvider),
         ),
         data: (data) {
           if (data == null) {
             return _DashboardMessage(
               icon: Icons.pets_outlined,
-              title: 'Dashboard icin bakici profili gerekli',
-              subtitle:
-                  'Once profilinizi olusturun. Sonrasinda rezervasyonlariniz ve performansiniz burada toplanacak.',
-              actionLabel: 'Bakici Profili Olustur',
+              title: l10n.sitterDashboardProfileRequiredTitle,
+              subtitle: l10n.sitterDashboardProfileRequiredSubtitle,
+              actionLabel: l10n.sitterDashboardCreateProfile,
               onAction: () => context.pushNamed('become-sitter'),
             );
           }
@@ -132,7 +132,7 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
           final serviceCounts = <String, int>{};
           for (final booking in data.bookings) {
             serviceCounts.update(
-              booking.serviceLabel,
+              _serviceLabel(l10n, booking.serviceType),
               (value) => value + 1,
               ifAbsent: () => 1,
             );
@@ -162,33 +162,33 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
                   children: [
                     _metricCard(
                       context,
-                      'Bekleyen',
+                      l10n.sitterDashboardMetricPending,
                       '$pending',
-                      'Onay bekleyen rezervasyon',
+                      l10n.sitterDashboardMetricPendingSub,
                       Icons.mark_email_unread_outlined,
                       Colors.orange.shade700,
                     ),
                     _metricCard(
                       context,
-                      'Aktif',
+                      l10n.sitterDashboardMetricActive,
                       '$active',
-                      'Devam eden hizmet',
+                      l10n.sitterDashboardMetricActiveSub,
                       Icons.pets_outlined,
                       const Color(0xFF1D3557),
                     ),
                     _metricCard(
                       context,
-                      'Tamamlanan',
+                      l10n.sitterDashboardMetricCompleted,
                       '${completed.length}',
-                      'Kapanan rezervasyon',
+                      l10n.sitterDashboardMetricCompletedSub,
                       Icons.task_alt_rounded,
                       const Color(0xFF2D6A4F),
                     ),
                     _metricCard(
                       context,
-                      'Puan',
+                      l10n.sitterDashboardMetricRating,
                       data.profile.rating.toStringAsFixed(1),
-                      '${data.profile.reviewCount} yorum',
+                      l10n.sitterDashboardReviewCount(data.profile.reviewCount),
                       Icons.star_rounded,
                       Colors.amber.shade700,
                     ),
@@ -197,19 +197,19 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
                 const SizedBox(height: 16),
                 _section(
                   context,
-                  'Hizli Aksiyonlar',
-                  'Rezervasyon, profil ve takvim ekranlarina buradan gecin.',
+                  l10n.sitterDashboardQuickActions,
+                  l10n.sitterDashboardQuickActionsDesc,
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
                     children: [
                       _actionChip(
-                        'Rezervasyonlar',
+                        l10n.sitterDashboardBookingsAction,
                         Icons.assignment_outlined,
                         () => context.pushNamed('sitter-bookings'),
                       ),
                       _actionChip(
-                        'Profili Duzenle',
+                        l10n.sitterDashboardEditProfile,
                         Icons.edit_outlined,
                         () => context.pushNamed(
                           'become-sitter',
@@ -217,7 +217,7 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
                         ),
                       ),
                       _actionChip(
-                        'Musaitlik Takvimi',
+                        l10n.sitterDashboardAvailabilityCalendar,
                         Icons.calendar_month_outlined,
                         () => context.pushNamed(
                           'sitter-availability',
@@ -225,18 +225,14 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
                         ),
                       ),
                       _actionChip(
-                        'Portfolio',
+                        l10n.sitterDashboardPortfolio,
                         Icons.collections_bookmark_outlined,
                         () => context.pushNamed('sitter-portfolio'),
                       ),
                       _actionChip(
-                        'Kazanc Raporu',
+                        l10n.sitterDashboardEarningsReport,
                         Icons.insights_outlined,
-                        () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const SitterFinancialsScreen(),
-                          ),
-                        ),
+                        () => context.pushNamed('sitter-financials'),
                       ),
                     ],
                   ),
@@ -244,32 +240,40 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
                 const SizedBox(height: 16),
                 _section(
                   context,
-                  'Gelir Ozeti',
-                  'Mevcut rezervasyonlardan turetilen operasyonel finans gorunumu.',
+                  l10n.sitterDashboardRevenueSummary,
+                  l10n.sitterDashboardRevenueSummaryDesc,
                   Column(
                     children: [
                       _financeRow(
                         context,
-                        'Bu ay kazanilan',
-                        _currency(monthRevenue),
+                        l10n.sitterDashboardThisMonthEarned,
+                        _currency(context, monthRevenue),
                         highlight: const Color(0xFF2D6A4F),
                       ),
                       const Divider(height: 22),
                       _financeRow(
                         context,
-                        'Toplam tamamlanan gelir',
-                        _currency(totalRevenue),
+                        l10n.sitterDashboardTotalCompletedRevenue,
+                        _currency(context, totalRevenue),
                       ),
                       const Divider(height: 22),
-                      _financeRow(context, 'Pipeline', _currency(pipeline)),
+                      _financeRow(
+                        context,
+                        l10n.sitterDashboardPipeline,
+                        _currency(context, pipeline),
+                      ),
                       const Divider(height: 22),
-                      _financeRow(context, 'Kabul edilen is', '$accepted'),
+                      _financeRow(
+                        context,
+                        l10n.sitterDashboardAcceptedJobs,
+                        '$accepted',
+                      ),
                       if (data.financials != null) ...[
                         const Divider(height: 22),
                         _financeRow(
                           context,
-                          'Duraklayan odeme',
-                          _currency(data.financials!.pausedRevenue),
+                          l10n.sitterDashboardPausedPayment,
+                          _currency(context, data.financials!.pausedRevenue),
                         ),
                       ],
                     ],
@@ -278,12 +282,12 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
                 const SizedBox(height: 16),
                 _section(
                   context,
-                  'Hizmet Dagilimi',
-                  'Talep yogunlugunun hangi hizmetlere kaydigini gosterir.',
+                  l10n.sitterDashboardServiceDistribution,
+                  l10n.sitterDashboardServiceDistributionDesc,
                   serviceEntries.isEmpty
-                      ? const Text(
-                          'Henuz hizmet gecmisi olusmadi.',
-                          style: TextStyle(color: Colors.grey),
+                      ? Text(
+                          l10n.sitterDashboardNoServiceHistory,
+                          style: const TextStyle(color: Colors.grey),
                         )
                       : Column(
                           children: serviceEntries.map((entry) {
@@ -303,7 +307,9 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '${entry.value} is',
+                                        l10n.sitterDashboardJobCount(
+                                          entry.value,
+                                        ),
                                         style: TextStyle(
                                           color: Theme.of(
                                             context,
@@ -334,12 +340,12 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
                 const SizedBox(height: 16),
                 _section(
                   context,
-                  'Yaklasan Isler',
-                  'Baslangic tarihi yaklasan aktif ve onayli rezervasyonlar.',
+                  l10n.sitterDashboardUpcomingJobs,
+                  l10n.sitterDashboardUpcomingJobsDesc,
                   upcoming.isEmpty
-                      ? const Text(
-                          'Yaklasan rezervasyon bulunmuyor.',
-                          style: TextStyle(color: Colors.grey),
+                      ? Text(
+                          l10n.sitterDashboardNoUpcoming,
+                          style: const TextStyle(color: Colors.grey),
                         )
                       : Column(
                           children: upcoming.take(3).map(_bookingTile).toList(),
@@ -348,12 +354,12 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
                 const SizedBox(height: 16),
                 _section(
                   context,
-                  'Son Yorumlar',
-                  'Musteri memnuniyetini tek panelden takip edin.',
+                  l10n.sitterDashboardRecentReviews,
+                  l10n.sitterDashboardRecentReviewsDesc,
                   data.reviews.isEmpty
-                      ? const Text(
-                          'Henuz yorum yok.',
-                          style: TextStyle(color: Colors.grey),
+                      ? Text(
+                          l10n.sitterDashboardNoReviews,
+                          style: const TextStyle(color: Colors.grey),
                         )
                       : Column(
                           children: data.reviews
@@ -381,19 +387,25 @@ class _SitterDashboardScreenState extends ConsumerState<SitterDashboardScreen> {
       ref.invalidate(_sitterDashboardProvider);
       ref.invalidate(mySitterProfileProvider);
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             nextValue
-                ? 'Profil musait olarak acildi.'
-                : 'Profil musait degil olarak guncellendi.',
+                ? l10n.sitterDashboardAvailabilityOnMsg
+                : l10n.sitterDashboardAvailabilityOffMsg,
           ),
         ),
       );
     } catch (error) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Musaitlik guncellenemedi: $error')),
+        SnackBar(
+          content: Text(
+            l10n.sitterDashboardAvailabilityError(error.toString()),
+          ),
+        ),
       );
     } finally {
       if (mounted) setState(() => _togglingAvailability = false);
@@ -432,6 +444,7 @@ class _HeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -469,7 +482,7 @@ class _HeroCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      profile.address ?? 'Adres eklenmedi',
+                      profile.address ?? l10n.sitterDashboardAddressMissing,
                       style: const TextStyle(color: Colors.white70),
                     ),
                   ],
@@ -484,12 +497,18 @@ class _HeroCard extends StatelessWidget {
             children: [
               _heroChip(
                 profile.isVerified
-                    ? 'Dogrulanmis Profil'
-                    : 'Onay Bekleyen Profil',
+                    ? l10n.sitterDashboardVerifiedProfile
+                    : l10n.sitterDashboardPendingProfile,
                 Icons.verified_outlined,
               ),
-              _heroChip('$pending talep sirada', Icons.schedule_outlined),
-              _heroChip('$active aktif hizmet', Icons.directions_walk_outlined),
+              _heroChip(
+                l10n.sitterDashboardPendingQueue(pending),
+                Icons.schedule_outlined,
+              ),
+              _heroChip(
+                l10n.sitterDashboardActiveService(active),
+                Icons.directions_walk_outlined,
+              ),
             ],
           ),
           const SizedBox(height: 14),
@@ -501,17 +520,19 @@ class _HeroCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Musaitlik Durumu',
-                    style: TextStyle(
+                    l10n.sitterDashboardAvailabilityStatus,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
                 Text(
-                  profile.availability ? 'Acik' : 'Kapali',
+                  profile.availability
+                      ? l10n.sitterDashboardAvailabilityOpen
+                      : l10n.sitterDashboardAvailabilityClosed,
                   style: const TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(width: 8),
@@ -702,55 +723,61 @@ Widget _financeRow(
 }
 
 Widget _bookingTile(SitterBookingModel booking) {
-  final formatter = DateFormat('dd MMM', 'tr_TR');
   return Builder(
-    builder: (context) => Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Theme.of(
-          context,
-        ).colorScheme.surfaceContainerHighest.withOpacity(0.35),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: const Color(0xFFD8F3DC),
-            backgroundImage: booking.petPhoto != null
-                ? NetworkImage(booking.petPhoto!)
-                : null,
-            child: booking.petPhoto == null
-                ? const Icon(Icons.pets, color: Color(0xFF2D6A4F))
-                : null,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  booking.petName ?? 'Evcil hayvan',
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${booking.serviceLabel} • ${formatter.format(booking.startDate)} - ${formatter.format(booking.endDate)}',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
+    builder: (context) {
+      final l10n = AppLocalizations.of(context)!;
+      final formatter = DateFormat(
+        'dd MMM',
+        Localizations.localeOf(context).toString(),
+      );
+      return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Theme.of(
+            context,
+          ).colorScheme.surfaceContainerHighest.withOpacity(0.35),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: const Color(0xFFD8F3DC),
+              backgroundImage: booking.petPhoto != null
+                  ? NetworkImage(booking.petPhoto!)
+                  : null,
+              child: booking.petPhoto == null
+                  ? const Icon(Icons.pets, color: Color(0xFF2D6A4F))
+                  : null,
             ),
-          ),
-          Text(
-            booking.statusLabel,
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-        ],
-      ),
-    ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    booking.petName ?? l10n.bookingsPetFallback,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${_serviceLabel(l10n, booking.serviceType)} • ${formatter.format(booking.startDate)} - ${formatter.format(booking.endDate)}',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              _statusLabel(l10n, booking.status),
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+      );
+    },
   );
 }
 
@@ -791,7 +818,8 @@ Widget _reviewTile(SitterReview review) {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  review.ownerName ?? 'Musteri',
+                  review.ownerName ??
+                      AppLocalizations.of(context)!.bookingsCustomerLabel,
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
@@ -849,8 +877,44 @@ Widget _heroChip(String label, IconData icon) {
 double _amount(SitterBookingModel booking) =>
     booking.payableAmount > 0 ? booking.payableAmount : booking.totalPrice;
 
-String _currency(double value) => NumberFormat.currency(
-  locale: 'tr_TR',
+String _currency(BuildContext context, double value) => NumberFormat.currency(
+  locale: Localizations.localeOf(context).toString(),
   symbol: 'TL',
   decimalDigits: 0,
 ).format(value);
+
+String _serviceLabel(AppLocalizations l10n, String serviceType) {
+  switch (serviceType) {
+    case 'walking':
+      return l10n.sitterServiceWalkingLabel;
+    case 'home_sitting':
+      return l10n.sitterServiceHomeSittingLabel;
+    case 'boarding':
+      return l10n.sitterServiceBoardingLabel;
+    case 'daycare':
+      return l10n.sitterServiceDaycareLabel;
+    case 'grooming':
+      return l10n.sitterServiceGroomingLabel;
+    default:
+      return serviceType;
+  }
+}
+
+String _statusLabel(AppLocalizations l10n, String status) {
+  switch (status) {
+    case 'pending':
+      return l10n.bookingsStatusPending;
+    case 'accepted':
+      return l10n.bookingsStatusAccepted;
+    case 'active':
+      return l10n.bookingsStatusActive;
+    case 'rejected':
+      return l10n.bookingsStatusRejected;
+    case 'cancelled':
+      return l10n.bookingsStatusCancelled;
+    case 'completed':
+      return l10n.bookingsStatusCompleted;
+    default:
+      return status;
+  }
+}

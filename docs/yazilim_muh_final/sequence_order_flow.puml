@@ -1,0 +1,28 @@
+@startuml
+actor Kullanici
+boundary "Mobil Uygulama" as Mobile
+control "Order API" as API
+entity "Cart Service" as Cart
+entity "Coupon Service" as Coupon
+database "MongoDB Atlas" as DB
+collections "Notification Service" as Notify
+
+Kullanici -> Mobile : Sepeti onayla
+Mobile -> API : POST /orders
+API -> Cart : Sepet icerigini getir
+Cart -> DB : CartItem sorgula
+DB --> Cart : Sepet satirlari
+Cart --> API : Sepet verisi
+API -> Coupon : Kupon varsa dogrula
+Coupon -> DB : Kupon / kullanim limiti sorgula
+DB --> Coupon : Kupon sonucu
+Coupon --> API : Gecerli/Geçersiz
+API -> DB : Stok ve adres dogrulama
+DB --> API : Uygun
+API -> DB : Siparis kaydi olustur
+DB --> API : orderId, orderNumber
+API -> Notify : Saticiya bildirim gonder
+Notify --> API : Bildirim sonucu
+API --> Mobile : Siparis basarili
+Mobile --> Kullanici : Siparis numarasini goster
+@enduml

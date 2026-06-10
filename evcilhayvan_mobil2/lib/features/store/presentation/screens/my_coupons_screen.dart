@@ -10,17 +10,19 @@ import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 // ── Providers ──────────────────────────────────────────────────────────────
 
-final availableCouponsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
-  final dio = ApiClient().dio;
-  final res = await dio.get('/api/coupons/available');
-  return List<Map<String, dynamic>>.from(res.data['coupons'] ?? []);
-});
+final availableCouponsProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+      final dio = ApiClient().dio;
+      final res = await dio.get('/api/coupons/available');
+      return List<Map<String, dynamic>>.from(res.data['coupons'] ?? []);
+    });
 
-final couponUsageHistoryProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
-  final dio = ApiClient().dio;
-  final res = await dio.get('/api/coupon-usage/my');
-  return List<Map<String, dynamic>>.from(res.data['usages'] ?? []);
-});
+final couponUsageHistoryProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+      final dio = ApiClient().dio;
+      final res = await dio.get('/api/coupon-usage/my');
+      return List<Map<String, dynamic>>.from(res.data['usages'] ?? []);
+    });
 
 // ── Screen ─────────────────────────────────────────────────────────────────
 
@@ -34,7 +36,6 @@ class MyCouponsScreen extends ConsumerStatefulWidget {
 class _MyCouponsScreenState extends ConsumerState<MyCouponsScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-  final _dateFmt = DateFormat('dd.MM.yyyy', 'tr');
 
   @override
   void initState() {
@@ -63,6 +64,10 @@ class _MyCouponsScreenState extends ConsumerState<MyCouponsScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final dateFmt = DateFormat(
+      'dd.MM.yyyy',
+      Localizations.localeOf(context).toString(),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -78,8 +83,8 @@ class _MyCouponsScreenState extends ConsumerState<MyCouponsScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _AvailableTab(dateFmt: _dateFmt, onCopy: _copyCoupon),
-          _UsageHistoryTab(dateFmt: _dateFmt),
+          _AvailableTab(dateFmt: dateFmt, onCopy: _copyCoupon),
+          _UsageHistoryTab(dateFmt: dateFmt),
         ],
       ),
     );
@@ -106,7 +111,10 @@ class _AvailableTab extends ConsumerWidget {
             children: [
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 8),
-              Text(l10n.couponsLoadError, style: Theme.of(context).textTheme.bodyMedium),
+              Text(
+                l10n.couponsLoadError,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
               TextButton(
                 onPressed: () => ref.invalidate(availableCouponsProvider),
                 child: Text(l10n.couponsRetry),
@@ -122,13 +130,18 @@ class _AvailableTab extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.local_offer_outlined,
-                    size: 64, color: AppPalette.primary.withOpacity(0.3)),
+                Icon(
+                  Icons.local_offer_outlined,
+                  size: 64,
+                  color: AppPalette.primary.withOpacity(0.3),
+                ),
                 const SizedBox(height: 16),
                 Text(l10n.couponsEmptyTitle),
                 const SizedBox(height: 8),
-                Text(l10n.couponsEmptySubtitle,
-                    style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                Text(
+                  l10n.couponsEmptySubtitle,
+                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                ),
               ],
             ),
           );
@@ -154,7 +167,11 @@ class _CouponCard extends StatelessWidget {
   final Map<String, dynamic> coupon;
   final DateFormat dateFmt;
   final void Function(String) onCopy;
-  const _CouponCard({required this.coupon, required this.dateFmt, required this.onCopy});
+  const _CouponCard({
+    required this.coupon,
+    required this.dateFmt,
+    required this.onCopy,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +181,9 @@ class _CouponCard extends StatelessWidget {
     final code = coupon['code'] as String? ?? '';
     final remaining = coupon['remainingUses'] ?? 1;
     final validUntil = coupon['validUntil'] != null
-        ? dateFmt.format(DateTime.tryParse(coupon['validUntil']) ?? DateTime.now())
+        ? dateFmt.format(
+            DateTime.tryParse(coupon['validUntil']) ?? DateTime.now(),
+          )
         : '—';
     final minPurchase = coupon['minPurchaseAmount'] ?? 0;
     final maxDiscount = coupon['maxDiscountAmount'];
@@ -195,39 +214,60 @@ class _CouponCard extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  (isPercent ? const Color(0xFF2D6A4F) : const Color(0xFFFF7A59)).withOpacity(0.12),
+                  (isPercent
+                          ? const Color(0xFF2D6A4F)
+                          : const Color(0xFFFF7A59))
+                      .withOpacity(0.12),
                   Colors.transparent,
                 ],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(15),
+              ),
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: isPercent ? const Color(0xFF2D6A4F) : const Color(0xFFFF7A59),
+                    color: isPercent
+                        ? const Color(0xFF2D6A4F)
+                        : const Color(0xFFFF7A59),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     label,
                     style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 if (firstOrderOnly)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.orange.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text('İlk Sipariş',
-                        style: TextStyle(
-                            color: Colors.orange, fontSize: 10, fontWeight: FontWeight.w600)),
+                    child: const Text(
+                      'İlk Sipariş',
+                      style: TextStyle(
+                        color: Colors.orange,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 const Spacer(),
                 Text(
@@ -249,19 +289,26 @@ class _CouponCard extends StatelessWidget {
                       if (coupon['description'] != null)
                         Text(
                           coupon['description'],
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
                         ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
                             decoration: BoxDecoration(
                               color: AppPalette.primary.withOpacity(0.08),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                  color: AppPalette.primary.withOpacity(0.3),
-                                  style: BorderStyle.solid),
+                                color: AppPalette.primary.withOpacity(0.3),
+                                style: BorderStyle.solid,
+                              ),
                             ),
                             child: Text(
                               code,
@@ -281,7 +328,10 @@ class _CouponCard extends StatelessWidget {
                             color: AppPalette.primary,
                             tooltip: 'Kopyala',
                             padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                            constraints: const BoxConstraints(
+                              minWidth: 32,
+                              minHeight: 32,
+                            ),
                           ),
                         ],
                       ),
@@ -296,13 +346,17 @@ class _CouponCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             decoration: BoxDecoration(
               color: Colors.grey.withOpacity(0.04),
-              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(15)),
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(15),
+              ),
             ),
             child: Row(
               children: [
                 _InfoChip(
                   icon: Icons.calendar_today_outlined,
-                  label: AppLocalizations.of(context)!.couponsValidUntil(validUntil),
+                  label: AppLocalizations.of(
+                    context,
+                  )!.couponsValidUntil(validUntil),
                 ),
                 if (minPurchase > 0) ...[
                   const SizedBox(width: 8),
@@ -376,8 +430,11 @@ class _UsageHistoryTab extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.history_outlined,
-                    size: 64, color: Colors.grey.withOpacity(0.4)),
+                Icon(
+                  Icons.history_outlined,
+                  size: 64,
+                  color: Colors.grey.withOpacity(0.4),
+                ),
                 const SizedBox(height: 16),
                 const Text('Henüz kupon kullanmadınız'),
               ],
@@ -398,7 +455,9 @@ class _UsageHistoryTab extends ConsumerWidget {
               final original = u['originalAmount'] ?? 0;
               final final_ = u['finalAmount'] ?? 0;
               final date = u['createdAt'] != null
-                  ? dateFmt.format(DateTime.tryParse(u['createdAt']) ?? DateTime.now())
+                  ? dateFmt.format(
+                      DateTime.tryParse(u['createdAt']) ?? DateTime.now(),
+                    )
                   : '—';
               return Card(
                 margin: EdgeInsets.zero,
@@ -410,11 +469,18 @@ class _UsageHistoryTab extends ConsumerWidget {
                       color: Colors.green.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.local_offer, color: Colors.green, size: 22),
+                    child: const Icon(
+                      Icons.local_offer,
+                      color: Colors.green,
+                      size: 22,
+                    ),
                   ),
                   title: Text(
                     coupon?['code'] ?? '—',
-                    style: const TextStyle(fontWeight: FontWeight.w700, letterSpacing: 1),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1,
+                    ),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,7 +492,10 @@ class _UsageHistoryTab extends ConsumerWidget {
                       if (order?['status'] != null)
                         Text(
                           'Sipariş: ${order!['status']}',
-                          style: const TextStyle(fontSize: 11, color: Colors.grey),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey,
+                          ),
                         ),
                     ],
                   ),
@@ -442,8 +511,13 @@ class _UsageHistoryTab extends ConsumerWidget {
                           fontSize: 14,
                         ),
                       ),
-                      Text(date,
-                          style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                      Text(
+                        date,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey,
+                        ),
+                      ),
                     ],
                   ),
                   isThreeLine: true,

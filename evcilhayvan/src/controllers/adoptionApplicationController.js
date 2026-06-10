@@ -243,8 +243,6 @@ export async function acceptAdoptionApplication(req, res) {
       ).catch(() => {});
     }
 
-    // Award points to applicant for successful adoption
-    awardPoints(String(application.applicantUserId), 20).catch(() => {});
     return sendOk(res, 200, { application: shaped, conversationId });
   } catch (err) {
     console.error("[acceptAdoptionApplication]", err);

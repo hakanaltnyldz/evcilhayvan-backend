@@ -9,6 +9,7 @@ import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/premium_card.dart';
 import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/appointment_repository.dart';
 import '../../domain/models/appointment_model.dart';
 import '../../domain/models/appointment_prescription_model.dart';
@@ -37,9 +38,11 @@ class _HeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toString();
     final date = DateFormat(
       'dd MMMM yyyy, HH:mm',
-      'tr_TR',
+      locale,
     ).format(appointment.date.toLocal());
     final badgeColor = _statusColor(appointment.status);
 
@@ -61,19 +64,21 @@ class _HeaderCard extends StatelessWidget {
             runSpacing: 8,
             children: [
               _Badge(
-                label: appointment.type == 'online' ? 'Online' : 'Klinik',
+                label: appointment.type == 'online'
+                    ? l10n.apptTypeOnline
+                    : l10n.apptTypeClinic,
                 color: Colors.white.withOpacity(0.16),
                 textColor: Colors.white,
               ),
               _Badge(
-                label: _statusText(appointment.status),
+                label: _statusText(l10n, appointment.status),
                 color: badgeColor.withOpacity(0.22),
                 textColor: Colors.white,
               ),
               if (appointment.feeAmount > 0)
                 _Badge(
                   label: NumberFormat.currency(
-                    locale: 'tr_TR',
+                    locale: locale,
                     symbol: 'TL',
                     decimalDigits: appointment.feeAmount % 1 == 0 ? 0 : 2,
                   ).format(appointment.feeAmount),
@@ -84,7 +89,9 @@ class _HeaderCard extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           Text(
-            appointment.pet?.name ?? appointment.vet?.name ?? 'Randevu',
+            appointment.pet?.name ??
+                appointment.vet?.name ??
+                l10n.apptFallbackTitle,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w900,
@@ -95,7 +102,12 @@ class _HeaderCard extends StatelessWidget {
           if (appointment.completedAt != null) ...[
             const SizedBox(height: 8),
             Text(
-              'Tamamlanma: ${DateFormat('dd MMM yyyy, HH:mm', 'tr_TR').format(appointment.completedAt!.toLocal())}',
+              l10n.apptCompletedAt(
+                DateFormat(
+                  'dd MMM yyyy, HH:mm',
+                  locale,
+                ).format(appointment.completedAt!.toLocal()),
+              ),
               style: const TextStyle(color: Colors.white70),
             ),
           ],
@@ -109,27 +121,35 @@ class _VetActionPanel extends StatelessWidget {
   final AppointmentModel appointment;
   final VoidCallback onEditClinicalRecord;
   final VoidCallback onCreatePrescription;
+  final VoidCallback onReschedule;
   final ValueChanged<String> onStatusTap;
 
   const _VetActionPanel({
     required this.appointment,
     required this.onEditClinicalRecord,
     required this.onCreatePrescription,
+    required this.onReschedule,
     required this.onStatusTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final actions = <Widget>[
       _ActionButton(
         icon: Icons.note_alt_outlined,
-        label: 'Klinik Kaydi',
+        label: l10n.apptClinicalRecordAction,
         onTap: onEditClinicalRecord,
       ),
       _ActionButton(
         icon: Icons.medication_outlined,
-        label: 'Recete Ekle',
+        label: l10n.apptPrescriptionAddAction,
         onTap: onCreatePrescription,
+      ),
+      _ActionButton(
+        icon: Icons.event_repeat_outlined,
+        label: 'Yeniden planla',
+        onTap: onReschedule,
       ),
     ];
 
@@ -137,12 +157,12 @@ class _VetActionPanel extends StatelessWidget {
       actions.addAll([
         _ActionButton(
           icon: Icons.check_circle_outline,
-          label: 'Onayla',
+          label: l10n.apptApproveAction,
           onTap: () => onStatusTap('confirmed'),
         ),
         _ActionButton(
           icon: Icons.cancel_outlined,
-          label: 'Reddet',
+          label: l10n.apptRejectAction,
           isDanger: true,
           onTap: () => onStatusTap('cancelled'),
         ),
@@ -151,12 +171,12 @@ class _VetActionPanel extends StatelessWidget {
       actions.addAll([
         _ActionButton(
           icon: Icons.task_alt_outlined,
-          label: 'Tamamla',
+          label: l10n.apptCompleteAction,
           onTap: () => onStatusTap('completed'),
         ),
         _ActionButton(
           icon: Icons.person_off_outlined,
-          label: 'Gelmedi',
+          label: l10n.apptNoShowAction,
           isDanger: true,
           onTap: () => onStatusTap('no_show'),
         ),
@@ -167,7 +187,7 @@ class _VetActionPanel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Veteriner Islemleri',
+          l10n.apptVetActions,
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -367,6 +387,8 @@ class _PrescriptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toString();
     return PremiumCard(
       accentColor: const Color(0xFF2D6A4F),
       child: Column(
@@ -374,14 +396,17 @@ class _PrescriptionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Recete',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                  l10n.apptPrescription,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
                 ),
               ),
               _Badge(
-                label: _prescriptionStatusText(prescription.status),
+                label: _prescriptionStatusText(l10n, prescription.status),
                 color: const Color(0xFF2D6A4F).withOpacity(0.12),
                 textColor: const Color(0xFF2D6A4F),
               ),
@@ -399,7 +424,7 @@ class _PrescriptionCard extends StatelessWidget {
           ],
           const SizedBox(height: 14),
           Text(
-            'Tani',
+            l10n.apptDiagnosis,
             style: TextStyle(fontSize: 12, color: Theme.of(context).hintColor),
           ),
           const SizedBox(height: 4),
@@ -410,7 +435,7 @@ class _PrescriptionCard extends StatelessWidget {
           if ((prescription.notes ?? '').isNotEmpty) ...[
             const SizedBox(height: 14),
             Text(
-              'Notlar',
+              l10n.apptDetailNotes,
               style: TextStyle(
                 fontSize: 12,
                 color: Theme.of(context).hintColor,
@@ -422,7 +447,7 @@ class _PrescriptionCard extends StatelessWidget {
           if (prescription.followUpDate != null) ...[
             const SizedBox(height: 14),
             Text(
-              'Kontrol Tarihi',
+              l10n.apptFollowUpDate,
               style: TextStyle(
                 fontSize: 12,
                 color: Theme.of(context).hintColor,
@@ -432,15 +457,15 @@ class _PrescriptionCard extends StatelessWidget {
             Text(
               DateFormat(
                 'dd MMMM yyyy',
-                'tr_TR',
+                locale,
               ).format(prescription.followUpDate!.toLocal()),
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ],
           const SizedBox(height: 14),
-          const Text(
-            'Ilac Listesi',
-            style: TextStyle(fontWeight: FontWeight.w800),
+          Text(
+            l10n.apptMedicationList,
+            style: const TextStyle(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 10),
           ...prescription.medications.map((medication) {
@@ -449,7 +474,7 @@ class _PrescriptionCard extends StatelessWidget {
               if ((medication.frequency ?? '').isNotEmpty)
                 medication.frequency!,
               if (medication.durationDays != null)
-                '${medication.durationDays} gun',
+                l10n.apptMedicationDurationDays(medication.durationDays!),
             ].join(' • ');
 
             return Container(
@@ -547,7 +572,7 @@ class _CenteredErrorState extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Tekrar Dene'),
+              label: Text(AppLocalizations.of(context)!.apptRetry),
             ),
           ],
         ),
@@ -616,6 +641,12 @@ class _MedicationDraft {
   }
 }
 
+class _StatusChangeResult {
+  final String? meetingUrl;
+
+  const _StatusChangeResult({this.meetingUrl});
+}
+
 Color _statusColor(String status) {
   switch (status) {
     case 'confirmed':
@@ -631,43 +662,52 @@ Color _statusColor(String status) {
   }
 }
 
-String _statusText(String status) {
+String _statusText(AppLocalizations l10n, String status) {
   switch (status) {
     case 'pending':
-      return 'Beklemede';
+      return l10n.apptStatusPending;
     case 'confirmed':
-      return 'Onaylandi';
+      return l10n.apptStatusConfirmed;
     case 'cancelled':
-      return 'Iptal';
+      return l10n.apptStatusCancelled;
     case 'completed':
-      return 'Tamamlandi';
+      return l10n.apptStatusCompleted;
     case 'no_show':
-      return 'Gelmedi';
+      return l10n.apptStatusNoShow;
     default:
       return status;
   }
 }
 
-String _prescriptionStatusText(String status) {
+String _prescriptionStatusText(AppLocalizations l10n, String status) {
   switch (status) {
     case 'active':
-      return 'Aktif';
+      return l10n.apptPrescriptionStatusActive;
     case 'completed':
-      return 'Tamamlandi';
+      return l10n.apptStatusCompleted;
     case 'cancelled':
-      return 'Iptal';
+      return l10n.apptStatusCancelled;
     default:
       return status;
   }
+}
+
+bool _isManagedVetAppointment(
+  String? currentUserId,
+  AppointmentModel appointment,
+) {
+  if (currentUserId == null || currentUserId.isEmpty) return false;
+  final vet = appointment.vet;
+  return vet?.userId == currentUserId || vet?.registeredBy == currentUserId;
 }
 
 class _AppointmentDetailScreenState
     extends ConsumerState<AppointmentDetailScreen> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final currentUser = ref.watch(authProvider);
-    final isVetOrAdmin =
-        currentUser?.role == 'vet' || currentUser?.role == 'admin';
+    final isAdmin = currentUser?.role == 'admin';
     final appointmentAsync = ref.watch(
       appointmentDetailProvider(widget.appointmentId),
     );
@@ -678,7 +718,7 @@ class _AppointmentDetailScreenState
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Randevu Detayi'),
+        title: Text(l10n.apptDetailTitle),
         backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         actions: [
@@ -688,10 +728,13 @@ class _AppointmentDetailScreenState
       body: appointmentAsync.when(
         loading: () => const Center(child: PawLoading()),
         error: (error, _) => _CenteredErrorState(
-          message: 'Randevu detayi yuklenemedi:\n$error',
+          message: l10n.apptDetailLoadError(error.toString()),
           onRetry: _refreshAll,
         ),
         data: (appointment) {
+          final canUseVetActions =
+              isAdmin || _isManagedVetAppointment(currentUser?.id, appointment);
+
           return RefreshIndicator(
             onRefresh: () async => _refreshAll(),
             child: ListView(
@@ -699,20 +742,21 @@ class _AppointmentDetailScreenState
               children: [
                 _HeaderCard(appointment: appointment),
                 const SizedBox(height: 16),
-                if (isVetOrAdmin) ...[
+                if (canUseVetActions) ...[
                   _VetActionPanel(
                     appointment: appointment,
                     onEditClinicalRecord: () =>
                         _showClinicalRecordSheet(appointment),
                     onCreatePrescription: () =>
                         _showPrescriptionSheet(appointment),
+                    onReschedule: () => _showRescheduleSheet(appointment),
                     onStatusTap: (status) =>
                         _handleStatusChange(appointment, status),
                   ),
                   const SizedBox(height: 16),
                 ],
-                if (appointment.owner != null && isVetOrAdmin) ...[
-                  _buildSectionTitle('Musteri Bilgisi'),
+                if (appointment.owner != null && canUseVetActions) ...[
+                  _buildSectionTitle(l10n.apptCustomerInfo),
                   const SizedBox(height: 10),
                   PremiumCard(
                     child: Column(
@@ -720,19 +764,19 @@ class _AppointmentDetailScreenState
                       children: [
                         _DetailLine(
                           icon: Icons.person_outline,
-                          label: 'Musteri',
+                          label: l10n.apptCustomer,
                           value: appointment.owner!.name,
                         ),
                         if ((appointment.owner!.phone ?? '').isNotEmpty)
                           _DetailLine(
                             icon: Icons.call_outlined,
-                            label: 'Telefon',
+                            label: l10n.apptPhone,
                             value: appointment.owner!.phone!,
                           ),
                         if ((appointment.owner!.email ?? '').isNotEmpty)
                           _DetailLine(
                             icon: Icons.mail_outline,
-                            label: 'E-posta',
+                            label: l10n.apptEmail,
                             value: appointment.owner!.email!,
                           ),
                       ],
@@ -740,7 +784,7 @@ class _AppointmentDetailScreenState
                   ),
                   const SizedBox(height: 16),
                 ],
-                _buildSectionTitle('Randevu Bilgileri'),
+                _buildSectionTitle(l10n.apptInfo),
                 const SizedBox(height: 10),
                 PremiumCard(
                   child: Column(
@@ -748,22 +792,22 @@ class _AppointmentDetailScreenState
                     children: [
                       _DetailLine(
                         icon: Icons.calendar_today_outlined,
-                        label: 'Tarih',
+                        label: l10n.apptCreateDate,
                         value: _formatDateTime(appointment.date),
                       ),
                       _DetailLine(
                         icon: appointment.type == 'online'
                             ? Icons.videocam_outlined
                             : Icons.local_hospital_outlined,
-                        label: 'Gorusme Tipi',
+                        label: l10n.apptMeetingType,
                         value: appointment.type == 'online'
-                            ? 'Online gorusme'
-                            : 'Klinik muayene',
+                            ? l10n.apptOnlineMeeting
+                            : l10n.apptClinicExam,
                       ),
                       if (appointment.vet != null)
                         _DetailLine(
                           icon: Icons.local_hospital,
-                          label: 'Veteriner',
+                          label: l10n.apptDetailVet,
                           value: appointment.vet!.name,
                           secondary: appointment.vet!.address,
                           onTap: () => context.pushNamed(
@@ -774,39 +818,48 @@ class _AppointmentDetailScreenState
                       if (appointment.pet != null)
                         _DetailLine(
                           icon: Icons.pets_outlined,
-                          label: 'Evcil Hayvan',
+                          label: l10n.apptDetailPet,
                           value: appointment.pet!.name,
                           secondary: appointment.pet!.species,
                         ),
                       if ((appointment.reason ?? '').isNotEmpty)
                         _DetailLine(
                           icon: Icons.assignment_outlined,
-                          label: 'Randevu Nedeni',
+                          label: l10n.apptDetailReason,
                           value: appointment.reason!,
                         ),
                       if ((appointment.notes ?? '').isNotEmpty)
                         _DetailLine(
                           icon: Icons.sticky_note_2_outlined,
-                          label: 'Sahip Notu',
+                          label: l10n.apptOwnerNote,
                           value: appointment.notes!,
                         ),
                       if (appointment.type == 'online' &&
                           (appointment.meetingUrl ?? '').isNotEmpty)
                         _DetailLine(
                           icon: Icons.open_in_new_outlined,
-                          label: 'Toplanti Baglantisi',
+                          label: l10n.apptMeetingLink,
                           value: appointment.meetingUrl!,
                           onTap: () => _launchExternal(
                             appointment.meetingUrl!,
-                            fallbackMessage: 'Toplanti baglantisi acilamadi.',
+                            fallbackMessage: l10n.apptMeetingLinkError,
                           ),
+                        ),
+                      if (appointment.type == 'online' &&
+                          (appointment.meetingUrl ?? '').isEmpty)
+                        const _DetailLine(
+                          icon: Icons.videocam_off_outlined,
+                          label: 'Online gorusme',
+                          value: 'Baglanti henuz paylasilmadi',
+                          secondary:
+                              'Veteriner onay sirasinda gercek gorusme linkini ekleyebilir.',
                         ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
                 if (_hasClinicalSummary(appointment)) ...[
-                  _buildSectionTitle('Klinik Kaydi'),
+                  _buildSectionTitle(l10n.apptClinicalRecord),
                   const SizedBox(height: 10),
                   PremiumCard(
                     accentColor: const Color(0xFF2D6A4F),
@@ -815,31 +868,31 @@ class _AppointmentDetailScreenState
                       children: [
                         if ((appointment.diagnosis ?? '').isNotEmpty)
                           _ClinicalBlock(
-                            title: 'Tani',
+                            title: l10n.apptDiagnosis,
                             value: appointment.diagnosis!,
                             icon: Icons.biotech_outlined,
                           ),
                         if ((appointment.vetNotes ?? '').isNotEmpty)
                           _ClinicalBlock(
-                            title: 'Veteriner Notlari',
+                            title: l10n.apptDetailVetNotes,
                             value: appointment.vetNotes!,
                             icon: Icons.note_alt_outlined,
                           ),
                         if ((appointment.treatmentSummary ?? '').isNotEmpty)
                           _ClinicalBlock(
-                            title: 'Tedavi Ozeti',
+                            title: l10n.apptTreatmentSummary,
                             value: appointment.treatmentSummary!,
                             icon: Icons.healing_outlined,
                           ),
                         if (appointment.followUpDate != null)
                           _ClinicalBlock(
-                            title: 'Takip Tarihi',
+                            title: l10n.apptFollowUpDate,
                             value: _formatDate(appointment.followUpDate!),
                             icon: Icons.event_repeat_outlined,
                           ),
                         if (appointment.feeAmount > 0)
                           _ClinicalBlock(
-                            title: 'Muayene Ucreti',
+                            title: l10n.apptExamFee,
                             value: _formatCurrency(appointment.feeAmount),
                             icon: Icons.payments_outlined,
                             isLast: true,
@@ -849,7 +902,7 @@ class _AppointmentDetailScreenState
                   ),
                   const SizedBox(height: 16),
                 ],
-                _buildSectionTitle('Receteler'),
+                _buildSectionTitle(l10n.apptPrescriptions),
                 const SizedBox(height: 10),
                 prescriptionsAsync.when(
                   loading: () => const Padding(
@@ -862,7 +915,7 @@ class _AppointmentDetailScreenState
                         const Icon(Icons.error_outline, color: Colors.red),
                         const SizedBox(height: 8),
                         Text(
-                          'Receteler yuklenemedi: $error',
+                          l10n.apptPrescriptionsLoadError(error.toString()),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -879,17 +932,17 @@ class _AppointmentDetailScreenState
                               color: Color(0xFF2D6A4F),
                             ),
                             const SizedBox(height: 10),
-                            const Text(
-                              'Bu randevu icin henuz recete olusturulmadi.',
+                            Text(
+                              l10n.apptNoPrescriptions,
                               textAlign: TextAlign.center,
                             ),
-                            if (isVetOrAdmin) ...[
+                            if (canUseVetActions) ...[
                               const SizedBox(height: 14),
                               ElevatedButton.icon(
                                 onPressed: () =>
                                     _showPrescriptionSheet(appointment),
                                 icon: const Icon(Icons.add),
-                                label: const Text('Ilk Receteyi Hazirla'),
+                                label: Text(l10n.apptPrepareFirstPrescription),
                               ),
                             ],
                           ],
@@ -915,12 +968,26 @@ class _AppointmentDetailScreenState
                   },
                 ),
                 const SizedBox(height: 20),
-                if (appointment.canCancel && !isVetOrAdmin)
+                if (appointment.canCancel && !canUseVetActions) ...[
+                  ElevatedButton.icon(
+                    onPressed: () => _showRescheduleSheet(appointment),
+                    icon: const Icon(Icons.event_repeat_outlined),
+                    label: const Text('Yeniden planla'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D6A4F),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(52),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   OutlinedButton.icon(
                     onPressed: () =>
                         _handleStatusChange(appointment, 'cancelled'),
                     icon: const Icon(Icons.cancel_outlined),
-                    label: const Text('Randevuyu Iptal Et'),
+                    label: Text(l10n.apptDetailCancelBtn),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.red,
                       side: const BorderSide(color: Colors.red),
@@ -930,6 +997,7 @@ class _AppointmentDetailScreenState
                       ),
                     ),
                   ),
+                ],
                 const SizedBox(height: 24),
               ],
             ),
@@ -943,34 +1011,55 @@ class _AppointmentDetailScreenState
     AppointmentModel appointment,
     String nextStatus,
   ) async {
-    final confirmed = await _confirmStatusChange(nextStatus);
-    if (confirmed != true) return;
+    final result = await _confirmStatusChange(
+      nextStatus,
+      needsMeetingUrl:
+          nextStatus == 'confirmed' && appointment.type == 'online',
+    );
+    if (result == null) return;
 
     try {
       await ref
           .read(appointmentRepositoryProvider)
-          .updateStatus(appointment.id, nextStatus);
+          .updateStatus(
+            appointment.id,
+            nextStatus,
+            meetingUrl: result.meetingUrl,
+          );
       _refreshAll();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${_statusLabel(nextStatus)} olarak guncellendi'),
+          content: Text(
+            AppLocalizations.of(
+              context,
+            )!.apptStatusUpdated(_statusLabel(nextStatus)),
+          ),
         ),
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Islem basarisiz: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.apptActionFailed(error.toString()),
+          ),
+        ),
+      );
     }
   }
 
-  Future<bool?> _confirmStatusChange(String nextStatus) {
+  Future<_StatusChangeResult?> _confirmStatusChange(
+    String nextStatus, {
+    bool needsMeetingUrl = false,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
     final isDanger = nextStatus == 'cancelled' || nextStatus == 'no_show';
     final title = _confirmTitle(nextStatus);
     final description = _confirmDescription(nextStatus);
+    final meetingUrlController = TextEditingController();
 
-    return showModalBottomSheet<bool>(
+    return showModalBottomSheet<_StatusChangeResult>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -1019,26 +1108,51 @@ class _AppointmentDetailScreenState
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Theme.of(sheetContext).hintColor),
                 ),
+                if (needsMeetingUrl) ...[
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: meetingUrlController,
+                    keyboardType: TextInputType.url,
+                    decoration: InputDecoration(
+                      labelText: 'Gorusme linki',
+                      hintText: 'https://meet.google.com/...',
+                      helperText: 'Bos birakilirsa link bekleniyor gorunur.',
+                      filled: true,
+                      fillColor: context.inputFill,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () => Navigator.of(sheetContext).pop(false),
-                        child: const Text('Vazgec'),
+                        onPressed: () => Navigator.of(sheetContext).pop(),
+                        child: Text(l10n.cancel),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => Navigator.of(sheetContext).pop(true),
+                        onPressed: () {
+                          Navigator.of(sheetContext).pop(
+                            _StatusChangeResult(
+                              meetingUrl: needsMeetingUrl
+                                  ? meetingUrlController.text.trim()
+                                  : null,
+                            ),
+                          );
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isDanger
                               ? Colors.red
                               : const Color(0xFF2D6A4F),
                           foregroundColor: Colors.white,
                         ),
-                        child: const Text('Devam Et'),
+                        child: Text(l10n.apptCreateContinue),
                       ),
                     ),
                   ],
@@ -1051,7 +1165,292 @@ class _AppointmentDetailScreenState
     );
   }
 
+  String _dateKey(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _showRescheduleSheet(AppointmentModel appointment) async {
+    final repo = ref.read(appointmentRepositoryProvider);
+    final reasonController = TextEditingController();
+    DateTime selectedDate = appointment.date.isAfter(DateTime.now())
+        ? appointment.date
+        : DateTime.now().add(const Duration(days: 1));
+    String? selectedSlot =
+        '${appointment.date.hour.toString().padLeft(2, '0')}:${appointment.date.minute.toString().padLeft(2, '0')}';
+    var slots = <String>[];
+    var loadingSlots = true;
+    var submitting = false;
+    var requestedInitialSlots = false;
+
+    Future<void> loadSlots(StateSetter setModalState) async {
+      setModalState(() => loadingSlots = true);
+      try {
+        final nextSlots = await repo.getAvailableSlots(
+          vetId: appointment.veterinaryId,
+          date: _dateKey(selectedDate),
+          excludeAppointmentId: appointment.id,
+        );
+        if (!nextSlots.contains(selectedSlot)) selectedSlot = null;
+        setModalState(() {
+          slots = nextSlots;
+          loadingSlots = false;
+        });
+      } catch (error) {
+        setModalState(() {
+          slots = [];
+          selectedSlot = null;
+          loadingSlots = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Saatler yuklenemedi: $error')),
+          );
+        }
+      }
+    }
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, setModalState) {
+            if (!requestedInitialSlots && loadingSlots && slots.isEmpty) {
+              requestedInitialSlots = true;
+              Future.microtask(() => loadSlots(setModalState));
+            }
+
+            return SafeArea(
+              child: AnimatedPadding(
+                duration: const Duration(milliseconds: 180),
+                padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 16,
+                  bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 42,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Randevu yeniden planla',
+                        style: Theme.of(sheetContext).textTheme.titleLarge
+                            ?.copyWith(fontWeight: FontWeight.w800),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Yeni tarih ve uygun saat secin. Pet sahibi degisikliginde randevu tekrar beklemeye alinir.',
+                        style: TextStyle(
+                          color: Theme.of(sheetContext).hintColor,
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      PremiumCard(
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_month_outlined,
+                              color: Color(0xFF2D6A4F),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Tarih',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _formatDate(selectedDate),
+                                    style: TextStyle(
+                                      color: Theme.of(sheetContext).hintColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: submitting
+                                  ? null
+                                  : () async {
+                                      final picked = await showDatePicker(
+                                        context: sheetContext,
+                                        initialDate: selectedDate,
+                                        firstDate: DateTime.now(),
+                                        lastDate: DateTime.now().add(
+                                          const Duration(days: 90),
+                                        ),
+                                        locale: Localizations.localeOf(context),
+                                      );
+                                      if (picked == null) return;
+                                      selectedDate = picked;
+                                      selectedSlot = null;
+                                      await loadSlots(setModalState);
+                                    },
+                              child: const Text('Sec'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      const Text(
+                        'Uygun saatler',
+                        style: TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      const SizedBox(height: 10),
+                      if (loadingSlots)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            child: PawLoading(size: 36),
+                          ),
+                        )
+                      else if (slots.isEmpty)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: context.subtleBackground,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Text(
+                            'Bu gun icin uygun saat bulunamadi.',
+                          ),
+                        )
+                      else
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: slots.map((slot) {
+                            final selected = selectedSlot == slot;
+                            return ChoiceChip(
+                              label: Text(slot),
+                              selected: selected,
+                              onSelected: submitting
+                                  ? null
+                                  : (_) => setModalState(
+                                      () => selectedSlot = slot,
+                                    ),
+                            );
+                          }).toList(),
+                        ),
+                      const SizedBox(height: 14),
+                      _SheetField(
+                        controller: reasonController,
+                        label: 'Neden',
+                        hintText: 'Opsiyonel',
+                        maxLines: 2,
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: submitting
+                              ? null
+                              : () async {
+                                  if (selectedSlot == null) {
+                                    ScaffoldMessenger.of(
+                                      sheetContext,
+                                    ).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Saat secin.'),
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  final parts = selectedSlot!.split(':');
+                                  final nextDate = DateTime(
+                                    selectedDate.year,
+                                    selectedDate.month,
+                                    selectedDate.day,
+                                    int.tryParse(parts[0]) ?? 0,
+                                    parts.length > 1
+                                        ? int.tryParse(parts[1]) ?? 0
+                                        : 0,
+                                  );
+                                  setModalState(() => submitting = true);
+                                  try {
+                                    await repo.rescheduleAppointment(
+                                      appointment.id,
+                                      date: nextDate,
+                                      reason: reasonController.text,
+                                    );
+                                    _refreshAll();
+                                    if (!mounted) return;
+                                    Navigator.of(sheetContext).pop();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Randevu yeniden planlandi.',
+                                        ),
+                                      ),
+                                    );
+                                  } catch (error) {
+                                    setModalState(() => submitting = false);
+                                    ScaffoldMessenger.of(
+                                      sheetContext,
+                                    ).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Randevu planlanamadi: $error',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                          icon: submitting
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.event_repeat_outlined),
+                          label: Text(submitting ? 'Kaydediliyor' : 'Kaydet'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2D6A4F),
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size.fromHeight(52),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    reasonController.dispose();
+  }
+
   Future<void> _showClinicalRecordSheet(AppointmentModel appointment) async {
+    final l10n = AppLocalizations.of(context)!;
     final notesController = TextEditingController(text: appointment.vetNotes);
     final diagnosisController = TextEditingController(
       text: appointment.diagnosis,
@@ -1100,13 +1499,13 @@ class _AppointmentDetailScreenState
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        'Klinik Kaydi Duzenle',
+                        l10n.apptClinicalRecordEdit,
                         style: Theme.of(sheetContext).textTheme.titleLarge
                             ?.copyWith(fontWeight: FontWeight.w800),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Veteriner notlari, tani ve takip planini bu randevuya bagli olarak kaydet.',
+                        l10n.apptClinicalRecordEditDesc,
                         style: TextStyle(
                           color: Theme.of(sheetContext).hintColor,
                         ),
@@ -1114,27 +1513,27 @@ class _AppointmentDetailScreenState
                       const SizedBox(height: 20),
                       _SheetField(
                         controller: diagnosisController,
-                        label: 'Tani',
-                        hintText: 'Orn. Gastrit supheci',
+                        label: l10n.apptDiagnosis,
+                        hintText: l10n.apptDiagnosisHint,
                       ),
                       const SizedBox(height: 12),
                       _SheetField(
                         controller: notesController,
-                        label: 'Veteriner Notlari',
-                        hintText: 'Muayene sirasinda dikkat cekenler',
+                        label: l10n.apptDetailVetNotes,
+                        hintText: l10n.apptVetNotesHint,
                         maxLines: 4,
                       ),
                       const SizedBox(height: 12),
                       _SheetField(
                         controller: treatmentController,
-                        label: 'Tedavi Ozeti',
-                        hintText: 'Uygulanan tedavi, oneriler, kontrol plani',
+                        label: l10n.apptTreatmentSummary,
+                        hintText: l10n.apptTreatmentHint,
                         maxLines: 4,
                       ),
                       const SizedBox(height: 12),
                       _SheetField(
                         controller: feeController,
-                        label: 'Muayene Ucreti (TL)',
+                        label: l10n.apptExamFeeField,
                         hintText: '350',
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
@@ -1153,16 +1552,16 @@ class _AppointmentDetailScreenState
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Takip Tarihi',
-                                    style: TextStyle(
+                                  Text(
+                                    l10n.apptFollowUpDate,
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     followUpDate == null
-                                        ? 'Henuz secilmedi'
+                                        ? l10n.apptFollowUpNotSelected
                                         : _formatDate(followUpDate!),
                                     style: TextStyle(
                                       color: Theme.of(sheetContext).hintColor,
@@ -1182,12 +1581,12 @@ class _AppointmentDetailScreenState
                                   lastDate: DateTime.now().add(
                                     const Duration(days: 365),
                                   ),
-                                  locale: const Locale('tr', 'TR'),
+                                  locale: Localizations.localeOf(context),
                                 );
                                 if (picked == null) return;
                                 setModalState(() => followUpDate = picked);
                               },
-                              child: const Text('Sec'),
+                              child: Text(l10n.apptSelect),
                             ),
                             if (followUpDate != null)
                               IconButton(
@@ -1219,10 +1618,8 @@ class _AppointmentDetailScreenState
                                     ScaffoldMessenger.of(
                                       sheetContext,
                                     ).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Ucret alani sayisal olmalidir.',
-                                        ),
+                                      SnackBar(
+                                        content: Text(l10n.apptFeeNumericError),
                                       ),
                                     );
                                     return;
@@ -1249,9 +1646,9 @@ class _AppointmentDetailScreenState
                                     if (!mounted) return;
                                     Navigator.of(sheetContext).pop();
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
+                                      SnackBar(
                                         content: Text(
-                                          'Klinik kaydi guncellendi.',
+                                          l10n.apptClinicalRecordUpdated,
                                         ),
                                       ),
                                     );
@@ -1262,7 +1659,9 @@ class _AppointmentDetailScreenState
                                     ).showSnackBar(
                                       SnackBar(
                                         content: Text(
-                                          'Kayit guncellenemedi: $error',
+                                          l10n.apptClinicalRecordUpdateError(
+                                            error.toString(),
+                                          ),
                                         ),
                                       ),
                                     );
@@ -1279,7 +1678,7 @@ class _AppointmentDetailScreenState
                                 )
                               : const Icon(Icons.save_outlined),
                           label: Text(
-                            isSubmitting ? 'Kaydediliyor...' : 'Kaydet',
+                            isSubmitting ? l10n.apptSaving : l10n.save,
                           ),
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size.fromHeight(52),
@@ -1305,6 +1704,7 @@ class _AppointmentDetailScreenState
   }
 
   Future<void> _showPrescriptionSheet(AppointmentModel appointment) async {
+    final l10n = AppLocalizations.of(context)!;
     final diagnosisController = TextEditingController(
       text: appointment.diagnosis,
     );
@@ -1348,13 +1748,13 @@ class _AppointmentDetailScreenState
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        'Recete Olustur',
+                        l10n.apptPrescriptionCreate,
                         style: Theme.of(sheetContext).textTheme.titleLarge
                             ?.copyWith(fontWeight: FontWeight.w800),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Ilaclari ve kullanim planini randevu kaydina ekle.',
+                        l10n.apptPrescriptionCreateDesc,
                         style: TextStyle(
                           color: Theme.of(sheetContext).hintColor,
                         ),
@@ -1362,22 +1762,22 @@ class _AppointmentDetailScreenState
                       const SizedBox(height: 20),
                       _SheetField(
                         controller: diagnosisController,
-                        label: 'Tani',
-                        hintText: 'Kesinlestirilmis tani',
+                        label: l10n.apptDiagnosis,
+                        hintText: l10n.apptDiagnosisHint,
                       ),
                       const SizedBox(height: 12),
                       _SheetField(
                         controller: noteController,
-                        label: 'Ek Notlar',
-                        hintText: 'Kullanim uyarisi veya kontrol notu',
+                        label: l10n.apptExtraNotes,
+                        hintText: l10n.apptPrescriptionNotesHint,
                         maxLines: 3,
                       ),
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          const Text(
-                            'Ilaclar',
-                            style: TextStyle(
+                          Text(
+                            l10n.apptMedications,
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
                             ),
@@ -1388,7 +1788,7 @@ class _AppointmentDetailScreenState
                               () => drafts.add(_MedicationDraft()),
                             ),
                             icon: const Icon(Icons.add),
-                            label: const Text('Ilac Ekle'),
+                            label: Text(l10n.apptAddMedication),
                           ),
                         ],
                       ),
@@ -1404,7 +1804,7 @@ class _AppointmentDetailScreenState
                                 Row(
                                   children: [
                                     Text(
-                                      'Ilac ${index + 1}',
+                                      l10n.apptMedicationNumber(index + 1),
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w800,
                                       ),
@@ -1429,8 +1829,8 @@ class _AppointmentDetailScreenState
                                 ),
                                 _SheetField(
                                   controller: draft.nameController,
-                                  label: 'Ilac Adi',
-                                  hintText: 'Orn. Amoksisilin',
+                                  label: l10n.apptMedicationName,
+                                  hintText: l10n.apptMedicationNameHint,
                                 ),
                                 const SizedBox(height: 10),
                                 Row(
@@ -1438,7 +1838,7 @@ class _AppointmentDetailScreenState
                                     Expanded(
                                       child: _SheetField(
                                         controller: draft.dosageController,
-                                        label: 'Doz',
+                                        label: l10n.apptMedicationDose,
                                         hintText: '250 mg',
                                       ),
                                     ),
@@ -1446,8 +1846,9 @@ class _AppointmentDetailScreenState
                                     Expanded(
                                       child: _SheetField(
                                         controller: draft.frequencyController,
-                                        label: 'Siklik',
-                                        hintText: 'Gunde 2 kez',
+                                        label: l10n.apptMedicationFrequency,
+                                        hintText:
+                                            l10n.apptMedicationFrequencyHint,
                                       ),
                                     ),
                                   ],
@@ -1459,7 +1860,7 @@ class _AppointmentDetailScreenState
                                       child: _SheetField(
                                         controller:
                                             draft.durationDaysController,
-                                        label: 'Gun',
+                                        label: l10n.apptMedicationDay,
                                         hintText: '7',
                                         keyboardType: TextInputType.number,
                                       ),
@@ -1469,8 +1870,8 @@ class _AppointmentDetailScreenState
                                       child: _SheetField(
                                         controller:
                                             draft.instructionsController,
-                                        label: 'Kullanim',
-                                        hintText: 'Tok karinla',
+                                        label: l10n.apptMedicationUse,
+                                        hintText: l10n.apptMedicationUseHint,
                                       ),
                                     ),
                                   ],
@@ -1492,16 +1893,16 @@ class _AppointmentDetailScreenState
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Kontrol Tarihi',
-                                    style: TextStyle(
+                                  Text(
+                                    l10n.apptFollowUpDate,
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     followUpDate == null
-                                        ? 'Istege bagli'
+                                        ? l10n.apptOptional
                                         : _formatDate(followUpDate!),
                                     style: TextStyle(
                                       color: Theme.of(sheetContext).hintColor,
@@ -1521,12 +1922,12 @@ class _AppointmentDetailScreenState
                                   lastDate: DateTime.now().add(
                                     const Duration(days: 365),
                                   ),
-                                  locale: const Locale('tr', 'TR'),
+                                  locale: Localizations.localeOf(context),
                                 );
                                 if (picked == null) return;
                                 setModalState(() => followUpDate = picked);
                               },
-                              child: const Text('Sec'),
+                              child: Text(l10n.apptSelect),
                             ),
                             if (followUpDate != null)
                               IconButton(
@@ -1550,8 +1951,10 @@ class _AppointmentDetailScreenState
                                     ScaffoldMessenger.of(
                                       sheetContext,
                                     ).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Tani alani zorunlu.'),
+                                      SnackBar(
+                                        content: Text(
+                                          l10n.apptDiagnosisRequired,
+                                        ),
                                       ),
                                     );
                                     return;
@@ -1565,9 +1968,9 @@ class _AppointmentDetailScreenState
                                     ScaffoldMessenger.of(
                                       sheetContext,
                                     ).showSnackBar(
-                                      const SnackBar(
+                                      SnackBar(
                                         content: Text(
-                                          'En az bir ilac girmelisin.',
+                                          l10n.apptMedicationRequired,
                                         ),
                                       ),
                                     );
@@ -1592,8 +1995,10 @@ class _AppointmentDetailScreenState
                                     if (!mounted) return;
                                     Navigator.of(sheetContext).pop();
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Recete olusturuldu.'),
+                                      SnackBar(
+                                        content: Text(
+                                          l10n.apptPrescriptionCreated,
+                                        ),
                                       ),
                                     );
                                   } catch (error) {
@@ -1603,7 +2008,9 @@ class _AppointmentDetailScreenState
                                     ).showSnackBar(
                                       SnackBar(
                                         content: Text(
-                                          'Recete olusturulamadi: $error',
+                                          l10n.apptPrescriptionCreateError(
+                                            error.toString(),
+                                          ),
                                         ),
                                       ),
                                     );
@@ -1621,8 +2028,8 @@ class _AppointmentDetailScreenState
                               : const Icon(Icons.medication_outlined),
                           label: Text(
                             isSubmitting
-                                ? 'Kaydediliyor...'
-                                : 'Receteyi Kaydet',
+                                ? l10n.apptSaving
+                                : l10n.apptSavePrescription,
                           ),
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size.fromHeight(52),
@@ -1696,16 +2103,22 @@ class _AppointmentDetailScreenState
   }
 
   String _formatDateTime(DateTime value) {
-    return DateFormat('dd MMMM yyyy, HH:mm', 'tr_TR').format(value.toLocal());
+    return DateFormat(
+      'dd MMMM yyyy, HH:mm',
+      Localizations.localeOf(context).toString(),
+    ).format(value.toLocal());
   }
 
   String _formatDate(DateTime value) {
-    return DateFormat('dd MMMM yyyy', 'tr_TR').format(value.toLocal());
+    return DateFormat(
+      'dd MMMM yyyy',
+      Localizations.localeOf(context).toString(),
+    ).format(value.toLocal());
   }
 
   String _formatCurrency(double value) {
     final formatter = NumberFormat.currency(
-      locale: 'tr_TR',
+      locale: Localizations.localeOf(context).toString(),
       symbol: 'TL',
       decimalDigits: value % 1 == 0 ? 0 : 2,
     );
@@ -1713,49 +2126,52 @@ class _AppointmentDetailScreenState
   }
 
   String _statusLabel(String status) {
+    final l10n = AppLocalizations.of(context)!;
     switch (status) {
       case 'pending':
-        return 'Beklemede';
+        return l10n.apptStatusPending;
       case 'confirmed':
-        return 'Onaylandi';
+        return l10n.apptStatusConfirmed;
       case 'cancelled':
-        return 'Iptal edildi';
+        return l10n.apptStatusCancelled;
       case 'completed':
-        return 'Tamamlandi';
+        return l10n.apptStatusCompleted;
       case 'no_show':
-        return 'Gelmedi';
+        return l10n.apptStatusNoShow;
       default:
         return status;
     }
   }
 
   String _confirmTitle(String status) {
+    final l10n = AppLocalizations.of(context)!;
     switch (status) {
       case 'confirmed':
-        return 'Randevuyu onayla';
+        return l10n.apptConfirmApproveTitle;
       case 'completed':
-        return 'Randevuyu tamamla';
+        return l10n.apptConfirmCompleteTitle;
       case 'no_show':
-        return 'Gelmedi olarak isle';
+        return l10n.apptConfirmNoShowTitle;
       case 'cancelled':
-        return 'Randevuyu iptal et';
+        return l10n.apptConfirmCancelTitle;
       default:
-        return 'Durumu guncelle';
+        return l10n.apptConfirmDefaultTitle;
     }
   }
 
   String _confirmDescription(String status) {
+    final l10n = AppLocalizations.of(context)!;
     switch (status) {
       case 'confirmed':
-        return 'Bu randevu onaylanacak ve kullaniciya bildirim gidecek.';
+        return l10n.apptConfirmApproveDesc;
       case 'completed':
-        return 'Bu randevu tamamlandi olarak isaretlenecek.';
+        return l10n.apptConfirmCompleteDesc;
       case 'no_show':
-        return 'Hasta gelmedi olarak kaydedilecek.';
+        return l10n.apptConfirmNoShowDesc;
       case 'cancelled':
-        return 'Bu islem geri alinmaz. Randevu iptal edilecek.';
+        return l10n.apptConfirmCancelDesc;
       default:
-        return 'Devam etmek istiyor musun?';
+        return l10n.apptConfirmDefaultDesc;
     }
   }
 

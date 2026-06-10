@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="680" viewBox="0 0 1180 680">
+  <defs>
+    <style>
+      .bg{fill:#fff7ed}.state{fill:#ffedd5;stroke:#ea580c;stroke-width:2;rx:28}.start{fill:#0f172a}.end{fill:#fff;stroke:#0f172a;stroke-width:4}.line{stroke:#334155;stroke-width:2.5;fill:none}.txt{font-family:Arial, sans-serif;font-size:20px;fill:#0f172a}.small{font-family:Arial, sans-serif;font-size:16px;fill:#475569}.title{font-family:Arial, sans-serif;font-size:30px;font-weight:700;fill:#0f172a}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect class="bg" width="1180" height="680"/>
+  <text class="title" x="50" y="55">Satıcı Başvurusu Durum Diyagramı</text>
+  <circle class="start" cx="80" cy="315" r="16"/>
+  <rect class="state" x="130" y="280" width="160" height="70"/><text class="txt" x="158" y="323">Başvuru Hazır</text>
+  <rect class="state" x="340" y="280" width="140" height="70"/><text class="txt" x="375" y="323">Gönderildi</text>
+  <rect class="state" x="535" y="280" width="145" height="70"/><text class="txt" x="565" y="323">Ön İnceleme</text>
+  <rect class="state" x="735" y="155" width="145" height="70"/><text class="txt" x="770" y="198">Eksik Belge</text>
+  <rect class="state" x="735" y="280" width="125" height="70"/><text class="txt" x="763" y="323">Onaylandı</text>
+  <rect class="state" x="735" y="410" width="125" height="70"/><text class="txt" x="767" y="453">Reddedildi</text>
+  <rect class="state" x="915" y="280" width="135" height="70"/><text class="txt" x="947" y="323">Aktif Satıcı</text>
+  <rect class="state" x="915" y="410" width="100" height="70"/><text class="txt" x="940" y="453">Askıda</text>
+  <circle class="end" cx="1090" cy="445" r="22"/><circle class="start" cx="1090" cy="445" r="10"/>
+  <line class="line" x1="96" y1="315" x2="130" y2="315" marker-end="url(#arrow)"/>
+  <line class="line" x1="290" y1="315" x2="340" y2="315" marker-end="url(#arrow)"/><text class="small" x="298" y="298">belge yükle</text>
+  <line class="line" x1="480" y1="315" x2="535" y2="315" marker-end="url(#arrow)"/>
+  <line class="line" x1="680" y1="295" x2="735" y2="195" marker-end="url(#arrow)"/><text class="small" x="675" y="235">eksik</text>
+  <path class="line" d="M735 190 C640 120,430 150,410 280" marker-end="url(#arrow)"/><text class="small" x="500" y="145">tamamlandı</text>
+  <line class="line" x1="680" y1="315" x2="735" y2="315" marker-end="url(#arrow)"/><text class="small" x="690" y="300">uygun</text>
+  <line class="line" x1="680" y1="335" x2="735" y2="435" marker-end="url(#arrow)"/><text class="small" x="690" y="392">ret</text>
+  <line class="line" x1="860" y1="315" x2="915" y2="315" marker-end="url(#arrow)"/><text class="small" x="870" y="300">mağaza aç</text>
+  <line class="line" x1="982" y1="350" x2="982" y2="410" marker-end="url(#arrow)"/><text class="small" x="995" y="385">ihlal</text>
+  <path class="line" d="M915 445 C840 500,820 370,915 330" marker-end="url(#arrow)"/><text class="small" x="800" y="545">sorun giderildi</text>
+  <line class="line" x1="1015" y1="445" x2="1068" y2="445" marker-end="url(#arrow)"/>
+  <line class="line" x1="860" y1="445" x2="1068" y2="445" marker-end="url(#arrow)"/>
+</svg>

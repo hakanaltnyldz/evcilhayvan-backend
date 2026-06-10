@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <defs>
+    <style>
+      .bg{fill:#fff7ed}.box{fill:#fff;stroke:#9a3412;stroke-width:2;rx:18}.actor{stroke:#431407;stroke-width:3;fill:none}.line{stroke:#9a3412;stroke-width:2;fill:none}.inc{stroke:#64748b;stroke-width:2;stroke-dasharray:8 6;fill:none}.uc{fill:#ffedd5;stroke:#ea580c;stroke-width:2}.txt{font-family:Arial, sans-serif;font-size:21px;fill:#0f172a}.small{font-family:Arial, sans-serif;font-size:17px;fill:#334155}.title{font-family:Arial, sans-serif;font-size:30px;font-weight:700;fill:#0f172a}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#64748b"/></marker>
+  </defs>
+  <rect class="bg" width="1200" height="760"/>
+  <text class="title" x="50" y="55">Mağaza ve Sipariş Modülü Kullanım Senaryosu</text>
+  <rect class="box" x="280" y="95" width="690" height="585"/>
+  <text class="small" x="310" y="130">Sistem sınırı: Ürün, sepet, sipariş, ödeme, stok ve kargo işlemleri</text>
+
+  <circle class="actor" cx="120" cy="170" r="22"/><line class="actor" x1="120" y1="192" x2="120" y2="270"/><line class="actor" x1="78" y1="220" x2="162" y2="220"/><line class="actor" x1="120" y1="270" x2="82" y2="325"/><line class="actor" x1="120" y1="270" x2="158" y2="325"/>
+  <text class="txt" x="82" y="360">Müşteri</text>
+  <circle class="actor" cx="1060" cy="170" r="22"/><line class="actor" x1="1060" y1="192" x2="1060" y2="270"/><line class="actor" x1="1018" y1="220" x2="1102" y2="220"/><line class="actor" x1="1060" y1="270" x2="1022" y2="325"/><line class="actor" x1="1060" y1="270" x2="1098" y2="325"/>
+  <text class="txt" x="1030" y="360">Satıcı</text>
+  <circle class="actor" cx="1060" cy="500" r="22"/><line class="actor" x1="1060" y1="522" x2="1060" y2="600"/><line class="actor" x1="1018" y1="550" x2="1102" y2="550"/><line class="actor" x1="1060" y1="600" x2="1022" y2="655"/><line class="actor" x1="1060" y1="600" x2="1098" y2="655"/>
+  <text class="txt" x="1010" y="690">Kargo Servisi</text>
+
+  <ellipse class="uc" cx="500" cy="195" rx="150" ry="44"/><text class="txt" x="405" y="203">Ürün Arama</text>
+  <ellipse class="uc" cx="500" cy="305" rx="145" ry="44"/><text class="txt" x="425" y="313">Sepete Ekle</text>
+  <ellipse class="uc" cx="500" cy="420" rx="155" ry="46"/><text class="txt" x="410" y="428">Sipariş Oluştur</text>
+  <ellipse class="uc" cx="740" cy="245" rx="145" ry="44"/><text class="txt" x="672" y="253">Stok Yönet</text>
+  <ellipse class="uc" cx="740" cy="365" rx="165" ry="46"/><text class="txt" x="623" y="373">Sipariş Durumu</text>
+  <ellipse class="uc" cx="740" cy="505" rx="145" ry="44"/><text class="txt" x="665" y="513">Kargo Takibi</text>
+
+  <line class="line" x1="165" y1="220" x2="352" y2="195"/><line class="line" x1="165" y1="245" x2="355" y2="305"/><line class="line" x1="170" y1="270" x2="345" y2="420"/>
+  <line class="line" x1="1010" y1="225" x2="885" y2="245"/><line class="line" x1="1010" y1="255" x2="895" y2="365"/>
+  <line class="inc" x1="610" y1="430" x2="640" y2="502" marker-end="url(#arrow)"/><text class="small" x="600" y="485">&lt;&lt;include&gt;&gt;</text>
+  <line class="line" x1="1005" y1="545" x2="885" y2="505"/>
+</svg>

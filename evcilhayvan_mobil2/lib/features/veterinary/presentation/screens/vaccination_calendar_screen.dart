@@ -15,17 +15,21 @@ class VaccinationCalendarScreen extends ConsumerStatefulWidget {
   const VaccinationCalendarScreen({super.key, required this.petId});
 
   @override
-  ConsumerState<VaccinationCalendarScreen> createState() => _VaccinationCalendarScreenState();
+  ConsumerState<VaccinationCalendarScreen> createState() =>
+      _VaccinationCalendarScreenState();
 }
 
-class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarScreen> {
+class _VaccinationCalendarScreenState
+    extends ConsumerState<VaccinationCalendarScreen> {
   bool _showCalendar = true;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
   @override
   Widget build(BuildContext context) {
-    final calendarAsync = ref.watch(petVaccinationCalendarProvider(widget.petId));
+    final calendarAsync = ref.watch(
+      petVaccinationCalendarProvider(widget.petId),
+    );
 
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
@@ -41,11 +45,15 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
             padding: const EdgeInsets.only(right: 8),
             child: SegmentedButton<bool>(
               segments: const [
-                ButtonSegment(value: true,  icon: Icon(Icons.calendar_month, size: 18)),
+                ButtonSegment(
+                  value: true,
+                  icon: Icon(Icons.calendar_month, size: 18),
+                ),
                 ButtonSegment(value: false, icon: Icon(Icons.list, size: 18)),
               ],
               selected: {_showCalendar},
-              onSelectionChanged: (s) => setState(() => _showCalendar = s.first),
+              onSelectionChanged: (s) =>
+                  setState(() => _showCalendar = s.first),
               style: SegmentedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 minimumSize: const Size(0, 32),
@@ -54,13 +62,17 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
           ),
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => context.pushNamed('vaccination-add', pathParameters: {'petId': widget.petId}),
+            onPressed: () => context.pushNamed(
+              'vaccination-add',
+              pathParameters: {'petId': widget.petId},
+            ),
           ),
         ],
       ),
       body: calendarAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(l10n.vacCalendarLoadErr(e.toString()))),
+        error: (e, _) =>
+            Center(child: Text(l10n.vacCalendarLoadErr(e.toString()))),
         data: (items) {
           if (items.isEmpty) {
             return AnimatedEmptyState(
@@ -68,14 +80,22 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
               title: l10n.vacCalendarEmpty,
               subtitle: l10n.vacCalendarAddRecord,
               action: ElevatedButton.icon(
-                onPressed: () => context.pushNamed('vaccination-add', pathParameters: {'petId': widget.petId}),
+                onPressed: () => context.pushNamed(
+                  'vaccination-add',
+                  pathParameters: {'petId': widget.petId},
+                ),
                 icon: const Icon(Icons.add),
                 label: Text(l10n.vacCalendarAddRecord),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppPalette.appBarDark,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             );
@@ -112,6 +132,7 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
     BuildContext context,
   ) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final selectedItems = _selectedDay != null
         ? (eventMap[_dayOnly(_selectedDay!)] ?? [])
         : <VaccinationCalendarItem>[];
@@ -119,14 +140,17 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
     return Column(
       children: [
         TableCalendar<VaccinationCalendarItem>(
-          locale: 'tr_TR',
+          locale: Localizations.localeOf(context).toString(),
           firstDay: DateTime.now().subtract(const Duration(days: 365)),
           lastDay: DateTime.now().add(const Duration(days: 730)),
           focusedDay: _focusedDay,
-          selectedDayPredicate: (day) => _selectedDay != null && isSameDay(_selectedDay!, day),
+          selectedDayPredicate: (day) =>
+              _selectedDay != null && isSameDay(_selectedDay!, day),
           eventLoader: (day) => eventMap[_dayOnly(day)] ?? [],
           calendarFormat: CalendarFormat.month,
-          availableCalendarFormats: const {CalendarFormat.month: 'Ay'},
+          availableCalendarFormats: {
+            CalendarFormat.month: l10n.bookingsCalendarMonth,
+          },
           startingDayOfWeek: StartingDayOfWeek.monday,
           onDaySelected: (selected, focused) {
             setState(() {
@@ -161,12 +185,20 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
                 bottom: 1,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: colors.take(3).map((c) => Container(
-                    width: 6,
-                    height: 6,
-                    margin: const EdgeInsets.symmetric(horizontal: 1),
-                    decoration: BoxDecoration(color: c, shape: BoxShape.circle),
-                  )).toList(),
+                  children: colors
+                      .take(3)
+                      .map(
+                        (c) => Container(
+                          width: 6,
+                          height: 6,
+                          margin: const EdgeInsets.symmetric(horizontal: 1),
+                          decoration: BoxDecoration(
+                            color: c,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      )
+                      .toList(),
                 ),
               );
             },
@@ -174,7 +206,9 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
           headerStyle: HeaderStyle(
             formatButtonVisible: false,
             titleCentered: true,
-            titleTextStyle: theme.textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold),
+            titleTextStyle: theme.textTheme.titleMedium!.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
 
@@ -185,7 +219,9 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
           child: selectedItems.isEmpty
               ? Center(
                   child: Text(
-                    _selectedDay != null ? AppLocalizations.of(context)!.vacCalendarNoRecord : AppLocalizations.of(context)!.vacCalendarClickDay,
+                    _selectedDay != null
+                        ? AppLocalizations.of(context)!.vacCalendarNoRecord
+                        : AppLocalizations.of(context)!.vacCalendarClickDay,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -197,7 +233,10 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, i) {
                     final item = selectedItems[i];
-                    return _VaccinationEventTile(item: item, petId: widget.petId);
+                    return _VaccinationEventTile(
+                      item: item,
+                      petId: widget.petId,
+                    );
                   },
                 ),
         ),
@@ -205,17 +244,27 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
     );
   }
 
-  Widget _buildListView(List<VaccinationCalendarItem> items, BuildContext context) {
+  Widget _buildListView(
+    List<VaccinationCalendarItem> items,
+    BuildContext context,
+  ) {
     final sorted = List<VaccinationCalendarItem>.from(items)
-      ..sort((a, b) => _statusPriority(a.status).compareTo(_statusPriority(b.status)));
+      ..sort(
+        (a, b) =>
+            _statusPriority(a.status).compareTo(_statusPriority(b.status)),
+      );
 
     return RefreshIndicator(
-      onRefresh: () async => ref.invalidate(petVaccinationCalendarProvider(widget.petId)),
+      onRefresh: () async =>
+          ref.invalidate(petVaccinationCalendarProvider(widget.petId)),
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: sorted.length,
         itemBuilder: (context, index) {
-          return _VaccinationCalendarCard(item: sorted[index], petId: widget.petId);
+          return _VaccinationCalendarCard(
+            item: sorted[index],
+            petId: widget.petId,
+          );
         },
       ),
     );
@@ -223,27 +272,55 @@ class _VaccinationCalendarScreenState extends ConsumerState<VaccinationCalendarS
 
   Color _statusColor(String status) {
     switch (status) {
-      case 'overdue':    return Colors.red;
-      case 'due_soon':   return Colors.orange;
-      case 'completed':  return const Color(0xFF52B788);
-      case 'upcoming':   return const Color(0xFF52B788);
-      default:           return Colors.grey;
+      case 'overdue':
+        return Colors.red;
+      case 'due_soon':
+        return Colors.orange;
+      case 'completed':
+        return const Color(0xFF52B788);
+      case 'upcoming':
+        return const Color(0xFF52B788);
+      default:
+        return Colors.grey;
     }
   }
 
   int _statusPriority(String status) {
     switch (status) {
-      case 'overdue':    return 0;
-      case 'due_soon':   return 1;
-      case 'upcoming':   return 2;
-      case 'not_started':return 3;
-      case 'completed':  return 4;
-      default:           return 5;
+      case 'overdue':
+        return 0;
+      case 'due_soon':
+        return 1;
+      case 'upcoming':
+        return 2;
+      case 'not_started':
+        return 3;
+      case 'completed':
+        return 4;
+      default:
+        return 5;
     }
   }
 }
 
 // ─── Takvim görünümü için kompakt tile ──────────────────────────────────────
+
+String _vaccinationStatusText(AppLocalizations l10n, String status) {
+  switch (status) {
+    case 'completed':
+      return l10n.vacStatusCompleted;
+    case 'overdue':
+      return l10n.vacStatusOverdue;
+    case 'due_soon':
+      return l10n.vacStatusDueSoon;
+    case 'upcoming':
+      return l10n.vacStatusUpcoming;
+    case 'not_started':
+      return l10n.vacStatusNotStarted;
+    default:
+      return status;
+  }
+}
 
 class _VaccinationEventTile extends StatelessWidget {
   final VaccinationCalendarItem item;
@@ -253,31 +330,41 @@ class _VaccinationEventTile extends StatelessWidget {
 
   Color get _color {
     switch (item.status) {
-      case 'overdue':   return Colors.red;
-      case 'due_soon':  return Colors.orange;
-      case 'completed': return const Color(0xFF52B788);
-      case 'upcoming':  return const Color(0xFF52B788);
-      default:          return Colors.grey;
+      case 'overdue':
+        return Colors.red;
+      case 'due_soon':
+        return Colors.orange;
+      case 'completed':
+        return const Color(0xFF52B788);
+      case 'upcoming':
+        return const Color(0xFF52B788);
+      default:
+        return Colors.grey;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Card(
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: _color.withOpacity(0.15),
           child: Icon(Icons.vaccines, color: _color, size: 20),
         ),
-        title: Text(item.schedule.vaccineName, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(item.statusText),
+        title: Text(
+          item.schedule.vaccineName,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(_vaccinationStatusText(l10n, item.status)),
         trailing: item.status != 'completed'
             ? TextButton(
                 onPressed: () => context.pushNamed(
                   'vaccination-add',
                   pathParameters: {'petId': petId},
                 ),
-                child: Text(AppLocalizations.of(context)!.vacCalendarAdd),
+                child: Text(l10n.vacCalendarAdd),
               )
             : const Icon(Icons.check_circle, color: Color(0xFF52B788)),
       ),
@@ -295,21 +382,31 @@ class _VaccinationCalendarCard extends StatelessWidget {
 
   Color get _color {
     switch (item.status) {
-      case 'overdue':   return Colors.red;
-      case 'due_soon':  return Colors.orange;
-      case 'completed': return const Color(0xFF52B788);
-      case 'upcoming':  return const Color(0xFF52B788);
-      default:          return Colors.grey.shade600;
+      case 'overdue':
+        return Colors.red;
+      case 'due_soon':
+        return Colors.orange;
+      case 'completed':
+        return const Color(0xFF52B788);
+      case 'upcoming':
+        return const Color(0xFF52B788);
+      default:
+        return Colors.grey.shade600;
     }
   }
 
   IconData get _icon {
     switch (item.status) {
-      case 'overdue':   return Icons.warning;
-      case 'due_soon':  return Icons.schedule;
-      case 'completed': return Icons.check_circle;
-      case 'upcoming':  return Icons.event;
-      default:          return Icons.vaccines;
+      case 'overdue':
+        return Icons.warning;
+      case 'due_soon':
+        return Icons.schedule;
+      case 'completed':
+        return Icons.check_circle;
+      case 'upcoming':
+        return Icons.event;
+      default:
+        return Icons.vaccines;
     }
   }
 
@@ -325,7 +422,13 @@ class _VaccinationCalendarCard extends StatelessWidget {
         color: context.cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: _color.withOpacity(0.3)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -333,7 +436,9 @@ class _VaccinationCalendarCard extends StatelessWidget {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: _color.withOpacity(0.08),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
             ),
             child: Row(
               children: [
@@ -343,19 +448,40 @@ class _VaccinationCalendarCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(schedule.vaccineName, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(
+                        schedule.vaccineName,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       if (schedule.description != null)
-                        Text(schedule.description!, style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text(
+                          schedule.description!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.grey.shade600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                     ],
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: _color.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(item.statusText, style: theme.textTheme.labelSmall?.copyWith(color: _color, fontWeight: FontWeight.w600)),
+                  child: Text(
+                    _vaccinationStatusText(l10n, item.status),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: _color,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -366,22 +492,45 @@ class _VaccinationCalendarCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    _infoChip(l10n.vacCalendarFirstDose(schedule.firstDoseMonths), Icons.calendar_month, theme),
+                    _infoChip(
+                      l10n.vacCalendarFirstDose(schedule.firstDoseMonths),
+                      Icons.calendar_month,
+                      theme,
+                    ),
                     if (schedule.repeatIntervalMonths != null)
-                      _infoChip(l10n.vacCalendarRepeat(schedule.repeatIntervalMonths!), Icons.repeat, theme),
+                      _infoChip(
+                        l10n.vacCalendarRepeat(schedule.repeatIntervalMonths!),
+                        Icons.repeat,
+                        theme,
+                      ),
                     if (schedule.isRequired)
-                      _infoChip(l10n.vacCalendarRequired, Icons.priority_high, theme, color: Colors.red),
+                      _infoChip(
+                        l10n.vacCalendarRequired,
+                        Icons.priority_high,
+                        theme,
+                        color: Colors.red,
+                      ),
                   ],
                 ),
                 if (item.nextDueDate != null) ...[
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.event_note, size: 16, color: Colors.grey.shade600),
+                      Icon(
+                        Icons.event_note,
+                        size: 16,
+                        color: Colors.grey.shade600,
+                      ),
                       const SizedBox(width: 6),
                       Text(
-                        l10n.vacCalendarNext('${item.nextDueDate!.day}.${item.nextDueDate!.month}.${item.nextDueDate!.year}'),
-                        style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
+                        l10n.vacCalendarNext(
+                          MaterialLocalizations.of(
+                            context,
+                          ).formatShortDate(item.nextDueDate!),
+                        ),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
@@ -390,23 +539,39 @@ class _VaccinationCalendarCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   const Divider(height: 1),
                   const SizedBox(height: 8),
-                  ...item.records.map((r) => Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.check, size: 14, color: Color(0xFF52B788)),
-                            const SizedBox(width: 6),
-                            Text(
-                              '${r.dateAdministered.day}.${r.dateAdministered.month}.${r.dateAdministered.year}',
-                              style: theme.textTheme.bodySmall,
+                  ...item.records.map(
+                    (r) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.check,
+                            size: 14,
+                            color: Color(0xFF52B788),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            MaterialLocalizations.of(
+                              context,
+                            ).formatShortDate(r.dateAdministered),
+                            style: theme.textTheme.bodySmall,
+                          ),
+                          if (r.notes != null) ...[
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                r.notes!,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: Colors.grey.shade600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            if (r.notes != null) ...[
-                              const SizedBox(width: 8),
-                              Expanded(child: Text(r.notes!, style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey.shade600), overflow: TextOverflow.ellipsis)),
-                            ],
                           ],
-                        ),
-                      )),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -416,7 +581,12 @@ class _VaccinationCalendarCard extends StatelessWidget {
     );
   }
 
-  Widget _infoChip(String text, IconData icon, ThemeData theme, {Color? color}) {
+  Widget _infoChip(
+    String text,
+    IconData icon,
+    ThemeData theme, {
+    Color? color,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: Row(
@@ -424,7 +594,12 @@ class _VaccinationCalendarCard extends StatelessWidget {
         children: [
           Icon(icon, size: 14, color: color ?? Colors.grey.shade600),
           const SizedBox(width: 4),
-          Text(text, style: theme.textTheme.labelSmall?.copyWith(color: color ?? Colors.grey.shade600)),
+          Text(
+            text,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: color ?? Colors.grey.shade600,
+            ),
+          ),
         ],
       ),
     );

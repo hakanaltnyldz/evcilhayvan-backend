@@ -4,12 +4,7 @@ class StoreOwner {
   final String? avatarUrl;
   final String? city;
 
-  StoreOwner({
-    required this.id,
-    required this.name,
-    this.avatarUrl,
-    this.city,
-  });
+  StoreOwner({required this.id, required this.name, this.avatarUrl, this.city});
 
   factory StoreOwner.fromJson(Map<String, dynamic> json) {
     return StoreOwner(
@@ -53,6 +48,7 @@ class StoreModel {
   });
 
   factory StoreModel.fromJson(Map<String, dynamic> json) {
+    final workingHoursRaw = json['workingHours'];
     return StoreModel(
       id: json['_id'] ?? json['id'] ?? '',
       name: json['name'] ?? json['storeName'] ?? 'Mağaza',
@@ -68,7 +64,7 @@ class StoreModel {
       instagram: json['instagram'] as String?,
       twitter: json['twitter'] as String?,
       facebook: json['facebook'] as String?,
-      workingHours: json['workingHours'] as String?,
+      workingHours: workingHoursRaw == null ? null : workingHoursRaw.toString(),
     );
   }
 }

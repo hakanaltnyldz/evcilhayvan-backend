@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760">
+  <defs>
+    <style>
+      .bg{fill:#f8fafc}.actor{fill:#e0f2fe;stroke:#0369a1;stroke-width:2}.system{fill:#dcfce7;stroke:#15803d;stroke-width:3}.service{fill:#fef3c7;stroke:#b45309;stroke-width:2}.db{fill:#ede9fe;stroke:#6d28d9;stroke-width:2}.txt{font:18px Arial, sans-serif;fill:#0f172a}.small{font:15px Arial, sans-serif;fill:#334155}.line{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#arrow)}
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1400" height="760"/>
+  <rect class="system" x="510" y="280" width="380" height="150" rx="14"/>
+  <text class="txt" x="700" y="342" text-anchor="middle">Evcil Hayvan Hizmet Platformu</text>
+  <text class="small" x="700" y="372" text-anchor="middle">Mobil + API + Socket + Paneller</text>
+  <rect class="actor" x="80" y="80" width="250" height="70" rx="10"/>
+  <text class="txt" x="205" y="122" text-anchor="middle">Evcil Hayvan Sahibi</text>
+  <rect class="actor" x="80" y="240" width="250" height="70" rx="10"/>
+  <text class="txt" x="205" y="282" text-anchor="middle">Veteriner</text>
+  <rect class="actor" x="80" y="400" width="250" height="70" rx="10"/>
+  <text class="txt" x="205" y="442" text-anchor="middle">Pet Bakicisi</text>
+  <rect class="actor" x="80" y="560" width="250" height="70" rx="10"/>
+  <text class="txt" x="205" y="602" text-anchor="middle">Satici</text>
+  <rect class="actor" x="1070" y="80" width="250" height="70" rx="10"/>
+  <text class="txt" x="1195" y="122" text-anchor="middle">Admin</text>
+  <rect class="service" x="1070" y="240" width="250" height="70" rx="10"/>
+  <text class="txt" x="1195" y="282" text-anchor="middle">Firebase FCM</text>
+  <rect class="service" x="1070" y="400" width="250" height="70" rx="10"/>
+  <text class="txt" x="1195" y="442" text-anchor="middle">Google Maps / Places</text>
+  <rect class="db" x="1070" y="560" width="250" height="70" rx="10"/>
+  <text class="txt" x="1195" y="602" text-anchor="middle">MongoDB Atlas</text>
+  <path class="line" d="M330 115 C410 140 445 250 510 315"/>
+  <path class="line" d="M330 275 C410 280 445 305 510 330"/>
+  <path class="line" d="M330 435 C410 420 445 390 510 372"/>
+  <path class="line" d="M330 595 C410 560 445 450 510 405"/>
+  <path class="line" d="M1070 115 C980 130 940 250 890 315"/>
+  <path class="line" d="M890 330 C960 320 1000 290 1070 275"/>
+  <path class="line" d="M890 355 C960 365 1000 405 1070 435"/>
+  <path class="line" d="M890 405 C960 500 1000 560 1070 595"/>
+  <text class="small" x="405" y="210">pet, ilan, randevu, siparis</text>
+  <text class="small" x="960" y="212">moderasyon</text>
+  <text class="small" x="960" y="320">bildirim</text>
+  <text class="small" x="960" y="395">konum arama</text>
+  <text class="small" x="960" y="535">veri okuma/yazma</text>
+</svg>

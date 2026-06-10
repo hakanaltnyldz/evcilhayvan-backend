@@ -20,7 +20,8 @@ class SitterBookingScreen extends ConsumerStatefulWidget {
   const SitterBookingScreen({super.key, required this.sitter});
 
   @override
-  ConsumerState<SitterBookingScreen> createState() => _SitterBookingScreenState();
+  ConsumerState<SitterBookingScreen> createState() =>
+      _SitterBookingScreenState();
 }
 
 class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
@@ -48,7 +49,10 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
     );
     if (service.type.isEmpty) return 0;
     final diffMs = _endDate.difference(_startDate).inMilliseconds.abs();
-    final billedHours = ((diffMs / Duration.millisecondsPerHour).ceil()).clamp(1, 24 * 365);
+    final billedHours = ((diffMs / Duration.millisecondsPerHour).ceil()).clamp(
+      1,
+      24 * 365,
+    );
     final billedDays = (billedHours / 24).ceil();
     if (service.pricePerDay > 0 && billedDays >= 1) {
       return service.pricePerDay * billedDays;
@@ -65,7 +69,13 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
     );
     if (d != null) {
       setState(() {
-        _startDate = DateTime(d.year, d.month, d.day, _startDate.hour, _startDate.minute);
+        _startDate = DateTime(
+          d.year,
+          d.month,
+          d.day,
+          _startDate.hour,
+          _startDate.minute,
+        );
         _alignEndAfterStart();
       });
     }
@@ -80,7 +90,13 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
     );
     if (d != null) {
       setState(() {
-        _endDate = DateTime(d.year, d.month, d.day, _endDate.hour, _endDate.minute);
+        _endDate = DateTime(
+          d.year,
+          d.month,
+          d.day,
+          _endDate.hour,
+          _endDate.minute,
+        );
         _alignEndAfterStart();
       });
     }
@@ -129,9 +145,22 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
   }
 
   Future<void> _submit() async {
-    if (_selectedServiceType == null) { _snack('Hizmet secin'); return; }
-    if (_selectedPetId == null) { _snack('Pet secin'); return; }
-    if (_endDate.isBefore(_startDate)) { _snack('Bitis tarihi baslangictan once olamaz'); return; }
+    if (_selectedServiceType == null) {
+      _snack('Hizmet secin');
+      return;
+    }
+    if (_selectedPetId == null) {
+      _snack('Pet secin');
+      return;
+    }
+    if (_endDate.isBefore(_startDate)) {
+      _snack('Bitis tarihi baslangictan once olamaz');
+      return;
+    }
+    if (!_isWithinWorkingHours()) {
+      _snack('Secilen saat bakicinin calisma saatleri disinda');
+      return;
+    }
 
     setState(() => _loading = true);
     try {
@@ -162,11 +191,17 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                     color: const Color(0xFFD8F3DC),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Icon(Icons.check_circle, color: Color(0xFF2D6A4F), size: 36),
+                  child: const Icon(
+                    Icons.check_circle,
+                    color: Color(0xFF2D6A4F),
+                    size: 36,
+                  ),
                 ),
                 const SizedBox(height: 16),
-                const Text('Rezervasyon Gönderildi!',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                const Text(
+                  'Rezervasyon Gönderildi!',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   'Bakıcınız rezervasyon talebinizi inceleyecek.',
@@ -185,9 +220,17 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2D6A4F),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
-                    child: const Text('Tamam', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      'Tamam',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -231,18 +274,73 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
   }
 
   String _billingSummary() {
-    if (_selectedServiceType == null) return 'Fiyat secilen hizmete gore hesaplanir';
+    if (_selectedServiceType == null)
+      return 'Fiyat secilen hizmete gore hesaplanir';
     final service = widget.sitter.services.firstWhere(
       (s) => s.type == _selectedServiceType,
       orElse: () => SitterService(type: ''),
     );
     final diffMs = _endDate.difference(_startDate).inMilliseconds.abs();
-    final billedHours = ((diffMs / Duration.millisecondsPerHour).ceil()).clamp(1, 24 * 365);
+    final billedHours = ((diffMs / Duration.millisecondsPerHour).ceil()).clamp(
+      1,
+      24 * 365,
+    );
     final billedDays = (billedHours / 24).ceil();
     if (service.pricePerDay > 0 && billedDays >= 1) {
       return 'Ucretlendirme: $billedDays gun';
     }
     return 'Ucretlendirme: $billedHours saat';
+  }
+
+  bool get _serviceIgnoresWorkingHours =>
+      _selectedServiceType == 'boarding' ||
+      _selectedServiceType == 'home_sitting';
+
+  SitterWorkingHour? _workingHourFor(DateTime date) {
+    if (widget.sitter.workingHours.isEmpty) return null;
+    final day = date.weekday % 7; // Dart: Pazar=7, backend: Pazar=0
+    for (final item in widget.sitter.workingHours) {
+      if (item.day == day) return item;
+    }
+    return null;
+  }
+
+  DateTime? _timeOnDate(DateTime date, String value) {
+    final parts = value.split(':');
+    if (parts.length < 2) return null;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) return null;
+    return DateTime(date.year, date.month, date.day, hour, minute);
+  }
+
+  bool _isWithinWorkingHours() {
+    if (_serviceIgnoresWorkingHours || widget.sitter.workingHours.isEmpty) {
+      return true;
+    }
+    if (_startDate.year != _endDate.year ||
+        _startDate.month != _endDate.month ||
+        _startDate.day != _endDate.day) {
+      return false;
+    }
+    final hours = _workingHourFor(_startDate);
+    if (hours == null) return false;
+    final start = _timeOnDate(_startDate, hours.start);
+    final end = _timeOnDate(_startDate, hours.end);
+    if (start == null || end == null || !end.isAfter(start)) return true;
+    return !_startDate.isBefore(start) && !_endDate.isAfter(end);
+  }
+
+  String _workingHoursSummary() {
+    if (_serviceIgnoresWorkingHours) {
+      return 'Bu hizmet icin gun boyu rezervasyon kabul edilir.';
+    }
+    if (widget.sitter.workingHours.isEmpty) {
+      return 'Bakici calisma saati paylasmamis; son kontrol gonderimde yapilir.';
+    }
+    final hours = _workingHourFor(_startDate);
+    if (hours == null) return 'Bakici bu gun icin kapali gorunuyor.';
+    return 'Bugunku calisma saati: ${hours.start} - ${hours.end}';
   }
 
   // ── Navigation helpers ──────────────────────────────────────────
@@ -254,7 +352,7 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
       case 1:
         return _selectedPetId != null;
       case 2:
-        return !_endDate.isBefore(_startDate);
+        return !_endDate.isBefore(_startDate) && _isWithinWorkingHours();
       default:
         return true;
     }
@@ -325,10 +423,7 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                   child: child,
                 ),
               ),
-              child: KeyedSubtree(
-                key: ValueKey(_step),
-                child: _buildStep(),
-              ),
+              child: KeyedSubtree(key: ValueKey(_step), child: _buildStep()),
             ),
           ),
         ],
@@ -364,94 +459,116 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
         final selected = _selectedServiceType == s.type;
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: InteractiveScale(
-            onTap: () => setState(() => _selectedServiceType = s.type),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              decoration: BoxDecoration(
-                color: context.cardColor,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: selected ? const Color(0xFF52B788) : context.subtleBorder,
-                  width: selected ? 2 : 0.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF2D6A4F).withOpacity(context.isDark ? 0.12 : 0.08),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Stack(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: selected
-                                ? const Color(0xFF52B788).withOpacity(0.15)
-                                : context.subtleBackground,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Icon(
-                            _serviceIcon(s.type),
-                            color: selected ? const Color(0xFF2D6A4F) : Colors.grey.shade500,
-                            size: 26,
-                          ),
+          child:
+              InteractiveScale(
+                    onTap: () => setState(() => _selectedServiceType = s.type),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      decoration: BoxDecoration(
+                        color: context.cardColor,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: selected
+                              ? const Color(0xFF52B788)
+                              : context.subtleBorder,
+                          width: selected ? 2 : 0.5,
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                s.label,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
-                                  color: context.onCard,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(
+                              0xFF2D6A4F,
+                            ).withOpacity(context.isDark ? 0.12 : 0.08),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 52,
+                                  height: 52,
+                                  decoration: BoxDecoration(
+                                    color: selected
+                                        ? const Color(
+                                            0xFF52B788,
+                                          ).withOpacity(0.15)
+                                        : context.subtleBackground,
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Icon(
+                                    _serviceIcon(s.type),
+                                    color: selected
+                                        ? const Color(0xFF2D6A4F)
+                                        : Colors.grey.shade500,
+                                    size: 26,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        s.label,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16,
+                                          color: context.onCard,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          if (s.pricePerHour > 0)
+                                            _priceTag(
+                                              '${s.pricePerHour.toInt()} TL/saat',
+                                            ),
+                                          if (s.pricePerHour > 0 &&
+                                              s.pricePerDay > 0)
+                                            const SizedBox(width: 8),
+                                          if (s.pricePerDay > 0)
+                                            _priceTag(
+                                              '${s.pricePerDay.toInt()} TL/gün',
+                                            ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (selected)
+                            Positioned(
+                              top: 12,
+                              right: 12,
+                              child: Container(
+                                width: 28,
+                                height: 28,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF52B788),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.check,
+                                  color: Colors.white,
+                                  size: 16,
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  if (s.pricePerHour > 0)
-                                    _priceTag('${s.pricePerHour.toInt()} TL/saat'),
-                                  if (s.pricePerHour > 0 && s.pricePerDay > 0)
-                                    const SizedBox(width: 8),
-                                  if (s.pricePerDay > 0)
-                                    _priceTag('${s.pricePerDay.toInt()} TL/gün'),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (selected)
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF52B788),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.check, color: Colors.white, size: 16),
+                            ),
+                        ],
                       ),
                     ),
-                ],
-              ),
-            ),
-          ).animate().fadeIn(duration: 300.ms, delay: (index * 80).ms).slideX(begin: 0.05, end: 0),
+                  )
+                  .animate()
+                  .fadeIn(duration: 300.ms, delay: (index * 80).ms)
+                  .slideX(begin: 0.05, end: 0),
         );
       },
     );
@@ -484,7 +601,10 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
       error: (e, _) => Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Text('Petler yüklenemedi: $e', style: TextStyle(color: Colors.red.shade400)),
+          child: Text(
+            'Petler yüklenemedi: $e',
+            style: TextStyle(color: Colors.red.shade400),
+          ),
         ),
       ),
       data: (pets) {
@@ -500,7 +620,10 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                   Text(
                     'Henüz petiniz yok.\nÖnce pet ekleyin.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: context.secondaryText, fontSize: 15),
+                    style: TextStyle(
+                      color: context.secondaryText,
+                      fontSize: 15,
+                    ),
                   ),
                 ],
               ),
@@ -521,99 +644,128 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
             final selected = _selectedPetId == pet.id;
             final photoUrl = pet.photos.isNotEmpty ? pet.photos.first : null;
             final fullUrl = photoUrl != null
-                ? (photoUrl.startsWith('http') ? photoUrl : '$apiBaseUrl$photoUrl')
+                ? (photoUrl.startsWith('http')
+                      ? photoUrl
+                      : '$apiBaseUrl$photoUrl')
                 : null;
 
             return InteractiveScale(
-              onTap: () => setState(() => _selectedPetId = pet.id),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                decoration: BoxDecoration(
-                  color: context.cardColor,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: selected ? const Color(0xFF52B788) : context.subtleBorder,
-                    width: selected ? 2 : 0.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF2D6A4F).withOpacity(context.isDark ? 0.12 : 0.08),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: SizedBox(
-                              width: 72,
-                              height: 72,
-                              child: fullUrl != null
-                                  ? CachedNetworkImage(
-                                      imageUrl: fullUrl,
-                                      fit: BoxFit.cover,
-                                      placeholder: (_, __) => Container(
-                                        color: context.subtleBackground,
-                                        child: const Icon(Icons.pets, color: Color(0xFF95D5B2), size: 32),
-                                      ),
-                                      errorWidget: (_, __, ___) => Container(
-                                        color: context.subtleBackground,
-                                        child: const Icon(Icons.pets, color: Color(0xFF95D5B2), size: 32),
-                                      ),
-                                    )
-                                  : Container(
-                                      color: context.subtleBackground,
-                                      child: const Icon(Icons.pets, color: Color(0xFF95D5B2), size: 32),
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            pet.name,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                              color: context.onCard,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            pet.species,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: context.secondaryText,
-                            ),
-                          ),
-                        ],
+                  onTap: () => setState(() => _selectedPetId = pet.id),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    decoration: BoxDecoration(
+                      color: context.cardColor,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: selected
+                            ? const Color(0xFF52B788)
+                            : context.subtleBorder,
+                        width: selected ? 2 : 0.5,
                       ),
-                    ),
-                    if (selected)
-                      Positioned(
-                        top: 10,
-                        right: 10,
-                        child: Container(
-                          width: 26,
-                          height: 26,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF52B788),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.check, color: Colors.white, size: 14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(
+                            0xFF2D6A4F,
+                          ).withOpacity(context.isDark ? 0.12 : 0.08),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
                         ),
-                      ),
-                  ],
-                ),
-              ),
-            ).animate().fadeIn(duration: 300.ms, delay: (index * 80).ms).scale(begin: const Offset(0.92, 0.92), end: const Offset(1, 1));
+                      ],
+                    ),
+                    child: Stack(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: SizedBox(
+                                  width: 72,
+                                  height: 72,
+                                  child: fullUrl != null
+                                      ? CachedNetworkImage(
+                                          imageUrl: fullUrl,
+                                          fit: BoxFit.cover,
+                                          placeholder: (_, __) => Container(
+                                            color: context.subtleBackground,
+                                            child: const Icon(
+                                              Icons.pets,
+                                              color: Color(0xFF95D5B2),
+                                              size: 32,
+                                            ),
+                                          ),
+                                          errorWidget: (_, __, ___) =>
+                                              Container(
+                                                color: context.subtleBackground,
+                                                child: const Icon(
+                                                  Icons.pets,
+                                                  color: Color(0xFF95D5B2),
+                                                  size: 32,
+                                                ),
+                                              ),
+                                        )
+                                      : Container(
+                                          color: context.subtleBackground,
+                                          child: const Icon(
+                                            Icons.pets,
+                                            color: Color(0xFF95D5B2),
+                                            size: 32,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                pet.name,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                  color: context.onCard,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                pet.species,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: context.secondaryText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (selected)
+                          Positioned(
+                            top: 10,
+                            right: 10,
+                            child: Container(
+                              width: 26,
+                              height: 26,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF52B788),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 14,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                )
+                .animate()
+                .fadeIn(duration: 300.ms, delay: (index * 80).ms)
+                .scale(
+                  begin: const Offset(0.92, 0.92),
+                  end: const Offset(1, 1),
+                );
           },
         );
       },
@@ -646,7 +798,11 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                           color: const Color(0xFF52B788).withOpacity(0.15),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(Icons.calendar_today, color: Color(0xFF2D6A4F), size: 20),
+                        child: const Icon(
+                          Icons.calendar_today,
+                          color: Color(0xFF2D6A4F),
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -655,7 +811,10 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                           children: [
                             Text(
                               'Başlangıç',
-                              style: TextStyle(fontSize: 11, color: context.secondaryText),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: context.secondaryText,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -686,7 +845,11 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                           color: const Color(0xFF52B788).withOpacity(0.15),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(Icons.calendar_today, color: Color(0xFF2D6A4F), size: 20),
+                        child: const Icon(
+                          Icons.calendar_today,
+                          color: Color(0xFF2D6A4F),
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -695,7 +858,10 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                           children: [
                             Text(
                               'Bitiş',
-                              style: TextStyle(fontSize: 11, color: context.secondaryText),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: context.secondaryText,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -712,94 +878,111 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                     ],
                   ),
                 ),
-          ),
-        ],
-      ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
-      const SizedBox(height: 12),
-      Row(
-        children: [
-          Expanded(
-            child: PremiumCard(
-              onTap: _pickStartTime,
-              child: Row(
+              ),
+            ],
+          ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
+          const SizedBox(height: 12),
+          Row(
                 children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF52B788).withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(14),
+                  Expanded(
+                    child: PremiumCard(
+                      onTap: _pickStartTime,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF52B788).withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: const Icon(
+                              Icons.schedule,
+                              color: Color(0xFF2D6A4F),
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Baslangic saati',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: context.secondaryText,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _fmtDateTime(_startDate).split(' ').last,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15,
+                                    color: context.onCard,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: const Icon(Icons.schedule, color: Color(0xFF2D6A4F), size: 20),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Baslangic saati',
-                          style: TextStyle(fontSize: 11, color: context.secondaryText),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _fmtDateTime(_startDate).split(' ').last,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                            color: context.onCard,
+                    child: PremiumCard(
+                      onTap: _pickEndTime,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF52B788).withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: const Icon(
+                              Icons.schedule,
+                              color: Color(0xFF2D6A4F),
+                              size: 20,
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Bitis saati',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: context.secondaryText,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _fmtDateTime(_endDate).split(' ').last,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15,
+                                    color: context.onCard,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: PremiumCard(
-              onTap: _pickEndTime,
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF52B788).withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(Icons.schedule, color: Color(0xFF2D6A4F), size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Bitis saati',
-                          style: TextStyle(fontSize: 11, color: context.secondaryText),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _fmtDateTime(_endDate).split(' ').last,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                            color: context.onCard,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ).animate().fadeIn(duration: 400.ms, delay: 100.ms).slideY(begin: 0.05, end: 0),
-      const SizedBox(height: 24),
+              )
+              .animate()
+              .fadeIn(duration: 400.ms, delay: 100.ms)
+              .slideY(begin: 0.05, end: 0),
+          const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
@@ -809,7 +992,11 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.access_time, color: Color(0xFF2D6A4F), size: 20),
+                const Icon(
+                  Icons.access_time,
+                  color: Color(0xFF2D6A4F),
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Toplam süre: $durationText',
@@ -840,6 +1027,47 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
               ),
             ),
           ).animate().fadeIn(duration: 400.ms, delay: 220.ms),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            decoration: BoxDecoration(
+              color: _isWithinWorkingHours()
+                  ? context.cardColor
+                  : Colors.red.shade50,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: _isWithinWorkingHours()
+                    ? context.subtleBorder
+                    : Colors.red.shade200,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _isWithinWorkingHours()
+                      ? Icons.schedule_outlined
+                      : Icons.warning_amber_outlined,
+                  color: _isWithinWorkingHours()
+                      ? const Color(0xFF2D6A4F)
+                      : Colors.red.shade700,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _workingHoursSummary(),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: _isWithinWorkingHours()
+                          ? context.onCard
+                          : Colors.red.shade700,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ).animate().fadeIn(duration: 400.ms, delay: 260.ms),
         ],
       ),
     );
@@ -879,7 +1107,10 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide.none,
               ),
-              prefixIcon: const Icon(Icons.note_alt_outlined, color: Color(0xFF52B788)),
+              prefixIcon: const Icon(
+                Icons.note_alt_outlined,
+                color: Color(0xFF52B788),
+              ),
             ),
             maxLines: 3,
           ).animate().fadeIn(duration: 350.ms),
@@ -887,55 +1118,70 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
 
           // Price summary card
           PremiumCard(
-            accentColor: const Color(0xFF52B788),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Rezervasyon Özeti',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 17,
-                    color: context.onCard,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _summaryRow(Icons.room_service, 'Hizmet', selectedService?.label ?? '-'),
-                const SizedBox(height: 10),
-                _summaryRow(Icons.pets, 'Pet', petName.isNotEmpty ? petName : '-'),
-                const SizedBox(height: 10),
-                _summaryRow(
-                  Icons.date_range,
-                  'Tarih',
-                  '${_fmtDateTime(_startDate)} - ${_fmtDateTime(_endDate)}',
-                ),
-                const SizedBox(height: 10),
-                _summaryRow(Icons.person, 'Bakıcı', widget.sitter.displayName),
-                const Divider(height: 28),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                accentColor: const Color(0xFF52B788),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Tahmini Toplam',
+                      'Rezervasyon Özeti',
                       style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 17,
                         color: context.onCard,
                       ),
                     ),
-                    Text(
-                      '${_calcPrice().toInt()} TL',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 22,
-                        color: Color(0xFF2D6A4F),
-                      ),
+                    const SizedBox(height: 16),
+                    _summaryRow(
+                      Icons.room_service,
+                      'Hizmet',
+                      selectedService?.label ?? '-',
+                    ),
+                    const SizedBox(height: 10),
+                    _summaryRow(
+                      Icons.pets,
+                      'Pet',
+                      petName.isNotEmpty ? petName : '-',
+                    ),
+                    const SizedBox(height: 10),
+                    _summaryRow(
+                      Icons.date_range,
+                      'Tarih',
+                      '${_fmtDateTime(_startDate)} - ${_fmtDateTime(_endDate)}',
+                    ),
+                    const SizedBox(height: 10),
+                    _summaryRow(
+                      Icons.person,
+                      'Bakıcı',
+                      widget.sitter.displayName,
+                    ),
+                    const Divider(height: 28),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Tahmini Toplam',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                            color: context.onCard,
+                          ),
+                        ),
+                        Text(
+                          '${_calcPrice().toInt()} TL',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                            color: Color(0xFF2D6A4F),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ).animate().fadeIn(duration: 400.ms, delay: 100.ms).slideY(begin: 0.05, end: 0),
+              )
+              .animate()
+              .fadeIn(duration: 400.ms, delay: 100.ms)
+              .slideY(begin: 0.05, end: 0),
         ],
       ),
     );
@@ -979,7 +1225,9 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
       ),
       decoration: BoxDecoration(
         color: context.cardColor,
-        border: Border(top: BorderSide(color: context.subtleBorder, width: 0.5)),
+        border: Border(
+          top: BorderSide(color: context.subtleBorder, width: 0.5),
+        ),
       ),
       child: Row(
         children: [
@@ -992,9 +1240,14 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF2D6A4F),
                     side: const BorderSide(color: Color(0xFF52B788)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                  child: const Text('Geri', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  child: const Text(
+                    'Geri',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
                 ),
               ),
             ),
@@ -1004,23 +1257,33 @@ class _SitterBookingScreenState extends ConsumerState<SitterBookingScreen> {
             child: SizedBox(
               height: 52,
               child: ElevatedButton(
-                onPressed: _canProceed ? (isLast ? (_loading ? null : _submit) : _next) : null,
+                onPressed: _canProceed
+                    ? (isLast ? (_loading ? null : _submit) : _next)
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2D6A4F),
                   foregroundColor: Colors.white,
                   disabledBackgroundColor: Colors.grey.shade300,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 child: _loading
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : Text(
                         isLast ? 'Gönder' : 'Devam',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
               ),
             ),

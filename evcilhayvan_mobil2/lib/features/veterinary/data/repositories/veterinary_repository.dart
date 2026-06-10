@@ -17,6 +17,8 @@ final nearbyVetsProvider = FutureProvider.autoDispose
         lng: params.lng,
         radiusKm: params.radiusKm,
         query: params.query,
+        species: params.species,
+        service: params.service,
       );
     });
 
@@ -31,8 +33,17 @@ class NearbyVetsParams {
   final double? lng;
   final double radiusKm;
   final String? query;
+  final String? species;
+  final String? service;
 
-  const NearbyVetsParams({this.lat, this.lng, this.radiusKm = 10, this.query});
+  const NearbyVetsParams({
+    this.lat,
+    this.lng,
+    this.radiusKm = 10,
+    this.query,
+    this.species,
+    this.service,
+  });
 
   @override
   bool operator ==(Object other) =>
@@ -41,10 +52,12 @@ class NearbyVetsParams {
           lat == other.lat &&
           lng == other.lng &&
           radiusKm == other.radiusKm &&
-          query == other.query;
+          query == other.query &&
+          species == other.species &&
+          service == other.service;
 
   @override
-  int get hashCode => Object.hash(lat, lng, radiusKm, query);
+  int get hashCode => Object.hash(lat, lng, radiusKm, query, species, service);
 }
 
 class VeterinaryRepository {
@@ -68,6 +81,7 @@ class VeterinaryRepository {
     double radiusKm = 10,
     String? query,
     String? species,
+    String? service,
   }) {
     return _guard(() async {
       final params = <String, dynamic>{
@@ -76,6 +90,7 @@ class VeterinaryRepository {
         'radiusKm': radiusKm,
         if (query != null && query.isNotEmpty) 'q': query,
         if (species != null) 'species': species,
+        if (service != null) 'service': service,
       };
       final response = await _dio.get(
         '/api/veterinaries',

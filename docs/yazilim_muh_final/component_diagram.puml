@@ -1,0 +1,63 @@
+@startuml
+skinparam componentStyle rectangle
+
+package "Mobil Uygulama" {
+  [Auth UI]
+  [Pet UI]
+  [Veteriner UI]
+  [Bakici UI]
+  [Mesajlasma UI]
+  [Magaza UI]
+}
+
+package "Web Paneller" {
+  [Admin Panel]
+  [Seller Panel]
+}
+
+package "Backend Uygulamasi" {
+  [Auth Controller]
+  [Pet Controller]
+  [Appointment Controller]
+  [Vaccination Controller]
+  [PetSitter Controller]
+  [Message Controller]
+  [Order Controller]
+  [Admin Controller]
+  [Notification Service]
+  [Socket Gateway]
+}
+
+database "MongoDB Atlas" as DB
+cloud "FCM" as FCM
+cloud "Google Places" as PLACES
+folder "Upload Storage" as STORAGE
+
+[Auth UI] --> [Auth Controller]
+[Pet UI] --> [Pet Controller]
+[Veteriner UI] --> [Appointment Controller]
+[Veteriner UI] --> [Vaccination Controller]
+[Bakici UI] --> [PetSitter Controller]
+[Mesajlasma UI] --> [Message Controller]
+[Mesajlasma UI] --> [Socket Gateway]
+[Magaza UI] --> [Order Controller]
+[Admin Panel] --> [Admin Controller]
+[Seller Panel] --> [Order Controller]
+
+[Auth Controller] --> DB
+[Pet Controller] --> DB
+[Appointment Controller] --> DB
+[Vaccination Controller] --> DB
+[PetSitter Controller] --> DB
+[Message Controller] --> DB
+[Order Controller] --> DB
+[Admin Controller] --> DB
+[Notification Service] --> FCM
+[Appointment Controller] --> [Notification Service]
+[PetSitter Controller] --> [Notification Service]
+[Order Controller] --> [Notification Service]
+[Appointment Controller] --> PLACES
+[Pet Controller] --> STORAGE
+[Order Controller] --> STORAGE
+[Socket Gateway] --> DB
+@enduml

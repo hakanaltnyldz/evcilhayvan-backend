@@ -11,7 +11,7 @@ import {
 
 const router = Router();
 
-router.use(authRequired);
+router.use(authRequired());
 
 router.post("/block/:userId", blockUser);
 router.delete("/block/:userId", unblockUser);

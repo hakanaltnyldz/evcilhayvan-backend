@@ -24,6 +24,29 @@ import {
 
 const router = Router();
 
+function requireBookingRole(allowedRoles = []) {
+  return async (req, res, next) => {
+    try {
+      const booking = await SitterBooking.findById(req.params.id).select("petOwnerId sitterUserId");
+      if (!booking) return sendError(res, 404, "Rezervasyon bulunamadi", "not_found");
+
+      const userId = String(req.user.sub || req.user._id || req.user.id || "");
+      const isOwner = String(booking.petOwnerId) === userId;
+      const isSitter = String(booking.sitterUserId) === userId;
+      const role = isSitter ? "sitter" : isOwner ? "owner" : null;
+
+      if (!role || !allowedRoles.includes(role)) {
+        return sendError(res, 403, "Yetkiniz yok", "forbidden");
+      }
+
+      req.sitterBooking = booking;
+      return next();
+    } catch (err) {
+      return sendError(res, 500, "Rezervasyon kontrol edilemedi", "internal_error", err.message);
+    }
+  };
+}
+
 function validateRequest(req, res, next) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -177,7 +200,7 @@ router.get("/:id/updates", authRequired(), async (req, res) => {
 });
 
 // POST /api/sitter-bookings/:id/upload-photo — yürüyüş fotoğrafı yükle
-router.post("/:id/upload-photo", authRequired(), (req, res, next) => {
+router.post("/:id/upload-photo", authRequired(), requireBookingRole(["sitter"]), (req, res, next) => {
   walkUpload.single("photo")(req, res, (err) => {
     if (err) return sendError(res, 400, err.message, "upload_error");
     next();
@@ -296,7 +319,7 @@ router.get("/:id/care-reports", authRequired(), async (req, res) => {
 });
 
 // POST /api/sitter-bookings/:id/upload-care-photo — bakım raporu fotoğrafı yükle
-router.post("/:id/upload-care-photo", authRequired(), (req, res, next) => {
+router.post("/:id/upload-care-photo", authRequired(), requireBookingRole(["sitter"]), (req, res, next) => {
   walkUpload.single("photo")(req, res, (err) => {
     if (err) return sendError(res, 400, err.message, "upload_error");
     next();

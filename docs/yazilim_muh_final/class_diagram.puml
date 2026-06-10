@@ -1,0 +1,123 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class User {
+  +userId
+  +name
+  +email
+  +passwordHash
+  +role
+}
+
+class Pet {
+  +petId
+  +name
+  +species
+  +gender
+  +age
+  +ownerId
+}
+
+class Veterinary {
+  +vetId
+  +clinicName
+  +location
+  +services
+}
+
+class Appointment {
+  +appointmentId
+  +petId
+  +userId
+  +vetId
+  +dateTime
+  +status
+}
+
+class VaccinationRecord {
+  +recordId
+  +petId
+  +vaccineName
+  +scheduledDate
+  +status
+}
+
+class PetSitter {
+  +sitterId
+  +userId
+  +serviceTypes
+  +location
+  +rating
+}
+
+class SitterBooking {
+  +bookingId
+  +petId
+  +sitterId
+  +ownerId
+  +startDate
+  +endDate
+  +status
+}
+
+class Store {
+  +storeId
+  +sellerId
+  +name
+  +rating
+}
+
+class Product {
+  +productId
+  +storeId
+  +name
+  +price
+  +stock
+}
+
+class Order {
+  +orderId
+  +userId
+  +addressId
+  +status
+  +totalAmount
+}
+
+class Conversation {
+  +conversationId
+  +participantIds
+}
+
+class Message {
+  +messageId
+  +conversationId
+  +senderId
+  +content
+  +createdAt
+}
+
+class AdoptionApplication {
+  +applicationId
+  +petId
+  +applicantId
+  +status
+}
+
+User "1" -- "0..*" Pet : owns
+User "1" -- "0..*" Order : places
+User "1" -- "0..*" Conversation : joins
+User "1" -- "0..1" PetSitter : becomes
+User "1" -- "0..*" AdoptionApplication : submits
+
+Pet "1" -- "0..*" Appointment
+Pet "1" -- "0..*" VaccinationRecord
+Pet "1" -- "0..*" SitterBooking
+Pet "1" -- "0..*" AdoptionApplication
+
+Veterinary "1" -- "0..*" Appointment
+PetSitter "1" -- "0..*" SitterBooking
+Store "1" -- "0..*" Product
+Order "1" -- "1..*" Product
+Conversation "1" -- "0..*" Message
+
+@enduml

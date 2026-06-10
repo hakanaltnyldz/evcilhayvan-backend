@@ -425,7 +425,9 @@ class PetDetailScreen extends ConsumerWidget {
                   );
                 },
                 icon: const Icon(Icons.health_and_safety_outlined, size: 18),
-                label: const Text('Sağlık Kartını Aç'),
+                label: Text(
+                  AppLocalizations.of(context)!.petDetailOpenHealthCard,
+                ),
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFF2D6A4F),
                   foregroundColor: Colors.white,
@@ -554,7 +556,7 @@ class PetDetailScreen extends ConsumerWidget {
             ),
             child: IconButton(
               icon: const Icon(Icons.history_rounded, color: Colors.white),
-              tooltip: 'Aktivite Geçmişi',
+              tooltip: AppLocalizations.of(context)!.petDetailActivityHistory,
               onPressed: () => context.pushNamed(
                 'pet-timeline',
                 pathParameters: {'id': pet.id},
@@ -2047,10 +2049,7 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
     final owner = widget.pet.owner;
 
     if (currentUser == null) {
-      await showLoginRequired(
-        context,
-        reason: 'Mesaj göndermek için giriş yapman gerekiyor.',
-      );
+      await showLoginRequired(context, reason: l10n.petDetailErrMsgLogin);
       return;
     }
 
@@ -2122,13 +2121,10 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
 
   // Sahiplendirme basvuru ekranina yonlendir
   Future<void> _handleAdoptionApply() async {
+    final l10n = AppLocalizations.of(context)!;
     final currentUser = ref.read(authProvider);
     if (currentUser == null) {
-      await showLoginRequired(
-        context,
-        reason:
-            'Sahiplendirme başvurusu yapabilmek için giriş yapman gerekiyor.',
-      );
+      await showLoginRequired(context, reason: l10n.petDetailErrAdoptionLogin);
       return;
     }
     context.pushNamed('adoption-apply', extra: widget.pet);
@@ -2136,13 +2132,11 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
 
   // Eşleştirme ilanı için pet seçimi ve istek gönderme
   Future<void> _handleMatingRequest() async {
+    final l10n = AppLocalizations.of(context)!;
     final currentUser = ref.read(authProvider);
 
     if (currentUser == null) {
-      await showLoginRequired(
-        context,
-        reason: 'Çiftleşme isteği göndermek için giriş yapman gerekiyor.',
-      );
+      await showLoginRequired(context, reason: l10n.petDetailErrMatingLogin);
       return;
     }
 

@@ -19,7 +19,7 @@ class _ChatMessage {
   final DateTime timestamp;
 
   _ChatMessage({required this.role, required this.content, DateTime? t})
-      : timestamp = t ?? DateTime.now();
+    : timestamp = t ?? DateTime.now();
 }
 
 // General suggestions are built at runtime from l10n
@@ -39,7 +39,6 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
   final _messages = <_ChatMessage>[];
   bool _isLoading = false;
   final _dio = ApiClient().dio;
-  final _timeFmt = DateFormat('HH:mm', 'tr');
 
   _AiMode _mode = _AiMode.diagnosis;
   String _selectedSpecies = 'dog'; // internal key: dog/cat/bird/other
@@ -56,34 +55,69 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
   // Returns localized symptom list per species internal key
   Map<String, List<String>> _getSpeciesSymptoms(AppLocalizations l10n) => {
     'dog': [
-      l10n.aiSymptomLossOfAppetite, l10n.aiSymptomFever, l10n.aiSymptomDiarrhea,
-      l10n.aiSymptomVomiting, l10n.aiSymptomCough, l10n.aiSymptomShortnessOfBreath,
-      l10n.aiSymptomLethargy, l10n.aiSymptomBloodyStool, l10n.aiSymptomExcessiveItching,
-      l10n.aiSymptomHairLoss, l10n.aiSymptomLimping, l10n.aiSymptomExcessiveThirst,
-      l10n.aiSymptomUnableToUrinate, l10n.aiSymptomBloatedBelly, l10n.aiSymptomLossOfConsciousness,
+      l10n.aiSymptomLossOfAppetite,
+      l10n.aiSymptomFever,
+      l10n.aiSymptomDiarrhea,
+      l10n.aiSymptomVomiting,
+      l10n.aiSymptomCough,
+      l10n.aiSymptomShortnessOfBreath,
+      l10n.aiSymptomLethargy,
+      l10n.aiSymptomBloodyStool,
+      l10n.aiSymptomExcessiveItching,
+      l10n.aiSymptomHairLoss,
+      l10n.aiSymptomLimping,
+      l10n.aiSymptomExcessiveThirst,
+      l10n.aiSymptomUnableToUrinate,
+      l10n.aiSymptomBloatedBelly,
+      l10n.aiSymptomLossOfConsciousness,
     ],
     'cat': [
-      l10n.aiSymptomLossOfAppetite, l10n.aiSymptomFever, l10n.aiSymptomVomiting,
-      l10n.aiSymptomDiarrhea, l10n.aiSymptomRunnyNose, l10n.aiSymptomEyeDischarge,
-      l10n.aiSymptomBreathingDifficulty, l10n.aiSymptomUnableToUrinate, l10n.aiSymptomExcessiveThirst,
-      l10n.aiSymptomWeightLoss, l10n.aiSymptomFeatherPlucking, l10n.aiSymptomLethargy,
-      l10n.aiSymptomBloodyUrine, l10n.aiSymptomJaundice, l10n.aiSymptomSeizures,
+      l10n.aiSymptomLossOfAppetite,
+      l10n.aiSymptomFever,
+      l10n.aiSymptomVomiting,
+      l10n.aiSymptomDiarrhea,
+      l10n.aiSymptomRunnyNose,
+      l10n.aiSymptomEyeDischarge,
+      l10n.aiSymptomBreathingDifficulty,
+      l10n.aiSymptomUnableToUrinate,
+      l10n.aiSymptomExcessiveThirst,
+      l10n.aiSymptomWeightLoss,
+      l10n.aiSymptomFeatherPlucking,
+      l10n.aiSymptomLethargy,
+      l10n.aiSymptomBloodyUrine,
+      l10n.aiSymptomJaundice,
+      l10n.aiSymptomSeizures,
     ],
     'bird': [
-      l10n.aiSymptomFeatherLoss, l10n.aiSymptomNotEating, l10n.aiSymptomPuffed,
-      l10n.aiSymptomRunnyNose, l10n.aiSymptomBreathingDifficulty, l10n.aiSymptomDiarrhea,
-      l10n.aiSymptomVomiting, l10n.aiSymptomUnableToStand, l10n.aiSymptomHavingSeizure,
+      l10n.aiSymptomFeatherLoss,
+      l10n.aiSymptomNotEating,
+      l10n.aiSymptomPuffed,
+      l10n.aiSymptomRunnyNose,
+      l10n.aiSymptomBreathingDifficulty,
+      l10n.aiSymptomDiarrhea,
+      l10n.aiSymptomVomiting,
+      l10n.aiSymptomUnableToStand,
+      l10n.aiSymptomHavingSeizure,
       l10n.aiSymptomBleeding,
     ],
     'other': [
-      l10n.aiSymptomLossOfAppetite, l10n.aiSymptomFever, l10n.aiSymptomLethargy,
-      l10n.aiSymptomScratch, l10n.aiSymptomDiarrhea, l10n.aiSymptomVomiting,
-      l10n.aiSymptomBreathingDifficulty, l10n.aiSymptomWeightLoss,
+      l10n.aiSymptomLossOfAppetite,
+      l10n.aiSymptomFever,
+      l10n.aiSymptomLethargy,
+      l10n.aiSymptomScratch,
+      l10n.aiSymptomDiarrhea,
+      l10n.aiSymptomVomiting,
+      l10n.aiSymptomBreathingDifficulty,
+      l10n.aiSymptomWeightLoss,
     ],
   };
 
   List<String> _getGeneralSuggestions(AppLocalizations l10n) => [
-    l10n.aiGenSug1, l10n.aiGenSug2, l10n.aiGenSug3, l10n.aiGenSug4, l10n.aiGenSug5,
+    l10n.aiGenSug1,
+    l10n.aiGenSug2,
+    l10n.aiGenSug3,
+    l10n.aiGenSug4,
+    l10n.aiGenSug5,
   ];
 
   @override
@@ -135,21 +169,28 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
           .map((m) => {'role': m.role, 'content': m.content})
           .toList();
 
-      final res = await _dio.post('/ai/chat', data: {
-        'messages': payload,
-        'mode': _mode == _AiMode.diagnosis ? 'diagnosis' : 'general',
-      });
-      final reply = res.data['reply'] as String? ?? AppLocalizations.of(context)!.aiNoReply;
+      final res = await _dio.post(
+        '/ai/chat',
+        data: {
+          'messages': payload,
+          'mode': _mode == _AiMode.diagnosis ? 'diagnosis' : 'general',
+        },
+      );
+      final reply =
+          res.data['reply'] as String? ??
+          AppLocalizations.of(context)!.aiNoReply;
       setState(() {
         _messages.add(_ChatMessage(role: 'assistant', content: reply));
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _messages.add(_ChatMessage(
-          role: 'assistant',
-          content: AppLocalizations.of(context)!.aiErrorResponse,
-        ));
+        _messages.add(
+          _ChatMessage(
+            role: 'assistant',
+            content: AppLocalizations.of(context)!.aiErrorResponse,
+          ),
+        );
         _isLoading = false;
       });
     }
@@ -160,6 +201,10 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final timeFmt = DateFormat(
+      'HH:mm',
+      Localizations.localeOf(context).toString(),
+    );
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -176,11 +221,17 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
                 color: Color(0xFF2D6A4F),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 18),
+              child: const Icon(
+                Icons.smart_toy_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
             ),
             const SizedBox(width: 10),
-            Text(AppLocalizations.of(context)!.aiAssistantTitle,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            Text(
+              AppLocalizations.of(context)!.aiAssistantTitle,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         actions: [
@@ -232,15 +283,20 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
                 ? _buildWelcome(theme)
                 : ListView.builder(
                     controller: _scrollCtrl,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     itemCount: _messages.length + (_isLoading ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == _messages.length) return _TypingIndicator();
                       final msg = _messages[index];
-                      final isLatest = index == _messages.length - 1 && msg.role == 'assistant';
+                      final isLatest =
+                          index == _messages.length - 1 &&
+                          msg.role == 'assistant';
                       return _MessageBubble(
                         message: msg,
-                        timeFmt: _timeFmt,
+                        timeFmt: timeFmt,
                         isDark: isDark,
                         isLatestAssistant: isLatest,
                       );
@@ -266,7 +322,8 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
     final l10n = AppLocalizations.of(context)!;
     final speciesNames = _getSpeciesNames(l10n);
     final speciesSymptoms = _getSpeciesSymptoms(l10n);
-    final symptoms = speciesSymptoms[_selectedSpecies] ?? speciesSymptoms['other']!;
+    final symptoms =
+        speciesSymptoms[_selectedSpecies] ?? speciesSymptoms['other']!;
     return Container(
       color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
@@ -340,7 +397,9 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
               children: [
                 Expanded(
                   child: Text(
-                    AppLocalizations.of(context)!.aiSymptomSelected(_selectedSymptoms.join(', ')),
+                    AppLocalizations.of(
+                      context,
+                    )!.aiSymptomSelected(_selectedSymptoms.join(', ')),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: const Color(0xFF52B788),
                       fontWeight: FontWeight.w600,
@@ -352,7 +411,10 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
                 TextButton(
                   onPressed: () => _sendMessage(),
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     minimumSize: Size.zero,
                   ),
                   child: Text(AppLocalizations.of(context)!.aiDiagnoseBtn),
@@ -378,7 +440,11 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
               color: Color(0xFFD8F3DC),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.smart_toy_rounded, color: Color(0xFF2D6A4F), size: 48),
+            child: const Icon(
+              Icons.smart_toy_rounded,
+              color: Color(0xFF2D6A4F),
+              size: 48,
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -387,7 +453,9 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
               ? AppLocalizations.of(context)!.aiWelcomeDiagnosis
               : AppLocalizations.of(context)!.aiWelcomeGeneral,
           textAlign: TextAlign.center,
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 6),
         Text(
@@ -396,23 +464,30 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen>
               : AppLocalizations.of(context)!.aiWelcomeGeneralSub,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant),
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
         ),
         if (_mode == _AiMode.general) ...[
           const SizedBox(height: 20),
-          Text(AppLocalizations.of(context)!.aiExampleLabel,
-              style: theme.textTheme.labelLarge
-                  ?.copyWith(color: const Color(0xFF2D6A4F), fontWeight: FontWeight.w700)),
+          Text(
+            AppLocalizations.of(context)!.aiExampleLabel,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: const Color(0xFF2D6A4F),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const SizedBox(height: 10),
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: _getGeneralSuggestions(AppLocalizations.of(context)!).map((s) {
-              return ActionChip(
-                label: Text(s, style: const TextStyle(fontSize: 12)),
-                onPressed: () => _sendMessage(s),
-              );
-            }).toList(),
+            children: _getGeneralSuggestions(AppLocalizations.of(context)!).map(
+              (s) {
+                return ActionChip(
+                  label: Text(s, style: const TextStyle(fontSize: 12)),
+                  onPressed: () => _sendMessage(s),
+                );
+              },
+            ).toList(),
           ),
         ],
       ],
@@ -459,10 +534,7 @@ class _TypewriterTextState extends State<_TypewriterText> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      widget.text.substring(0, _charCount),
-      style: widget.style,
-    );
+    return Text(widget.text.substring(0, _charCount), style: widget.style);
   }
 }
 
@@ -489,8 +561,9 @@ class _MessageBubble extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment:
-            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         children: [
           if (!isUser) ...[
             Container(
@@ -500,23 +573,31 @@ class _MessageBubble extends StatelessWidget {
                 color: Color(0xFFD8F3DC),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.smart_toy_rounded, color: Color(0xFF2D6A4F), size: 14),
+              child: const Icon(
+                Icons.smart_toy_rounded,
+                color: Color(0xFF2D6A4F),
+                size: 14,
+              ),
             ),
             const SizedBox(width: 8),
           ],
           Flexible(
             child: Column(
-              crossAxisAlignment:
-                  isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isUser
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 11,
+                  ),
                   decoration: BoxDecoration(
                     color: isUser
                         ? const Color(0xFF2D6A4F)
                         : isDark
-                            ? const Color(0xFF1E2E28)
-                            : const Color(0xFFD8F3DC),
+                        ? const Color(0xFF1E2E28)
+                        : const Color(0xFFD8F3DC),
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(18),
                       topRight: const Radius.circular(18),
@@ -525,9 +606,10 @@ class _MessageBubble extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2)),
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
                     ],
                   ),
                   child: isUser
@@ -547,14 +629,15 @@ class _MessageBubble extends StatelessWidget {
                             fontSize: 14,
                             height: 1.45,
                           ),
-                  ),
+                        ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   timeFmt.format(message.timestamp),
                   style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant.withOpacity(0.55),
-                      fontSize: 10),
+                    color: theme.colorScheme.onSurfaceVariant.withOpacity(0.55),
+                    fontSize: 10,
+                  ),
                 ),
               ],
             ),
@@ -581,8 +664,11 @@ class _TypingIndicator extends StatelessWidget {
               color: Color(0xFFD8F3DC),
               shape: BoxShape.circle,
             ),
-            child:
-                const Icon(Icons.smart_toy_rounded, color: Color(0xFF2D6A4F), size: 14),
+            child: const Icon(
+              Icons.smart_toy_rounded,
+              color: Color(0xFF2D6A4F),
+              size: 14,
+            ),
           ),
           const SizedBox(width: 8),
           Container(
@@ -597,9 +683,10 @@ class _TypingIndicator extends StatelessWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2)),
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
               ],
             ),
             child: const PawDotLoading(color: Color(0xFF2D6A4F)),
@@ -635,14 +722,20 @@ class _InputBar extends StatelessWidget {
         : l10n.aiInputGeneralHint;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(12, 8, 12, 12 + MediaQuery.of(context).padding.bottom),
+      padding: EdgeInsets.fromLTRB(
+        12,
+        8,
+        12,
+        12 + MediaQuery.of(context).padding.bottom,
+      ),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 10,
-              offset: const Offset(0, -2)),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
         ],
       ),
       child: Row(
@@ -656,12 +749,15 @@ class _InputBar extends StatelessWidget {
                 hintText: hint,
                 hintStyle: const TextStyle(fontSize: 13),
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    borderSide: BorderSide.none),
+                  borderRadius: BorderRadius.circular(22),
+                  borderSide: BorderSide.none,
+                ),
                 filled: true,
                 fillColor: theme.colorScheme.surfaceVariant.withOpacity(0.5),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
               ),
             ),
           ),
@@ -679,13 +775,14 @@ class _InputBar extends StatelessWidget {
                     width: 18,
                     height: 18,
                     child: CircularProgressIndicator(
-                        color: Colors.white, strokeWidth: 2.5))
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                    ),
+                  )
                 : const Icon(Icons.send_rounded, size: 20),
           ),
         ],
       ),
     );
-
   }
 }
-

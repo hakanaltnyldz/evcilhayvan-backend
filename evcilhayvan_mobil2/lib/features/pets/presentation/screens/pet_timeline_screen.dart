@@ -8,8 +8,8 @@ import '../../data/repositories/pets_repository.dart';
 
 final petTimelineProvider = FutureProvider.autoDispose
     .family<List<Map<String, dynamic>>, String>((ref, petId) async {
-  return ref.read(petsRepositoryProvider).getPetTimeline(petId);
-});
+      return ref.read(petsRepositoryProvider).getPetTimeline(petId);
+    });
 
 class PetTimelineScreen extends ConsumerWidget {
   final String petId;
@@ -184,7 +184,10 @@ class _TimelineItem extends StatelessWidget {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: config.color.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(8),
@@ -201,10 +204,15 @@ class _TimelineItem extends StatelessWidget {
                         const Spacer(),
                         if (date != null)
                           Text(
-                            DateFormat('d MMM yyyy', 'tr').format(date),
+                            DateFormat(
+                              'd MMM yyyy',
+                              Localizations.localeOf(context).toString(),
+                            ).format(date),
                             style: TextStyle(
                               fontSize: 11,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                       ],
@@ -212,7 +220,10 @@ class _TimelineItem extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       title,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
                     ),
                     if (notes != null && notes.isNotEmpty) ...[
                       const SizedBox(height: 4),
@@ -265,5 +276,9 @@ class _TypeConfig {
   final IconData icon;
   final Color color;
   final String label;
-  const _TypeConfig({required this.icon, required this.color, required this.label});
+  const _TypeConfig({
+    required this.icon,
+    required this.color,
+    required this.label,
+  });
 }

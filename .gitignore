@@ -38,6 +38,19 @@ build/
 
 # Cache
 .cache/
+evcilhayvan_mobil2/android/.gradle/
+
+# Local verification artifacts
+_codex_desktop_write_test.txt
+current.png
+debug_dump_*.json
+**/adb_*.png
+**/adb_window.xml
+**/store_screen*.png
+**/store_verify.png
+
+# Test uploads
+**/uploads-test/
 
 # Firebase secrets (NEVER commit these)
 *serviceAccount*.json

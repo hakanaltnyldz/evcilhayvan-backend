@@ -101,7 +101,7 @@ class _GuideScreenState extends ConsumerState<GuideScreen> {
     _scrollToBottom();
 
     try {
-      final res = await _dio.post('/ai/navigate', data: {'message': text});
+      final res = await _dio.post('/api/ai/navigate', data: {'message': text});
       final body = res.data as Map<String, dynamic>;
 
       final reply = body['reply'] as String? ?? AppLocalizations.of(context)!.guideUnknown;

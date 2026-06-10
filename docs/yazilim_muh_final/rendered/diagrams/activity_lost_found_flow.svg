@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1080" viewBox="0 0 1000 1080">
+  <defs>
+    <style>
+      .bg{fill:#f0fdf4}.start{fill:#052e16}.end{fill:#fff;stroke:#052e16;stroke-width:4}.box{fill:#dcfce7;stroke:#15803d;stroke-width:2;rx:14}.decision{fill:#fef9c3;stroke:#a16207;stroke-width:2}.line{stroke:#334155;stroke-width:2.5;fill:none}.txt{font-family:Arial, sans-serif;font-size:22px;fill:#0f172a}.small{font-family:Arial, sans-serif;font-size:18px;fill:#334155}.title{font-family:Arial, sans-serif;font-size:30px;font-weight:700;fill:#0f172a}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect class="bg" width="1000" height="1080"/>
+  <text class="title" x="60" y="55">Kayıp / Buluntu İlan Aktivite Diyagramı</text>
+  <circle class="start" cx="500" cy="105" r="18"/>
+  <rect class="box" x="310" y="155" width="380" height="68"/><text class="txt" x="352" y="197">İlan Formunu Doldur</text>
+  <rect class="box" x="310" y="270" width="380" height="68"/><text class="txt" x="372" y="312">Konum ve Fotoğraf Gir</text>
+  <polygon class="decision" points="500,390 650,460 500,530 350,460"/><text class="txt" x="422" y="468">İlan tipi nedir?</text>
+  <rect class="box" x="145" y="590" width="300" height="68"/><text class="txt" x="205" y="632">Kayıp İlanı Aç</text>
+  <rect class="box" x="555" y="590" width="300" height="68"/><text class="txt" x="615" y="632">Buluntu İlanı Aç</text>
+  <rect class="box" x="310" y="715" width="380" height="68"/><text class="txt" x="360" y="757">Konum Bazlı Eşleştir</text>
+  <polygon class="decision" points="500,835 650,905 500,975 350,905"/><text class="txt" x="412" y="913">Eşleşme bulundu mu?</text>
+  <circle class="end" cx="500" cy="1038" r="22"/><circle class="start" cx="500" cy="1038" r="10"/>
+  <line class="line" x1="500" y1="123" x2="500" y2="155" marker-end="url(#arrow)"/><line class="line" x1="500" y1="223" x2="500" y2="270" marker-end="url(#arrow)"/><line class="line" x1="500" y1="338" x2="500" y2="390" marker-end="url(#arrow)"/>
+  <line class="line" x1="420" y1="520" x2="295" y2="590" marker-end="url(#arrow)"/><text class="small" x="310" y="555">Kayıp</text>
+  <line class="line" x1="580" y1="520" x2="705" y2="590" marker-end="url(#arrow)"/><text class="small" x="630" y="555">Buluntu</text>
+  <line class="line" x1="295" y1="658" x2="430" y2="715" marker-end="url(#arrow)"/><line class="line" x1="705" y1="658" x2="570" y2="715" marker-end="url(#arrow)"/>
+  <line class="line" x1="500" y1="783" x2="500" y2="835" marker-end="url(#arrow)"/>
+  <line class="line" x1="420" y1="965" x2="500" y2="1016" marker-end="url(#arrow)"/><text class="small" x="340" y="995">Bildirim / mesajlaşma</text>
+  <line class="line" x1="580" y1="965" x2="500" y2="1016" marker-end="url(#arrow)"/><text class="small" x="610" y="995">Aktif yayında kalır</text>
+</svg>

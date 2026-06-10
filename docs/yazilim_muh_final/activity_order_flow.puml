@@ -1,0 +1,21 @@
+@startuml
+start
+:Kullanici urunleri inceler;
+:Urun sepete eklenir;
+:Sepet ekrani acilir;
+if (Adres var mi?) then (Evet)
+  :Kupon varsa dogrulanir;
+  if (Stok uygun mu?) then (Evet)
+    :Siparis olusturulur;
+    :Saticiya bildirim gonderilir;
+    :Kullaniciya siparis onayi gosterilir;
+    stop
+  else (Hayir)
+    :Stok yetersiz mesaji gosterilir;
+    stop
+  endif
+else (Hayir)
+  :Kullanici yeni adres ekler;
+  stop
+endif
+@enduml

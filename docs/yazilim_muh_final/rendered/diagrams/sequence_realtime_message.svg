@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs><style>.h{fill:#dbeafe;stroke:#2563eb;stroke-width:2}.txt{font:15px Arial,sans-serif;fill:#0f172a}.life{stroke:#94a3b8;stroke-width:2;stroke-dasharray:6 6}.msg{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#a)}.ret{stroke:#64748b;stroke-width:2;stroke-dasharray:5 5;fill:none;marker-end:url(#a)}</style><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#334155"/></marker></defs>
+  <text class="txt" x="640" y="35" text-anchor="middle" style="font-size:25px">Gercek Zamanli Mesaj Sequence Diyagrami</text>
+  <g><rect class="h" x="50" y="80" width="145" height="45" rx="8"/><text class="txt" x="122" y="108" text-anchor="middle">Gonderen</text><rect class="h" x="250" y="80" width="145" height="45" rx="8"/><text class="txt" x="322" y="108" text-anchor="middle">Mobil App</text><rect class="h" x="450" y="80" width="145" height="45" rx="8"/><text class="txt" x="522" y="108" text-anchor="middle">Message API</text><rect class="h" x="650" y="80" width="145" height="45" rx="8"/><text class="txt" x="722" y="108" text-anchor="middle">MongoDB</text><rect class="h" x="850" y="80" width="145" height="45" rx="8"/><text class="txt" x="922" y="108" text-anchor="middle">Socket</text><rect class="h" x="1050" y="80" width="145" height="45" rx="8"/><text class="txt" x="1122" y="108" text-anchor="middle">Alici</text></g>
+  <g><line class="life" x1="122" y1="125" x2="122" y2="665"/><line class="life" x1="322" y1="125" x2="322" y2="665"/><line class="life" x1="522" y1="125" x2="522" y2="665"/><line class="life" x1="722" y1="125" x2="722" y2="665"/><line class="life" x1="922" y1="125" x2="922" y2="665"/><line class="life" x1="1122" y1="125" x2="1122" y2="665"/></g>
+  <path class="msg" d="M122 170 L322 170"/><text class="txt" x="222" y="160" text-anchor="middle">Mesaj yazar</text>
+  <path class="msg" d="M322 230 L522 230"/><text class="txt" x="422" y="220" text-anchor="middle">POST message</text>
+  <path class="msg" d="M522 290 L722 290"/><text class="txt" x="622" y="280" text-anchor="middle">Yetki kontrolu</text>
+  <path class="ret" d="M722 350 L522 350"/><text class="txt" x="622" y="340" text-anchor="middle">Yetki uygun</text>
+  <path class="msg" d="M522 410 L722 410"/><text class="txt" x="622" y="400" text-anchor="middle">Mesaj kaydet</text>
+  <path class="msg" d="M522 470 L922 470"/><text class="txt" x="722" y="460" text-anchor="middle">message:new</text>
+  <path class="msg" d="M922 530 L1122 530"/><text class="txt" x="1022" y="520" text-anchor="middle">Anlik mesaj</text>
+  <path class="ret" d="M522 600 L322 600"/><text class="txt" x="422" y="590" text-anchor="middle">Basarili</text>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1350" height="780" viewBox="0 0 1350 780">
+  <defs><style>.h{fill:#dbeafe;stroke:#2563eb;stroke-width:2}.txt{font:15px Arial,sans-serif;fill:#0f172a}.life{stroke:#94a3b8;stroke-width:2;stroke-dasharray:6 6}.msg{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#a)}.ret{stroke:#64748b;stroke-width:2;stroke-dasharray:5 5;fill:none;marker-end:url(#a)}</style><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#334155"/></marker></defs>
+  <text class="txt" x="675" y="35" text-anchor="middle" style="font-size:25px">Siparis Olusturma Sequence Diyagrami</text>
+  <g><rect class="h" x="45" y="80" width="145" height="45" rx="8"/><text class="txt" x="117" y="108" text-anchor="middle">Kullanici</text><rect class="h" x="230" y="80" width="145" height="45" rx="8"/><text class="txt" x="302" y="108" text-anchor="middle">Mobil App</text><rect class="h" x="415" y="80" width="145" height="45" rx="8"/><text class="txt" x="487" y="108" text-anchor="middle">Order API</text><rect class="h" x="600" y="80" width="145" height="45" rx="8"/><text class="txt" x="672" y="108" text-anchor="middle">Cart Service</text><rect class="h" x="785" y="80" width="145" height="45" rx="8"/><text class="txt" x="857" y="108" text-anchor="middle">Coupon</text><rect class="h" x="970" y="80" width="145" height="45" rx="8"/><text class="txt" x="1042" y="108" text-anchor="middle">MongoDB</text><rect class="h" x="1155" y="80" width="145" height="45" rx="8"/><text class="txt" x="1227" y="108" text-anchor="middle">Notify</text></g>
+  <g><line class="life" x1="117" y1="125" x2="117" y2="720"/><line class="life" x1="302" y1="125" x2="302" y2="720"/><line class="life" x1="487" y1="125" x2="487" y2="720"/><line class="life" x1="672" y1="125" x2="672" y2="720"/><line class="life" x1="857" y1="125" x2="857" y2="720"/><line class="life" x1="1042" y1="125" x2="1042" y2="720"/><line class="life" x1="1227" y1="125" x2="1227" y2="720"/></g>
+  <path class="msg" d="M117 165 L302 165"/><text class="txt" x="210" y="155" text-anchor="middle">Sepeti onayla</text>
+  <path class="msg" d="M302 215 L487 215"/><text class="txt" x="395" y="205" text-anchor="middle">POST /orders</text>
+  <path class="msg" d="M487 265 L672 265"/><text class="txt" x="580" y="255" text-anchor="middle">Sepeti getir</text>
+  <path class="msg" d="M672 315 L1042 315"/><text class="txt" x="855" y="305" text-anchor="middle">CartItem sorgula</text>
+  <path class="ret" d="M1042 365 L672 365"/><text class="txt" x="855" y="355" text-anchor="middle">Sepet satirlari</text>
+  <path class="ret" d="M672 415 L487 415"/><text class="txt" x="580" y="405" text-anchor="middle">Sepet verisi</text>
+  <path class="msg" d="M487 465 L857 465"/><text class="txt" x="672" y="455" text-anchor="middle">Kupon dogrula</text>
+  <path class="msg" d="M487 515 L1042 515"/><text class="txt" x="765" y="505" text-anchor="middle">Stok ve adres dogrula</text>
+  <path class="msg" d="M487 565 L1042 565"/><text class="txt" x="765" y="555" text-anchor="middle">Siparis kaydet</text>
+  <path class="msg" d="M487 615 L1227 615"/><text class="txt" x="857" y="605" text-anchor="middle">Saticiya bildirim</text>
+  <path class="ret" d="M487 670 L302 670"/><text class="txt" x="395" y="660" text-anchor="middle">Siparis basarili</text>
+</svg>

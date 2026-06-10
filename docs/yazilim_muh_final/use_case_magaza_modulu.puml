@@ -1,0 +1,35 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+actor "Musteri" as Customer
+actor "Satici" as Seller
+actor "Admin" as Admin
+actor "Odeme Servisi" as Payment
+actor "Kargo Servisi" as Cargo
+
+rectangle "Magaza ve Siparis Modulu" {
+  usecase "Urun Listeleme ve Arama" as UC1
+  usecase "Sepete Ekleme" as UC2
+  usecase "Siparis Olusturma" as UC3
+  usecase "Odeme Alma" as UC4
+  usecase "Stok Guncelleme" as UC5
+  usecase "Siparis Durumu Guncelleme" as UC6
+  usecase "Kargo Takibi" as UC7
+  usecase "Iade / Iptal Talebi" as UC8
+  usecase "Urun Moderasyonu" as UC9
+}
+
+Customer --> UC1
+Customer --> UC2
+Customer --> UC3
+Customer --> UC7
+Customer --> UC8
+Seller --> UC5
+Seller --> UC6
+Admin --> UC9
+UC3 .> UC4 : <<include>>
+UC3 .> UC5 : <<include>>
+UC6 .> UC7 : <<include>>
+Payment --> UC4
+Cargo --> UC7
+@enduml

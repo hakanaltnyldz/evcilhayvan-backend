@@ -50,7 +50,7 @@ class AppointmentModel {
   factory AppointmentModel.fromJson(Map<String, dynamic> json) {
     return AppointmentModel(
       id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
-      userId: json['userId']?.toString() ?? '',
+      userId: _extractId(json['userId']),
       petId: _extractId(json['petId']),
       veterinaryId: _extractId(json['veterinaryId']),
       date: DateTime.tryParse(json['date']?.toString() ?? '') ?? DateTime.now(),
@@ -172,6 +172,7 @@ class AppointmentVet {
   final String? phone;
   final List<String> photos;
   final String? userId;
+  final String? registeredBy;
 
   AppointmentVet({
     required this.id,
@@ -180,6 +181,7 @@ class AppointmentVet {
     this.phone,
     this.photos = const [],
     this.userId,
+    this.registeredBy,
   });
 
   factory AppointmentVet.fromJson(Map<String, dynamic> json) {
@@ -192,6 +194,7 @@ class AppointmentVet {
           (json['photos'] as List<dynamic>?)?.whereType<String>().toList() ??
           [],
       userId: json['userId']?.toString(),
+      registeredBy: json['registeredBy']?.toString(),
     );
   }
 }

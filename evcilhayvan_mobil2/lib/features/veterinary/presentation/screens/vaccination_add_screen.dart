@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/vaccination_repository.dart';
 import '../../data/repositories/veterinary_repository.dart';
 import '../../domain/models/veterinary_model.dart';
@@ -13,7 +14,8 @@ class VaccinationAddScreen extends ConsumerStatefulWidget {
   const VaccinationAddScreen({super.key, required this.petId});
 
   @override
-  ConsumerState<VaccinationAddScreen> createState() => _VaccinationAddScreenState();
+  ConsumerState<VaccinationAddScreen> createState() =>
+      _VaccinationAddScreenState();
 }
 
 class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
@@ -62,14 +64,23 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
   Future<void> _pickDate({required bool isNextDue}) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final firstDate = isNextDue ? today.add(const Duration(days: 1)) : DateTime(2020);
-    final lastDate  = isNextDue ? today.add(const Duration(days: 730)) : today;
-    final defaultInitial = isNextDue ? today.add(const Duration(days: 1)) : today;
+    final firstDate = isNextDue
+        ? today.add(const Duration(days: 1))
+        : DateTime(2020);
+    final lastDate = isNextDue ? today.add(const Duration(days: 730)) : today;
+    final defaultInitial = isNextDue
+        ? today.add(const Duration(days: 1))
+        : today;
     final initial = isNextDue
-        ? (_nextDueDate?.isAfter(today) == true ? _nextDueDate! : defaultInitial)
-        : (_dateAdministered != null && !_dateAdministered!.isAfter(today) ? _dateAdministered! : defaultInitial);
+        ? (_nextDueDate?.isAfter(today) == true
+              ? _nextDueDate!
+              : defaultInitial)
+        : (_dateAdministered != null && !_dateAdministered!.isAfter(today)
+              ? _dateAdministered!
+              : defaultInitial);
     final picked = await showDatePicker(
       context: context,
+      locale: Localizations.localeOf(context),
       initialDate: initial,
       firstDate: firstDate,
       lastDate: lastDate,
@@ -86,9 +97,12 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
     if (_dateAdministered == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Uygulama tarihi seçin')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.vacAddDateRequired)));
       return;
     }
     setState(() => _loading = true);
@@ -98,36 +112,48 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
         petId: widget.petId,
         vaccineName: _nameController.text.trim(),
         dateAdministered: _dateAdministered!,
-        vaccineCode: _codeController.text.trim().isEmpty ? null : _codeController.text.trim(),
-        batchNumber: _batchController.text.trim().isEmpty ? null : _batchController.text.trim(),
+        vaccineCode: _codeController.text.trim().isEmpty
+            ? null
+            : _codeController.text.trim(),
+        batchNumber: _batchController.text.trim().isEmpty
+            ? null
+            : _batchController.text.trim(),
         nextDueDate: _nextDueDate,
         veterinaryId: _selectedVet?.id,
-        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        notes: _notesController.text.trim().isEmpty
+            ? null
+            : _notesController.text.trim(),
       );
       if (mounted) {
         ref.invalidate(petVaccinationCalendarProvider(widget.petId));
         ref.invalidate(petVaccinationsProvider(widget.petId));
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Aşı kaydı eklendi!')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.vacAddSuccess)));
         context.pop();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e')));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.vacAddError(e.toString()))));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
   String _formatDate(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
+      MaterialLocalizations.of(context).formatShortDate(d);
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Aşı Kaydı Ekle'),
+        title: Text(l10n.vacAddTitle),
         backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -142,82 +168,146 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
               // Aşı Adı
               TextFormField(
                 controller: _nameController,
-                decoration: _inputDeco('Aşı Adı *'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Aşı adı gerekli' : null,
+                decoration: _inputDeco(l10n.vacAddVaccineName),
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? l10n.vacAddVaccineNameRequired
+                    : null,
               ),
               const SizedBox(height: 12),
 
               // Aşı Kodu
-              TextFormField(controller: _codeController, decoration: _inputDeco('Aşı Kodu')),
+              TextFormField(
+                controller: _codeController,
+                decoration: _inputDeco(l10n.vacAddVaccineCode),
+              ),
               const SizedBox(height: 12),
 
               // Seri No
-              TextFormField(controller: _batchController, decoration: _inputDeco('Seri Numarası')),
+              TextFormField(
+                controller: _batchController,
+                decoration: _inputDeco(l10n.vacAddBatchNumber),
+              ),
               const SizedBox(height: 16),
 
               // Veteriner Seçimi
-              Text('Veteriner (Opsiyonel)', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                l10n.vacAddVetOptional,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
               _vetsLoading
-                  ? const Center(child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2)))
+                  ? const Center(
+                      child: SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
                   : _vets.isEmpty
-                      ? Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                          decoration: BoxDecoration(
-                            color: context.cardColor,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: context.subtleBorder),
-                          ),
-                          child: Text('Sistemde kayıtlı veteriner bulunamadı', style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey)),
-                        )
-                      : Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: context.cardColor,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: context.subtleBorder),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<VeterinaryModel>(
-                              value: _selectedVet,
-                              isExpanded: true,
-                              hint: Row(
-                                children: [
-                                  const Icon(Icons.local_hospital_outlined, color: Color(0xFF2D6A4F), size: 20),
-                                  const SizedBox(width: 8),
-                                  Text('Veteriner seçin', style: theme.textTheme.bodyLarge),
-                                ],
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: context.cardColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: context.subtleBorder),
+                      ),
+                      child: Text(
+                        l10n.vacAddNoVets,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey,
+                        ),
+                      ),
+                    )
+                  : Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: context.cardColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: context.subtleBorder),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<VeterinaryModel>(
+                          value: _selectedVet,
+                          isExpanded: true,
+                          hint: Row(
+                            children: [
+                              const Icon(
+                                Icons.local_hospital_outlined,
+                                color: Color(0xFF2D6A4F),
+                                size: 20,
                               ),
-                              items: [
-                                DropdownMenuItem<VeterinaryModel>(
-                                  value: null,
-                                  child: Text('Seçim yok', style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey)),
+                              const SizedBox(width: 8),
+                              Text(
+                                l10n.vacAddSelectVet,
+                                style: theme.textTheme.bodyLarge,
+                              ),
+                            ],
+                          ),
+                          items: [
+                            DropdownMenuItem<VeterinaryModel>(
+                              value: null,
+                              child: Text(
+                                l10n.vacAddNoSelection,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: Colors.grey,
                                 ),
-                                ..._vets.map((vet) => DropdownMenuItem<VeterinaryModel>(
-                                      value: vet,
-                                      child: Row(
+                              ),
+                            ),
+                            ..._vets.map(
+                              (vet) => DropdownMenuItem<VeterinaryModel>(
+                                value: vet,
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.local_hospital,
+                                      color: Color(0xFF2D6A4F),
+                                      size: 18,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const Icon(Icons.local_hospital, color: Color(0xFF2D6A4F), size: 18),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Text(vet.name, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
-                                                if (vet.address != null)
-                                                  Text(vet.address!, style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey), overflow: TextOverflow.ellipsis),
-                                              ],
-                                            ),
+                                          Text(
+                                            vet.name,
+                                            style: theme.textTheme.bodyMedium
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
+                                          if (vet.address != null)
+                                            Text(
+                                              vet.address!,
+                                              style: theme.textTheme.bodySmall
+                                                  ?.copyWith(
+                                                    color: Colors.grey,
+                                                  ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
                                         ],
                                       ),
-                                    )),
-                              ],
-                              onChanged: (vet) => setState(() => _selectedVet = vet),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
+                          onChanged: (vet) =>
+                              setState(() => _selectedVet = vet),
                         ),
+                      ),
+                    ),
               const SizedBox(height: 16),
 
               // Seçili veteriner göstergesi
@@ -227,16 +317,34 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
                   decoration: BoxDecoration(
                     color: const Color(0xFF2D6A4F).withOpacity(0.08),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF2D6A4F).withOpacity(0.3)),
+                    border: Border.all(
+                      color: const Color(0xFF2D6A4F).withOpacity(0.3),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.check_circle, color: Color(0xFF2D6A4F), size: 20),
+                      const Icon(
+                        Icons.check_circle,
+                        color: Color(0xFF2D6A4F),
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
-                      Expanded(child: Text(_selectedVet!.name, style: theme.textTheme.bodyMedium?.copyWith(color: const Color(0xFF2D6A4F), fontWeight: FontWeight.w600))),
+                      Expanded(
+                        child: Text(
+                          _selectedVet!.name,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: const Color(0xFF2D6A4F),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                       GestureDetector(
                         onTap: () => setState(() => _selectedVet = null),
-                        child: const Icon(Icons.close, color: Colors.grey, size: 18),
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.grey,
+                          size: 18,
+                        ),
                       ),
                     ],
                   ),
@@ -245,27 +353,41 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
               ],
 
               // Uygulama Tarihi
-              Text('Uygulama Tarihi *', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                l10n.vacAddAdminDate,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
               _dateButton(
                 date: _dateAdministered,
-                hint: 'Tarih seçin',
+                hint: l10n.vacAddSelectDate,
                 onTap: () => _pickDate(isNextDue: false),
               ),
               const SizedBox(height: 16),
 
               // Sonraki Doz Tarihi
-              Text('Sonraki Doz Tarihi', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                l10n.vacAddNextDueDate,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
               _dateButton(
                 date: _nextDueDate,
-                hint: 'Opsiyonel',
+                hint: l10n.vacAddOptional,
                 onTap: () => _pickDate(isNextDue: true),
               ),
               const SizedBox(height: 16),
 
               // Notlar
-              TextFormField(controller: _notesController, decoration: _inputDeco('Notlar'), maxLines: 3),
+              TextFormField(
+                controller: _notesController,
+                decoration: _inputDeco(l10n.vacAddNotes),
+                maxLines: 3,
+              ),
               const SizedBox(height: 24),
 
               ElevatedButton(
@@ -274,11 +396,26 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
                   backgroundColor: const Color(0xFF2D6A4F),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 child: _loading
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Kaydet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        l10n.save,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
               ),
             ],
           ),
@@ -287,7 +424,11 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
     );
   }
 
-  Widget _dateButton({DateTime? date, required String hint, required VoidCallback onTap}) {
+  Widget _dateButton({
+    DateTime? date,
+    required String hint,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -300,9 +441,16 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.calendar_today, color: Color(0xFF2D6A4F), size: 20),
+            const Icon(
+              Icons.calendar_today,
+              color: Color(0xFF2D6A4F),
+              size: 20,
+            ),
             const SizedBox(width: 12),
-            Text(date != null ? _formatDate(date) : hint, style: Theme.of(context).textTheme.bodyLarge),
+            Text(
+              date != null ? _formatDate(date) : hint,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
           ],
         ),
       ),
@@ -310,11 +458,23 @@ class _VaccinationAddScreenState extends ConsumerState<VaccinationAddScreen> {
   }
 
   InputDecoration _inputDeco(String label) => InputDecoration(
-        labelText: label,
-        filled: true,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2D6A4F))),
-        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.red)),
-      );
+    labelText: label,
+    filled: true,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide.none,
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide.none,
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: Color(0xFF2D6A4F)),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: Colors.red),
+    ),
+  );
 }

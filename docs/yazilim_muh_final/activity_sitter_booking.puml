@@ -1,0 +1,21 @@
+@startuml
+start
+:Kullanici bakici listesini acar;
+:Bakici secilir;
+:Hizmet turu ve tarih araligi girilir;
+if (Tarih bilgisi gecerli mi?) then (Evet)
+  :Sistem uygunluk sorgusu yapar;
+  if (Bakici musait mi?) then (Evet)
+    :Rezervasyon kaydi olusturulur;
+    :Bakiciya bildirim gonderilir;
+    :Durum "beklemede" olarak atanir;
+    stop
+  else (Hayir)
+    :Kullaniciya yeni tarih secmesi soylenir;
+    stop
+  endif
+else (Hayir)
+  :Girdi hatasi mesaji gosterilir;
+  stop
+endif
+@enduml

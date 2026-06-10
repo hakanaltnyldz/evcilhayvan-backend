@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_repository.dart';
 import 'package:evcilhayvan_mobil2/features/favorites/providers/favorite_providers.dart';
 
 class FavoriteButton extends ConsumerStatefulWidget {
@@ -32,29 +33,36 @@ class _FavoriteButtonState extends ConsumerState<FavoriteButton> {
     super.initState();
     // Load initial favorite state
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(favoriteStateProvider.notifier).loadFavoriteState(
-            itemType: widget.itemType,
-            itemId: widget.itemId,
-          );
+      if (ref.read(authProvider) == null) return;
+      ref
+          .read(favoriteStateProvider.notifier)
+          .loadFavoriteState(itemType: widget.itemType, itemId: widget.itemId);
     });
   }
 
   Future<void> _toggleFavorite() async {
     if (_isLoading) return;
+    if (ref.read(authProvider) == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Favorilere eklemek icin giris yapmalisiniz'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(favoriteStateProvider.notifier).toggleFavorite(
-            itemType: widget.itemType,
-            itemId: widget.itemId,
-          );
+      await ref
+          .read(favoriteStateProvider.notifier)
+          .toggleFavorite(itemType: widget.itemType, itemId: widget.itemId);
 
       if (mounted) {
-        final isFavorite = ref.read(favoriteStateProvider.notifier).isFavorite(
-              widget.itemType,
-              widget.itemId,
-            );
+        final isFavorite = ref
+            .read(favoriteStateProvider.notifier)
+            .isFavorite(widget.itemType, widget.itemId);
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -86,7 +94,8 @@ class _FavoriteButtonState extends ConsumerState<FavoriteButton> {
   @override
   Widget build(BuildContext context) {
     final favoriteState = ref.watch(favoriteStateProvider);
-    final isFavorite = favoriteState['${widget.itemType}:${widget.itemId}'] ?? false;
+    final isFavorite =
+        favoriteState['${widget.itemType}:${widget.itemId}'] ?? false;
 
     final iconWidget = Icon(
       isFavorite ? Icons.favorite : Icons.favorite_border,

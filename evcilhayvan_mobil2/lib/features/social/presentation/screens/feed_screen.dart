@@ -111,10 +111,17 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
               return Container(
                 width: double.infinity,
                 color: const Color(0xFF2D6A4F).withOpacity(0.1),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
-                    const Icon(Icons.tag_rounded, size: 16, color: Color(0xFF2D6A4F)),
+                    const Icon(
+                      Icons.tag_rounded,
+                      size: 16,
+                      color: Color(0xFF2D6A4F),
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '#$activeTag',
@@ -128,13 +135,25 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                     GestureDetector(
                       onTap: () {
                         _hashtagNotifier.value = null;
-                        ref.read(feedPaginatedProvider.notifier).filterByHashtag(null);
+                        ref
+                            .read(feedPaginatedProvider.notifier)
+                            .filterByHashtag(null);
                       },
                       child: const Row(
                         children: [
-                          Text('Temizle', style: TextStyle(color: Color(0xFF2D6A4F), fontSize: 12)),
+                          Text(
+                            'Temizle',
+                            style: TextStyle(
+                              color: Color(0xFF2D6A4F),
+                              fontSize: 12,
+                            ),
+                          ),
                           SizedBox(width: 4),
-                          Icon(Icons.close_rounded, size: 16, color: Color(0xFF2D6A4F)),
+                          Icon(
+                            Icons.close_rounded,
+                            size: 16,
+                            color: Color(0xFF2D6A4F),
+                          ),
                         ],
                       ),
                     ),
@@ -176,14 +195,18 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                           'Henuz gonderi yok',
                           style: TextStyle(
                             fontSize: 18,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Ilk gonderiyi sen paylas!',
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -191,7 +214,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                   );
                 }
                 return RefreshIndicator(
-                  onRefresh: () => ref.read(feedPaginatedProvider.notifier).refresh(),
+                  onRefresh: () =>
+                      ref.read(feedPaginatedProvider.notifier).refresh(),
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: posts.length + (state.hasMore ? 1 : 0),
@@ -227,7 +251,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                                 : null,
                             onHashtagTap: (tag) {
                               _hashtagNotifier.value = tag;
-                              ref.read(feedPaginatedProvider.notifier).filterByHashtag(tag);
+                              ref
+                                  .read(feedPaginatedProvider.notifier)
+                                  .filterByHashtag(tag);
                             },
                           )
                           .animate(delay: Duration(milliseconds: i * 60))
@@ -242,7 +268,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.red,
+                    ),
                     const SizedBox(height: 12),
                     Text(e.toString(), textAlign: TextAlign.center),
                     const SizedBox(height: 12),
@@ -296,9 +326,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen>
         _savesLocal.remove(post.id);
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Kaydetme islemi basarisiz: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Kaydetme islemi basarisiz: $e')),
+        );
       }
     }
   }
@@ -383,7 +413,10 @@ class PostCard extends StatelessWidget {
         ? post.userName[0].toUpperCase()
         : '?';
     final timeStr = post.createdAt != null
-        ? DateFormat('d MMM, HH:mm', 'tr').format(post.createdAt!)
+        ? DateFormat(
+            'd MMM, HH:mm',
+            Localizations.localeOf(context).toString(),
+          ).format(post.createdAt!)
         : '';
 
     return Container(
@@ -551,17 +584,23 @@ class PostCard extends StatelessWidget {
               child: Wrap(
                 spacing: 6,
                 runSpacing: 2,
-                children: post.hashtags.map((tag) => GestureDetector(
-                  onTap: onHashtagTap != null ? () => onHashtagTap!(tag) : null,
-                  child: Text(
-                    '#$tag',
-                    style: const TextStyle(
-                      color: Color(0xFF2D6A4F),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                )).toList(),
+                children: post.hashtags
+                    .map(
+                      (tag) => GestureDetector(
+                        onTap: onHashtagTap != null
+                            ? () => onHashtagTap!(tag)
+                            : null,
+                        child: Text(
+                          '#$tag',
+                          style: const TextStyle(
+                            color: Color(0xFF2D6A4F),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
             ),
 
@@ -583,11 +622,7 @@ class PostCard extends StatelessWidget {
                   onTap: onComment,
                 ),
                 const Spacer(),
-                _BookmarkBtn(
-                  isSaved: isSaved,
-                  count: saveCount,
-                  onTap: onSave,
-                ),
+                _BookmarkBtn(isSaved: isSaved, count: saveCount, onTap: onSave),
               ],
             ),
           ),
@@ -835,7 +870,11 @@ class _FollowingEmptyState extends StatelessWidget {
                 color: Color(0xFFD8F3DC),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.people_outline_rounded, size: 48, color: Color(0xFF2D6A4F)),
+              child: const Icon(
+                Icons.people_outline_rounded,
+                size: 48,
+                color: Color(0xFF2D6A4F),
+              ),
             ),
             const SizedBox(height: 20),
             const Text(
@@ -847,7 +886,9 @@ class _FollowingEmptyState extends StatelessWidget {
             Text(
               'Kullanıcıları takip ederek onların gönderilerini buradan görebilirsin.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -857,8 +898,13 @@ class _FollowingEmptyState extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2D6A4F),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
               ),
             ),
           ],
@@ -902,7 +948,9 @@ class CommentsSheetState extends State<CommentsSheet> {
   void _startReply(PostComment comment) {
     setState(() => _replyTo = comment);
     _ctrl.text = '@${comment.userName} ';
-    _ctrl.selection = TextSelection.fromPosition(TextPosition(offset: _ctrl.text.length));
+    _ctrl.selection = TextSelection.fromPosition(
+      TextPosition(offset: _ctrl.text.length),
+    );
   }
 
   void _cancelReply() {
@@ -943,7 +991,9 @@ class CommentsSheetState extends State<CommentsSheet> {
       widget.ref.read(feedPaginatedProvider.notifier).refresh();
     } catch (e) {
       if (mounted)
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('$e')));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -976,7 +1026,10 @@ class CommentsSheetState extends State<CommentsSheet> {
               padding: const EdgeInsets.all(16),
               child: Text(
                 'Yorumlar (${_comments.length})',
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const Divider(height: 1),
@@ -985,7 +1038,9 @@ class CommentsSheetState extends State<CommentsSheet> {
                   ? Center(
                       child: Text(
                         'Henüz yorum yok. İlk yorumu sen yaz!',
-                        style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     )
                   : ListView.builder(
@@ -995,7 +1050,9 @@ class CommentsSheetState extends State<CommentsSheet> {
                       itemBuilder: (_, i) {
                         final c = _comments[i];
                         final expanded = _expandedReplies[c.id] ?? false;
-                        final visibleReplies = expanded ? c.replies : c.replies.take(2).toList();
+                        final visibleReplies = expanded
+                            ? c.replies
+                            : c.replies.take(2).toList();
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -1004,11 +1061,22 @@ class CommentsSheetState extends State<CommentsSheet> {
                               leading: CircleAvatar(
                                 backgroundColor: const Color(0xFF2D6A4F),
                                 child: Text(
-                                  c.userName.isNotEmpty ? c.userName[0].toUpperCase() : '?',
-                                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                                  c.userName.isNotEmpty
+                                      ? c.userName[0].toUpperCase()
+                                      : '?',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
-                              title: Text(c.userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                              title: Text(
+                                c.userName,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -1018,7 +1086,11 @@ class CommentsSheetState extends State<CommentsSheet> {
                                     onTap: () => _startReply(c),
                                     child: const Text(
                                       'Yanıtla',
-                                      style: TextStyle(fontSize: 11, color: Color(0xFF2D6A4F), fontWeight: FontWeight.w600),
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Color(0xFF2D6A4F),
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -1031,42 +1103,77 @@ class CommentsSheetState extends State<CommentsSheet> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    ...visibleReplies.map((r) => Padding(
-                                      padding: const EdgeInsets.only(bottom: 6),
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          CircleAvatar(
-                                            radius: 12,
-                                            backgroundColor: const Color(0xFF52B788),
-                                            child: Text(
-                                              r.userName.isNotEmpty ? r.userName[0].toUpperCase() : '?',
-                                              style: const TextStyle(color: Colors.white, fontSize: 10),
+                                    ...visibleReplies.map(
+                                      (r) => Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 6,
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 12,
+                                              backgroundColor: const Color(
+                                                0xFF52B788,
+                                              ),
+                                              child: Text(
+                                                r.userName.isNotEmpty
+                                                    ? r.userName[0]
+                                                          .toUpperCase()
+                                                    : '?',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 10,
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(r.userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                                Text(r.text, style: const TextStyle(fontSize: 12)),
-                                              ],
+                                            const SizedBox(width: 6),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    r.userName,
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    r.text,
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    )),
+                                    ),
                                     if (c.replies.length > 2)
                                       GestureDetector(
-                                        onTap: () => setState(() => _expandedReplies[c.id] = !expanded),
+                                        onTap: () => setState(
+                                          () => _expandedReplies[c.id] =
+                                              !expanded,
+                                        ),
                                         child: Padding(
-                                          padding: const EdgeInsets.only(bottom: 6),
+                                          padding: const EdgeInsets.only(
+                                            bottom: 6,
+                                          ),
                                           child: Text(
                                             expanded
                                                 ? 'Yanıtları gizle'
                                                 : '${c.replies.length - 2} yanıt daha gör',
-                                            style: const TextStyle(fontSize: 11, color: Color(0xFF4895EF), fontWeight: FontWeight.w600),
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: Color(0xFF4895EF),
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -1082,39 +1189,64 @@ class CommentsSheetState extends State<CommentsSheet> {
             if (_replyTo != null)
               Container(
                 color: const Color(0xFF2D6A4F).withOpacity(0.08),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
                 child: Row(
                   children: [
-                    const Icon(Icons.reply_rounded, size: 14, color: Color(0xFF2D6A4F)),
+                    const Icon(
+                      Icons.reply_rounded,
+                      size: 14,
+                      color: Color(0xFF2D6A4F),
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '@${_replyTo!.userName} yanıtlanıyor',
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF2D6A4F), fontWeight: FontWeight.w500),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF2D6A4F),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     const Spacer(),
                     GestureDetector(
                       onTap: _cancelReply,
-                      child: const Icon(Icons.close_rounded, size: 16, color: Color(0xFF2D6A4F)),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 16,
+                        color: Color(0xFF2D6A4F),
+                      ),
                     ),
                   ],
                 ),
               ),
             const Divider(height: 1),
             Padding(
-              padding: EdgeInsets.fromLTRB(12, 8, 12, MediaQuery.of(context).viewInsets.bottom + 12),
+              padding: EdgeInsets.fromLTRB(
+                12,
+                8,
+                12,
+                MediaQuery.of(context).viewInsets.bottom + 12,
+              ),
               child: Row(
                 children: [
                   Expanded(
                     child: TextField(
                       controller: _ctrl,
                       decoration: InputDecoration(
-                        hintText: _replyTo != null ? '@${_replyTo!.userName} yanıtla...' : 'Bir yorum yaz...',
+                        hintText: _replyTo != null
+                            ? '@${_replyTo!.userName} yanıtla...'
+                            : 'Bir yorum yaz...',
                         filled: true,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                       ),
                     ),
                   ),
@@ -1123,7 +1255,10 @@ class CommentsSheetState extends State<CommentsSheet> {
                       ? const CircularProgressIndicator()
                       : IconButton(
                           onPressed: _send,
-                          icon: const Icon(Icons.send_rounded, color: Color(0xFF2D6A4F)),
+                          icon: const Icon(
+                            Icons.send_rounded,
+                            color: Color(0xFF2D6A4F),
+                          ),
                         ),
                 ],
               ),

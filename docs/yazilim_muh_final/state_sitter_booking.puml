@@ -1,0 +1,13 @@
+@startuml
+[*] --> Beklemede
+Beklemede --> KabulEdildi : bakici kabul eder
+Beklemede --> Reddedildi : bakici reddeder
+Beklemede --> Iptal : kullanici iptal eder
+KabulEdildi --> Aktif : hizmet baslar
+KabulEdildi --> Iptal : hizmet oncesi iptal
+Aktif --> Tamamlandi : hizmet biter
+Aktif --> Iptal : zorunlu iptal
+Tamamlandi --> [*]
+Reddedildi --> [*]
+Iptal --> [*]
+@enduml

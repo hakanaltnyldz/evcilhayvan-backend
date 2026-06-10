@@ -3,6 +3,7 @@ import 'package:evcilhayvan_mobil2/core/utils/url_resolver.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/interactive_scale.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/shimmer_box.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../domain/models/veterinary_model.dart';
 
@@ -16,7 +17,10 @@ class VetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final photoUrl = vet.photos.isNotEmpty ? resolveImageUrl(vet.photos.first) : null;
+    final l10n = AppLocalizations.of(context)!;
+    final photoUrl = vet.photos.isNotEmpty
+        ? resolveImageUrl(vet.photos.first)
+        : null;
     final isDark = context.isDark;
 
     return InteractiveScale(
@@ -43,7 +47,9 @@ class VetCard extends StatelessWidget {
           children: [
             // ── Photo with gradient overlay ──
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
               child: Stack(
                 children: [
                   SizedBox(
@@ -53,7 +59,8 @@ class VetCard extends StatelessWidget {
                         ? CachedNetworkImage(
                             imageUrl: photoUrl,
                             fit: BoxFit.cover,
-                            placeholder: (_, __) => const ShimmerBox(height: 148),
+                            placeholder: (_, __) =>
+                                const ShimmerBox(height: 148),
                             errorWidget: (_, __, ___) => _placeholder(),
                           )
                         : _placeholder(),
@@ -80,20 +87,37 @@ class VetCard extends StatelessWidget {
                       top: 10,
                       right: 10,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF2D6A4F),
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
-                            BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 6),
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 6,
+                            ),
                           ],
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.verified, color: Colors.white, size: 12),
-                            SizedBox(width: 4),
-                            Text('Onaylı', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
+                            const Icon(
+                              Icons.verified,
+                              color: Colors.white,
+                              size: 12,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              l10n.vetVerified,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -104,17 +128,31 @@ class VetCard extends StatelessWidget {
                       top: 10,
                       left: 10,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.92),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.calendar_today, size: 10, color: Color(0xFF2D6A4F)),
-                            SizedBox(width: 4),
-                            Text('Online Randevu', style: TextStyle(color: Color(0xFF1B4332), fontSize: 10, fontWeight: FontWeight.w700)),
+                            const Icon(
+                              Icons.calendar_today,
+                              size: 10,
+                              color: Color(0xFF2D6A4F),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              l10n.vetOnlineAppointment,
+                              style: const TextStyle(
+                                color: Color(0xFF1B4332),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -150,13 +188,19 @@ class VetCard extends StatelessWidget {
                   if (vet.address != null)
                     Row(
                       children: [
-                        Icon(Icons.location_on_rounded, size: 14, color: const Color(0xFF52B788)),
+                        Icon(
+                          Icons.location_on_rounded,
+                          size: 14,
+                          color: const Color(0xFF52B788),
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             vet.address!,
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withOpacity(0.65),
+                              color: theme.colorScheme.onSurface.withOpacity(
+                                0.65,
+                              ),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -170,7 +214,10 @@ class VetCard extends StatelessWidget {
                     children: [
                       if (vet.googleRating != null) ...[
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.amber.shade50,
                             borderRadius: BorderRadius.circular(8),
@@ -179,16 +226,27 @@ class VetCard extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.star_rounded, size: 14, color: Colors.amber.shade700),
+                              Icon(
+                                Icons.star_rounded,
+                                size: 14,
+                                color: Colors.amber.shade700,
+                              ),
                               const SizedBox(width: 3),
                               Text(
                                 vet.googleRating!.toStringAsFixed(1),
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.amber.shade800),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.amber.shade800,
+                                ),
                               ),
                               const SizedBox(width: 3),
                               Text(
                                 '(${vet.googleReviewCount})',
-                                style: TextStyle(fontSize: 11, color: Colors.amber.shade700),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.amber.shade700,
+                                ),
                               ),
                             ],
                           ),
@@ -197,7 +255,10 @@ class VetCard extends StatelessWidget {
                       ],
                       if (distanceKm != null)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFD8F3DC),
                             borderRadius: BorderRadius.circular(8),
@@ -205,13 +266,21 @@ class VetCard extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.directions_walk, size: 14, color: Color(0xFF2D6A4F)),
+                              const Icon(
+                                Icons.directions_walk,
+                                size: 14,
+                                color: Color(0xFF2D6A4F),
+                              ),
                               const SizedBox(width: 3),
                               Text(
                                 distanceKm! < 1
                                     ? '${(distanceKm! * 1000).round()} m'
                                     : '${distanceKm!.toStringAsFixed(1)} km',
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF1B4332)),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF1B4332),
+                                ),
                               ),
                             ],
                           ),
@@ -238,7 +307,11 @@ class VetCard extends StatelessWidget {
         ),
       ),
       child: const Center(
-        child: Icon(Icons.local_hospital_rounded, size: 56, color: Colors.white24),
+        child: Icon(
+          Icons.local_hospital_rounded,
+          size: 56,
+          color: Colors.white24,
+        ),
       ),
     );
   }

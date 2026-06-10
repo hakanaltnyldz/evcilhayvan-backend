@@ -7,13 +7,14 @@ import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/features/store/domain/models/order_model.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
-const _returnReasons = [
-  'Yanlış ürün gönderildi',
-  'Hasarlı / kırık geldi',
-  'Ürün açıklamayla uyuşmuyor',
-  'Beklentimi karşılamadı',
-  'Diğer',
+const _returnReasonKeys = [
+  'wrong_product',
+  'damaged',
+  'mismatch',
+  'expectation',
+  'other',
 ];
 
 class ReturnRequestScreen extends ConsumerStatefulWidget {
@@ -22,7 +23,8 @@ class ReturnRequestScreen extends ConsumerStatefulWidget {
   final OrderModel order;
 
   @override
-  ConsumerState<ReturnRequestScreen> createState() => _ReturnRequestScreenState();
+  ConsumerState<ReturnRequestScreen> createState() =>
+      _ReturnRequestScreenState();
 }
 
 class _ReturnRequestScreenState extends ConsumerState<ReturnRequestScreen> {
@@ -38,6 +40,7 @@ class _ReturnRequestScreenState extends ConsumerState<ReturnRequestScreen> {
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
@@ -46,7 +49,7 @@ class _ReturnRequestScreenState extends ConsumerState<ReturnRequestScreen> {
       await ApiClient().dio.post(
         '/api/orders/${widget.order.id}/return-request',
         data: {
-          'reason': _selectedReason,
+          'reason': _returnReasonLabel(l10n, _selectedReason!),
           if (_descriptionCtrl.text.trim().isNotEmpty)
             'description': _descriptionCtrl.text.trim(),
         },
@@ -54,10 +57,10 @@ class _ReturnRequestScreenState extends ConsumerState<ReturnRequestScreen> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('İade talebiniz alındı. Ekibimiz en kısa sürede dönüş yapacak.'),
+        SnackBar(
+          content: Text(l10n.returnRequestSuccess),
           backgroundColor: Colors.green,
-          duration: Duration(seconds: 4),
+          duration: const Duration(seconds: 4),
         ),
       );
       Navigator.of(context).pop(true);
@@ -65,7 +68,7 @@ class _ReturnRequestScreenState extends ConsumerState<ReturnRequestScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('İade talebi gönderilemedi: $e'),
+          content: Text(l10n.returnRequestSubmitError(e.toString())),
           backgroundColor: Colors.red,
         ),
       );
@@ -77,6 +80,7 @@ class _ReturnRequestScreenState extends ConsumerState<ReturnRequestScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -84,7 +88,10 @@ class _ReturnRequestScreenState extends ConsumerState<ReturnRequestScreen> {
         backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: const Text('İade Talebi', style: TextStyle(fontWeight: FontWeight.w800)),
+        title: Text(
+          l10n.returnRequestTitle,
+          style: const TextStyle(fontWeight: FontWeight.w800),
+        ),
       ),
       body: Form(
         key: _formKey,
@@ -99,8 +106,10 @@ class _ReturnRequestScreenState extends ConsumerState<ReturnRequestScreen> {
 
               // İade nedeni
               Text(
-                'İade Nedeni',
-                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                l10n.returnRequestReasonLabel,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Container(
@@ -115,24 +124,35 @@ class _ReturnRequestScreenState extends ConsumerState<ReturnRequestScreen> {
                 ),
                 child: DropdownButtonFormField<String>(
                   value: _selectedReason,
-                  hint: const Text('Bir neden seçin'),
+                  hint: Text(l10n.returnRequestReasonHint),
                   decoration: const InputDecoration(
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                   ),
-                  items: _returnReasons
-                      .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                  items: _returnReasonKeys
+                      .map(
+                        (r) => DropdownMenuItem(
+                          value: r,
+                          child: Text(_returnReasonLabel(l10n, r)),
+                        ),
+                      )
                       .toList(),
                   onChanged: (v) => setState(() => _selectedReason = v),
-                  validator: (v) => v == null ? 'Lütfen bir neden seçin' : null,
+                  validator: (v) =>
+                      v == null ? l10n.returnRequestReasonRequired : null,
                 ),
               ),
               const SizedBox(height: 16),
 
               // Açıklama
               Text(
-                'Açıklama (opsiyonel)',
-                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                l10n.returnRequestDescriptionLabel,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -140,7 +160,7 @@ class _ReturnRequestScreenState extends ConsumerState<ReturnRequestScreen> {
                 maxLines: 4,
                 maxLength: 500,
                 decoration: InputDecoration(
-                  hintText: 'Daha fazla detay ekleyin...',
+                  hintText: l10n.returnRequestDescriptionHint,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: Colors.grey.shade300),
@@ -166,12 +186,18 @@ class _ReturnRequestScreenState extends ConsumerState<ReturnRequestScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.info_outline, color: Colors.blue, size: 18),
+                    const Icon(
+                      Icons.info_outline,
+                      color: Colors.blue,
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'İade talebi oluşturduktan sonra ekibimiz 1-3 iş günü içinde size dönüş yapacak. Onay durumunda ürünü orijinal ambalajında kargolayabilirsiniz.',
-                        style: theme.textTheme.bodySmall?.copyWith(color: Colors.blue.shade700),
+                        l10n.returnRequestInfo,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.blue.shade700,
+                        ),
                       ),
                     ),
                   ],
@@ -188,19 +214,29 @@ class _ReturnRequestScreenState extends ConsumerState<ReturnRequestScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppPalette.storePrimary,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     elevation: 0,
                   ),
                   icon: _isSubmitting
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : const Icon(Icons.assignment_return_outlined),
                   label: Text(
-                    _isSubmitting ? 'Gönderiliyor...' : 'İade Talebi Gönder',
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                    _isSubmitting
+                        ? l10n.returnRequestSubmitting
+                        : l10n.returnRequestSubmit,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ),
@@ -213,6 +249,14 @@ class _ReturnRequestScreenState extends ConsumerState<ReturnRequestScreen> {
   }
 }
 
+String _returnReasonLabel(AppLocalizations l10n, String key) => switch (key) {
+  'wrong_product' => l10n.returnRequestReasonWrongProduct,
+  'damaged' => l10n.returnRequestReasonDamaged,
+  'mismatch' => l10n.returnRequestReasonMismatch,
+  'expectation' => l10n.returnRequestReasonExpectation,
+  _ => l10n.returnRequestReasonOther,
+};
+
 class _OrderSummaryCard extends StatelessWidget {
   const _OrderSummaryCard({required this.order});
 
@@ -221,6 +265,10 @@ class _OrderSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final shortOrderId = order.id.length >= 8
+        ? order.id.substring(order.id.length - 8).toUpperCase()
+        : order.id.toUpperCase();
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -228,7 +276,11 @@ class _OrderSummaryCard extends StatelessWidget {
         color: context.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -242,7 +294,11 @@ class _OrderSummaryCard extends StatelessWidget {
                   color: AppPalette.storePrimary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.receipt_outlined, color: AppPalette.storePrimary, size: 20),
+                child: const Icon(
+                  Icons.receipt_outlined,
+                  color: AppPalette.storePrimary,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -250,12 +306,14 @@ class _OrderSummaryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Sipariş #${order.id.length >= 8 ? order.id.substring(order.id.length - 8).toUpperCase() : order.id.toUpperCase()}',
+                      l10n.orderNumber(shortOrderId),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      '₺${order.totalAmount.toStringAsFixed(2)} · ${order.items.length} ürün',
-                      style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+                      '₺${order.totalAmount.toStringAsFixed(2)} · ${l10n.orderItemCount(order.items.length)}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.grey,
+                      ),
                     ),
                   ],
                 ),
@@ -266,9 +324,13 @@ class _OrderSummaryCard extends StatelessWidget {
                   color: Colors.green.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
-                  'Teslim Edildi',
-                  style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold),
+                child: Text(
+                  l10n.orderStatusDelivered,
+                  style: const TextStyle(
+                    color: Colors.green,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -277,34 +339,44 @@ class _OrderSummaryCard extends StatelessWidget {
             const SizedBox(height: 12),
             const Divider(height: 1),
             const SizedBox(height: 10),
-            ...order.items.take(3).map((item) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                children: [
-                  Container(
-                    width: 4,
-                    height: 4,
-                    decoration: const BoxDecoration(color: AppPalette.storePrimary, shape: BoxShape.circle),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      item.name,
-                      style: const TextStyle(fontSize: 13),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+            ...order.items
+                .take(3)
+                .map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 4,
+                          height: 4,
+                          decoration: const BoxDecoration(
+                            color: AppPalette.storePrimary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            item.name,
+                            style: const TextStyle(fontSize: 13),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Text(
+                          '${item.quantity}x',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Text(
-                    '${item.quantity}x',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
-              ),
-            )),
+                ),
             if (order.items.length > 3)
               Text(
-                '+${order.items.length - 3} ürün daha',
+                l10n.returnRequestMoreItems(order.items.length - 3),
                 style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
               ),
           ],

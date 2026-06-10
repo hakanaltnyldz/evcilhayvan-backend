@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="980" viewBox="0 0 1500 980">
+  <defs>
+    <style>.bg{fill:#fff}.sys{fill:#f8fafc;stroke:#64748b;stroke-width:2}.uc{fill:#e0f2fe;stroke:#0369a1;stroke-width:2}.act{fill:#fef9c3;stroke:#a16207;stroke-width:2}.txt{font:16px Arial,sans-serif;fill:#0f172a}.small{font:13px Arial,sans-serif;fill:#475569}.line{stroke:#475569;stroke-width:2;fill:none}.dash{stroke:#64748b;stroke-width:2;stroke-dasharray:6 6;fill:none;marker-end:url(#a)}</style>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#64748b"/></marker>
+  </defs>
+  <rect class="bg" width="1500" height="980"/>
+  <text class="txt" x="750" y="38" text-anchor="middle" style="font-size:26px">Use Case Diyagrami</text>
+  <rect class="sys" x="300" y="80" width="860" height="820" rx="18"/>
+  <text class="txt" x="730" y="115" text-anchor="middle" style="font-size:22px">Evcil Hayvan Platformu</text>
+  <g>
+    <rect class="act" x="55" y="110" width="175" height="50" rx="10"/><text class="txt" x="142" y="142" text-anchor="middle">Ziyaretci</text>
+    <rect class="act" x="55" y="250" width="175" height="50" rx="10"/><text class="txt" x="142" y="282" text-anchor="middle">Kullanici</text>
+    <rect class="act" x="55" y="390" width="175" height="50" rx="10"/><text class="txt" x="142" y="422" text-anchor="middle">Veteriner</text>
+    <rect class="act" x="55" y="530" width="175" height="50" rx="10"/><text class="txt" x="142" y="562" text-anchor="middle">Pet Bakicisi</text>
+    <rect class="act" x="55" y="670" width="175" height="50" rx="10"/><text class="txt" x="142" y="702" text-anchor="middle">Satici</text>
+    <rect class="act" x="1270" y="390" width="175" height="50" rx="10"/><text class="txt" x="1357" y="422" text-anchor="middle">Admin</text>
+  </g>
+  <g>
+    <ellipse class="uc" cx="470" cy="170" rx="115" ry="34"/><text class="txt" x="470" y="176" text-anchor="middle">Kayit Ol</text>
+    <ellipse class="uc" cx="710" cy="170" rx="115" ry="34"/><text class="txt" x="710" y="176" text-anchor="middle">Giris Yap</text>
+    <ellipse class="uc" cx="470" cy="270" rx="135" ry="34"/><text class="txt" x="470" y="276" text-anchor="middle">Pet Profili Yonet</text>
+    <ellipse class="uc" cx="735" cy="270" rx="145" ry="34"/><text class="txt" x="735" y="276" text-anchor="middle">Sahiplendirme Ilani</text>
+    <ellipse class="uc" cx="1000" cy="270" rx="135" ry="34"/><text class="txt" x="1000" y="276" text-anchor="middle">Basvuru Yap</text>
+    <ellipse class="uc" cx="470" cy="385" rx="130" ry="34"/><text class="txt" x="470" y="391" text-anchor="middle">Veteriner Ara</text>
+    <ellipse class="uc" cx="735" cy="385" rx="135" ry="34"/><text class="txt" x="735" y="391" text-anchor="middle">Randevu Olustur</text>
+    <ellipse class="uc" cx="1000" cy="385" rx="125" ry="34"/><text class="txt" x="1000" y="391" text-anchor="middle">Asi Kaydi Yonet</text>
+    <ellipse class="uc" cx="470" cy="500" rx="125" ry="34"/><text class="txt" x="470" y="506" text-anchor="middle">Bakici Bul</text>
+    <ellipse class="uc" cx="735" cy="500" rx="145" ry="34"/><text class="txt" x="735" y="506" text-anchor="middle">Rezervasyon Yap</text>
+    <ellipse class="uc" cx="1000" cy="500" rx="115" ry="34"/><text class="txt" x="1000" y="506" text-anchor="middle">Mesajlas</text>
+    <ellipse class="uc" cx="470" cy="615" rx="135" ry="34"/><text class="txt" x="470" y="621" text-anchor="middle">Siparis Olustur</text>
+    <ellipse class="uc" cx="735" cy="615" rx="125" ry="34"/><text class="txt" x="735" y="621" text-anchor="middle">Urun Yonet</text>
+    <ellipse class="uc" cx="1000" cy="615" rx="135" ry="34"/><text class="txt" x="1000" y="621" text-anchor="middle">Icerik Denetle</text>
+  </g>
+  <path class="line" d="M230 135 L355 170"/><path class="line" d="M230 135 L595 170"/>
+  <path class="line" d="M230 275 L335 270"/><path class="line" d="M230 275 L590 270"/><path class="line" d="M230 275 L865 270"/><path class="line" d="M230 275 L340 385"/><path class="line" d="M230 275 L600 385"/><path class="line" d="M230 275 L875 500"/><path class="line" d="M230 275 L355 615"/>
+  <path class="line" d="M230 415 L600 385"/><path class="line" d="M230 555 L590 500"/><path class="line" d="M230 695 L610 615"/><path class="line" d="M1270 415 L1135 615"/>
+  <path class="dash" d="M735 351 L500 385"/><text class="small" x="590" y="355">include</text>
+  <path class="dash" d="M735 466 L500 500"/><text class="small" x="590" y="470">include</text>
+</svg>

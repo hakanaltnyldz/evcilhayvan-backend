@@ -130,11 +130,14 @@ async function findManagedVetByUser(userId) {
 // GET /api/veterinaries
 export async function listVets(req, res) {
   try {
-    const { lat, lng, radiusKm = 10, q, species, page = 1, limit = 20 } = req.query;
+    const { lat, lng, radiusKm = 10, q, species, service, page = 1, limit = 20 } = req.query;
     const filter = { isActive: true };
 
     if (species) {
       filter.speciesServed = species;
+    }
+    if (service) {
+      filter.services = service;
     }
 
     let query;
@@ -417,6 +420,7 @@ export async function createVet(req, res) {
       workingHours: workingHours || [],
       source: "manual",
       registeredBy: userId,
+      userId,
       isVerified: false,
       isActive: true,
     };
@@ -633,11 +637,12 @@ export async function startVetConversation(req, res) {
       return sendError(res, 404, "Veteriner bulunamadi", "vet_not_found");
     }
 
-    if (!vet.userId) {
+    const vetAccountId = vet.userId || vet.registeredBy;
+    if (!vetAccountId) {
       return sendError(res, 400, "Bu veteriner henuz sisteme kayitli degil", "vet_not_registered");
     }
 
-    const vetUserId = String(vet.userId);
+    const vetUserId = String(vetAccountId);
     const myUserId = String(userId);
 
     if (vetUserId === myUserId) {

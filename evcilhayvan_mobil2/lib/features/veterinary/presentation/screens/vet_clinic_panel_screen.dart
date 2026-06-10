@@ -7,6 +7,7 @@ import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/appointment_repository.dart';
 import '../../data/repositories/veterinary_repository.dart';
 import '../../domain/models/appointment_model.dart';
@@ -122,14 +123,14 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
   List<_AvailabilityOverrideDraft> _availabilityOverrides =
       _buildAvailabilityDrafts();
 
-  static const Map<String, String> _speciesOptions = {
-    'dog': 'Kopek',
-    'cat': 'Kedi',
-    'bird': 'Kus',
-    'fish': 'Balik',
-    'rodent': 'Kemirgen',
-    'other': 'Diger',
-  };
+  static const List<String> _speciesOptions = [
+    'dog',
+    'cat',
+    'bird',
+    'fish',
+    'rodent',
+    'other',
+  ];
 
   static const List<String> _defaultServiceOptions = <String>[
     'Muayene',
@@ -159,6 +160,7 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
   @override
   Widget build(BuildContext context) {
     final panelAsync = ref.watch(_vetClinicPanelProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -166,7 +168,7 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
         backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Klinik Panelim'),
+        title: Text(l10n.clinicPanelTitle),
         actions: [
           IconButton(
             onPressed: () {
@@ -227,30 +229,30 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
                   runSpacing: 12,
                   children: [
                     _MetricCard(
-                      title: 'App Puani',
+                      title: l10n.clinicPanelAppScore,
                       value: data.averageRating.toStringAsFixed(1),
-                      subtitle: '${data.ratingCount} yorum',
+                      subtitle: l10n.clinicPanelReviewCount(data.ratingCount),
                       icon: Icons.star_rounded,
                       accent: Colors.amber.shade700,
                     ),
                     _MetricCard(
-                      title: 'Bekleyen',
+                      title: l10n.clinicPanelPending,
                       value: pendingCount.toString(),
-                      subtitle: 'Onay bekleyen randevu',
+                      subtitle: l10n.clinicPanelPendingSubtitle,
                       icon: Icons.schedule_rounded,
                       accent: Colors.orange.shade700,
                     ),
                     _MetricCard(
-                      title: 'Onayli',
+                      title: l10n.clinicPanelConfirmed,
                       value: confirmedCount.toString(),
-                      subtitle: 'Takvimde aktif randevu',
+                      subtitle: l10n.clinicPanelConfirmedSubtitle,
                       icon: Icons.event_available_rounded,
                       accent: const Color(0xFF2D6A4F),
                     ),
                     _MetricCard(
-                      title: 'Tamamlanan',
+                      title: l10n.clinicPanelCompleted,
                       value: completedCount.toString(),
-                      subtitle: 'Kapanan randevu',
+                      subtitle: l10n.clinicPanelCompletedSubtitle,
                       icon: Icons.task_alt_rounded,
                       accent: Colors.blue.shade700,
                     ),
@@ -258,53 +260,52 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
                 ),
                 const SizedBox(height: 20),
                 _SectionCard(
-                  title: 'Profil Bilgileri',
-                  subtitle:
-                      'Klinik vitrini, iletisim bilgileri ve randevu tercihlerini bu alandan yonetin.',
+                  title: l10n.clinicPanelProfileTitle,
+                  subtitle: l10n.clinicPanelProfileSubtitle,
                   child: Form(
                     key: _formKey,
                     child: Column(
                       children: [
                         _buildTextField(
                           controller: _nameController,
-                          label: 'Klinik Adi',
+                          label: l10n.clinicPanelClinicName,
                           validator: (value) =>
                               value == null || value.trim().isEmpty
-                              ? 'Klinik adi gerekli'
+                              ? l10n.clinicPanelClinicNameRequired
                               : null,
                         ),
                         const SizedBox(height: 12),
                         _buildTextField(
                           controller: _addressController,
-                          label: 'Adres',
+                          label: l10n.clinicPanelAddress,
                           maxLines: 2,
                           validator: (value) =>
                               value == null || value.trim().isEmpty
-                              ? 'Adres gerekli'
+                              ? l10n.clinicPanelAddressRequired
                               : null,
                         ),
                         const SizedBox(height: 12),
                         _buildTextField(
                           controller: _phoneController,
-                          label: 'Telefon',
+                          label: l10n.clinicPanelPhone,
                           keyboardType: TextInputType.phone,
                         ),
                         const SizedBox(height: 12),
                         _buildTextField(
                           controller: _emailController,
-                          label: 'E-posta',
+                          label: l10n.clinicPanelEmail,
                           keyboardType: TextInputType.emailAddress,
                         ),
                         const SizedBox(height: 12),
                         _buildTextField(
                           controller: _websiteController,
-                          label: 'Website',
+                          label: l10n.clinicPanelWebsite,
                           keyboardType: TextInputType.url,
                         ),
                         const SizedBox(height: 12),
                         _buildTextField(
                           controller: _descriptionController,
-                          label: 'Aciklama',
+                          label: l10n.clinicPanelDescription,
                           maxLines: 4,
                         ),
                         const SizedBox(height: 16),
@@ -315,18 +316,16 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
                           onChanged: (value) => setState(
                             () => _acceptsOnlineAppointments = value,
                           ),
-                          title: const Text(
-                            'Online randevu kabul et',
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                          title: Text(
+                            l10n.clinicPanelAcceptOnline,
+                            style: const TextStyle(fontWeight: FontWeight.w700),
                           ),
-                          subtitle: const Text(
-                            'Aciksa kullanicilar video gorusme tipi randevu olusturabilir.',
-                          ),
+                          subtitle: Text(l10n.clinicPanelAcceptOnlineSubtitle),
                         ),
                         const SizedBox(height: 8),
                         _buildTextField(
                           controller: _slotMinutesController,
-                          label: 'Randevu Slot Dakikasi',
+                          label: l10n.clinicPanelSlotMinutes,
                           keyboardType: TextInputType.number,
                         ),
                         const SizedBox(height: 12),
@@ -335,7 +334,7 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
                             Expanded(
                               child: _buildTextField(
                                 controller: _clinicFeeController,
-                                label: 'Klinik Ucreti (TL)',
+                                label: l10n.clinicPanelClinicFee,
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
                                       decimal: true,
@@ -346,7 +345,7 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
                             Expanded(
                               child: _buildTextField(
                                 controller: _onlineFeeController,
-                                label: 'Online Ucret (TL)',
+                                label: l10n.clinicPanelOnlineFee,
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
                                       decimal: true,
@@ -361,15 +360,15 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
                 ),
                 const SizedBox(height: 16),
                 _SectionCard(
-                  title: 'Hizmetler',
-                  subtitle:
-                      'One cikan hizmetleri secin. Profil kartlarinda chip olarak gosterilir.',
+                  title: l10n.clinicPanelServicesTitle,
+                  subtitle: l10n.clinicPanelServicesSubtitle,
                   child: _ChipSelector(
                     options: <String>{
                       ..._defaultServiceOptions,
                       ..._selectedServices,
                     }.toList()..sort(),
                     selected: _selectedServices,
+                    labelBuilder: (value) => _serviceLabel(l10n, value),
                     onToggle: (value) => setState(() {
                       if (_selectedServices.contains(value)) {
                         _selectedServices.remove(value);
@@ -381,24 +380,23 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
                 ),
                 const SizedBox(height: 16),
                 _SectionCard(
-                  title: 'Hizmet Verilen Turler',
-                  subtitle:
-                      'Arama ve filtrelerde eslesme icin hizmet verilen hayvan turlerini secin.',
+                  title: l10n.clinicPanelSpeciesTitle,
+                  subtitle: l10n.clinicPanelSpeciesSubtitle,
                   child: Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: _speciesOptions.entries.map((entry) {
-                      final selected = _selectedSpecies.contains(entry.key);
+                    children: _speciesOptions.map((species) {
+                      final selected = _selectedSpecies.contains(species);
                       return FilterChip(
-                        label: Text(entry.value),
+                        label: Text(_speciesLabel(l10n, species)),
                         selected: selected,
                         selectedColor: const Color(0xFFD8F3DC),
                         checkmarkColor: const Color(0xFF2D6A4F),
                         onSelected: (_) => setState(() {
                           if (selected) {
-                            _selectedSpecies.remove(entry.key);
+                            _selectedSpecies.remove(species);
                           } else {
-                            _selectedSpecies.add(entry.key);
+                            _selectedSpecies.add(species);
                           }
                         }),
                       );
@@ -407,9 +405,8 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
                 ),
                 const SizedBox(height: 16),
                 _SectionCard(
-                  title: 'Calisma Saatleri',
-                  subtitle:
-                      'Takvim yonetiminin temelini olusturur. Kapali gunleri ve saat araliklarini duzenleyin.',
+                  title: l10n.clinicPanelWorkingHoursTitle,
+                  subtitle: l10n.clinicPanelWorkingHoursSubtitle,
                   child: Column(
                     children: _workingHours
                         .map(
@@ -426,9 +423,8 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
                 ),
                 const SizedBox(height: 16),
                 _SectionCard(
-                  title: 'Takvim ve Uygunluk',
-                  subtitle:
-                      'Gelecek 14 gun icin klinigi kapatabilir veya gunluk saat override tanimlayabilirsiniz.',
+                  title: l10n.clinicPanelAvailabilityTitle,
+                  subtitle: l10n.clinicPanelAvailabilitySubtitle,
                   child: Column(
                     children: _availabilityOverrides
                         .map(
@@ -461,9 +457,8 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
                 ),
                 const SizedBox(height: 16),
                 _SectionCard(
-                  title: 'Yorum Paneli',
-                  subtitle:
-                      'Tum yorumlari, puan ortalamasini ve son geri bildirimleri bu alandan izleyin.',
+                  title: l10n.clinicPanelReviewsTitle,
+                  subtitle: l10n.clinicPanelReviewsSubtitle,
                   child: _VetReviewPanel(
                     averageRating: data.averageRating,
                     ratingCount: data.ratingCount,
@@ -492,7 +487,7 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
                         )
                       : const Icon(Icons.save_outlined),
                   label: Text(
-                    _saving ? 'Kaydediliyor...' : 'Degisiklikleri Kaydet',
+                    _saving ? l10n.apptSaving : l10n.clinicPanelSaveChanges,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -583,11 +578,12 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
   Future<void> _save(String vetId) async {
     if (!_formKey.currentState!.validate()) return;
 
+    final l10n = AppLocalizations.of(context)!;
     final slotMinutes = int.tryParse(_slotMinutesController.text.trim()) ?? 30;
     if (slotMinutes < 10) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Slot suresi en az 10 dakika olmali.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.clinicPanelSlotMinError)));
       return;
     }
 
@@ -599,7 +595,7 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '${item.label} icin acilis ve kapanis birlikte girilmeli.',
+              l10n.clinicPanelAvailabilityRangeRequired(item.label(context)),
             ),
           ),
         );
@@ -609,7 +605,7 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '${item.label} icin kapanis saati acilistan sonra olmali.',
+              l10n.clinicPanelAvailabilityCloseAfterOpen(item.label(context)),
             ),
           ),
         );
@@ -648,14 +644,14 @@ class _VetClinicPanelScreenState extends ConsumerState<VetClinicPanelScreen> {
       }
       ref.invalidate(_vetClinicPanelProvider);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Klinik bilgileri guncellendi.')),
-      );
-    } catch (error) {
-      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Kayit basarisiz: $error')));
+      ).showSnackBar(SnackBar(content: Text(l10n.clinicPanelSaved)));
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.clinicPanelSaveFailed(error.toString()))),
+      );
     } finally {
       if (mounted) {
         setState(() => _saving = false);
@@ -744,11 +740,12 @@ class _ClinicHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final claimStatus = data.claim?['status']?.toString();
     final claimLabel = switch (claimStatus) {
-      'approved' => 'Sahiplik onayli',
-      'rejected' => 'Talep reddedildi',
-      'pending' => 'Onay bekliyor',
+      'approved' => l10n.clinicPanelClaimApproved,
+      'rejected' => l10n.clinicPanelClaimRejected,
+      'pending' => l10n.clinicPanelClaimPending,
       _ => null,
     };
 
@@ -784,10 +781,10 @@ class _ClinicHeroCard extends StatelessWidget {
             runSpacing: 8,
             children: [
               if (data.vet.isVerified)
-                const _HeroBadge(
-                  label: 'Dogrulanmis Klinik',
-                  color: Color(0xFFD8F3DC),
-                  textColor: Color(0xFF1B4332),
+                _HeroBadge(
+                  label: l10n.clinicPanelVerifiedClinic,
+                  color: const Color(0xFFD8F3DC),
+                  textColor: const Color(0xFF1B4332),
                 ),
               if (claimLabel != null)
                 _HeroBadge(
@@ -796,10 +793,10 @@ class _ClinicHeroCard extends StatelessWidget {
                   textColor: const Color(0xFF1B4332),
                 ),
               if (data.vet.acceptsOnlineAppointments)
-                const _HeroBadge(
-                  label: 'Online Randevu Acik',
-                  color: Color(0xFFE0FBFC),
-                  textColor: Color(0xFF0B5563),
+                _HeroBadge(
+                  label: l10n.clinicPanelOnlineOpen,
+                  color: const Color(0xFFE0FBFC),
+                  textColor: const Color(0xFF0B5563),
                 ),
             ],
           ),
@@ -838,15 +835,15 @@ class _ClinicHeroCard extends StatelessWidget {
             children: [
               _MiniFact(
                 icon: Icons.phone_outlined,
-                label: data.vet.phone ?? 'Telefon eklenmedi',
+                label: data.vet.phone ?? l10n.clinicPanelPhoneMissing,
               ),
               _MiniFact(
                 icon: Icons.email_outlined,
-                label: data.vet.email ?? 'E-posta eklenmedi',
+                label: data.vet.email ?? l10n.clinicPanelEmailMissing,
               ),
               _MiniFact(
                 icon: Icons.public_outlined,
-                label: data.vet.website ?? 'Website eklenmedi',
+                label: data.vet.website ?? l10n.clinicPanelWebsiteMissing,
               ),
             ],
           ),
@@ -1017,11 +1014,13 @@ class _ChipSelector extends StatelessWidget {
   const _ChipSelector({
     required this.options,
     required this.selected,
+    required this.labelBuilder,
     required this.onToggle,
   });
 
   final List<String> options;
   final Set<String> selected;
+  final String Function(String value) labelBuilder;
   final ValueChanged<String> onToggle;
 
   @override
@@ -1032,7 +1031,7 @@ class _ChipSelector extends StatelessWidget {
       children: options.map((option) {
         final isSelected = selected.contains(option);
         return FilterChip(
-          label: Text(option),
+          label: Text(labelBuilder(option)),
           selected: isSelected,
           selectedColor: const Color(0xFFD8F3DC),
           checkmarkColor: const Color(0xFF2D6A4F),
@@ -1058,6 +1057,8 @@ class _WorkingHoursRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Container(
@@ -1072,12 +1073,12 @@ class _WorkingHoursRow extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    item.label,
+                    _weekdayLabel(l10n, item.day),
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
                 Text(
-                  item.isClosed ? 'Kapali' : 'Acik',
+                  item.isClosed ? l10n.clinicPanelClosed : l10n.clinicPanelOpen,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -1097,7 +1098,7 @@ class _WorkingHoursRow extends StatelessWidget {
               children: [
                 Expanded(
                   child: _TimeButton(
-                    label: 'Acilis',
+                    label: l10n.clinicPanelOpening,
                     value: item.open ?? '--:--',
                     enabled: !item.isClosed,
                     onTap: onPickOpen,
@@ -1106,7 +1107,7 @@ class _WorkingHoursRow extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _TimeButton(
-                    label: 'Kapanis',
+                    label: l10n.clinicPanelClosing,
                     value: item.close ?? '--:--',
                     enabled: !item.isClosed,
                     onTap: onPickClose,
@@ -1140,11 +1141,12 @@ class _AvailabilityOverrideRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final helperText = item.isClosed
-        ? 'Bu tarih randevuya kapatildi'
+        ? l10n.clinicPanelDateClosed
         : (item.hasCustomHours
-              ? 'Haftalik plani bu tarih icin override eder'
-              : 'Haftalik plana gore calisir');
+              ? l10n.clinicPanelDateCustomHours
+              : l10n.clinicPanelDateDefaultHours);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -1163,7 +1165,7 @@ class _AvailabilityOverrideRow extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        item.label,
+                        item.label(context),
                         style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 4),
@@ -1189,7 +1191,7 @@ class _AvailabilityOverrideRow extends StatelessWidget {
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
-                      '$bookingLoad randevu',
+                      l10n.clinicPanelBookingLoad(bookingLoad),
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -1208,8 +1210,8 @@ class _AvailabilityOverrideRow extends StatelessWidget {
               children: [
                 Expanded(
                   child: _TimeButton(
-                    label: 'Acilis',
-                    value: item.open ?? 'Varsayilan',
+                    label: l10n.clinicPanelOpening,
+                    value: item.open ?? l10n.clinicPanelDefault,
                     enabled: !item.isClosed,
                     onTap: onPickOpen,
                   ),
@@ -1217,8 +1219,8 @@ class _AvailabilityOverrideRow extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _TimeButton(
-                    label: 'Kapanis',
-                    value: item.close ?? 'Varsayilan',
+                    label: l10n.clinicPanelClosing,
+                    value: item.close ?? l10n.clinicPanelDefault,
                     enabled: !item.isClosed,
                     onTap: onPickClose,
                   ),
@@ -1230,7 +1232,7 @@ class _AvailabilityOverrideRow extends StatelessWidget {
               child: TextButton.icon(
                 onPressed: onReset,
                 icon: const Icon(Icons.restart_alt_rounded),
-                label: const Text('Haftalik plana don'),
+                label: Text(l10n.clinicPanelResetWeeklyPlan),
               ),
             ),
           ],
@@ -1315,12 +1317,14 @@ class _VetReviewPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (reviews.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 8),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         child: Text(
-          'Henuz uygulama ici yorum yok.',
-          style: TextStyle(color: Colors.grey),
+          l10n.clinicPanelReviewsEmpty,
+          style: const TextStyle(color: Colors.grey),
         ),
       );
     }
@@ -1349,7 +1353,7 @@ class _VetReviewPanel extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '$ratingCount yorum',
+                    l10n.clinicPanelReviewCount(ratingCount),
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ],
@@ -1363,11 +1367,11 @@ class _VetReviewPanel extends StatelessWidget {
                 children: [
                   _ReviewStatPill(
                     icon: Icons.rate_review_outlined,
-                    label: 'Son yorumlar',
+                    label: l10n.clinicPanelRecentReviews,
                   ),
                   _ReviewStatPill(
                     icon: Icons.thumb_up_alt_outlined,
-                    label: 'Kalite takibi',
+                    label: l10n.clinicPanelQualityTracking,
                   ),
                 ],
               ),
@@ -1392,13 +1396,16 @@ class _VetReviewPanel extends StatelessWidget {
                         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
                         children: [
                           Text(
-                            'Tum Klinik Yorumlari',
+                            l10n.clinicPanelAllReviews,
                             style: Theme.of(context).textTheme.titleLarge
                                 ?.copyWith(fontWeight: FontWeight.w900),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '$ratingCount yorum | Ortalama ${averageRating.toStringAsFixed(1)}',
+                            l10n.clinicPanelReviewSummary(
+                              ratingCount,
+                              averageRating.toStringAsFixed(1),
+                            ),
                             style: TextStyle(
                               color: Theme.of(
                                 context,
@@ -1416,7 +1423,7 @@ class _VetReviewPanel extends StatelessWidget {
                 );
               },
               icon: const Icon(Icons.open_in_full_rounded),
-              label: const Text('Tum yorumlari gor'),
+              label: Text(l10n.clinicPanelSeeAllReviews),
             ),
           ),
       ],
@@ -1506,7 +1513,7 @@ class _ReviewTile extends StatelessWidget {
                     Text(
                       DateFormat(
                         'dd MMM yyyy',
-                        'tr_TR',
+                        Localizations.localeOf(context).toString(),
                       ).format(review.createdAt.toLocal()),
                       style: TextStyle(
                         fontSize: 12,
@@ -1554,6 +1561,8 @@ class _PanelError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -1563,7 +1572,7 @@ class _PanelError extends StatelessWidget {
             const Icon(Icons.error_outline, size: 60, color: Colors.red),
             const SizedBox(height: 12),
             Text(
-              'Klinik paneli yuklenemedi',
+              l10n.clinicPanelLoadFailed,
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
@@ -1580,7 +1589,7 @@ class _PanelError extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Tekrar Dene'),
+              label: Text(l10n.retry),
             ),
           ],
         ),
@@ -1596,6 +1605,8 @@ class _NoClinicPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -1604,15 +1615,14 @@ class _NoClinicPanel extends StatelessWidget {
           children: [
             AnimatedEmptyState(
               icon: Icons.local_hospital_outlined,
-              title: 'Yonetilecek klinik bulunamadi',
-              subtitle:
-                  'Once bir klinik kaydi yapin veya mevcut klinik talebinizin onaylanmasini bekleyin.',
+              title: l10n.clinicPanelNoClinicTitle,
+              subtitle: l10n.clinicPanelNoClinicSubtitle,
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: onRegister,
               icon: const Icon(Icons.add_business_outlined),
-              label: const Text('Klinik Kaydet'),
+              label: Text(l10n.vetRegisterSaveBtn),
             ),
           ],
         ),
@@ -1624,14 +1634,12 @@ class _NoClinicPanel extends StatelessWidget {
 class _WorkingHoursDraft {
   _WorkingHoursDraft({
     required this.day,
-    required this.label,
     this.open,
     this.close,
     this.isClosed = false,
   });
 
   final int day;
-  final String label;
   String? open;
   String? close;
   bool isClosed;
@@ -1662,7 +1670,12 @@ class _AvailabilityOverrideDraft {
 
   String get dateKey => _formatDateOnly(date);
 
-  String get label => DateFormat('dd MMM, EEEE', 'tr_TR').format(date);
+  String label(BuildContext context) {
+    return DateFormat(
+      'dd MMM, EEEE',
+      Localizations.localeOf(context).toString(),
+    ).format(date);
+  }
 
   Map<String, dynamic> toJson() => {
     'date': dateKey,
@@ -1692,22 +1705,79 @@ String? _extractClaimVetId(Map<String, dynamic>? claim) {
   return vet?.toString();
 }
 
-List<_WorkingHoursDraft> _buildDefaultWorkingHours() {
-  const labels = <String>[
-    'Pazartesi',
-    'Sali',
-    'Carsamba',
-    'Persembe',
-    'Cuma',
-    'Cumartesi',
-    'Pazar',
-  ];
+String _speciesLabel(AppLocalizations l10n, String species) {
+  switch (species) {
+    case 'dog':
+      return l10n.aiSpeciesDog;
+    case 'cat':
+      return l10n.aiSpeciesCat;
+    case 'bird':
+      return l10n.aiSpeciesBird;
+    case 'fish':
+      return l10n.clinicPanelSpeciesFish;
+    case 'rodent':
+      return l10n.clinicPanelSpeciesRodent;
+    case 'other':
+      return l10n.aiSpeciesOther;
+    default:
+      return species;
+  }
+}
 
+String _serviceLabel(AppLocalizations l10n, String service) {
+  switch (service.toLowerCase()) {
+    case 'muayene':
+      return l10n.clinicPanelServiceExam;
+    case 'asi':
+    case 'aşı':
+      return l10n.clinicPanelServiceVaccination;
+    case 'cerrahi':
+      return l10n.clinicPanelServiceSurgery;
+    case 'acil bakim':
+    case 'acil bakım':
+      return l10n.clinicPanelServiceEmergencyCare;
+    case 'laboratuvar':
+      return l10n.clinicPanelServiceLaboratory;
+    case 'dis bakimi':
+    case 'diş bakımı':
+      return l10n.clinicPanelServiceDentalCare;
+    case 'check-up':
+    case 'checkup':
+      return l10n.clinicPanelServiceCheckup;
+    case 'online danisma':
+    case 'online danışma':
+      return l10n.clinicPanelServiceOnlineConsultation;
+    default:
+      return service;
+  }
+}
+
+String _weekdayLabel(AppLocalizations l10n, int day) {
+  switch (day) {
+    case 0:
+      return l10n.weekdayMonday;
+    case 1:
+      return l10n.weekdayTuesday;
+    case 2:
+      return l10n.weekdayWednesday;
+    case 3:
+      return l10n.weekdayThursday;
+    case 4:
+      return l10n.weekdayFriday;
+    case 5:
+      return l10n.weekdaySaturday;
+    case 6:
+      return l10n.weekdaySunday;
+    default:
+      return day.toString();
+  }
+}
+
+List<_WorkingHoursDraft> _buildDefaultWorkingHours() {
   return List<_WorkingHoursDraft>.generate(
-    labels.length,
+    7,
     (index) => _WorkingHoursDraft(
       day: index,
-      label: labels[index],
       open: index < 5 ? '09:00' : '10:00',
       close: index < 5 ? '18:00' : '16:00',
       isClosed: false,

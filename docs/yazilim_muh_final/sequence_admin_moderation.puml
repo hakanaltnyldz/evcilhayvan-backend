@@ -1,0 +1,20 @@
+@startuml
+actor Admin
+participant "Admin Panel" as Panel
+participant "API Sunucusu" as API
+database "MongoDB" as DB
+participant "Bildirim Servisi" as Notify
+
+Admin -> Panel : Bekleyen icerikleri acar
+Panel -> API : GET /moderation/pending
+API -> DB : Bekleyen ilan/urun/basvuru sorgusu
+DB --> API : Liste
+API --> Panel : Moderasyon kuyrugu
+Admin -> Panel : Onay / Red karari verir
+Panel -> API : PATCH /moderation/{id}
+API -> DB : Karar, gerekce ve denetim kaydi yaz
+API -> Notify : Ilgili kullaniciya bildirim gonder
+Notify --> API : Bildirim sonucu
+API --> Panel : Islem sonucu
+Panel --> Admin : Durum guncellendi
+@enduml

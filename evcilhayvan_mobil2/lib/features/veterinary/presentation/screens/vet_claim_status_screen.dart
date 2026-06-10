@@ -1,19 +1,18 @@
-// lib/features/veterinary/presentation/screens/vet_claim_status_screen.dart
-
+import 'package:evcilhayvan_mobil2/core/http.dart';
+import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import 'package:evcilhayvan_mobil2/core/http.dart';
-import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
-import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
-
-final _myClaimsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
-  final dio = ApiClient().dio;
-  final response = await dio.get('/api/veterinaries/my-claim-status');
-  final List<dynamic> raw = response.data['claims'] ?? [];
-  return raw.whereType<Map<String, dynamic>>().toList();
-});
+final _myClaimsProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+      final dio = ApiClient().dio;
+      final response = await dio.get('/api/veterinaries/my-claim-status');
+      final List<dynamic> raw = response.data['claims'] ?? [];
+      return raw.whereType<Map<String, dynamic>>().toList();
+    });
 
 class VetClaimStatusScreen extends ConsumerWidget {
   const VetClaimStatusScreen({super.key});
@@ -21,6 +20,7 @@ class VetClaimStatusScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final claimsAsync = ref.watch(_myClaimsProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -28,7 +28,7 @@ class VetClaimStatusScreen extends ConsumerWidget {
         backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Klinik Sahiplenme Taleplerim'),
+        title: Text(l10n.vetClaimStatusTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -43,10 +43,14 @@ class VetClaimStatusScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.local_hospital_outlined, size: 72, color: Colors.grey.shade400),
+                  Icon(
+                    Icons.local_hospital_outlined,
+                    size: 72,
+                    color: Colors.grey.shade400,
+                  ),
                   const SizedBox(height: 16),
                   Text(
-                    'Henüz klinik sahiplenme talebiniz yok.',
+                    l10n.vetClaimStatusEmpty,
                     style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
@@ -71,11 +75,14 @@ class VetClaimStatusScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.error_outline, size: 64, color: Colors.red),
               const SizedBox(height: 16),
-              Text('Talepler yüklenemedi: $e', textAlign: TextAlign.center),
+              Text(
+                l10n.vetClaimStatusLoadError(e.toString()),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.invalidate(_myClaimsProvider),
-                child: const Text('Tekrar Dene'),
+                child: Text(l10n.retry),
               ),
             ],
           ),
@@ -112,23 +119,24 @@ class _ClaimCard extends StatelessWidget {
     }
   }
 
-  String _statusText(String status) {
+  String _statusText(AppLocalizations l10n, String status) {
     switch (status.toLowerCase()) {
       case 'approved':
-        return 'Onaylandı';
+        return l10n.vetClaimStatusApproved;
       case 'rejected':
-        return 'Reddedildi';
+        return l10n.vetClaimStatusRejected;
       default:
-        return 'İnceleniyor';
+        return l10n.vetClaimStatusPending;
     }
   }
 
-  String _formatDate(dynamic value) {
+  String _formatDate(BuildContext context, dynamic value) {
     if (value == null) return '';
     try {
       final dt = DateTime.tryParse(value.toString());
       if (dt == null) return '';
-      return DateFormat('dd MMMM yyyy, HH:mm', 'tr').format(dt.toLocal());
+      final locale = Localizations.localeOf(context).toString();
+      return DateFormat('dd MMMM yyyy, HH:mm', locale).format(dt.toLocal());
     } catch (_) {
       return value.toString();
     }
@@ -136,10 +144,13 @@ class _ClaimCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final status = claim['status']?.toString() ?? 'pending';
     final color = _statusColor(status);
     final vetData = claim['vetId'];
-    final vetName = vetData is Map ? vetData['name']?.toString() ?? 'Klinik' : 'Klinik';
+    final vetName = vetData is Map
+        ? vetData['name']?.toString() ?? l10n.vetClaimStatusClinicFallback
+        : l10n.vetClaimStatusClinicFallback;
     final vetAddress = vetData is Map ? vetData['address']?.toString() : null;
     final adminNote = claim['adminNote']?.toString() ?? '';
     final reviewedAt = claim['reviewedAt'];
@@ -153,25 +164,38 @@ class _ClaimCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.withOpacity(0.3)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Clinic name + status chip
           Row(
             children: [
-              const Icon(Icons.local_hospital_rounded, color: Color(0xFF40916C), size: 20),
+              const Icon(
+                Icons.local_hospital_rounded,
+                color: Color(0xFF40916C),
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   vetName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
@@ -181,53 +205,71 @@ class _ClaimCard extends StatelessWidget {
                   children: [
                     Icon(_statusIcon(status), size: 14, color: color),
                     const SizedBox(width: 4),
-                    Text(_statusText(status), style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12)),
+                    Text(
+                      _statusText(l10n, status),
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
-
           if (vetAddress != null && vetAddress.isNotEmpty) ...[
             const SizedBox(height: 6),
             Row(
               children: [
-                const Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
+                const Icon(
+                  Icons.location_on_outlined,
+                  size: 14,
+                  color: Colors.grey,
+                ),
                 const SizedBox(width: 4),
                 Expanded(
-                  child: Text(vetAddress, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  child: Text(
+                    vetAddress,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
           ],
-
           const SizedBox(height: 10),
           const Divider(height: 1),
           const SizedBox(height: 10),
-
-          // Submitted role
           if (claim['role'] != null) ...[
-            _InfoRow(label: 'Rol', value: claim['role'].toString()),
+            _InfoRow(
+              label: l10n.vetClaimStatusRole,
+              value: claim['role'].toString(),
+            ),
             const SizedBox(height: 4),
           ],
-
-          // Submitted note
           if ((claim['note']?.toString() ?? '').isNotEmpty) ...[
-            _InfoRow(label: 'Açıklama', value: claim['note'].toString()),
+            _InfoRow(
+              label: l10n.vetClaimStatusNote,
+              value: claim['note'].toString(),
+            ),
             const SizedBox(height: 4),
           ],
-
-          // Dates
           if (createdAt != null) ...[
-            _InfoRow(label: 'Başvuru Tarihi', value: _formatDate(createdAt)),
+            _InfoRow(
+              label: l10n.vetClaimStatusSubmittedAt,
+              value: _formatDate(context, createdAt),
+            ),
             const SizedBox(height: 4),
           ],
           if (reviewedAt != null) ...[
-            _InfoRow(label: 'Karar Tarihi', value: _formatDate(reviewedAt)),
+            _InfoRow(
+              label: l10n.vetClaimStatusReviewedAt,
+              value: _formatDate(context, reviewedAt),
+            ),
             const SizedBox(height: 4),
           ],
-
-          // Admin note
           if (adminNote.isNotEmpty) ...[
             const SizedBox(height: 8),
             Container(
@@ -252,7 +294,6 @@ class _ClaimCard extends StatelessWidget {
               ),
             ),
           ],
-
           if (status == 'pending') ...[
             const SizedBox(height: 12),
             Container(
@@ -261,14 +302,21 @@ class _ClaimCard extends StatelessWidget {
                 color: Colors.orange.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.hourglass_top, size: 14, color: Colors.orange),
-                  SizedBox(width: 6),
+                  const Icon(
+                    Icons.hourglass_top,
+                    size: 14,
+                    color: Colors.orange,
+                  ),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      'Talebiniz admin tarafından inceleniyor. Sonuç bildirim olarak iletilecektir.',
-                      style: TextStyle(fontSize: 12, color: Colors.orange),
+                      l10n.vetClaimStatusPendingMessage,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.orange,
+                      ),
                     ),
                   ),
                 ],
@@ -293,7 +341,14 @@ class _InfoRow extends StatelessWidget {
       children: [
         SizedBox(
           width: 110,
-          child: Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500)),
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ),
         Expanded(child: Text(value, style: const TextStyle(fontSize: 12))),
       ],

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <defs>
+    <style>
+      .bg{fill:#f1f5f9}.box{fill:#fff;stroke:#334155;stroke-width:2;rx:18}.actor{stroke:#0f172a;stroke-width:3;fill:none}.line{stroke:#475569;stroke-width:2;fill:none}.ext{stroke:#64748b;stroke-width:2;stroke-dasharray:8 6;fill:none}.uc{fill:#e2e8f0;stroke:#475569;stroke-width:2}.txt{font-family:Arial, sans-serif;font-size:21px;fill:#0f172a}.small{font-family:Arial, sans-serif;font-size:17px;fill:#334155}.title{font-family:Arial, sans-serif;font-size:30px;font-weight:700;fill:#0f172a}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#64748b"/></marker>
+  </defs>
+  <rect class="bg" width="1200" height="760"/>
+  <text class="title" x="50" y="55">Admin Paneli Kullanım Senaryosu</text>
+  <rect class="box" x="275" y="95" width="700" height="585"/>
+  <text class="small" x="305" y="130">Sistem sınırı: Kullanıcı, rol, başvuru, moderasyon, şikayet ve raporlama</text>
+
+  <circle class="actor" cx="120" cy="260" r="22"/><line class="actor" x1="120" y1="282" x2="120" y2="360"/><line class="actor" x1="78" y1="310" x2="162" y2="310"/><line class="actor" x1="120" y1="360" x2="82" y2="415"/><line class="actor" x1="120" y1="360" x2="158" y2="415"/>
+  <text class="txt" x="92" y="450">Admin</text>
+  <circle class="actor" cx="1060" cy="260" r="22"/><line class="actor" x1="1060" y1="282" x2="1060" y2="360"/><line class="actor" x1="1018" y1="310" x2="1102" y2="310"/><line class="actor" x1="1060" y1="360" x2="1022" y2="415"/><line class="actor" x1="1060" y1="360" x2="1098" y2="415"/>
+  <text class="txt" x="1000" y="450">Dış Roller</text>
+
+  <ellipse class="uc" cx="505" cy="195" rx="155" ry="44"/><text class="txt" x="405" y="203">Kullanıcı Yönetimi</text>
+  <ellipse class="uc" cx="505" cy="310" rx="155" ry="44"/><text class="txt" x="420" y="318">Rol ve Yetki</text>
+  <ellipse class="uc" cx="505" cy="430" rx="170" ry="46"/><text class="txt" x="388" y="438">Başvuru İnceleme</text>
+  <ellipse class="uc" cx="760" cy="250" rx="170" ry="46"/><text class="txt" x="650" y="258">İçerik Moderasyonu</text>
+  <ellipse class="uc" cx="760" cy="375" rx="150" ry="46"/><text class="txt" x="675" y="383">Şikayet İnceleme</text>
+  <ellipse class="uc" cx="760" cy="505" rx="145" ry="44"/><text class="txt" x="680" y="513">KPI Raporları</text>
+
+  <line class="line" x1="165" y1="305" x2="355" y2="195"/><line class="line" x1="165" y1="320" x2="350" y2="310"/><line class="line" x1="165" y1="345" x2="335" y2="430"/><line class="line" x1="170" y1="365" x2="595" y2="250"/><line class="line" x1="170" y1="380" x2="610" y2="375"/><line class="line" x1="170" y1="400" x2="620" y2="505"/>
+  <line class="line" x1="1015" y1="310" x2="930" y2="250"/><line class="line" x1="1015" y1="330" x2="910" y2="375"/>
+  <line class="ext" x1="635" y1="430" x2="670" y2="295" marker-end="url(#arrow)"/><text class="small" x="600" y="360">&lt;&lt;extend&gt;&gt;</text>
+</svg>

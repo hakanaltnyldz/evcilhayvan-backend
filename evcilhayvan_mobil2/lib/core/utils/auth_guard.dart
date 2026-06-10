@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 /// Misafir kullanıcı auth gerektiren işlem yapmaya çalıştığında dialog gösterir.
 /// true döndürürse işleme devam et, false ise iptal et.
 Future<bool> showLoginRequired(BuildContext context, {String? reason}) async {
+  final from = GoRouterState.of(context).uri.toString();
+  final loginLocation = from.isNotEmpty
+      ? '/login?from=${Uri.encodeComponent(from)}'
+      : '/login';
   final result = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
@@ -12,7 +16,10 @@ Future<bool> showLoginRequired(BuildContext context, {String? reason}) async {
         children: [
           Icon(Icons.lock_outline, color: Color(0xFF2D6A4F), size: 22),
           SizedBox(width: 8),
-          Text('Giriş Gerekiyor', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+          Text(
+            'Giriş Gerekiyor',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
       content: Text(
@@ -27,11 +34,13 @@ Future<bool> showLoginRequired(BuildContext context, {String? reason}) async {
         FilledButton(
           onPressed: () {
             Navigator.pop(ctx, false);
-            ctx.pushNamed('login');
+            ctx.push(loginLocation);
           },
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFF2D6A4F),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
           child: const Text('Giriş Yap'),
         ),
@@ -40,7 +49,13 @@ Future<bool> showLoginRequired(BuildContext context, {String? reason}) async {
             Navigator.pop(ctx, false);
             ctx.pushNamed('register');
           },
-          child: const Text('Kayıt Ol', style: TextStyle(color: Color(0xFF40916C), fontWeight: FontWeight.w600)),
+          child: const Text(
+            'Kayıt Ol',
+            style: TextStyle(
+              color: Color(0xFF40916C),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ],
     ),

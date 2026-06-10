@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:dio/dio.dart';
 import 'dart:io';
 
 import 'package:evcilhayvan_mobil2/core/http.dart';
@@ -71,11 +70,17 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
       _speciesServed.clear();
       _speciesServed.addAll(e.speciesServed);
       for (final s in e.services) {
-        _services.add(_ServiceEntry(
-          type: s.type,
-          hourCtrl: TextEditingController(text: s.pricePerHour > 0 ? s.pricePerHour.toInt().toString() : ''),
-          dayCtrl: TextEditingController(text: s.pricePerDay > 0 ? s.pricePerDay.toInt().toString() : ''),
-        ));
+        _services.add(
+          _ServiceEntry(
+            type: s.type,
+            hourCtrl: TextEditingController(
+              text: s.pricePerHour > 0 ? s.pricePerHour.toInt().toString() : '',
+            ),
+            dayCtrl: TextEditingController(
+              text: s.pricePerDay > 0 ? s.pricePerDay.toInt().toString() : '',
+            ),
+          ),
+        );
       }
     }
     if (_services.isEmpty) {
@@ -104,71 +109,78 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
       if (perm == LocationPermission.denied) {
         perm = await Geolocator.requestPermission();
       }
-      if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
+      if (perm == LocationPermission.denied ||
+          perm == LocationPermission.deniedForever) {
         if (mounted) {
           final l10n = AppLocalizations.of(context)!;
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.sitterLocationPermRequired)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.sitterLocationPermRequired)),
+          );
         }
         setState(() => _locationLoading = false);
         return;
       }
-      final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      setState(() { _lat = pos.latitude; _lng = pos.longitude; _locationLoading = false; });
+      final pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      setState(() {
+        _lat = pos.latitude;
+        _lng = pos.longitude;
+        _locationLoading = false;
+      });
     } catch (e) {
       setState(() => _locationLoading = false);
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.sitterLocationErr(e.toString()))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.sitterLocationErr(e.toString()))),
+        );
       }
     }
   }
 
   Future<void> _pickAvatar() async {
     final picker = ImagePicker();
-    final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80, maxWidth: 800);
+    final file = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+      maxWidth: 800,
+    );
     if (file != null) setState(() => _avatarFile = file);
   }
 
-  Future<String?> _uploadAvatar() async {
-    if (_avatarFile == null) return _existingAvatar;
-    try {
-      final client = ApiClient();
-      final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(_avatarFile!.path, filename: _avatarFile!.name),
-      });
-      final response = await client.dio.post('/api/uploads/image', data: formData);
-      return response.data['url']?.toString();
-    } catch (e) {
-      debugPrint('Avatar upload error: $e');
-      return _existingAvatar;
-    }
-  }
-
-  bool get _hasServices => _services.any((s) =>
-      double.tryParse(s.hourCtrl.text.trim()) != null ||
-      double.tryParse(s.dayCtrl.text.trim()) != null);
+  bool get _hasServices => _services.any(
+    (s) =>
+        double.tryParse(s.hourCtrl.text.trim()) != null ||
+        double.tryParse(s.dayCtrl.text.trim()) != null,
+  );
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_speciesServed.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.sitterSpeciesRequired)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.sitterSpeciesRequired)));
       return;
     }
 
     setState(() => _loading = true);
     try {
-      final avatarUrl = await _uploadAvatar();
-
-      final servicesData = _services.where((s) {
-        final h = double.tryParse(s.hourCtrl.text.trim()) ?? 0;
-        final d = double.tryParse(s.dayCtrl.text.trim()) ?? 0;
-        return h > 0 || d > 0;
-      }).map((s) => {
-        'type': s.type,
-        'pricePerHour': double.tryParse(s.hourCtrl.text.trim()) ?? 0,
-        'pricePerDay': double.tryParse(s.dayCtrl.text.trim()) ?? 0,
-      }).toList();
+      final servicesData = _services
+          .where((s) {
+            final h = double.tryParse(s.hourCtrl.text.trim()) ?? 0;
+            final d = double.tryParse(s.dayCtrl.text.trim()) ?? 0;
+            return h > 0 || d > 0;
+          })
+          .map(
+            (s) => {
+              'type': s.type,
+              'pricePerHour': double.tryParse(s.hourCtrl.text.trim()) ?? 0,
+              'pricePerDay': double.tryParse(s.dayCtrl.text.trim()) ?? 0,
+            },
+          )
+          .toList();
 
       final data = <String, dynamic>{
         'displayName': _nameCtrl.text.trim(),
@@ -177,16 +189,27 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
         'address': _addressCtrl.text.trim(),
         'speciesServed': _speciesServed.toList(),
         'services': servicesData,
-        if (avatarUrl != null) 'avatar': avatarUrl,
         if (_lat != null && _lng != null)
-          'location': {'type': 'Point', 'coordinates': [_lng, _lat]},
+          'location': {
+            'type': 'Point',
+            'coordinates': [_lng, _lat],
+          },
       };
 
       final repo = ref.read(petSitterRepositoryProvider);
+      PetSitterModel saved;
       if (widget.existing != null) {
-        await repo.updateSitter(widget.existing!.id, data);
+        saved = await repo.updateSitter(widget.existing!.id, data);
       } else {
-        await repo.createSitter(data);
+        saved = await repo.createSitter(data);
+      }
+
+      if (_avatarFile != null) {
+        saved = await repo.uploadSitterAvatar(
+          saved.id,
+          File(_avatarFile!.path),
+        );
+        _existingAvatar = saved.avatar;
       }
 
       ref.invalidate(mySitterProfileProvider);
@@ -198,7 +221,11 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.existing != null ? l10n.sitterProfileUpdated : l10n.sitterProfileCreated),
+            content: Text(
+              widget.existing != null
+                  ? l10n.sitterProfileUpdated
+                  : l10n.sitterProfileCreated,
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -207,7 +234,12 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.sitterSubmitErr(e.toString())), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.sitterSubmitErr(e.toString())),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -225,7 +257,9 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(isEdit ? l10n.sitterEditProfile : l10n.sitterBecomeSitterBtn),
+        title: Text(
+          isEdit ? l10n.sitterEditProfile : l10n.sitterBecomeSitterBtn,
+        ),
         backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -247,20 +281,37 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
                         radius: 50,
                         backgroundColor: const Color(0xFFD8F3DC),
                         backgroundImage: _avatarFile != null
-                            ? FileImage(File(_avatarFile!.path)) as ImageProvider
-                            : (_existingAvatar != null && _existingAvatar!.isNotEmpty)
-                                ? NetworkImage('$apiBaseUrl$_existingAvatar')
-                                : null,
-                        child: (_avatarFile == null && (_existingAvatar == null || _existingAvatar!.isEmpty))
-                            ? const Icon(Icons.person, size: 50, color: Color(0xFF2D6A4F))
+                            ? FileImage(File(_avatarFile!.path))
+                                  as ImageProvider
+                            : (_existingAvatar != null &&
+                                  _existingAvatar!.isNotEmpty)
+                            ? NetworkImage('$apiBaseUrl$_existingAvatar')
+                            : null,
+                        child:
+                            (_avatarFile == null &&
+                                (_existingAvatar == null ||
+                                    _existingAvatar!.isEmpty))
+                            ? const Icon(
+                                Icons.person,
+                                size: 50,
+                                color: Color(0xFF2D6A4F),
+                              )
                             : null,
                       ),
                       Positioned(
-                        bottom: 0, right: 0,
+                        bottom: 0,
+                        right: 0,
                         child: Container(
                           padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(color: Color(0xFF2D6A4F), shape: BoxShape.circle),
-                          child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF2D6A4F),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            color: Colors.white,
+                            size: 16,
+                          ),
                         ),
                       ),
                     ],
@@ -270,12 +321,19 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
               const SizedBox(height: 24),
 
               // Basic Info
-              Text(l10n.sitterBasicInfo, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                l10n.sitterBasicInfo,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _nameCtrl,
                 decoration: _deco(l10n.sitterDisplayName),
-                validator: (v) => (v == null || v.trim().isEmpty) ? l10n.sitterDisplayNameRequired : null,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? l10n.sitterDisplayNameRequired
+                    : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -292,17 +350,34 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
               const SizedBox(height: 24),
 
               // Location
-              Text(l10n.sitterLocation, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                l10n.sitterLocation,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 12),
               ElevatedButton.icon(
                 onPressed: _locationLoading ? null : _getLocation,
                 icon: _locationLoading
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Icon(Icons.my_location),
-                label: Text(_lat != null ? l10n.sitterLocationObtained : l10n.sitterUseLocation),
+                label: Text(
+                  _lat != null
+                      ? l10n.sitterLocationObtained
+                      : l10n.sitterUseLocation,
+                ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _lat != null ? const Color(0xFF2D6A4F) : null,
-                  foregroundColor: _lat != null ? Colors.white : const Color(0xFF2D6A4F),
+                  backgroundColor: _lat != null
+                      ? const Color(0xFF2D6A4F)
+                      : null,
+                  foregroundColor: _lat != null
+                      ? Colors.white
+                      : const Color(0xFF2D6A4F),
                   elevation: 0,
                 ),
               ),
@@ -315,7 +390,12 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
               const SizedBox(height: 24),
 
               // Species
-              Text(l10n.sitterSpeciesTitle, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                l10n.sitterSpeciesTitle,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -325,11 +405,15 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
                     label: Text(opt['label']!),
                     selected: selected,
                     onSelected: (_) => setState(() {
-                      if (selected) _speciesServed.remove(opt['value']);
-                      else _speciesServed.add(opt['value']!);
+                      if (selected)
+                        _speciesServed.remove(opt['value']);
+                      else
+                        _speciesServed.add(opt['value']!);
                     }),
                     selectedColor: const Color(0xFF2D6A4F),
-                    labelStyle: TextStyle(color: selected ? Colors.white : null),
+                    labelStyle: TextStyle(
+                      color: selected ? Colors.white : null,
+                    ),
                     checkmarkColor: Colors.white,
                   );
                 }).toList(),
@@ -340,16 +424,29 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(l10n.sitterServicesTitle, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    l10n.sitterServicesTitle,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   TextButton.icon(
                     onPressed: () {
                       final usedTypes = _services.map((s) => s.type).toSet();
-                      final available = serviceTypes.where((t) => !usedTypes.contains(t['value'])).toList();
+                      final available = serviceTypes
+                          .where((t) => !usedTypes.contains(t['value']))
+                          .toList();
                       if (available.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.sitterServicesAllAdded)));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(l10n.sitterServicesAllAdded)),
+                        );
                         return;
                       }
-                      setState(() => _services.add(_ServiceEntry(type: available.first['value']!)));
+                      setState(
+                        () => _services.add(
+                          _ServiceEntry(type: available.first['value']!),
+                        ),
+                      );
                     },
                     icon: const Icon(Icons.add),
                     label: Text(l10n.sitterServicesAdd),
@@ -357,7 +454,15 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              ..._services.asMap().entries.map((entry) => _buildServiceRow(entry.key, entry.value, theme, l10n, serviceTypes)),
+              ..._services.asMap().entries.map(
+                (entry) => _buildServiceRow(
+                  entry.key,
+                  entry.value,
+                  theme,
+                  l10n,
+                  serviceTypes,
+                ),
+              ),
               const SizedBox(height: 32),
 
               // Submit
@@ -369,12 +474,26 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   minimumSize: const Size.fromHeight(52),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 child: _loading
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : Text(isEdit ? l10n.sitterUpdateBtn : l10n.sitterCreateBtn,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        isEdit ? l10n.sitterUpdateBtn : l10n.sitterCreateBtn,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
               const SizedBox(height: 40),
             ],
@@ -384,18 +503,33 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
     );
   }
 
-  Widget _buildServiceRow(int index, _ServiceEntry entry, ThemeData theme, AppLocalizations l10n, List<Map<String, String>> serviceTypes) {
-    final usedTypes = _services.asMap().entries
+  Widget _buildServiceRow(
+    int index,
+    _ServiceEntry entry,
+    ThemeData theme,
+    AppLocalizations l10n,
+    List<Map<String, String>> serviceTypes,
+  ) {
+    final usedTypes = _services
+        .asMap()
+        .entries
         .where((e) => e.key != index)
         .map((e) => e.value.type)
         .toSet();
-    final availableTypes = serviceTypes.where((t) => !usedTypes.contains(t['value']) || t['value'] == entry.type).toList();
+    final availableTypes = serviceTypes
+        .where(
+          (t) => !usedTypes.contains(t['value']) || t['value'] == entry.type,
+        )
+        .toList();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       color: Colors.white,
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -406,9 +540,22 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: entry.type,
-                    decoration: _deco(l10n.sitterServiceType).copyWith(contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
-                    items: availableTypes.map((t) => DropdownMenuItem(value: t['value'], child: Text(t['label']!))).toList(),
-                    onChanged: (v) => setState(() => entry.type = v ?? entry.type),
+                    decoration: _deco(l10n.sitterServiceType).copyWith(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                    ),
+                    items: availableTypes
+                        .map(
+                          (t) => DropdownMenuItem(
+                            value: t['value'],
+                            child: Text(t['label']!),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) =>
+                        setState(() => entry.type = v ?? entry.type),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -425,7 +572,12 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: entry.hourCtrl,
-                    decoration: _deco(l10n.sitterHourlyPrice).copyWith(contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                    decoration: _deco(l10n.sitterHourlyPrice).copyWith(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                    ),
                     keyboardType: TextInputType.number,
                   ),
                 ),
@@ -433,7 +585,12 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: entry.dayCtrl,
-                    decoration: _deco(l10n.sitterDailyPrice).copyWith(contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                    decoration: _deco(l10n.sitterDailyPrice).copyWith(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                    ),
                     keyboardType: TextInputType.number,
                   ),
                 ),
@@ -446,10 +603,13 @@ class _BecomeSitterScreenState extends ConsumerState<BecomeSitterScreen> {
   }
 
   InputDecoration _deco(String label) => InputDecoration(
-        labelText: label,
-        filled: true,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-      );
+    labelText: label,
+    filled: true,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide.none,
+    ),
+  );
 }
 
 class _ServiceEntry {
@@ -457,7 +617,10 @@ class _ServiceEntry {
   final TextEditingController hourCtrl;
   final TextEditingController dayCtrl;
 
-  _ServiceEntry({required this.type, TextEditingController? hourCtrl, TextEditingController? dayCtrl})
-      : hourCtrl = hourCtrl ?? TextEditingController(),
-        dayCtrl = dayCtrl ?? TextEditingController();
+  _ServiceEntry({
+    required this.type,
+    TextEditingController? hourCtrl,
+    TextEditingController? dayCtrl,
+  }) : hourCtrl = hourCtrl ?? TextEditingController(),
+       dayCtrl = dayCtrl ?? TextEditingController();
 }

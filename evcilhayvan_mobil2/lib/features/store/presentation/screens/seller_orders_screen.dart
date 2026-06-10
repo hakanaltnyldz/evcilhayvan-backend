@@ -23,7 +23,6 @@ class SellerOrdersScreen extends ConsumerStatefulWidget {
 class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final _dateFormat = DateFormat('dd MMM yyyy HH:mm', 'tr_TR');
 
   @override
   void initState() {
@@ -43,6 +42,10 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
     final statsAsync = ref.watch(sellerOrderStatsProvider);
 
     final l10n = AppLocalizations.of(context)!;
+    final dateFormat = DateFormat(
+      'dd MMM yyyy HH:mm',
+      Localizations.localeOf(context).toString(),
+    );
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -112,24 +115,24 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
                 return TabBarView(
                   controller: _tabController,
                   children: [
-                    _OrdersList(orders: orders, dateFormat: _dateFormat),
+                    _OrdersList(orders: orders, dateFormat: dateFormat),
                     _OrdersList(
                       orders: orders
                           .where((o) => o.status == OrderStatus.pending)
                           .toList(),
-                      dateFormat: _dateFormat,
+                      dateFormat: dateFormat,
                     ),
                     _OrdersList(
                       orders: orders
                           .where((o) => o.status == OrderStatus.processing)
                           .toList(),
-                      dateFormat: _dateFormat,
+                      dateFormat: dateFormat,
                     ),
                     _OrdersList(
                       orders: orders
                           .where((o) => o.status == OrderStatus.shipped)
                           .toList(),
-                      dateFormat: _dateFormat,
+                      dateFormat: dateFormat,
                     ),
                     _OrdersList(
                       orders: orders
@@ -139,9 +142,9 @@ class _SellerOrdersScreenState extends ConsumerState<SellerOrdersScreen>
                                 o.status == OrderStatus.cancelled,
                           )
                           .toList(),
-                      dateFormat: _dateFormat,
+                      dateFormat: dateFormat,
                     ),
-                    _ReturnsList(orders: returnOrders, dateFormat: _dateFormat),
+                    _ReturnsList(orders: returnOrders, dateFormat: dateFormat),
                   ],
                 );
               },

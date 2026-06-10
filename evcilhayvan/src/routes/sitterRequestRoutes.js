@@ -16,7 +16,12 @@ router.post("/", authRequired(), async (req, res) => {
 
     if (!serviceType) return sendError(res, 400, "serviceType zorunlu", "validation_error");
     if (!startDate || !endDate) return sendError(res, 400, "startDate ve endDate zorunlu", "validation_error");
-    if (new Date(startDate) > new Date(endDate)) {
+    const parsedStartDate = new Date(startDate);
+    const parsedEndDate = new Date(endDate);
+    if (Number.isNaN(parsedStartDate.getTime()) || Number.isNaN(parsedEndDate.getTime())) {
+      return sendError(res, 400, "Gecersiz tarih", "validation_error");
+    }
+    if (parsedStartDate > parsedEndDate) {
       return sendError(res, 400, "startDate endDate'den büyük olamaz", "validation_error");
     }
 
@@ -24,8 +29,8 @@ router.post("/", authRequired(), async (req, res) => {
       owner: userId,
       petTypes: petTypes || ["dog"],
       serviceType,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      startDate: parsedStartDate,
+      endDate: parsedEndDate,
       location: location || undefined,
       description: description || "",
     });

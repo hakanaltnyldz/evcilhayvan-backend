@@ -80,9 +80,15 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
               itemCount: orders.length,
               itemBuilder: (context, index) {
                 return _OrderCard(order: orders[index])
-                    .animate(delay: Duration(milliseconds: (index * 55).clamp(0, 440)))
+                    .animate(
+                      delay: Duration(milliseconds: (index * 55).clamp(0, 440)),
+                    )
                     .fadeIn(duration: 280.ms, curve: Curves.easeOut)
-                    .slideY(begin: 0.06, duration: 280.ms, curve: Curves.easeOut);
+                    .slideY(
+                      begin: 0.06,
+                      duration: 280.ms,
+                      curve: Curves.easeOut,
+                    );
               },
             ),
           );
@@ -114,6 +120,7 @@ class _TrackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (url == null) return const SizedBox.shrink();
     return TextButton.icon(
       onPressed: () async {
@@ -123,7 +130,7 @@ class _TrackButton extends StatelessWidget {
         }
       },
       icon: const Icon(Icons.open_in_new, size: 14),
-      label: const Text('Takip Et', style: TextStyle(fontSize: 12)),
+      label: Text(l10n.orderTrackAction, style: const TextStyle(fontSize: 12)),
       style: TextButton.styleFrom(
         foregroundColor: const Color(0xFF1B4332),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -233,7 +240,9 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.orderCancelError(e.toString())),
+            content: Text(
+              AppLocalizations.of(context)!.orderCancelError(e.toString()),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -245,7 +254,8 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
 
   String _formatDate(DateTime date) {
     try {
-      return DateFormat('dd MMM yyyy, HH:mm', 'tr').format(date);
+      final locale = Localizations.localeOf(context).toString();
+      return DateFormat('dd MMM yyyy, HH:mm', locale).format(date);
     } catch (_) {
       return DateFormat('dd MMM yyyy, HH:mm').format(date);
     }
@@ -317,7 +327,10 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: _getStatusColor(order.status).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
@@ -350,7 +363,10 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                     children: [
                       Text(
                         _formatDate(order.createdAt),
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontSize: 13,
+                        ),
                       ),
                       Text(
                         '₺${order.totalAmount.toStringAsFixed(2)}',
@@ -368,7 +384,10 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                     children: [
                       Text(
                         l10n.orderItemCount(order.items.length),
-                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontSize: 13,
+                        ),
                       ),
                       Row(
                         mainAxisSize: MainAxisSize.min,
@@ -379,17 +398,28 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                               pathParameters: {'id': order.id},
                             ),
                             style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               minimumSize: Size.zero,
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               foregroundColor: AppPalette.storePrimary,
                             ),
-                            child: const Text('Detay', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                            child: Text(
+                              l10n.orderDetailAction,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 4),
                           Icon(
                             _expanded ? Icons.expand_less : Icons.expand_more,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ],
                       ),
@@ -414,158 +444,195 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  ...order.items.map((item) => Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: context.subtleBackground,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: context.cardColor,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: item.image != null
-                                  ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Image.network(
-                                        item.image!.startsWith('http')
-                                            ? item.image!
-                                            : '$apiBaseUrl${item.image}',
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            Icon(Icons.image, color: Theme.of(context).colorScheme.outlineVariant),
+                  ...order.items.map(
+                    (item) => Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: context.subtleBackground,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: context.cardColor,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: item.image != null
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.network(
+                                          item.image!.startsWith('http')
+                                              ? item.image!
+                                              : '$apiBaseUrl${item.image}',
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) => Icon(
+                                            Icons.image,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.outlineVariant,
+                                          ),
+                                        ),
+                                      )
+                                    : Icon(
+                                        Icons.image,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.outlineVariant,
                                       ),
-                                    )
-                                  : Icon(Icons.image, color: Theme.of(context).colorScheme.outlineVariant),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.name,
-                                    style: const TextStyle(fontWeight: FontWeight.w500),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Text(
-                                    l10n.orderItemQty(
-                                      item.quantity,
-                                      item.price.toStringAsFixed(2),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12),
+                                    Text(
+                                      l10n.orderItemQty(
+                                        item.quantity,
+                                        item.price.toStringAsFixed(2),
+                                      ),
+                                      style: TextStyle(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text(
+                                '₺${(item.price * item.quantity).toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          // Review button - only for delivered orders
+                          if (order.status == OrderStatus.delivered) ...[
+                            const SizedBox(height: 10),
+                            if (item.myReview != null) ...[
+                              Row(
+                                children: [
+                                  ...List.generate(
+                                    5,
+                                    (index) => Icon(
+                                      index < item.myReview!.rating
+                                          ? Icons.star
+                                          : Icons.star_border,
+                                      color: Colors.amber[700],
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    l10n.orderMyRating(item.myReview!.rating),
+                                    style: TextStyle(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                      fontSize: 12,
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                            Text(
-                              '₺${(item.price * item.quantity).toStringAsFixed(2)}',
-                              style: const TextStyle(fontWeight: FontWeight.w500),
-                            ),
-                          ],
-                        ),
-                        // Review button - only for delivered orders
-                        if (order.status == OrderStatus.delivered) ...[
-                          const SizedBox(height: 10),
-                          if (item.myReview != null) ...[
-                            Row(
-                              children: [
-                                ...List.generate(5, (index) => Icon(
-                                  index < item.myReview!.rating ? Icons.star : Icons.star_border,
-                                  color: Colors.amber[700],
-                                  size: 20,
-                                )),
-                                const SizedBox(width: 8),
-                                Text(
-                                  l10n.orderMyRating(item.myReview!.rating),
-                                  style: TextStyle(
-                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                    fontSize: 12,
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: () async {
+                                    final existingReview = ReviewModel(
+                                      id: item.myReview!.id,
+                                      productId: item.productId,
+                                      user: User.fromJson({'_id': ''}),
+                                      rating: item.myReview!.rating,
+                                      comment: item.myReview!.comment,
+                                      createdAt: DateTime.now(),
+                                      updatedAt: DateTime.now(),
+                                    );
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => AddReviewScreen(
+                                          productId: item.productId,
+                                          productName: item.name,
+                                          existingReview: existingReview,
+                                        ),
+                                      ),
+                                    );
+                                    if (result == true) {
+                                      ref.invalidate(myOrdersProvider);
+                                    }
+                                  },
+                                  icon: const Icon(Icons.edit, size: 18),
+                                  label: Text(l10n.edit),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: AppPalette.storePrimary,
+                                    side: BorderSide(
+                                      color: AppPalette.storePrimary,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton.icon(
-                                onPressed: () async {
-                                  final existingReview = ReviewModel(
-                                    id: item.myReview!.id,
-                                    productId: item.productId,
-                                    user: User.fromJson({'_id': ''}),
-                                    rating: item.myReview!.rating,
-                                    comment: item.myReview!.comment,
-                                    createdAt: DateTime.now(),
-                                    updatedAt: DateTime.now(),
-                                  );
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => AddReviewScreen(
-                                        productId: item.productId,
-                                        productName: item.name,
-                                        existingReview: existingReview,
+                              ),
+                            ] else ...[
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: () async {
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => AddReviewScreen(
+                                          productId: item.productId,
+                                          productName: item.name,
+                                        ),
                                       ),
+                                    );
+                                    if (result == true) {
+                                      ref.invalidate(myOrdersProvider);
+                                    }
+                                  },
+                                  icon: const Icon(
+                                    Icons.star_outline,
+                                    size: 18,
+                                  ),
+                                  label: Text(l10n.orderReview),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.amber[700],
+                                    side: BorderSide(color: Colors.amber[700]!),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
                                     ),
-                                  );
-                                  if (result == true) {
-                                    ref.invalidate(myOrdersProvider);
-                                  }
-                                },
-                                icon: const Icon(Icons.edit, size: 18),
-                                label: Text(l10n.edit),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppPalette.storePrimary,
-                                  side: BorderSide(color: AppPalette.storePrimary),
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ] else ...[
-                            SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton.icon(
-                                onPressed: () async {
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => AddReviewScreen(
-                                        productId: item.productId,
-                                        productName: item.name,
-                                      ),
-                                    ),
-                                  );
-                                  if (result == true) {
-                                    ref.invalidate(myOrdersProvider);
-                                  }
-                                },
-                                icon: const Icon(Icons.star_outline, size: 18),
-                                label: Text(l10n.orderReview),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.amber[700],
-                                  side: BorderSide(color: Colors.amber[700]!),
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
-                                ),
-                              ),
-                            ),
+                            ],
                           ],
                         ],
-                      ],
+                      ),
                     ),
-                  )),
+                  ),
 
                   // Shipping tracking info
-                  if ((order.status == OrderStatus.shipped || order.status == OrderStatus.delivered) &&
+                  if ((order.status == OrderStatus.shipped ||
+                          order.status == OrderStatus.delivered) &&
                       order.trackingNumber != null &&
                       order.trackingNumber!.isNotEmpty) ...[
                     const SizedBox(height: 16),
@@ -574,18 +641,26 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                       decoration: BoxDecoration(
                         color: const Color(0xFF52B788).withOpacity(0.08),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFF52B788).withOpacity(0.3)),
+                        border: Border.all(
+                          color: const Color(0xFF52B788).withOpacity(0.3),
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.local_shipping, color: const Color(0xFF1B4332), size: 20),
+                              Icon(
+                                Icons.local_shipping,
+                                color: const Color(0xFF1B4332),
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 l10n.orderTrackingInfo,
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -600,7 +675,9 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                                       Text(
                                         order.trackingCompany!,
                                         style: TextStyle(
-                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
                                           fontSize: 12,
                                         ),
                                       ),
@@ -623,21 +700,40 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                                 children: [
                                   IconButton(
                                     onPressed: () {
-                                      Clipboard.setData(ClipboardData(text: order.trackingNumber!));
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      Clipboard.setData(
+                                        ClipboardData(
+                                          text: order.trackingNumber!,
+                                        ),
+                                      );
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         SnackBar(
-                                          content: Text(l10n.orderTrackingCopied(order.trackingNumber!)),
-                                          backgroundColor: const Color(0xFF52B788),
+                                          content: Text(
+                                            l10n.orderTrackingCopied(
+                                              order.trackingNumber!,
+                                            ),
+                                          ),
+                                          backgroundColor: const Color(
+                                            0xFF52B788,
+                                          ),
                                           duration: const Duration(seconds: 2),
                                         ),
                                       );
                                     },
-                                    icon: Icon(Icons.copy, color: const Color(0xFF1B4332), size: 20),
+                                    icon: Icon(
+                                      Icons.copy,
+                                      color: const Color(0xFF1B4332),
+                                      size: 20,
+                                    ),
                                     tooltip: l10n.copyTooltip,
                                   ),
                                   const SizedBox(width: 4),
                                   _TrackButton(
-                                    url: _trackingUrl(order.trackingCompany, order.trackingNumber),
+                                    url: _trackingUrl(
+                                      order.trackingCompany,
+                                      order.trackingNumber,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -660,12 +756,16 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                     const SizedBox(height: 8),
                     Text(
                       order.shippingAddress!.fullAddress,
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 13,
+                      ),
                     ),
                   ],
 
                   // Cancel button
-                  if (order.status == OrderStatus.pending || order.status == OrderStatus.processing) ...[
+                  if (order.status == OrderStatus.pending ||
+                      order.status == OrderStatus.processing) ...[
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
@@ -675,7 +775,9 @@ class _OrderCardState extends ConsumerState<_OrderCard> {
                             ? const SizedBox(
                                 width: 16,
                                 height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Icon(Icons.cancel, size: 18),
                         label: Text(l10n.orderCancelTitle),

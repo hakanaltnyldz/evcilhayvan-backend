@@ -402,7 +402,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ? Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
-                        'Kayıt yapılıyor...',
+                        AppLocalizations.of(context)!.chatRecording,
                         style: TextStyle(
                           color: Colors.red.shade600,
                           fontSize: 14,

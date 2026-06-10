@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yazilim Muhendisligi Final Projesi - Grafik ve Diyagram Galerisi</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #0f172a;
+      background: #f8fafc;
+    }
+
+    header {
+      padding: 28px 36px;
+      background: #0f172a;
+      color: white;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    p {
+      margin: 0;
+      color: #cbd5e1;
+    }
+
+    main {
+      padding: 28px 36px 56px;
+    }
+
+    h2 {
+      margin: 28px 0 16px;
+      font-size: 22px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 18px;
+    }
+
+    .item {
+      background: white;
+      border: 1px solid #dbe3ee;
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    }
+
+    .item h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: white;
+      border: 1px solid #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Grafik ve Diyagram Galerisi</h1>
+    <p>Word raporuna eklenecek cizilmis SVG ciktilari</p>
+  </header>
+
+  <main>
+    <h2>Grafikler</h2>
+    <section class="grid">
+      <div class="item">
+        <h3>Maliyet Dagilimi</h3>
+        <img src="charts/maliyet_dagilimi_pie.svg" alt="Maliyet Dagilimi">
+      </div>
+      <div class="item">
+        <h3>Rol Bazli Is Gucu Dagilimi</h3>
+        <img src="charts/rol_bazli_isgucu_pie.svg" alt="Rol Bazli Is Gucu Dagilimi">
+      </div>
+      <div class="item">
+        <h3>Faz Bazli Sure Dagilimi</h3>
+        <img src="charts/faz_sureleri_xy.svg" alt="Faz Bazli Sure Dagilimi">
+      </div>
+      <div class="item">
+        <h3>Modul Kapsam Yogunlugu</h3>
+        <img src="charts/modul_kapsam_yogunlugu_xy.svg" alt="Modul Kapsam Yogunlugu">
+      </div>
+      <div class="item">
+        <h3>Gantt Is-Zaman Plani</h3>
+        <img src="charts/proje_gantt.svg" alt="Gantt Is-Zaman Plani">
+      </div>
+    </section>
+
+    <h2>Diyagramlar</h2>
+    <section class="grid">
+      <div class="item">
+        <h3>Context Diyagrami</h3>
+        <img src="diagrams/context_diagram.svg" alt="Context Diyagrami">
+      </div>
+      <div class="item">
+        <h3>Use Case Diyagrami</h3>
+        <img src="diagrams/use_case_diagram.svg" alt="Use Case Diyagrami">
+      </div>
+      <div class="item">
+        <h3>Veri Akis Diyagrami</h3>
+        <img src="diagrams/data_flow_level0.svg" alt="Veri Akis Diyagrami">
+      </div>
+      <div class="item">
+        <h3>Deployment Diyagrami</h3>
+        <img src="diagrams/deployment_diagram.svg" alt="Deployment Diyagrami">
+      </div>
+      <div class="item">
+        <h3>Component Diyagrami</h3>
+        <img src="diagrams/component_diagram.svg" alt="Component Diyagrami">
+      </div>
+      <div class="item">
+        <h3>Class Diyagrami</h3>
+        <img src="diagrams/class_diagram.svg" alt="Class Diyagrami">
+      </div>
+      <div class="item">
+        <h3>MongoDB View Diyagrami</h3>
+        <img src="diagrams/mongodb_view_diagram.svg" alt="MongoDB View Diyagrami">
+      </div>
+      <div class="item">
+        <h3>Veteriner Randevusu Sequence</h3>
+        <img src="diagrams/sequence_vet_appointment.svg" alt="Veteriner Randevusu Sequence">
+      </div>
+      <div class="item">
+        <h3>Siparis Sequence</h3>
+        <img src="diagrams/sequence_order_flow.svg" alt="Siparis Sequence">
+      </div>
+      <div class="item">
+        <h3>Gercek Zamanli Mesaj Sequence</h3>
+        <img src="diagrams/sequence_realtime_message.svg" alt="Gercek Zamanli Mesaj Sequence">
+      </div>
+      <div class="item">
+        <h3>Bakici Rezervasyonu Activity</h3>
+        <img src="diagrams/activity_sitter_booking.svg" alt="Bakici Rezervasyonu Activity">
+      </div>
+      <div class="item">
+        <h3>Siparis Activity</h3>
+        <img src="diagrams/activity_order_flow.svg" alt="Siparis Activity">
+      </div>
+      <div class="item">
+        <h3>Randevu State</h3>
+        <img src="diagrams/state_appointment.svg" alt="Randevu State">
+      </div>
+      <div class="item">
+        <h3>Siparis State</h3>
+        <img src="diagrams/state_order.svg" alt="Siparis State">
+      </div>
+      <div class="item">
+        <h3>Bakici Rezervasyonu State</h3>
+        <img src="diagrams/state_sitter_booking.svg" alt="Bakici Rezervasyonu State">
+      </div>
+    </section>
+  </main>
+</body>
+</html>

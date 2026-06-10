@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/appointment_repository.dart';
 import '../../domain/models/vet_earnings_summary_model.dart';
 
@@ -18,11 +19,12 @@ class VetEarningsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summaryAsync = ref.watch(_vetEarningsProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Veteriner Kazanc Raporu'),
+        title: Text(l10n.vetEarningsTitle),
         backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         actions: [
@@ -38,7 +40,7 @@ class VetEarningsScreen extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Text(
-              'Kazanc raporu yuklenemedi: $error',
+              l10n.vetEarningsLoadError(error.toString()),
               textAlign: TextAlign.center,
             ),
           ),
@@ -62,33 +64,33 @@ class VetEarningsScreen extends ConsumerWidget {
                   children: [
                     _metricCard(
                       context,
-                      'Bu Ay',
-                      _currency(summary.thisMonthRevenue),
-                      'Tamamlanan randevu geliri',
+                      l10n.vetEarningsThisMonth,
+                      _currency(context, summary.thisMonthRevenue),
+                      l10n.vetEarningsCompletedRevenue,
                       Icons.calendar_month_outlined,
                       const Color(0xFF2D6A4F),
                     ),
                     _metricCard(
                       context,
-                      'Bekleyen Gelir',
-                      _currency(summary.upcomingRevenue),
-                      'Onayli randevulardan beklenen',
+                      l10n.vetEarningsPendingRevenue,
+                      _currency(context, summary.upcomingRevenue),
+                      l10n.vetEarningsExpectedFromConfirmed,
                       Icons.trending_up_rounded,
                       const Color(0xFF1D3557),
                     ),
                     _metricCard(
                       context,
-                      'Ort. Muayene',
-                      _currency(summary.averageCompletedFee),
-                      'Tamamlanan randevu ortalamasi',
+                      l10n.vetEarningsAverageExam,
+                      _currency(context, summary.averageCompletedFee),
+                      l10n.vetEarningsAverageCompleted,
                       Icons.payments_outlined,
                       Colors.orange.shade700,
                     ),
                     _metricCard(
                       context,
-                      'No Show',
+                      l10n.vetEarningsNoShow,
                       '${summary.noShowAppointments}',
-                      'Gelmeyen hasta sayisi',
+                      l10n.vetEarningsNoShowCount,
                       Icons.person_off_outlined,
                       Colors.red.shade700,
                     ),
@@ -97,20 +99,20 @@ class VetEarningsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 _section(
                   context,
-                  'Ucret Politikasi',
-                  'Klinik panelinden guncellenen mevcut randevu fiyatlari.',
+                  l10n.vetEarningsFeePolicy,
+                  l10n.vetEarningsFeePolicyDesc,
                   Column(
                     children: [
                       _feeRow(
                         context,
-                        'Klinik muayene ucreti',
-                        _currency(summary.clinicConsultationFee),
+                        l10n.vetEarningsClinicFee,
+                        _currency(context, summary.clinicConsultationFee),
                       ),
                       const Divider(height: 22),
                       _feeRow(
                         context,
-                        'Online gorusme ucreti',
-                        _currency(summary.onlineConsultationFee),
+                        l10n.vetEarningsOnlineFee,
+                        _currency(context, summary.onlineConsultationFee),
                       ),
                     ],
                   ),
@@ -118,8 +120,8 @@ class VetEarningsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 _section(
                   context,
-                  'Son 14 Gun',
-                  'Gunluk bazda kapanan randevu sayisi ve ciro.',
+                  l10n.vetEarningsLast14Days,
+                  l10n.vetEarningsLast14DaysDesc,
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: summary.dailyTrend.map((item) {
@@ -160,8 +162,8 @@ class VetEarningsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 _section(
                   context,
-                  'Aylik Trend',
-                  'Son 6 aydaki tamamlanan randevu gelirleri.',
+                  l10n.vetEarningsMonthlyTrend,
+                  l10n.vetEarningsMonthlyTrendDesc,
                   Column(
                     children: summary.monthlyTrend.map((item) {
                       return Padding(
@@ -190,7 +192,7 @@ class VetEarningsScreen extends ConsumerWidget {
                             SizedBox(
                               width: 92,
                               child: Text(
-                                _currency(item.revenue),
+                                _currency(context, item.revenue),
                                 textAlign: TextAlign.right,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w700,
@@ -206,12 +208,12 @@ class VetEarningsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 _section(
                   context,
-                  'Randevu Tipi Dagilimi',
-                  'Klinik ve online gorusmelerin ciro katkisi.',
+                  l10n.vetEarningsTypeBreakdown,
+                  l10n.vetEarningsTypeBreakdownDesc,
                   summary.typeBreakdown.isEmpty
-                      ? const Text(
-                          'Henuz tamamlanan randevu bulunmuyor.',
-                          style: TextStyle(color: Colors.grey),
+                      ? Text(
+                          l10n.vetEarningsNoCompleted,
+                          style: const TextStyle(color: Colors.grey),
                         )
                       : Column(
                           children: summary.typeBreakdown.map((item) {
@@ -225,13 +227,19 @@ class VetEarningsScreen extends ConsumerWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          item.label,
+                                          _appointmentTypeLabel(
+                                            l10n,
+                                            item.type,
+                                            item.label,
+                                          ),
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
                                         Text(
-                                          '${item.appointments} randevu',
+                                          l10n.vetEarningsAppointmentCount(
+                                            item.appointments,
+                                          ),
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Theme.of(
@@ -243,7 +251,7 @@ class VetEarningsScreen extends ConsumerWidget {
                                     ),
                                   ),
                                   Text(
-                                    _currency(item.revenue),
+                                    _currency(context, item.revenue),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w800,
                                     ),
@@ -257,12 +265,12 @@ class VetEarningsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 _section(
                   context,
-                  'Son Tamamlananlar',
-                  'En son kapanan randevulardan gelir akisi.',
+                  l10n.vetEarningsRecentCompleted,
+                  l10n.vetEarningsRecentCompletedDesc,
                   summary.recentCompleted.isEmpty
-                      ? const Text(
-                          'Kayit bulunmuyor.',
-                          style: TextStyle(color: Colors.grey),
+                      ? Text(
+                          l10n.vetEarningsNoRecords,
+                          style: const TextStyle(color: Colors.grey),
                         )
                       : Column(
                           children: summary.recentCompleted.map((item) {
@@ -299,7 +307,7 @@ class VetEarningsScreen extends ConsumerWidget {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          '${item.ownerName} • ${item.type == 'online' ? 'Online' : 'Klinik'}',
+                                          '${item.ownerName} - ${_appointmentTypeLabel(l10n, item.type, item.type)}',
                                           style: TextStyle(
                                             color: Theme.of(
                                               context,
@@ -310,7 +318,9 @@ class VetEarningsScreen extends ConsumerWidget {
                                           Text(
                                             DateFormat(
                                               'dd MMM yyyy',
-                                              'tr_TR',
+                                              Localizations.localeOf(
+                                                context,
+                                              ).toString(),
                                             ).format(
                                               item.completedAt!.toLocal(),
                                             ),
@@ -323,7 +333,7 @@ class VetEarningsScreen extends ConsumerWidget {
                                     ),
                                   ),
                                   Text(
-                                    _currency(item.feeAmount),
+                                    _currency(context, item.feeAmount),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w800,
                                     ),
@@ -344,6 +354,8 @@ class VetEarningsScreen extends ConsumerWidget {
   }
 
   Widget _hero(BuildContext context, VetEarningsSummaryModel summary) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -359,14 +371,20 @@ class VetEarningsScreen extends ConsumerWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _heroChip('Toplam ${summary.totalAppointments} randevu'),
-              _heroChip('${summary.confirmedAppointments} onayli'),
-              _heroChip('${summary.completedAppointments} tamamlandi'),
+              _heroChip(
+                l10n.vetEarningsTotalAppointments(summary.totalAppointments),
+              ),
+              _heroChip(
+                l10n.vetEarningsConfirmedCount(summary.confirmedAppointments),
+              ),
+              _heroChip(
+                l10n.vetEarningsCompletedCount(summary.completedAppointments),
+              ),
             ],
           ),
           const SizedBox(height: 18),
           Text(
-            _currency(summary.totalRevenue),
+            _currency(context, summary.totalRevenue),
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w900,
@@ -374,7 +392,7 @@ class VetEarningsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '${summary.vetName} icin toplam tamamlanan gelir',
+            l10n.vetEarningsTotalCompletedRevenue(summary.vetName),
             style: const TextStyle(color: Colors.white70),
           ),
         ],
@@ -497,8 +515,26 @@ Widget _feeRow(BuildContext context, String label, String value) {
   );
 }
 
-String _currency(double value) => NumberFormat.currency(
-  locale: 'tr_TR',
-  symbol: 'TL',
-  decimalDigits: 0,
-).format(value);
+String _appointmentTypeLabel(
+  AppLocalizations l10n,
+  String type,
+  String fallback,
+) {
+  switch (type.toLowerCase()) {
+    case 'online':
+      return l10n.apptTypeOnline;
+    case 'clinic':
+      return l10n.apptTypeClinic;
+    default:
+      return fallback;
+  }
+}
+
+String _currency(BuildContext context, double value) {
+  final locale = Localizations.localeOf(context).toString();
+  return NumberFormat.currency(
+    locale: locale,
+    symbol: locale.startsWith('tr') ? 'TL' : 'TRY',
+    decimalDigits: 0,
+  ).format(value);
+}

@@ -12,6 +12,12 @@ import PetSitter from "../models/PetSitter.js";
 
 const router = Router();
 
+function toDateKey(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString().substring(0, 10);
+}
+
 // ─── Portfolio fotoğraf upload multer ────────────────────────────────────────
 const sitterUploadDir = path.join(process.cwd(), "uploads", "sitters");
 if (!fs.existsSync(sitterUploadDir)) fs.mkdirSync(sitterUploadDir, { recursive: true });
@@ -48,6 +54,37 @@ router.get("/:id", getSitter);
 router.put("/:id", authRequired(), updateSitter);
 router.patch("/:id/availability", authRequired(), toggleAvailability);
 
+// POST /api/pet-sitters/:id/avatar - bakici profil fotografi yukle
+router.post("/:id/avatar", authRequired(), (req, res, next) => {
+  sitterUpload.fields([
+    { name: "avatar", maxCount: 1 },
+    { name: "file", maxCount: 1 },
+  ])(req, res, (err) => {
+    if (err) return sendError(res, 400, err.message, "upload_error");
+    next();
+  });
+}, async (req, res) => {
+  try {
+    const sitter = await PetSitter.findById(req.params.id);
+    if (!sitter) return sendError(res, 404, "Bakici bulunamadi", "not_found");
+
+    const userId = req.user.sub || req.user._id || req.user.id;
+    if (String(sitter.userId) !== String(userId)) {
+      return sendError(res, 403, "Yalnizca kendi profilinizi duzenleyebilirsiniz", "forbidden");
+    }
+
+    const file = req.files?.avatar?.[0] || req.files?.file?.[0];
+    if (!file) return sendError(res, 400, "Dosya bulunamadi", "validation_error");
+
+    sitter.avatar = `/uploads/sitters/${file.filename}`;
+    await sitter.save();
+
+    return sendOk(res, 200, { avatar: sitter.avatar, sitter });
+  } catch (err) {
+    return sendError(res, 500, "Profil fotografi yuklenemedi", "internal_error", err.message);
+  }
+});
+
 // ─── Blocked Dates ────────────────────────────────────────────────────────────
 
 // PATCH /api/pet-sitters/:id/blocked-dates
@@ -62,17 +99,23 @@ router.patch("/:id/blocked-dates", authRequired(), async (req, res) => {
       return sendError(res, 403, "Yalnızca kendi profilinizi düzenleyebilirsiniz", "forbidden");
 
     const { add = [], remove = [] } = req.body;
+    if (!Array.isArray(add) || !Array.isArray(remove)) {
+      return sendError(res, 400, "add ve remove dizi olmali", "validation_error");
+    }
+    const addKeys = add.map(toDateKey);
+    const removeKeys = remove.map(toDateKey);
+    if (addKeys.some((date) => !date) || removeKeys.some((date) => !date)) {
+      return sendError(res, 400, "Gecersiz tarih", "validation_error");
+    }
 
     // Mevcut blocked dates'i normalize et (sadece gün bazında karşılaştır)
-    const existing = (sitter.blockedDates || []).map(d => new Date(d).toISOString().substring(0, 10));
+    const existing = (sitter.blockedDates || []).map(toDateKey).filter(Boolean);
 
     // Ekle
-    const toAdd = add
-      .map(d => new Date(d).toISOString().substring(0, 10))
-      .filter(d => !existing.includes(d));
+    const toAdd = addKeys.filter(d => !existing.includes(d));
 
     // Çıkar
-    const toRemove = remove.map(d => new Date(d).toISOString().substring(0, 10));
+    const toRemove = removeKeys;
 
     const updated = [...existing, ...toAdd]
       .filter(d => !toRemove.includes(d))
@@ -101,6 +144,16 @@ router.post("/:id/reviews", authRequired(), async (req, res) => {
 
     const userId = req.user.sub || req.user._id || req.user.id;
     const { default: SitterBooking } = await import("../models/SitterBooking.js");
+
+    const alreadyReviewed = await SitterBooking.exists({
+      sitterId: req.params.id,
+      petOwnerId: userId,
+      status: "completed",
+      ownerReview: { $exists: true },
+    });
+    if (alreadyReviewed) {
+      return sendError(res, 409, "Bu bakiciya zaten yorum yaptiniz", "duplicate_review");
+    }
 
     // Kullanıcının bu bakıcıyla tamamlanmış, henüz yorumsuz bookingini bul
     const booking = await SitterBooking.findOne({

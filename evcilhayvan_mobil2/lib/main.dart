@@ -2,6 +2,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -17,12 +18,16 @@ import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await initializeDateFormatting('tr', null);
   await Firebase.initializeApp();
 
   // ─── Crashlytics ─────────────────────────────────────────────────────────
   // Flutter framework hataları → Crashlytics'e gönder
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+  };
   // Async/isolate hataları (zone dışında kaçan istisnalar)
   PlatformDispatcher.instance.onError = (error, stack) {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
@@ -38,14 +43,16 @@ void main() async {
   final localeCode = prefs.getString('app_locale') ?? 'tr';
   final savedLocale = Locale(localeCode);
 
-  runApp(ProviderScope(
-    overrides: [
-      onboardingSeenProvider.overrideWith((ref) => onboardingSeen),
-      themeSelectedProvider.overrideWith((ref) => themeSelected),
-      localeProvider.overrideWith((ref) => LocaleNotifier(savedLocale)),
-    ],
-    child: const MyApp(),
-  ));
+  runApp(
+    ProviderScope(
+      overrides: [
+        onboardingSeenProvider.overrideWith((ref) => onboardingSeen),
+        themeSelectedProvider.overrideWith((ref) => themeSelected),
+        localeProvider.overrideWith((ref) => LocaleNotifier(savedLocale)),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends ConsumerWidget {
@@ -69,10 +76,7 @@ class MyApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('tr'),
-        Locale('en'),
-      ],
+      supportedLocales: const [Locale('tr'), Locale('en')],
       routerConfig: ref.watch(routerProvider),
     );
   }

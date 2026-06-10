@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:intl/intl.dart';
 
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/step_progress.dart';
@@ -20,11 +21,13 @@ import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 class AppointmentCreateScreen extends ConsumerStatefulWidget {
   final String vetId;
   final String vetName;
+  final bool acceptsOnlineAppointments;
 
   const AppointmentCreateScreen({
     super.key,
     required this.vetId,
     required this.vetName,
+    this.acceptsOnlineAppointments = true,
   });
 
   @override
@@ -48,11 +51,11 @@ class _AppointmentCreateScreenState
   // Slot cache: dateStr → slots
   final Map<String, List<String>> _slotCache = {};
   final Map<String, bool> _slotLoading = {};
-  List<String> get _currentSlots => _selectedDate != null
-      ? (_slotCache[_dateKey(_selectedDate!)] ?? [])
-      : [];
+  List<String> get _currentSlots =>
+      _selectedDate != null ? (_slotCache[_dateKey(_selectedDate!)] ?? []) : [];
   bool get _currentSlotsLoading =>
-      _selectedDate != null && (_slotLoading[_dateKey(_selectedDate!)] ?? false);
+      _selectedDate != null &&
+      (_slotLoading[_dateKey(_selectedDate!)] ?? false);
 
   // Horizontal day list scroll
   final ScrollController _dayScrollController = ScrollController();
@@ -91,7 +94,10 @@ class _AppointmentCreateScreenState
     setState(() => _slotLoading[key] = true);
     try {
       final repo = ref.read(appointmentRepositoryProvider);
-      final slots = await repo.getAvailableSlots(vetId: widget.vetId, date: key);
+      final slots = await repo.getAvailableSlots(
+        vetId: widget.vetId,
+        date: key,
+      );
       if (mounted) {
         setState(() {
           _slotCache[key] = slots;
@@ -125,11 +131,23 @@ class _AppointmentCreateScreenState
 
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context)!;
-    if (_selectedPet == null || _selectedDate == null || _selectedSlot == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.apptCreateValidation)));
+    if (_selectedPet == null ||
+        _selectedDate == null ||
+        _selectedSlot == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.apptCreateValidation)));
       return;
     }
+    if (_appointmentType == 'online' && !widget.acceptsOnlineAppointments) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bu klinik online randevu kabul etmiyor.'),
+        ),
+      );
+      return;
+    }
+
     setState(() => _loading = true);
     try {
       final repo = ref.read(appointmentRepositoryProvider);
@@ -156,15 +174,17 @@ class _AppointmentCreateScreenState
         type: _appointmentType,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.apptCreateSuccess)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.apptCreateSuccess)));
         ref.invalidate(myAppointmentsProvider);
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.apptCreateError(e.toString()))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.apptCreateError(e.toString()))),
+        );
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -190,7 +210,11 @@ class _AppointmentCreateScreenState
           StepProgress(
             totalSteps: 3,
             currentStep: _step,
-            stepLabels: const ['Hayvan', 'Tarih & Saat', 'Onay'],
+            stepLabels: [
+              l10n.apptCreateStepPet,
+              l10n.apptCreateStepDateTime,
+              l10n.apptCreateStepConfirm,
+            ],
           ),
           const SizedBox(height: 4),
           Expanded(
@@ -232,14 +256,19 @@ class _AppointmentCreateScreenState
       error: (e, _) => Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Text(l10n.apptCreatePetsError(e.toString()),
-              textAlign: TextAlign.center),
+          child: Text(
+            l10n.apptCreatePetsError(e.toString()),
+            textAlign: TextAlign.center,
+          ),
         ),
       ),
       data: (pets) {
         if (pets.isEmpty) {
           return Center(
-            child: AnimatedEmptyState(icon: Icons.pets, title: l10n.apptCreateNoPets),
+            child: AnimatedEmptyState(
+              icon: Icons.pets,
+              title: l10n.apptCreateNoPets,
+            ),
           );
         }
         return GridView.builder(
@@ -255,80 +284,93 @@ class _AppointmentCreateScreenState
             final pet = pets[index];
             final selected = _selectedPet?.id == pet.id;
             return InteractiveScale(
-              onTap: () => setState(() => _selectedPet = pet),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                decoration: BoxDecoration(
-                  color: selected ? const Color(0xFFD8F3DC) : context.cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: selected ? const Color(0xFF2D6A4F) : context.subtleBorder,
-                    width: selected ? 2 : 0.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF2D6A4F)
-                          .withOpacity(selected ? 0.15 : 0.06),
-                      blurRadius: selected ? 12 : 8,
-                      offset: const Offset(0, 3),
+                  onTap: () => setState(() => _selectedPet = pet),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? const Color(0xFFD8F3DC)
+                          : context.cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: selected
+                            ? const Color(0xFF2D6A4F)
+                            : context.subtleBorder,
+                        width: selected ? 2 : 0.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(
+                            0xFF2D6A4F,
+                          ).withOpacity(selected ? 0.15 : 0.06),
+                          blurRadius: selected ? 12 : 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        children: [
-                          _buildPetAvatar(pet),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  pet.name,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                    color: selected ? const Color(0xFF1B4332) : null,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                    child: Stack(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              _buildPetAvatar(pet),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      pet.name,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                        color: selected
+                                            ? const Color(0xFF1B4332)
+                                            : null,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      pet.species,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  pet.species,
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.grey.shade600),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (selected)
+                          Positioned(
+                            top: 6,
+                            right: 6,
+                            child: Container(
+                              width: 22,
+                              height: 22,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF2D6A4F),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 14,
+                              ),
                             ),
                           ),
-                        ],
-                      ),
+                      ],
                     ),
-                    if (selected)
-                      Positioned(
-                        top: 6,
-                        right: 6,
-                        child: Container(
-                          width: 22,
-                          height: 22,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF2D6A4F),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.check, color: Colors.white, size: 14),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            )
+                  ),
+                )
                 .animate()
                 .fadeIn(duration: 200.ms, delay: (index * 60).ms)
                 .slideX(begin: 0.05, end: 0);
@@ -391,20 +433,20 @@ class _AppointmentCreateScreenState
   }
 
   Widget _buildMonthLabel() {
-    final months = [
-      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
-    ];
     final d = _selectedDate ?? _days.first;
+    final locale = Localizations.localeOf(context).toString();
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
         children: [
-          const Icon(Icons.calendar_month_rounded,
-              color: Color(0xFF2D6A4F), size: 20),
+          const Icon(
+            Icons.calendar_month_rounded,
+            color: Color(0xFF2D6A4F),
+            size: 20,
+          ),
           const SizedBox(width: 8),
           Text(
-            '${months[d.month - 1]} ${d.year}',
+            DateFormat('MMMM yyyy', locale).format(d),
             style: const TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: 16,
@@ -417,7 +459,7 @@ class _AppointmentCreateScreenState
   }
 
   Widget _buildDayStrip() {
-    const weekdays = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+    final locale = Localizations.localeOf(context).toString();
     return SizedBox(
       height: 76,
       child: ListView.builder(
@@ -428,8 +470,10 @@ class _AppointmentCreateScreenState
         itemBuilder: (context, index) {
           final day = _days[index];
           final isSelected =
-              _selectedDate != null && _dateKey(day) == _dateKey(_selectedDate!);
-          final isToday = _dateKey(day) ==
+              _selectedDate != null &&
+              _dateKey(day) == _dateKey(_selectedDate!);
+          final isToday =
+              _dateKey(day) ==
               _dateKey(DateTime.now().add(const Duration(days: 1)));
           final hasSlots = _slotCache[_dateKey(day)]?.isNotEmpty ?? true;
 
@@ -440,16 +484,14 @@ class _AppointmentCreateScreenState
               width: 52,
               margin: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? const Color(0xFF2D6A4F)
-                    : context.cardColor,
+                color: isSelected ? const Color(0xFF2D6A4F) : context.cardColor,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: isSelected
                       ? const Color(0xFF2D6A4F)
                       : isToday
-                          ? const Color(0xFF52B788)
-                          : context.subtleBorder,
+                      ? const Color(0xFF52B788)
+                      : context.subtleBorder,
                   width: isSelected ? 0 : (isToday ? 1.5 : 0.5),
                 ),
                 boxShadow: isSelected
@@ -458,7 +500,7 @@ class _AppointmentCreateScreenState
                           color: const Color(0xFF2D6A4F).withOpacity(0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 3),
-                        )
+                        ),
                       ]
                     : [],
               ),
@@ -466,13 +508,11 @@ class _AppointmentCreateScreenState
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    weekdays[day.weekday - 1],
+                    DateFormat('E', locale).format(day),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: isSelected
-                          ? Colors.white70
-                          : Colors.grey.shade500,
+                      color: isSelected ? Colors.white70 : Colors.grey.shade500,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -484,8 +524,8 @@ class _AppointmentCreateScreenState
                       color: isSelected
                           ? Colors.white
                           : hasSlots
-                              ? const Color(0xFF1B4332)
-                              : Colors.grey.shade400,
+                          ? const Color(0xFF1B4332)
+                          : Colors.grey.shade400,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -498,10 +538,10 @@ class _AppointmentCreateScreenState
                       color: isSelected
                           ? Colors.white54
                           : _slotCache.containsKey(_dateKey(day))
-                              ? (_slotCache[_dateKey(day)]!.isNotEmpty
-                                  ? const Color(0xFF52B788)
-                                  : Colors.grey.shade300)
-                              : Colors.transparent,
+                          ? (_slotCache[_dateKey(day)]!.isNotEmpty
+                                ? const Color(0xFF52B788)
+                                : Colors.grey.shade300)
+                          : Colors.transparent,
                     ),
                   ),
                 ],
@@ -514,6 +554,7 @@ class _AppointmentCreateScreenState
   }
 
   Widget _buildSlotPanel() {
+    final l10n = AppLocalizations.of(context)!;
     if (_currentSlotsLoading) {
       return Center(child: PawLoading());
     }
@@ -525,15 +566,19 @@ class _AppointmentCreateScreenState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.event_busy_rounded, size: 56, color: Colors.grey.shade300),
+            Icon(
+              Icons.event_busy_rounded,
+              size: 56,
+              color: Colors.grey.shade300,
+            ),
             const SizedBox(height: 12),
             Text(
-              'Bu gün için uygun saat yok',
+              l10n.apptCreateNoSlotsDay,
               style: TextStyle(color: Colors.grey.shade500, fontSize: 15),
             ),
             const SizedBox(height: 6),
             Text(
-              'Başka bir gün seçin',
+              l10n.apptCreateChooseAnotherDay,
               style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
             ),
           ],
@@ -569,7 +614,9 @@ class _AppointmentCreateScreenState
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFD8F3DC),
                       borderRadius: BorderRadius.circular(20),
@@ -585,32 +632,38 @@ class _AppointmentCreateScreenState
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '${slots.length} uygun saat',
-                    style: TextStyle(
-                      color: Colors.grey.shade500,
-                      fontSize: 13,
-                    ),
+                    l10n.apptCreateAvailableSlots(slots.length),
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
                   ),
                 ],
               ),
             ),
           if (morning.isNotEmpty) ...[
             _buildSlotGroupHeader(
-                Icons.wb_sunny_rounded, 'Sabah', const Color(0xFFF9A825)),
+              Icons.wb_sunny_rounded,
+              l10n.apptCreateMorning,
+              const Color(0xFFF9A825),
+            ),
             const SizedBox(height: 10),
             _buildSlotGrid(morning),
             const SizedBox(height: 20),
           ],
           if (afternoon.isNotEmpty) ...[
             _buildSlotGroupHeader(
-                Icons.wb_cloudy_rounded, 'Öğleden Sonra', const Color(0xFFFF8F00)),
+              Icons.wb_cloudy_rounded,
+              l10n.apptCreateAfternoon,
+              const Color(0xFFFF8F00),
+            ),
             const SizedBox(height: 10),
             _buildSlotGrid(afternoon),
             const SizedBox(height: 20),
           ],
           if (evening.isNotEmpty) ...[
             _buildSlotGroupHeader(
-                Icons.nights_stay_rounded, 'Akşam', const Color(0xFF5C6BC0)),
+              Icons.nights_stay_rounded,
+              l10n.apptCreateEvening,
+              const Color(0xFF5C6BC0),
+            ),
             const SizedBox(height: 10),
             _buildSlotGrid(evening),
           ],
@@ -662,7 +715,7 @@ class _AppointmentCreateScreenState
                         color: const Color(0xFF2D6A4F).withOpacity(0.25),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
-                      )
+                      ),
                     ]
                   : [],
             ),
@@ -681,20 +734,15 @@ class _AppointmentCreateScreenState
   }
 
   String _formatFullDate(DateTime d) {
-    const months = [
-      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
-    ];
-    const weekdays = [
-      'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar',
-    ];
-    return '${weekdays[d.weekday - 1]}, ${d.day} ${months[d.month - 1]}';
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat('EEEE, d MMMM', locale).format(d);
   }
 
   // ─── Step 2: Onay ────────────────────────────────────────────────
 
   Widget _buildConfirmStep() {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -702,16 +750,19 @@ class _AppointmentCreateScreenState
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Randevu Türü
-          Text('Randevu Türü',
-              style: theme.textTheme.titleSmall
-                  ?.copyWith(fontWeight: FontWeight.w600)),
+          Text(
+            l10n.apptCreateType,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
                 child: _AppointmentTypeCard(
                   icon: Icons.local_hospital_rounded,
-                  label: 'Klinikte',
+                  label: l10n.apptCreateClinicType,
                   selected: _appointmentType == 'clinic',
                   onTap: () => setState(() => _appointmentType = 'clinic'),
                 ),
@@ -720,9 +771,21 @@ class _AppointmentCreateScreenState
               Expanded(
                 child: _AppointmentTypeCard(
                   icon: Icons.videocam_rounded,
-                  label: 'Online',
+                  label: l10n.apptCreateOnlineType,
                   selected: _appointmentType == 'online',
-                  onTap: () => setState(() => _appointmentType = 'online'),
+                  onTap: () {
+                    if (!widget.acceptsOnlineAppointments) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Bu klinik online randevu kabul etmiyor.',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+                    setState(() => _appointmentType = 'online');
+                  },
                 ),
               ),
             ],
@@ -765,29 +828,36 @@ class _AppointmentCreateScreenState
             child: Column(
               children: [
                 _buildSummaryRow(
-                    Icons.local_hospital_rounded, widget.vetName, theme),
-                const Divider(height: 20),
-                _buildSummaryRow(Icons.pets_rounded,
-                    _selectedPet?.name ?? '-', theme),
-                const Divider(height: 20),
-                _buildSummaryRow(
-                  Icons.calendar_today_rounded,
-                  _selectedDate != null
-                      ? _formatFullDate(_selectedDate!)
-                      : '-',
+                  Icons.local_hospital_rounded,
+                  widget.vetName,
                   theme,
                 ),
                 const Divider(height: 20),
                 _buildSummaryRow(
-                    Icons.access_time_rounded, _selectedSlot ?? '-', theme),
+                  Icons.pets_rounded,
+                  _selectedPet?.name ?? '-',
+                  theme,
+                ),
+                const Divider(height: 20),
+                _buildSummaryRow(
+                  Icons.calendar_today_rounded,
+                  _selectedDate != null ? _formatFullDate(_selectedDate!) : '-',
+                  theme,
+                ),
+                const Divider(height: 20),
+                _buildSummaryRow(
+                  Icons.access_time_rounded,
+                  _selectedSlot ?? '-',
+                  theme,
+                ),
                 const Divider(height: 20),
                 _buildSummaryRow(
                   _appointmentType == 'online'
                       ? Icons.videocam_rounded
                       : Icons.local_hospital_rounded,
                   _appointmentType == 'online'
-                      ? 'Online Randevu'
-                      : 'Klinikte Randevu',
+                      ? l10n.apptCreateOnlineSummary
+                      : l10n.apptCreateClinicSummary,
                   theme,
                 ),
               ],
@@ -846,7 +916,7 @@ class _AppointmentCreateScreenState
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Text('Geri'),
+                  child: Text(l10n.back),
                 ),
               ),
             if (_step > 0) const SizedBox(width: 12),
@@ -859,8 +929,9 @@ class _AppointmentCreateScreenState
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2D6A4F),
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor:
-                      const Color(0xFF2D6A4F).withOpacity(0.4),
+                  disabledBackgroundColor: const Color(
+                    0xFF2D6A4F,
+                  ).withOpacity(0.4),
                   disabledForegroundColor: Colors.white70,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   minimumSize: const Size(0, 52),
@@ -869,19 +940,29 @@ class _AppointmentCreateScreenState
                   ),
                 ),
                 child: _step < 2
-                    ? const Text('Devam',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 16))
+                    ? Text(
+                        l10n.apptCreateContinue,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      )
                     : _loading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white),
-                          )
-                        : Text(l10n.apptCreateBtn,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w600, fontSize: 16)),
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        l10n.apptCreateBtn,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
               ),
             ),
           ],
@@ -924,11 +1005,11 @@ class _AppointmentTypeCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon,
-                size: 28,
-                color: selected
-                    ? const Color(0xFF2D6A4F)
-                    : Colors.grey.shade500),
+            Icon(
+              icon,
+              size: 28,
+              color: selected ? const Color(0xFF2D6A4F) : Colors.grey.shade500,
+            ),
             const SizedBox(height: 6),
             Text(
               label,

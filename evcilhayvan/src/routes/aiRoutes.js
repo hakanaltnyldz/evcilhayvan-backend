@@ -3,7 +3,7 @@ import { authRequired } from "../middlewares/auth.js";
 import { chatWithAI, getDiseases, navigateWithAI } from "../controllers/aiController.js";
 
 const router = Router();
-router.use(authRequired);
+router.use(authRequired());
 
 router.post("/chat", chatWithAI);
 router.post("/navigate", navigateWithAI); // uygulama içi yönlendirme asistanı

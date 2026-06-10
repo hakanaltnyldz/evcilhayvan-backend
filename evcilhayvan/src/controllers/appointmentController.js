@@ -100,10 +100,12 @@ function getAppointmentViewerRole(user, appointment) {
   const currentUserId = String(user?.sub || "");
   const ownerId = String(appointment?.userId?._id || appointment?.userId || "");
   const vetUserId = String(appointment?.veterinaryId?.userId || "");
+  const registeredById = String(appointment?.veterinaryId?.registeredBy || "");
 
   if (user?.role === "admin") return "admin";
   if (currentUserId && ownerId === currentUserId) return "owner";
   if (currentUserId && vetUserId && vetUserId === currentUserId) return "vet";
+  if (currentUserId && registeredById && registeredById === currentUserId) return "vet";
   return null;
 }
 
@@ -130,7 +132,7 @@ async function loadAppointmentWithRelations(id) {
     .populate("petId", "name species photos")
     .populate(
       "veterinaryId",
-      "name address phone email photos workingHours availabilityOverrides userId appointmentSlotMinutes clinicConsultationFee onlineConsultationFee"
+      "name address phone email photos workingHours availabilityOverrides userId registeredBy appointmentSlotMinutes clinicConsultationFee onlineConsultationFee"
     );
 }
 
@@ -145,8 +147,9 @@ async function emitAppointmentNotification({
 }) {
   const ownerId = String(appointment?.userId?._id || appointment?.userId || "");
   const vetUserId = String(appointment?.veterinaryId?.userId || "");
+  const registeredById = String(appointment?.veterinaryId?.registeredBy || "");
 
-  const recipients = [...new Set([ownerId, vetUserId].filter(Boolean))].filter(
+  const recipients = [...new Set([ownerId, vetUserId || registeredById].filter(Boolean))].filter(
     (id) => !excludeUserId || String(id) !== String(excludeUserId)
   );
 
@@ -241,6 +244,22 @@ function getAppointmentFee(vet, type) {
   return type === "online" ? onlineFee || clinicFee : clinicFee;
 }
 
+function managedVetFilter(userId) {
+  return {
+    isActive: true,
+    $or: [
+      { userId },
+      { registeredBy: userId },
+    ],
+  };
+}
+
+async function findManagedVetByUser(userId, projection = null) {
+  const query = Veterinary.findOne(managedVetFilter(userId)).sort({ updatedAt: -1 });
+  if (projection) query.select(projection);
+  return query;
+}
+
 function normalizeOptionalText(value, maxLength = 2000) {
   if (value === undefined) return undefined;
   const trimmed = String(value ?? "").trim();
@@ -311,6 +330,10 @@ export async function createAppointment(req, res) {
     }
 
     const appointmentType = ['clinic', 'online'].includes(type) ? type : 'clinic';
+    if (appointmentType === "online" && vet.acceptsOnlineAppointments !== true) {
+      return sendError(res, 400, "Bu klinik online randevu kabul etmiyor", "online_not_available");
+    }
+
     const feeAmount = getAppointmentFee(vet, appointmentType);
     const meetingUrl = appointmentType === 'online'
       ? null // Onaylanınca üretilecek
@@ -339,16 +362,17 @@ export async function createAppointment(req, res) {
     });
 
     // N-1: Veterinere push bildirimi + socket (vet zaten yukarıda yüklendi)
-    if (vet?.userId) {
+    const vetNotificationUserId = vet?.userId || vet?.registeredBy;
+    if (vetNotificationUserId) {
       const petName = populated.petId?.name || "Evcil hayvan";
-      sendPush([String(vet.userId)], {
+      sendPush([String(vetNotificationUserId)], {
         title: "Yeni Randevu Talebi",
         body: `${petName} için yeni bir randevu talebi aldınız.`,
         data: { type: "appointment", appointmentId: appointment._id.toString() },
       }).catch(() => {});
       const socket = await getIo();
       if (socket?.to) {
-        socket.to(`user:${String(vet.userId)}`).emit("appointment:new", {
+        socket.to(`user:${String(vetNotificationUserId)}`).emit("appointment:new", {
           appointmentId: appointment._id,
           petName,
           date: appointment.date,
@@ -375,7 +399,7 @@ export async function getMyAppointments(req, res) {
     const filter = {};
 
     if (req.user.role === "vet") {
-      const vetIds = await Veterinary.find({ userId, isActive: true }).distinct("_id");
+      const vetIds = await Veterinary.find(managedVetFilter(userId)).distinct("_id");
       filter.veterinaryId = { $in: vetIds };
     } else {
       filter.userId = userId;
@@ -416,7 +440,7 @@ export async function getVetSchedule(req, res) {
     const { status, date, page = 1, limit = 50 } = req.query;
 
     // Kullanıcının sahip olduğu kliniği bul
-    const vet = await Veterinary.findOne({ userId, isActive: true });
+    const vet = await findManagedVetByUser(userId);
     if (!vet) {
       return sendError(res, 404, "Klinik bulunamadi veya size ait degil", "vet_not_found");
     }
@@ -487,7 +511,7 @@ export async function updateAppointmentStatus(req, res) {
 
     const userId = req.user.sub;
     const { id } = req.params;
-    const { status, cancelReason, vetNotes } = req.body;
+    const { status, cancelReason, vetNotes, meetingUrl } = req.body;
 
     const validStatuses = ["confirmed", "cancelled", "completed", "no_show"];
     if (!validStatuses.includes(status)) {
@@ -510,6 +534,9 @@ export async function updateAppointmentStatus(req, res) {
 
     if (vetNotes !== undefined && !["vet", "admin"].includes(viewerRole)) {
       return sendError(res, 403, "Veteriner notu ekleme yetkiniz yok", "forbidden");
+    }
+    if (meetingUrl !== undefined && !["vet", "admin"].includes(viewerRole)) {
+      return sendError(res, 403, "Gorusme linki ekleme yetkiniz yok", "forbidden");
     }
 
     const validTransitions = {
@@ -535,8 +562,24 @@ export async function updateAppointmentStatus(req, res) {
       appointment.cancelReason = cancelReason || "";
       appointment.completedAt = undefined;
     }
-    if (status === "confirmed" && appointment.type === "online" && !appointment.meetingUrl) {
-      appointment.meetingUrl = `https://meet.google.com/lookup/${appointment._id.toString().slice(-8)}`;
+    if (status === "confirmed" && meetingUrl !== undefined) {
+      if (appointment.type !== "online") {
+        return sendError(res, 400, "Sadece online randevuya gorusme linki eklenebilir", "validation_error");
+      }
+      const normalizedMeetingUrl = normalizeOptionalText(meetingUrl, 500);
+      if (normalizedMeetingUrl) {
+        try {
+          const parsedMeetingUrl = new URL(normalizedMeetingUrl);
+          if (!["http:", "https:"].includes(parsedMeetingUrl.protocol)) {
+            return sendError(res, 400, "Gorusme linki http veya https olmali", "validation_error");
+          }
+          appointment.meetingUrl = normalizedMeetingUrl;
+        } catch {
+          return sendError(res, 400, "Gorusme linki gecersiz", "validation_error");
+        }
+      } else {
+        appointment.meetingUrl = null;
+      }
     }
     if (status === "completed") {
       appointment.completedAt = new Date();
@@ -838,7 +881,8 @@ export async function updateAppointmentClinicalRecord(req, res) {
 export async function getVetEarningsSummary(req, res) {
   try {
     const userId = req.user.sub;
-    const vet = await Veterinary.findOne({ userId, isActive: true }).select(
+    const vet = await findManagedVetByUser(
+      userId,
       "_id name clinicConsultationFee onlineConsultationFee"
     );
     if (!vet) {

@@ -1,0 +1,128 @@
+@startuml
+hide circle
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+
+entity users {
+  * _id
+  --
+  name
+  email
+  role
+  notificationPreferences
+}
+
+entity pets {
+  * _id
+  --
+  ownerId
+  name
+  species
+  location
+}
+
+entity appointments {
+  * _id
+  --
+  userId
+  petId
+  vetId
+  dateTime
+  status
+}
+
+entity veterinaries {
+  * _id
+  --
+  clinicName
+  location
+  services
+  rating
+}
+
+entity vaccinationrecords {
+  * _id
+  --
+  petId
+  vaccineName
+  appliedDate
+  nextDueDate
+}
+
+entity petsitters {
+  * _id
+  --
+  userId
+  serviceTypes
+  location
+  rating
+}
+
+entity sitterbookings {
+  * _id
+  --
+  ownerId
+  sitterId
+  petId
+  startDate
+  endDate
+  status
+}
+
+entity stores {
+  * _id
+  --
+  sellerId
+  name
+  rating
+}
+
+entity products {
+  * _id
+  --
+  storeId
+  name
+  price
+  stock
+}
+
+entity orders {
+  * _id
+  --
+  userId
+  items
+  totalAmount
+  status
+}
+
+entity conversations {
+  * _id
+  --
+  participants
+  lastMessage
+}
+
+entity messages {
+  * _id
+  --
+  conversationId
+  senderId
+  content
+}
+
+users ||--o{ pets : owns
+users ||--o{ appointments : creates
+users ||--o{ sitterbookings : books
+users ||--o{ orders : places
+users ||--o{ stores : owns
+users ||--o{ conversations : joins
+
+pets ||--o{ appointments : for
+pets ||--o{ vaccinationrecords : has
+pets ||--o{ sitterbookings : receives
+veterinaries ||--o{ appointments : accepts
+petsitters ||--o{ sitterbookings : handles
+stores ||--o{ products : contains
+orders }o--o{ products : includes
+conversations ||--o{ messages : contains
+@enduml

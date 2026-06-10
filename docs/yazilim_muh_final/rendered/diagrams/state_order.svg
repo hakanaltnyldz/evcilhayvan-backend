@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420">
+  <defs>
+    <style>.s{fill:#e0f2fe;stroke:#0369a1;stroke-width:2}.end{fill:#111827}.txt{font:17px Arial,sans-serif;fill:#0f172a}.line{stroke:#334155;stroke-width:2;fill:none;marker-end:url(#a)}.lab{font:13px Arial,sans-serif;fill:#475569}</style>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#334155"/></marker>
+  </defs>
+  <text class="txt" x="600" y="35" text-anchor="middle" style="font-size:24px">Siparis Durum Diyagrami</text>
+  <circle class="end" cx="60" cy="210" r="12"/>
+  <rect class="s" x="120" y="175" width="145" height="70" rx="30"/><text class="txt" x="192" y="216" text-anchor="middle">Beklemede</text>
+  <rect class="s" x="330" y="175" width="145" height="70" rx="30"/><text class="txt" x="402" y="216" text-anchor="middle">Onaylandi</text>
+  <rect class="s" x="540" y="175" width="145" height="70" rx="30"/><text class="txt" x="612" y="216" text-anchor="middle">Hazirlaniyor</text>
+  <rect class="s" x="750" y="175" width="145" height="70" rx="30"/><text class="txt" x="822" y="216" text-anchor="middle">Kargoda</text>
+  <rect class="s" x="960" y="175" width="160" height="70" rx="30"/><text class="txt" x="1040" y="216" text-anchor="middle">Teslim Edildi</text>
+  <rect class="s" x="525" y="310" width="175" height="70" rx="30"/><text class="txt" x="612" y="351" text-anchor="middle">Iptal</text>
+  <circle class="end" cx="1160" cy="210" r="12"/>
+  <path class="line" d="M72 210 L120 210"/><path class="line" d="M265 210 L330 210"/><path class="line" d="M475 210 L540 210"/><path class="line" d="M685 210 L750 210"/><path class="line" d="M895 210 L960 210"/><path class="line" d="M1120 210 L1148 210"/>
+  <path class="line" d="M192 245 C230 315 380 345 525 345"/><path class="line" d="M402 245 C440 310 500 330 525 345"/><path class="line" d="M612 245 L612 310"/>
+  <text class="lab" x="285" y="197">dogrula</text><text class="lab" x="500" y="197">isleme al</text><text class="lab" x="705" y="197">kargola</text><text class="lab" x="908" y="197">teslim</text><text class="lab" x="330" y="330">iptal akislari</text>
+</svg>

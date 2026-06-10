@@ -6,7 +6,7 @@ import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 
 final _orderTrackingProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, String>(
   (ref, trackingNumber) async {
-    final res = await ApiClient().dio.get('/orders/track/$trackingNumber');
+    final res = await ApiClient().dio.get('/api/orders/track/$trackingNumber');
     return res.data['order'] as Map<String, dynamic>;
   },
 );

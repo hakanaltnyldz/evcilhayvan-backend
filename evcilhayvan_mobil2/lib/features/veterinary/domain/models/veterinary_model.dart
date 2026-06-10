@@ -97,6 +97,7 @@ class VeterinaryModel {
   final List<AvailabilityOverrideModel> availabilityOverrides;
   final List<String> speciesServed;
   final String? userId;
+  final String? registeredBy;
 
   VeterinaryModel({
     required this.id,
@@ -124,6 +125,7 @@ class VeterinaryModel {
     this.availabilityOverrides = const [],
     this.speciesServed = const [],
     this.userId,
+    this.registeredBy,
   });
 
   Map<String, dynamic> toJson() => {
@@ -158,6 +160,7 @@ class VeterinaryModel {
         .toList(),
     'speciesServed': speciesServed,
     if (userId != null) 'userId': userId,
+    if (registeredBy != null) 'registeredBy': registeredBy,
   };
 
   factory VeterinaryModel.fromJson(Map<String, dynamic> json) {
@@ -219,9 +222,17 @@ class VeterinaryModel {
               ?.whereType<String>()
               .toList() ??
           [],
-      userId: json['userId']?.toString(),
+      userId: _extractId(json['userId']),
+      registeredBy: _extractId(json['registeredBy']),
     );
   }
+}
+
+String? _extractId(dynamic value) {
+  if (value is Map<String, dynamic>) {
+    return value['_id']?.toString() ?? value['id']?.toString();
+  }
+  return value?.toString();
 }
 
 String _formatDateOnly(DateTime value) {

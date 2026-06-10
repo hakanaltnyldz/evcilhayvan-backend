@@ -9,6 +9,7 @@ import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
 import 'package:evcilhayvan_mobil2/core/theme/theme_extensions.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 final _myApplicationProvider = FutureProvider.autoDispose((ref) async {
   final response = await ApiClient().dio.get('/api/stores/application/status');
@@ -20,11 +21,12 @@ class SellerApplicationStatusScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final asyncApp = ref.watch(_myApplicationProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Başvuru Durumum'),
+        title: Text(l10n.sellerAppStatusTitle),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -49,11 +51,11 @@ class SellerApplicationStatusScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.error_outline, color: Colors.red, size: 48),
               const SizedBox(height: 12),
-              const Text('Başvuru bilgisi alınamadı.'),
+              Text(l10n.sellerAppStatusLoadError),
               const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () => ref.invalidate(_myApplicationProvider),
-                child: const Text('Tekrar Dene'),
+                child: Text(l10n.retry),
               ),
             ],
           ),
@@ -70,27 +72,39 @@ class SellerApplicationStatusScreen extends ConsumerWidget {
                       color: Colors.orange.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.assignment_outlined, color: Colors.orange, size: 48),
+                    child: const Icon(
+                      Icons.assignment_outlined,
+                      color: Colors.orange,
+                      size: 48,
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Henüz başvuru yapılmamış',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Text(
+                    l10n.sellerAppStatusNoneTitle,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Satıcı olmak için başvuru yapın.',
-                    style: TextStyle(color: Colors.grey),
+                  Text(
+                    l10n.sellerAppStatusNoneDesc,
+                    style: const TextStyle(color: Colors.grey),
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.store_outlined),
-                    label: const Text('Başvuru Yap'),
+                    label: Text(l10n.sellerAppStatusApply),
                     onPressed: () => context.pushNamed('store-apply'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppPalette.storePrimary,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ],
@@ -112,6 +126,7 @@ class _ApplicationDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final status = application['status'] as String? ?? 'pending';
     final createdAt = _parseDate(application['createdAt']);
     final rejectionReason = application['rejectionReason'] as String?;
@@ -133,12 +148,14 @@ class _ApplicationDetailView extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.refresh),
-                label: const Text('Yeni Başvuru Yap'),
+                label: Text(l10n.sellerAppStatusReapply),
                 onPressed: () => context.pushNamed('store-apply'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppPalette.storePrimary,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
@@ -166,25 +183,26 @@ class _StatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final (color, icon, title, subtitle) = switch (status) {
       'approved' => (
-          Colors.green,
-          Icons.check_circle,
-          'Başvurunuz Onaylandı',
-          'Tebrikler! Mağazanız aktif.',
-        ),
+        Colors.green,
+        Icons.check_circle,
+        l10n.sellerAppStatusApprovedTitle,
+        l10n.sellerAppStatusApprovedDesc,
+      ),
       'rejected' => (
-          Colors.red,
-          Icons.cancel,
-          'Başvurunuz Reddedildi',
-          'Yeni bir başvuru yapabilirsiniz.',
-        ),
+        Colors.red,
+        Icons.cancel,
+        l10n.sellerAppStatusRejectedTitle,
+        l10n.sellerAppStatusRejectedDesc,
+      ),
       _ => (
-          Colors.orange,
-          Icons.hourglass_empty,
-          'Başvurunuz İnceleniyor',
-          'Ekibimiz başvurunuzu değerlendiriyor.',
-        ),
+        Colors.orange,
+        Icons.hourglass_empty,
+        l10n.sellerAppStatusPendingTitle,
+        l10n.sellerAppStatusPendingDesc,
+      ),
     };
 
     return Container(
@@ -213,13 +231,22 @@ class _StatusCard extends StatelessWidget {
             child: Icon(icon, color: color, size: 48),
           ),
           const SizedBox(height: 16),
-          Text(title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
           const SizedBox(height: 4),
           Text(subtitle, style: const TextStyle(color: Colors.grey)),
           if (createdAt != null) ...[
             const SizedBox(height: 12),
             Text(
-              'Başvuru tarihi: ${DateFormat('dd.MM.yyyy HH:mm').format(createdAt!)}',
+              l10n.sellerAppStatusSubmittedAt(
+                DateFormat('dd.MM.yyyy HH:mm').format(createdAt!),
+              ),
               style: const TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ],
@@ -236,13 +263,29 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final fields = [
-      ('Şirket Adı', application['companyName']),
-      ('Şirket Unvanı', application['companyTitle']),
-      ('Vergi Numarası', application['taxNumber']),
-      ('Vergi Dairesi', application['taxOffice']),
-      ('Adres', application['address']),
-      ('İletişim', application['contactInfo']),
+      (l10n.sellerAppStatusCompanyName, application['companyName']),
+      (
+        l10n.applySellerCompanyTitleLabel.replaceAll(' *', ''),
+        application['companyTitle'],
+      ),
+      (
+        l10n.applySellerTaxNumberLabel.replaceAll(' *', ''),
+        application['taxNumber'],
+      ),
+      (
+        l10n.applySellerTaxOfficeLabel.replaceAll(' *', ''),
+        application['taxOffice'],
+      ),
+      (
+        l10n.applySellerAddressLabel.replaceAll(' *', ''),
+        application['address'],
+      ),
+      (
+        l10n.applySellerContactInfoLabel.replaceAll(' *', ''),
+        application['contactInfo'],
+      ),
     ];
 
     return Container(
@@ -270,38 +313,55 @@ class _InfoCard extends StatelessWidget {
                   color: AppPalette.storePrimary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.business, color: AppPalette.storePrimary),
+                child: const Icon(
+                  Icons.business,
+                  color: AppPalette.storePrimary,
+                ),
               ),
               const SizedBox(width: 12),
-              const Text('Başvuru Bilgileri', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(
+                l10n.sellerAppStatusInfoTitle,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
           const Divider(height: 1),
           const SizedBox(height: 12),
-          ...fields.where((f) => f.$2 != null).map(
-            (f) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 120,
-                    child: Text(
-                      f.$1,
-                      style: const TextStyle(color: Colors.grey, fontSize: 13),
-                    ),
+          ...fields
+              .where((f) => f.$2 != null)
+              .map(
+                (f) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 120,
+                        child: Text(
+                          f.$1,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          f.$2.toString(),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: Text(
-                      f.$2.toString(),
-                      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
         ],
       ),
     );
@@ -315,6 +375,7 @@ class _RejectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -330,17 +391,17 @@ class _RejectionCard extends StatelessWidget {
             children: [
               const Icon(Icons.info_outline, color: Colors.red, size: 20),
               const SizedBox(width: 8),
-              const Text(
-                'Red Gerekçesi',
-                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              Text(
+                l10n.sellerAppStatusRejectionReason,
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            reason,
-            style: const TextStyle(fontSize: 14, height: 1.5),
-          ),
+          Text(reason, style: const TextStyle(fontSize: 14, height: 1.5)),
         ],
       ),
     );

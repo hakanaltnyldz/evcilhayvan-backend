@@ -107,6 +107,7 @@ class AppointmentRepository {
     String status, {
     String? cancelReason,
     String? vetNotes,
+    String? meetingUrl,
   }) {
     return _guard(() async {
       final response = await _dio.patch(
@@ -115,6 +116,25 @@ class AppointmentRepository {
           'status': status,
           if (cancelReason != null) 'cancelReason': cancelReason,
           if (vetNotes != null) 'vetNotes': vetNotes,
+          if (meetingUrl != null) 'meetingUrl': meetingUrl,
+        },
+      );
+      return AppointmentModel.fromJson(response.data['appointment']);
+    });
+  }
+
+  Future<AppointmentModel> rescheduleAppointment(
+    String id, {
+    required DateTime date,
+    String? reason,
+  }) {
+    return _guard(() async {
+      final response = await _dio.patch(
+        '/api/appointments/$id/reschedule',
+        data: {
+          'date': date.toIso8601String(),
+          if (reason != null && reason.trim().isNotEmpty)
+            'reason': reason.trim(),
         },
       );
       return AppointmentModel.fromJson(response.data['appointment']);
@@ -177,11 +197,16 @@ class AppointmentRepository {
   Future<List<String>> getAvailableSlots({
     required String vetId,
     required String date,
+    String? excludeAppointmentId,
   }) {
     return _guard(() async {
       final response = await _dio.get(
         '/api/appointments/vet/$vetId/slots',
-        queryParameters: {'date': date},
+        queryParameters: {
+          'date': date,
+          if (excludeAppointmentId != null)
+            'excludeAppointmentId': excludeAppointmentId,
+        },
       );
       final List<dynamic> slots = (response.data['slots'] as List?) ?? [];
       return slots.whereType<String>().toList();

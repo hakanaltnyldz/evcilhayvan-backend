@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:evcilhayvan_mobil2/core/theme/app_palette.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import '../../data/repositories/pet_sitter_repository.dart';
 
 class SitterRequestFormScreen extends ConsumerStatefulWidget {
   const SitterRequestFormScreen({super.key});
 
   @override
-  ConsumerState<SitterRequestFormScreen> createState() => _SitterRequestFormScreenState();
+  ConsumerState<SitterRequestFormScreen> createState() =>
+      _SitterRequestFormScreenState();
 }
 
-class _SitterRequestFormScreenState extends ConsumerState<SitterRequestFormScreen> {
+class _SitterRequestFormScreenState
+    extends ConsumerState<SitterRequestFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
 
@@ -21,20 +24,40 @@ class _SitterRequestFormScreenState extends ConsumerState<SitterRequestFormScree
   DateTime? _endDate;
   bool _saving = false;
 
-  final _services = [
-    {'value': 'walking', 'label': 'Yürüyüş', 'icon': Icons.directions_walk},
-    {'value': 'home_sitting', 'label': 'Ev Bakımı', 'icon': Icons.home},
-    {'value': 'boarding', 'label': 'Pansiyon', 'icon': Icons.hotel},
-    {'value': 'daycare', 'label': 'Günlük Bakım', 'icon': Icons.wb_sunny},
-    {'value': 'grooming', 'label': 'Tımar', 'icon': Icons.content_cut},
+  List<Map<String, Object>> _services(AppLocalizations l10n) => [
+    {
+      'value': 'walking',
+      'label': l10n.sitterServiceWalkingLabel,
+      'icon': Icons.directions_walk,
+    },
+    {
+      'value': 'home_sitting',
+      'label': l10n.sitterServiceHomeSittingLabel,
+      'icon': Icons.home,
+    },
+    {
+      'value': 'boarding',
+      'label': l10n.sitterServiceBoardingLabel,
+      'icon': Icons.hotel,
+    },
+    {
+      'value': 'daycare',
+      'label': l10n.sitterServiceDaycareLabel,
+      'icon': Icons.wb_sunny,
+    },
+    {
+      'value': 'grooming',
+      'label': l10n.sitterServiceGroomingLabel,
+      'icon': Icons.content_cut,
+    },
   ];
 
-  final _petTypeOptions = [
-    {'value': 'dog', 'label': '🐶 Köpek'},
-    {'value': 'cat', 'label': '🐱 Kedi'},
-    {'value': 'bird', 'label': '🐦 Kuş'},
-    {'value': 'rabbit', 'label': '🐰 Tavşan'},
-    {'value': 'other', 'label': '🐾 Diğer'},
+  List<Map<String, String>> _petTypeOptions(AppLocalizations l10n) => [
+    {'value': 'dog', 'label': '🐶 ${l10n.sitterSpeciesDog}'},
+    {'value': 'cat', 'label': '🐱 ${l10n.sitterSpeciesCat}'},
+    {'value': 'bird', 'label': '🐦 ${l10n.sitterSpeciesBird}'},
+    {'value': 'rabbit', 'label': '🐰 ${l10n.sitterSpeciesRabbit}'},
+    {'value': 'other', 'label': '🐾 ${l10n.sitterSpeciesOther}'},
   ];
 
   @override
@@ -45,7 +68,9 @@ class _SitterRequestFormScreenState extends ConsumerState<SitterRequestFormScree
 
   Future<void> _pickDate(bool isStart) async {
     final now = DateTime.now();
-    final initial = isStart ? (_startDate ?? now) : (_endDate ?? _startDate ?? now);
+    final initial = isStart
+        ? (_startDate ?? now)
+        : (_endDate ?? _startDate ?? now);
     final first = isStart ? now : (_startDate ?? now);
 
     final picked = await showDatePicker(
@@ -65,23 +90,24 @@ class _SitterRequestFormScreenState extends ConsumerState<SitterRequestFormScree
     });
   }
 
-  String _formatDate(DateTime? d) {
-    if (d == null) return 'Seçiniz';
+  String _formatDate(DateTime? d, AppLocalizations l10n) {
+    if (d == null) return l10n.sitterRequestSelectDate;
     return '${d.day}.${d.month.toString().padLeft(2, '0')}.${d.year}';
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
     if (_startDate == null || _endDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lütfen tarih aralığı seçin')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.sitterRequestDateRequired)));
       return;
     }
     if (_petTypes.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('En az bir hayvan türü seçin')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.sitterSpeciesRequired)));
       return;
     }
 
@@ -97,14 +123,14 @@ class _SitterRequestFormScreenState extends ConsumerState<SitterRequestFormScree
       });
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('İlanınız yayınlandı!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.sitterRequestPublished)));
       context.pop();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Hata: $e')),
+        SnackBar(content: Text(l10n.sitterSubmitErr(e.toString()))),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -113,9 +139,13 @@ class _SitterRequestFormScreenState extends ConsumerState<SitterRequestFormScree
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final services = _services(l10n);
+    final petTypeOptions = _petTypeOptions(l10n);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bakıcı İlanı Aç'),
+        title: Text(l10n.sitterRequestFormTitle),
         backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -126,35 +156,54 @@ class _SitterRequestFormScreenState extends ConsumerState<SitterRequestFormScree
           padding: const EdgeInsets.all(20),
           children: [
             // Hizmet tipi
-            const Text('Hizmet Türü', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+            Text(
+              l10n.sitterServiceType,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+            ),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: _services.map((s) {
+              children: services.map((s) {
                 final selected = _serviceType == s['value'];
                 return GestureDetector(
-                  onTap: () => setState(() => _serviceType = s['value'] as String),
+                  onTap: () =>
+                      setState(() => _serviceType = s['value'] as String),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
-                      color: selected ? const Color(0xFF2D6A4F) : Colors.grey.shade100,
+                      color: selected
+                          ? const Color(0xFF2D6A4F)
+                          : Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: selected ? const Color(0xFF2D6A4F) : Colors.grey.shade300,
+                        color: selected
+                            ? const Color(0xFF2D6A4F)
+                            : Colors.grey.shade300,
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(s['icon'] as IconData, size: 18, color: selected ? Colors.white : Colors.grey.shade700),
+                        Icon(
+                          s['icon'] as IconData,
+                          size: 18,
+                          color: selected ? Colors.white : Colors.grey.shade700,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           s['label'] as String,
                           style: TextStyle(
-                            color: selected ? Colors.white : Colors.grey.shade800,
-                            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                            color: selected
+                                ? Colors.white
+                                : Colors.grey.shade800,
+                            fontWeight: selected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
                           ),
                         ),
                       ],
@@ -167,20 +216,25 @@ class _SitterRequestFormScreenState extends ConsumerState<SitterRequestFormScree
             const SizedBox(height: 24),
 
             // Hayvan türleri
-            const Text('Hayvan Türü (Birden fazla seçilebilir)', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+            Text(
+              l10n.sitterRequestPetTypeMulti,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+            ),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: _petTypeOptions.map((opt) {
+              children: petTypeOptions.map((opt) {
                 final selected = _petTypes.contains(opt['value']);
                 return FilterChip(
                   label: Text(opt['label'] as String),
                   selected: selected,
                   onSelected: (val) {
                     setState(() {
-                      if (val) _petTypes.add(opt['value'] as String);
-                      else _petTypes.remove(opt['value']);
+                      if (val)
+                        _petTypes.add(opt['value'] as String);
+                      else
+                        _petTypes.remove(opt['value']);
                     });
                   },
                   selectedColor: const Color(0xFF2D6A4F).withOpacity(0.15),
@@ -196,7 +250,10 @@ class _SitterRequestFormScreenState extends ConsumerState<SitterRequestFormScree
             const SizedBox(height: 24),
 
             // Tarih aralığı
-            const Text('Hizmet Tarihleri', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+            Text(
+              l10n.sitterRequestServiceDates,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+            ),
             const SizedBox(height: 10),
             Row(
               children: [
@@ -213,9 +270,18 @@ class _SitterRequestFormScreenState extends ConsumerState<SitterRequestFormScree
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Başlangıç', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                          Text(
+                            l10n.sitterRequestStartDate,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          Text(_formatDate(_startDate), style: const TextStyle(fontWeight: FontWeight.w600)),
+                          Text(
+                            _formatDate(_startDate, l10n),
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
                         ],
                       ),
                     ),
@@ -223,7 +289,10 @@ class _SitterRequestFormScreenState extends ConsumerState<SitterRequestFormScree
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Text('—', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                  child: Text(
+                    '—',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
                 ),
                 Expanded(
                   child: GestureDetector(
@@ -238,9 +307,18 @@ class _SitterRequestFormScreenState extends ConsumerState<SitterRequestFormScree
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Bitiş', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                          Text(
+                            l10n.sitterRequestEndDate,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          Text(_formatDate(_endDate), style: const TextStyle(fontWeight: FontWeight.w600)),
+                          Text(
+                            _formatDate(_endDate, l10n),
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
                         ],
                       ),
                     ),
@@ -252,14 +330,17 @@ class _SitterRequestFormScreenState extends ConsumerState<SitterRequestFormScree
             const SizedBox(height: 24),
 
             // Açıklama
-            const Text('Ek Bilgiler (İsteğe bağlı)', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+            Text(
+              l10n.sitterRequestExtraInfo,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+            ),
             const SizedBox(height: 10),
             TextFormField(
               controller: _descriptionController,
               maxLines: 4,
               maxLength: 500,
               decoration: InputDecoration(
-                hintText: 'Örn: Evcil hayvanım köpektir, günde 2 kez yürüyüş gerekiyor...',
+                hintText: l10n.sitterRequestDescHint,
                 filled: true,
                 fillColor: Colors.grey.shade100,
                 border: OutlineInputBorder(
@@ -284,16 +365,27 @@ class _SitterRequestFormScreenState extends ConsumerState<SitterRequestFormScree
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2D6A4F),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   elevation: 2,
                 ),
                 child: _saving
                     ? const SizedBox(
                         width: 22,
                         height: 22,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
                       )
-                    : const Text('İlanı Yayınla', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                    : Text(
+                        l10n.sitterRequestPublish,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
               ),
             ),
           ],

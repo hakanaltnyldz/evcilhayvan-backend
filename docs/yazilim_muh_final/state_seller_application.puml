@@ -1,0 +1,15 @@
+@startuml
+[*] --> BasvuruHazirlandi
+BasvuruHazirlandi --> Gonderildi : Belgeler yuklendi
+Gonderildi --> OnInceleme : Admin kontrolu
+OnInceleme --> EksikBelge : Belge eksik
+EksikBelge --> Gonderildi : Belge tamamlandi
+OnInceleme --> Onaylandi : Uygun
+OnInceleme --> Reddedildi : Uygun degil
+Onaylandi --> AktifSatici : Magaza acildi
+AktifSatici --> Askida : Politika ihlali
+Askida --> AktifSatici : Sorun giderildi
+Askida --> Kapatildi : Tekrarlayan ihlal
+Reddedildi --> [*]
+Kapatildi --> [*]
+@enduml

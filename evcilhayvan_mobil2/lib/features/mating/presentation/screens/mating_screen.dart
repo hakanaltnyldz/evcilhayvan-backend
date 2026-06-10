@@ -16,6 +16,7 @@ import 'package:evcilhayvan_mobil2/features/auth/data/repositories/auth_reposito
 import 'package:evcilhayvan_mobil2/features/mating/data/repositories/mating_repository.dart';
 import 'package:evcilhayvan_mobil2/features/mating/domain/models/mating_profile.dart';
 import 'package:evcilhayvan_mobil2/features/pets/data/repositories/pets_repository.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 
 class MatingScreen extends ConsumerStatefulWidget {
   const MatingScreen({super.key});
@@ -25,18 +26,31 @@ class MatingScreen extends ConsumerStatefulWidget {
 }
 
 class _MatingScreenState extends ConsumerState<MatingScreen> {
-  final List<String> _species = const ['Tümü', 'Köpek', 'Kedi', 'Kuş'];
-  String _selectedSpecies = 'Tümü';
-  String _selectedGender = 'Tümü';
+  String? _selectedSpecies;
+  String? _selectedGender;
   double _maxDistance = 20;
   final Set<String> _requestingProfiles = <String>{};
+
+  List<_FilterOption> _speciesOptions(AppLocalizations l10n) => [
+    _FilterOption(null, l10n.matingAll),
+    _FilterOption('Köpek', l10n.sitterSpeciesDog),
+    _FilterOption('Kedi', l10n.sitterSpeciesCat),
+    _FilterOption('Kuş', l10n.sitterSpeciesBird),
+  ];
+
+  List<_FilterOption> _genderOptions(AppLocalizations l10n) => [
+    _FilterOption(null, l10n.matingAll),
+    _FilterOption('Erkek', l10n.matingMale),
+    _FilterOption('Dişi', l10n.matingFemale),
+  ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final filters = MatingQuery(
-      species: _selectedSpecies == 'Tümü' ? null : _selectedSpecies,
-      gender: _selectedGender == 'Tümü' ? null : _selectedGender,
+      species: _selectedSpecies,
+      gender: _selectedGender,
       maxDistanceKm: _maxDistance,
     );
 
@@ -48,137 +62,156 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
         backgroundColor: AppPalette.appBarDark,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Eşleştirme Bul'),
+        title: Text(l10n.matingTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.inbox_outlined),
-            tooltip: 'Eşleştirme istekleri',
+            tooltip: l10n.matingRequests,
             onPressed: () => context.pushNamed('mating-requests'),
           ),
         ],
       ),
       body: SafeArea(
         child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Evcil dostların için uygun eşleşmeleri keşfet.',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.matingSubtitle,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _FilterChips(
+                label: l10n.matingSpecies,
+                options: _speciesOptions(l10n),
+                selectedValue: _selectedSpecies,
+                onSelected: (value) => setState(() => _selectedSpecies = value),
+              ),
+              const SizedBox(height: 12),
+              _FilterChips(
+                label: l10n.matingGender,
+                options: _genderOptions(l10n),
+                selectedValue: _selectedGender,
+                onSelected: (value) => setState(() => _selectedGender = value),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Text(
+                    l10n.matingMaxDistance(_maxDistance.round()),
+                    style: theme.textTheme.bodyMedium,
                   ),
-                ),
-                const SizedBox(height: 12),
-                _FilterChips(
-                  label: 'Tür',
-                  values: _species,
-                  selectedValue: _selectedSpecies,
-                  onSelected: (value) => setState(() => _selectedSpecies = value),
-                ),
-                const SizedBox(height: 12),
-                _FilterChips(
-                  label: 'Cinsiyet',
-                  values: const ['Tümü', 'Erkek', 'Dişi'],
-                  selectedValue: _selectedGender,
-                  onSelected: (value) => setState(() => _selectedGender = value),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      'Maksimum mesafe: ${_maxDistance.round()} km',
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-                SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
-                    activeTrackColor: theme.colorScheme.primary,
-                    inactiveTrackColor: theme.colorScheme.primary.withOpacity(0.15),
-                    thumbColor: theme.colorScheme.secondary,
-                    overlayColor: theme.colorScheme.secondary.withOpacity(0.12),
+                ],
+              ),
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: theme.colorScheme.primary,
+                  inactiveTrackColor: theme.colorScheme.primary.withOpacity(
+                    0.15,
                   ),
-                  child: Slider(
-                    value: _maxDistance,
-                    min: 1,
-                    max: 50,
-                    divisions: 49,
-                    label: '${_maxDistance.round()} km',
-                    onChanged: (value) => setState(() => _maxDistance = value),
-                  ),
+                  thumbColor: theme.colorScheme.secondary,
+                  overlayColor: theme.colorScheme.secondary.withOpacity(0.12),
                 ),
-                const SizedBox(height: 4),
-                Expanded(
-                  child: profilesAsync.when(
-                    loading: () => const Center(
-                      child: PawLoading(),
-                    ),
-                    error: (error, stackTrace) => _ErrorState(
-                      message: error.toString(),
-                      onRetry: () => ref.invalidate(matingProfilesProvider(filters)),
-                    ),
-                    data: (profiles) {
-                      final filtered = profiles.where((profile) {
-                        final matchesSpecies = _selectedSpecies == 'Tümü' || profile.species == _selectedSpecies;
-                        final matchesGender = _selectedGender == 'Tümü' || profile.gender == _selectedGender;
-                        final matchesDistance = profile.distanceKm <= _maxDistance;
-                        return matchesSpecies && matchesGender && matchesDistance;
-                      }).toList();
+                child: Slider(
+                  value: _maxDistance,
+                  min: 1,
+                  max: 50,
+                  divisions: 49,
+                  label: '${_maxDistance.round()} km',
+                  onChanged: (value) => setState(() => _maxDistance = value),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Expanded(
+                child: profilesAsync.when(
+                  loading: () => const Center(child: PawLoading()),
+                  error: (error, stackTrace) => _ErrorState(
+                    message: error.toString(),
+                    onRetry: () =>
+                        ref.invalidate(matingProfilesProvider(filters)),
+                  ),
+                  data: (profiles) {
+                    final filtered = profiles.where((profile) {
+                      final matchesSpecies =
+                          _selectedSpecies == null ||
+                          profile.species == _selectedSpecies;
+                      final matchesGender =
+                          _selectedGender == null ||
+                          profile.gender == _selectedGender;
+                      final matchesDistance =
+                          profile.distanceKm <= _maxDistance;
+                      return matchesSpecies && matchesGender && matchesDistance;
+                    }).toList();
 
-                      if (filtered.isEmpty) {
-                        final hasActiveFilters = _selectedSpecies != 'Tümü' ||
-                            _selectedGender != 'Tümü';
-                        return _EmptyState(
-                          onClearFilters: hasActiveFilters ? () {
-                            setState(() {
-                              _selectedSpecies = 'Tümü';
-                              _selectedGender = 'Tümü';
-                              _maxDistance = 20;
-                            });
-                          } : null,
-                        );
-                      }
-
-                      return _SwipeCardDeck(
-                        key: ValueKey('${_selectedSpecies}_${_selectedGender}_${_maxDistance.round()}'),
-                        profiles: filtered,
-                        onSwipeRight: (profile) => _swipeRightMatch(profile, filters: filters),
-                        onDetails: _openDetails,
-                        onRefresh: () async {
-                          ref.invalidate(matingProfilesProvider(filters));
-                          try {
-                            await ref.read(matingProfilesProvider(filters).future);
-                          } catch (_) {}
-                        },
+                    if (filtered.isEmpty) {
+                      final hasActiveFilters =
+                          _selectedSpecies != null || _selectedGender != null;
+                      return _EmptyState(
+                        onClearFilters: hasActiveFilters
+                            ? () {
+                                setState(() {
+                                  _selectedSpecies = null;
+                                  _selectedGender = null;
+                                  _maxDistance = 20;
+                                });
+                              }
+                            : null,
                       );
-                    },
-                  ),
+                    }
+
+                    return _SwipeCardDeck(
+                      key: ValueKey(
+                        '${_selectedSpecies ?? 'all'}_${_selectedGender ?? 'all'}_${_maxDistance.round()}',
+                      ),
+                      profiles: filtered,
+                      onSwipeRight: (profile) =>
+                          _swipeRightMatch(profile, filters: filters),
+                      onDetails: _openDetails,
+                      onRefresh: () async {
+                        ref.invalidate(matingProfilesProvider(filters));
+                        try {
+                          await ref.read(
+                            matingProfilesProvider(filters).future,
+                          );
+                        } catch (_) {}
+                      },
+                    );
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
+      ),
     );
   }
 
   Future<void> _openDetails(MatingProfile profile) async {
     if (!mounted) return;
     if (profile.petId.isEmpty) {
-      _showSnackBar('İlan detayı açılamadı.', isError: true);
+      _showSnackBar(
+        AppLocalizations.of(context)!.matingDetailUnavailable,
+        isError: true,
+      );
       return;
     }
-    context.pushNamed(
-      'pet-detail',
-      pathParameters: {'id': profile.petId},
-    );
+    context.pushNamed('pet-detail', pathParameters: {'id': profile.petId});
   }
 
   /// Swipe mode'da eşleştirme isteği gönder (navigasyon yok)
-  Future<void> _swipeRightMatch(MatingProfile profile, {required MatingQuery filters}) async {
+  Future<void> _swipeRightMatch(
+    MatingProfile profile, {
+    required MatingQuery filters,
+  }) async {
     final currentUser = ref.read(authProvider);
     if (currentUser == null) {
-      _showSnackBar('Eşleştirme isteği için önce giriş yapmalısın.', isError: true);
+      _showSnackBar(
+        AppLocalizations.of(context)!.matingLoginRequired,
+        isError: true,
+      );
       if (mounted) context.goNamed('login');
       return;
     }
@@ -222,7 +255,10 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
 
     final currentUser = ref.read(authProvider);
     if (currentUser == null) {
-      _showSnackBar('Eşleştirme isteği için önce giriş yapmalısın.', isError: true);
+      _showSnackBar(
+        AppLocalizations.of(context)!.matingLoginRequired,
+        isError: true,
+      );
       if (mounted) context.goNamed('login');
       return;
     }
@@ -270,6 +306,7 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
   }
 
   Future<String?> _pickMyMatingAdvertId(String? targetSpecies) async {
+    final l10n = AppLocalizations.of(context)!;
     final petsRepo = ref.read(petsRepositoryProvider);
     try {
       final myMating = await petsRepo.getMyAdverts(advertType: 'mating');
@@ -282,7 +319,11 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
       final normalizedTarget = targetSpecies?.trim().toLowerCase() ?? '';
       final compatible = normalizedTarget.isEmpty
           ? active
-          : active.where((p) => p.species.trim().toLowerCase() == normalizedTarget).toList();
+          : active
+                .where(
+                  (p) => p.species.trim().toLowerCase() == normalizedTarget,
+                )
+                .toList();
 
       if (compatible.isEmpty) {
         await _showMatingAdvertSheet(targetSpecies: targetSpecies);
@@ -315,9 +356,12 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        'Eşleştirme için ilan seç',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      Text(
+                        l10n.matingSelectAdvertTitle,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       ConstrainedBox(
@@ -328,24 +372,31 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
                           separatorBuilder: (_, __) => const Divider(height: 1),
                           itemBuilder: (ctx, index) {
                             final p = compatible[index];
-                            final name = p.name.trim().isNotEmpty ? p.name : 'İsimsiz ilan';
+                            final name = p.name.trim().isNotEmpty
+                                ? p.name
+                                : l10n.matingUnnamedAdvert;
                             final detailParts = <String>[
                               if (p.species.trim().isNotEmpty) p.species,
                               if (p.breed.trim().isNotEmpty) p.breed,
                             ];
-                            final detail = detailParts.isNotEmpty ? detailParts.join(' - ') : 'Detay yok';
+                            final detail = detailParts.isNotEmpty
+                                ? detailParts.join(' - ')
+                                : l10n.matingNoDetails;
                             final isSelected = selectedId == p.id;
                             return ListTile(
                               contentPadding: EdgeInsets.zero,
                               title: Text(name),
                               subtitle: Text(detail),
                               trailing: Icon(
-                                isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                                isSelected
+                                    ? Icons.check_circle
+                                    : Icons.radio_button_unchecked,
                                 color: isSelected
                                     ? Theme.of(ctx).colorScheme.primary
                                     : Theme.of(ctx).colorScheme.outline,
                               ),
-                              onTap: () => setModalState(() => selectedId = p.id),
+                              onTap: () =>
+                                  setModalState(() => selectedId = p.id),
                             );
                           },
                         ),
@@ -356,7 +407,7 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
                           Expanded(
                             child: OutlinedButton(
                               onPressed: () => Navigator.of(ctx).pop(),
-                              child: const Text('Vazgeç'),
+                              child: Text(l10n.cancel),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -368,7 +419,7 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
                                       Navigator.of(ctx).pop();
                                     }
                                   : null,
-                              child: const Text('Devam et'),
+                              child: Text(l10n.matingContinue),
                             ),
                           ),
                         ],
@@ -393,19 +444,23 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.primary,
+        backgroundColor: isError
+            ? Theme.of(context).colorScheme.error
+            : Theme.of(context).colorScheme.primary,
       ),
     );
   }
 
   Future<void> _showMatingAdvertSheet({String? targetSpecies}) async {
     if (!mounted) return;
-    final speciesLabel = targetSpecies != null && targetSpecies.trim().isNotEmpty
+    final l10n = AppLocalizations.of(context)!;
+    final speciesLabel =
+        targetSpecies != null && targetSpecies.trim().isNotEmpty
         ? targetSpecies.trim()
         : null;
     final description = speciesLabel == null
-        ? 'Eşleştirme isteği göndermek için önce kendi eşleştirme ilanını oluşturmalısın.'
-        : 'Eşleştirme isteği göndermek için önce aynı türden ilan oluşturmalısın: $speciesLabel.';
+        ? l10n.matingAdvertRequiredDesc
+        : l10n.matingAdvertRequiredForSpecies(speciesLabel);
 
     final shouldCreate = await showModalBottomSheet<bool>(
       context: context,
@@ -420,8 +475,10 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Eşleştirme ilanı gerekli',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                l10n.matingAdvertRequiredTitle,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(description),
@@ -431,14 +488,14 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => Navigator.of(ctx).pop(false),
-                      child: const Text('Vazgec'),
+                      child: Text(l10n.cancel),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: FilledButton(
                       onPressed: () => Navigator.of(ctx).pop(true),
-                      child: const Text('Şimdi ilan oluştur'),
+                      child: Text(l10n.matingCreateAdvertNow),
                     ),
                   ),
                 ],
@@ -461,15 +518,22 @@ class _MatingScreenState extends ConsumerState<MatingScreen> {
 
 // ─── Filter Chips ────────────────────────────────────────────────────────────
 
+class _FilterOption {
+  const _FilterOption(this.value, this.label);
+
+  final String? value;
+  final String label;
+}
+
 class _FilterChips extends StatelessWidget {
   final String label;
-  final List<String> values;
-  final String selectedValue;
-  final ValueChanged<String> onSelected;
+  final List<_FilterOption> options;
+  final String? selectedValue;
+  final ValueChanged<String?> onSelected;
 
   const _FilterChips({
     required this.label,
-    required this.values,
+    required this.options,
     required this.selectedValue,
     required this.onSelected,
   });
@@ -485,23 +549,27 @@ class _FilterChips extends StatelessWidget {
         Wrap(
           spacing: 10,
           runSpacing: 10,
-          children: values.map((value) {
-            final isSelected = value == selectedValue;
+          children: options.map((option) {
+            final isSelected = option.value == selectedValue;
             return FilterChip(
               label: Text(
-                value,
+                option.label,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: isSelected ? Colors.white : theme.colorScheme.onSurface,
+                  color: isSelected
+                      ? Colors.white
+                      : theme.colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               selected: isSelected,
-              onSelected: (_) => onSelected(value),
+              onSelected: (_) => onSelected(option.value),
               showCheckmark: false,
               backgroundColor: theme.colorScheme.surface,
               selectedColor: theme.colorScheme.primary,
               side: BorderSide(
-                color: isSelected ? Colors.transparent : theme.colorScheme.primary.withOpacity(0.12),
+                color: isSelected
+                    ? Colors.transparent
+                    : theme.colorScheme.primary.withOpacity(0.12),
               ),
             );
           }).toList(),
@@ -531,7 +599,8 @@ class _SwipeCardDeck extends StatefulWidget {
   State<_SwipeCardDeck> createState() => _SwipeCardDeckState();
 }
 
-class _SwipeCardDeckState extends State<_SwipeCardDeck> with SingleTickerProviderStateMixin {
+class _SwipeCardDeckState extends State<_SwipeCardDeck>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   Offset _dragOffset = Offset.zero;
   bool _isAnimating = false;
@@ -628,13 +697,17 @@ class _SwipeCardDeckState extends State<_SwipeCardDeck> with SingleTickerProvide
     }
 
     final profile = widget.profiles[safeIndex];
-    final nextProfile = safeIndex + 1 < widget.profiles.length ? widget.profiles[safeIndex + 1] : null;
+    final nextProfile = safeIndex + 1 < widget.profiles.length
+        ? widget.profiles[safeIndex + 1]
+        : null;
 
     final screenWidth = MediaQuery.of(context).size.width;
     final swipeProgress = (_dragOffset.dx / screenWidth).clamp(-1.0, 1.0);
     final rotation = swipeProgress * 0.14;
     final likeOpacity = swipeProgress > 0 ? swipeProgress.clamp(0.0, 1.0) : 0.0;
-    final nopeOpacity = swipeProgress < 0 ? (-swipeProgress).clamp(0.0, 1.0) : 0.0;
+    final nopeOpacity = swipeProgress < 0
+        ? (-swipeProgress).clamp(0.0, 1.0)
+        : 0.0;
 
     return Column(
       children: [
@@ -739,6 +812,7 @@ class _SwipeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
@@ -798,14 +872,20 @@ class _SwipeCard extends StatelessWidget {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             profile.gender,
-                            style: const TextStyle(color: Colors.white, fontSize: 13),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ],
@@ -818,16 +898,26 @@ class _SwipeCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             profile.breed,
-                            style: const TextStyle(color: Colors.white70, fontSize: 14),
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.location_on, color: Colors.white70, size: 16),
+                        const Icon(
+                          Icons.location_on,
+                          color: Colors.white70,
+                          size: 16,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           '${profile.distanceKmRounded} km',
-                          style: const TextStyle(color: Colors.white70, fontSize: 14),
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                     ),
@@ -842,7 +932,10 @@ class _SwipeCard extends StatelessWidget {
                 top: 16,
                 right: 16,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: _scoreColor(profile.score).withOpacity(0.88),
                     borderRadius: BorderRadius.circular(20),
@@ -856,7 +949,11 @@ class _SwipeCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star_rounded, color: Colors.white, size: 14),
+                      const Icon(
+                        Icons.star_rounded,
+                        color: Colors.white,
+                        size: 14,
+                      ),
                       const SizedBox(width: 3),
                       Text(
                         '${profile.score}',
@@ -877,19 +974,30 @@ class _SwipeCard extends StatelessWidget {
                 top: 16,
                 left: 16,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green.withOpacity(0.85),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.verified_rounded, color: Colors.white, size: 13),
+                      Icon(
+                        Icons.verified_rounded,
+                        color: Colors.white,
+                        size: 13,
+                      ),
                       SizedBox(width: 3),
                       Text(
-                        'Aşılı',
-                        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                        l10n.matingVaccinated,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -906,14 +1014,20 @@ class _SwipeCard extends StatelessWidget {
                   child: Transform.rotate(
                     angle: -0.2,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFF2D6A4F), width: 3),
+                        border: Border.all(
+                          color: const Color(0xFF2D6A4F),
+                          width: 3,
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text(
-                        'LIKE',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.matingLikeStamp,
+                        style: const TextStyle(
                           color: Color(0xFF4CAF50),
                           fontSize: 28,
                           fontWeight: FontWeight.w900,
@@ -935,14 +1049,20 @@ class _SwipeCard extends StatelessWidget {
                   child: Transform.rotate(
                     angle: 0.2,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFFFF6B6B), width: 3),
+                        border: Border.all(
+                          color: const Color(0xFFFF6B6B),
+                          width: 3,
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text(
-                        'NOPE',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.matingNopeStamp,
+                        style: const TextStyle(
                           color: Color(0xFFFF6B6B),
                           fontSize: 28,
                           fontWeight: FontWeight.w900,
@@ -1030,26 +1150,30 @@ class _EndOfCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.celebration_outlined, size: 80, color: theme.colorScheme.primary),
+          Icon(
+            Icons.celebration_outlined,
+            size: 80,
+            color: theme.colorScheme.primary,
+          ),
           const SizedBox(height: 16),
           Text(
-            'Hepsi bu kadar!',
-            style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            l10n.matingEndTitle,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Yakınında başka profil bulunamadı.',
-            style: theme.textTheme.bodyMedium,
-          ),
+          Text(l10n.matingEndDesc, style: theme.textTheme.bodyMedium),
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: onRefresh,
             icon: const Icon(Icons.refresh),
-            label: const Text('Yenile'),
+            label: Text(l10n.matingRefresh),
           ),
         ],
       ),
@@ -1066,31 +1190,28 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.search_off, size: 60, color: theme.colorScheme.primary),
           const SizedBox(height: 16),
-          Text(
-            'Filtreleri gevşetmeyi deneyin',
-            style: theme.textTheme.titleMedium,
-          ),
+          Text(l10n.matingEmptyTitle, style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
-          Text(
-            'Yakınında henüz uygun eşleşme bulunamadı.',
-            style: theme.textTheme.bodyMedium,
-          ),
+          Text(l10n.matingEmptyDesc, style: theme.textTheme.bodyMedium),
           if (onClearFilters != null) ...[
             const SizedBox(height: 16),
             OutlinedButton.icon(
               onPressed: onClearFilters,
               icon: const Icon(Icons.filter_alt_off, size: 18),
-              label: const Text('Filtreyi Temizle'),
+              label: Text(l10n.matingClearFilter),
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFF2D6A4F),
                 side: const BorderSide(color: Color(0xFF2D6A4F)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],
@@ -1115,6 +1236,7 @@ class _ErrorState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -1123,10 +1245,7 @@ class _ErrorState extends StatelessWidget {
           children: [
             Icon(Icons.error_outline, size: 60, color: theme.colorScheme.error),
             const SizedBox(height: 16),
-            Text(
-              'Bir sorun oluştu',
-              style: theme.textTheme.titleMedium,
-            ),
+            Text(l10n.matingErrorTitle, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             Text(
               message,
@@ -1134,10 +1253,7 @@ class _ErrorState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            FilledButton(
-              onPressed: onRetry,
-              child: const Text('Tekrar Dene'),
-            ),
+            FilledButton(onPressed: onRetry, child: Text(l10n.retry)),
           ],
         ),
       ),

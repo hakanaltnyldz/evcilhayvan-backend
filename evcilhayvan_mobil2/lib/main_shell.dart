@@ -149,19 +149,25 @@ class _MainShellState extends ConsumerState<MainShell> {
 
   void _setupSocketListeners(SocketService socketService) {
     final notifier = ref.read(notificationProvider.notifier);
+    final l10n = AppLocalizations.of(context)!;
 
     // Match request listener
     _socketSubscriptions.add(
       socketService.onMatchRequest.listen((event) {
         if (!mounted) return;
-        notifier.addNotification(AppNotification(
-          id: 'match_req_${event.requestId}',
-          type: NotificationType.matchRequest,
-          title: 'Eslestirme Istegi',
-          body: '${event.senderName} sana ${event.senderPetName} icin eslestirme istegi gonderdi.',
-          data: {'requestId': event.requestId},
-          createdAt: DateTime.now(),
-        ));
+        notifier.addNotification(
+          AppNotification(
+            id: 'match_req_${event.requestId}',
+            type: NotificationType.matchRequest,
+            title: l10n.shellMatchRequestTitle,
+            body: l10n.shellMatchRequestBody(
+              event.senderName,
+              event.senderPetName,
+            ),
+            data: {'requestId': event.requestId},
+            createdAt: DateTime.now(),
+          ),
+        );
         showMatchRequestSnackBar(context, event);
       }),
     );
@@ -170,21 +176,24 @@ class _MainShellState extends ConsumerState<MainShell> {
     _socketSubscriptions.add(
       socketService.onMatchAccepted.listen((event) {
         if (!mounted) return;
-        notifier.addNotification(AppNotification(
-          id: 'match_acc_${event.matchRequestId}',
-          type: NotificationType.matchAccepted,
-          title: 'Eslestirme Kabul Edildi',
-          body: '${event.partnerName} eslestirme istegini kabul etti! Artik mesajlasabilirsiniz.',
-          data: {'conversationId': event.conversationId},
-          createdAt: DateTime.now(),
-        ));
+        notifier.addNotification(
+          AppNotification(
+            id: 'match_acc_${event.matchRequestId}',
+            type: NotificationType.matchAccepted,
+            title: l10n.shellMatchAcceptedTitle,
+            body: l10n.shellMatchAcceptedBody(event.partnerName),
+            data: {'conversationId': event.conversationId},
+            createdAt: DateTime.now(),
+          ),
+        );
         showMatchAcceptedSnackBar(
           context,
           event,
           onGoToChat: () {
-            context.goNamed('chat', pathParameters: {
-              'conversationId': event.conversationId,
-            });
+            context.goNamed(
+              'chat',
+              pathParameters: {'conversationId': event.conversationId},
+            );
           },
         );
       }),
@@ -194,14 +203,16 @@ class _MainShellState extends ConsumerState<MainShell> {
     _socketSubscriptions.add(
       socketService.onMatchRejected.listen((event) {
         if (!mounted) return;
-        notifier.addNotification(AppNotification(
-          id: 'match_rej_${event.matchRequestId}',
-          type: NotificationType.matchRejected,
-          title: 'Eslestirme Reddedildi',
-          body: '${event.rejectorName} eslestirme istegini reddetti.',
-          data: {'requestId': event.matchRequestId},
-          createdAt: DateTime.now(),
-        ));
+        notifier.addNotification(
+          AppNotification(
+            id: 'match_rej_${event.matchRequestId}',
+            type: NotificationType.matchRejected,
+            title: l10n.shellMatchRejectedTitle,
+            body: l10n.shellMatchRejectedBody(event.rejectorName),
+            data: {'requestId': event.matchRequestId},
+            createdAt: DateTime.now(),
+          ),
+        );
         showMatchRejectedSnackBar(context, event);
       }),
     );
@@ -212,21 +223,24 @@ class _MainShellState extends ConsumerState<MainShell> {
         if (!mounted) return;
         final currentChat = ref.read(currentChatConversationProvider);
         if (currentChat != event.conversationId) {
-          notifier.addNotification(AppNotification(
-            id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
-            type: NotificationType.newMessage,
-            title: 'Yeni Mesaj',
-            body: '${event.senderName}: ${event.message}',
-            data: {'conversationId': event.conversationId},
-            createdAt: DateTime.now(),
-          ));
+          notifier.addNotification(
+            AppNotification(
+              id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
+              type: NotificationType.newMessage,
+              title: l10n.shellNewMessageTitle,
+              body: '${event.senderName}: ${event.message}',
+              data: {'conversationId': event.conversationId},
+              createdAt: DateTime.now(),
+            ),
+          );
           showNewMessageSnackBar(
             context,
             event,
             onGoToChat: () {
-              context.goNamed('chat', pathParameters: {
-                'conversationId': event.conversationId,
-              });
+              context.goNamed(
+                'chat',
+                pathParameters: {'conversationId': event.conversationId},
+              );
             },
           );
         }
@@ -237,15 +251,23 @@ class _MainShellState extends ConsumerState<MainShell> {
     socketService.onEvent('vaccination:reminder', (data) {
       if (!mounted) return;
       try {
-        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
-        notifier.addNotification(AppNotification(
-          id: 'vac_${d['recordId'] ?? DateTime.now().millisecondsSinceEpoch}',
-          type: NotificationType.vaccinationReminder,
-          title: 'Asi Hatirlatmasi',
-          body: '${d['petName']?.toString() ?? 'Bilinmeyen'} icin ${d['vaccineName']?.toString() ?? 'bilinmeyen'} asisi ${d['daysUntilDue']?.toString() ?? '?'} gun icinde yapilmali.',
-          data: {'petId': d['petId']?.toString()},
-          createdAt: DateTime.now(),
-        ));
+        final d = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
+        notifier.addNotification(
+          AppNotification(
+            id: 'vac_${d['recordId'] ?? DateTime.now().millisecondsSinceEpoch}',
+            type: NotificationType.vaccinationReminder,
+            title: l10n.shellVaccinationReminderTitle,
+            body: l10n.shellVaccinationReminderBody(
+              d['petName']?.toString() ?? l10n.shellUnknownPet,
+              d['vaccineName']?.toString() ?? l10n.shellUnknownVaccine,
+              d['daysUntilDue']?.toString() ?? '?',
+            ),
+            data: {'petId': d['petId']?.toString()},
+            createdAt: DateTime.now(),
+          ),
+        );
       } catch (_) {}
     });
 
@@ -253,15 +275,21 @@ class _MainShellState extends ConsumerState<MainShell> {
     socketService.onEvent('adoption:new_application', (data) {
       if (!mounted) return;
       try {
-        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
-        notifier.addNotification(AppNotification(
-          id: 'adopt_new_${d['applicationId'] ?? DateTime.now().millisecondsSinceEpoch}',
-          type: NotificationType.adoptionNew,
-          title: 'Yeni Sahiplendirme Basvurusu',
-          body: '${d['applicantName'] ?? 'Birisi'} ilaniniza basvuru yapti.',
-          data: d,
-          createdAt: DateTime.now(),
-        ));
+        final d = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
+        notifier.addNotification(
+          AppNotification(
+            id: 'adopt_new_${d['applicationId'] ?? DateTime.now().millisecondsSinceEpoch}',
+            type: NotificationType.adoptionNew,
+            title: l10n.shellAdoptionNewTitle,
+            body: l10n.shellAdoptionNewBody(
+              d['applicantName']?.toString() ?? l10n.shellSomeone,
+            ),
+            data: d,
+            createdAt: DateTime.now(),
+          ),
+        );
       } catch (_) {}
     });
 
@@ -269,15 +297,19 @@ class _MainShellState extends ConsumerState<MainShell> {
     socketService.onEvent('adoption:accepted', (data) {
       if (!mounted) return;
       try {
-        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
-        notifier.addNotification(AppNotification(
-          id: 'adopt_acc_${d['applicationId'] ?? DateTime.now().millisecondsSinceEpoch}',
-          type: NotificationType.adoptionAccepted,
-          title: 'Basvuru Kabul Edildi',
-          body: 'Sahiplendirme basvurunuz kabul edildi!',
-          data: d,
-          createdAt: DateTime.now(),
-        ));
+        final d = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
+        notifier.addNotification(
+          AppNotification(
+            id: 'adopt_acc_${d['applicationId'] ?? DateTime.now().millisecondsSinceEpoch}',
+            type: NotificationType.adoptionAccepted,
+            title: l10n.shellAdoptionAcceptedTitle,
+            body: l10n.shellAdoptionAcceptedBody,
+            data: d,
+            createdAt: DateTime.now(),
+          ),
+        );
       } catch (_) {}
     });
 
@@ -285,15 +317,22 @@ class _MainShellState extends ConsumerState<MainShell> {
     socketService.onEvent('sitter:new_booking', (data) {
       if (!mounted) return;
       try {
-        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
-        notifier.addNotification(AppNotification(
-          id: 'sitter_bk_${d['bookingId'] ?? DateTime.now().millisecondsSinceEpoch}',
-          type: NotificationType.sitterBooking,
-          title: 'Yeni Rezervasyon Talebi',
-          body: '${d['ownerName'] ?? 'Birisi'} ${d['serviceType'] ?? ''} icin rezervasyon istedi.',
-          data: {'bookingId': d['bookingId']?.toString()},
-          createdAt: DateTime.now(),
-        ));
+        final d = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
+        notifier.addNotification(
+          AppNotification(
+            id: 'sitter_bk_${d['bookingId'] ?? DateTime.now().millisecondsSinceEpoch}',
+            type: NotificationType.sitterBooking,
+            title: l10n.shellSitterNewBookingTitle,
+            body: l10n.shellSitterNewBookingBody(
+              d['ownerName']?.toString() ?? l10n.shellSomeone,
+              d['serviceType']?.toString() ?? '',
+            ),
+            data: {'bookingId': d['bookingId']?.toString()},
+            createdAt: DateTime.now(),
+          ),
+        );
       } catch (_) {}
     });
 
@@ -301,30 +340,36 @@ class _MainShellState extends ConsumerState<MainShell> {
     socketService.onEvent('sitter:booking_update', (data) {
       if (!mounted) return;
       try {
-        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
+        final d = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
         final status = d['status']?.toString() ?? '';
         final title = status == 'accepted'
-            ? 'Rezervasyon Kabul Edildi'
+            ? l10n.shellSitterAcceptedTitle
             : status == 'active'
-                ? 'Bakim Basladi'
+            ? l10n.shellSitterActiveTitle
             : status == 'rejected'
-                ? 'Rezervasyon Reddedildi'
-                : 'Rezervasyon Guncellendi';
+            ? l10n.shellSitterRejectedTitle
+            : l10n.shellSitterUpdatedTitle;
+        final sitterName =
+            d['sitterName']?.toString() ?? l10n.shellSitterNameDefault;
         final body = status == 'accepted'
-            ? '${d['sitterName'] ?? 'Bakici'} rezervasyonunuzu kabul etti!'
+            ? l10n.shellSitterAcceptedBody(sitterName)
             : status == 'active'
-                ? '${d['sitterName'] ?? 'Bakici'} kopegi teslim aldi. Canli konum acildi.'
+            ? l10n.shellSitterActiveBody(sitterName)
             : status == 'rejected'
-                ? '${d['sitterName'] ?? 'Bakici'} rezervasyonunuzu reddetti.'
-                : 'Rezervasyonunuz $status durumuna guncellendi.';
-        notifier.addNotification(AppNotification(
-          id: 'sitter_upd_${d['bookingId'] ?? DateTime.now().millisecondsSinceEpoch}',
-          type: NotificationType.sitterBooking,
-          title: title,
-          body: body,
-          data: {'bookingId': d['bookingId']?.toString()},
-          createdAt: DateTime.now(),
-        ));
+            ? l10n.shellSitterRejectedBody(sitterName)
+            : l10n.shellSitterUpdatedBody(status);
+        notifier.addNotification(
+          AppNotification(
+            id: 'sitter_upd_${d['bookingId'] ?? DateTime.now().millisecondsSinceEpoch}',
+            type: NotificationType.sitterBooking,
+            title: title,
+            body: body,
+            data: {'bookingId': d['bookingId']?.toString()},
+            createdAt: DateTime.now(),
+          ),
+        );
       } catch (_) {}
     });
 
@@ -332,18 +377,25 @@ class _MainShellState extends ConsumerState<MainShell> {
     socketService.onEvent('pet:birthday', (data) {
       if (!mounted) return;
       try {
-        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
-        notifier.addNotification(AppNotification(
-          id: 'bday_${d['petId'] ?? DateTime.now().millisecondsSinceEpoch}',
-          type: NotificationType.vaccinationReminder,
-          title: 'Doğum Günü! 🎂',
-          body: d['message']?.toString() ?? 'Dostunuzun doğum günü bugün!',
-          data: {'petId': d['petId']?.toString()},
-          createdAt: DateTime.now(),
-        ));
+        final d = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
+        notifier.addNotification(
+          AppNotification(
+            id: 'bday_${d['petId'] ?? DateTime.now().millisecondsSinceEpoch}',
+            type: NotificationType.vaccinationReminder,
+            title: l10n.shellBirthdayTitle,
+            body: d['message']?.toString() ?? l10n.shellBirthdayDefault,
+            data: {'petId': d['petId']?.toString()},
+            createdAt: DateTime.now(),
+          ),
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(d['message']?.toString() ?? AppLocalizations.of(context)!.shellBirthdayDefault),
+            content: Text(
+              d['message']?.toString() ??
+                  AppLocalizations.of(context)!.shellBirthdayDefault,
+            ),
             backgroundColor: Colors.pink.shade400,
             duration: const Duration(seconds: 5),
           ),
@@ -355,22 +407,29 @@ class _MainShellState extends ConsumerState<MainShell> {
     socketService.onEvent('appointment:reminder', (data) {
       if (!mounted) return;
       try {
-        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
-        final petName = d['petName']?.toString() ?? AppLocalizations.of(context)!.shellApptReminderDefault;
-        final vetName = d['vetName']?.toString() ?? 'Veteriner';
+        final d = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
+        final petName =
+            d['petName']?.toString() ?? l10n.shellApptReminderDefault;
+        final vetName = d['vetName']?.toString() ?? l10n.shellVetDefault;
         final dateStr = d['dateStr']?.toString() ?? '';
-        notifier.addNotification(AppNotification(
-          id: 'appt_${d['appointmentId'] ?? DateTime.now().millisecondsSinceEpoch}',
-          type: NotificationType.vaccinationReminder,
-          title: '🗓️ Randevu Hatırlatıcısı',
-          body: '$petName için yarın $vetName randevunuz var. $dateStr',
-          data: {'appointmentId': d['appointmentId']?.toString()},
-          createdAt: DateTime.now(),
-        ));
+        notifier.addNotification(
+          AppNotification(
+            id: 'appt_${d['appointmentId'] ?? DateTime.now().millisecondsSinceEpoch}',
+            type: NotificationType.vaccinationReminder,
+            title: l10n.shellAppointmentReminderTitle,
+            body: l10n.shellAppointmentReminderBody(petName, vetName, dateStr),
+            data: {'appointmentId': d['appointmentId']?.toString()},
+            createdAt: DateTime.now(),
+          ),
+        );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('🗓️ $petName için yarın $vetName randevunuz var!'),
+              content: Text(
+                l10n.shellAppointmentReminderSnack(petName, vetName),
+              ),
               backgroundColor: const Color(0xFF2D6A4F),
               duration: const Duration(seconds: 5),
               action: SnackBarAction(
@@ -379,8 +438,10 @@ class _MainShellState extends ConsumerState<MainShell> {
                 onPressed: () {
                   final appointmentId = d['appointmentId']?.toString();
                   if (appointmentId != null && appointmentId.isNotEmpty) {
-                    context.pushNamed('appointment-detail',
-                        pathParameters: {'id': appointmentId});
+                    context.pushNamed(
+                      'appointment-detail',
+                      pathParameters: {'id': appointmentId},
+                    );
                   } else {
                     context.pushNamed('veterinary');
                   }
@@ -395,20 +456,27 @@ class _MainShellState extends ConsumerState<MainShell> {
     socketService.onEvent('sitter:location_offline', (data) {
       if (!mounted) return;
       try {
-        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
-        notifier.addNotification(AppNotification(
-          id: 'sitter_location_offline_${d['bookingId'] ?? DateTime.now().millisecondsSinceEpoch}',
-          type: NotificationType.general,
-          title: 'Bakici Konumu Kesildi',
-          body: 'Konum 1 dakikadir alinamiyor. Son gorulen konum gosteriliyor ve odeme durduruldu.',
-          data: {'bookingId': d['bookingId']?.toString()},
-          createdAt: DateTime.now(),
-        ));
+        final d = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
+        notifier.addNotification(
+          AppNotification(
+            id: 'sitter_location_offline_${d['bookingId'] ?? DateTime.now().millisecondsSinceEpoch}',
+            type: NotificationType.general,
+            title: l10n.shellSitterLocationOfflineTitle,
+            body: l10n.shellSitterLocationOfflineBody,
+            data: {'bookingId': d['bookingId']?.toString()},
+            createdAt: DateTime.now(),
+          ),
+        );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Bakici konumu kesildi. Odeme durduruldu.'),
-              action: SnackBarAction(label: 'Goruntule', onPressed: () => context.push('/sitters/bookings')),
+              content: Text(l10n.shellSitterLocationOfflineSnack),
+              action: SnackBarAction(
+                label: l10n.shellView,
+                onPressed: () => context.push('/sitters/bookings'),
+              ),
               duration: const Duration(seconds: 5),
             ),
           );
@@ -420,28 +488,38 @@ class _MainShellState extends ConsumerState<MainShell> {
     socketService.onEvent('appointment:updated', (data) {
       if (!mounted) return;
       try {
-        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
+        final d = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
         final status = d['status']?.toString() ?? '';
-        final statusLabel = {
-          'confirmed': '✅ Onaylandı',
-          'cancelled': '❌ İptal edildi',
-          'completed': '🎉 Tamamlandı',
-          'no_show': '⚠️ Gelmedi',
-        }[status] ?? status;
-        final vetName = d['vetName']?.toString() ?? 'Veteriner';
-        notifier.addNotification(AppNotification(
-          id: 'appt_upd_${d['appointmentId'] ?? DateTime.now().millisecondsSinceEpoch}',
-          type: NotificationType.vaccinationReminder,
-          title: 'Randevu Güncellendi',
-          body: '$vetName randevunuz: $statusLabel',
-          data: {'appointmentId': d['appointmentId']?.toString()},
-          createdAt: DateTime.now(),
-        ));
+        final statusLabel =
+            {
+              'confirmed': l10n.shellStatusConfirmed,
+              'cancelled': l10n.shellStatusCancelled,
+              'completed': l10n.shellStatusCompleted,
+              'no_show': l10n.shellStatusNoShow,
+            }[status] ??
+            status;
+        final vetName = d['vetName']?.toString() ?? l10n.shellVetDefault;
+        notifier.addNotification(
+          AppNotification(
+            id: 'appt_upd_${d['appointmentId'] ?? DateTime.now().millisecondsSinceEpoch}',
+            type: NotificationType.vaccinationReminder,
+            title: l10n.shellAppointmentUpdatedTitle,
+            body: l10n.shellAppointmentUpdatedBody(vetName, statusLabel),
+            data: {'appointmentId': d['appointmentId']?.toString()},
+            createdAt: DateTime.now(),
+          ),
+        );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('$vetName randevunuz: $statusLabel'),
-              backgroundColor: status == 'confirmed' ? const Color(0xFF2D6A4F) : Colors.orange,
+              content: Text(
+                l10n.shellAppointmentUpdatedBody(vetName, statusLabel),
+              ),
+              backgroundColor: status == 'confirmed'
+                  ? const Color(0xFF2D6A4F)
+                  : Colors.orange,
               duration: const Duration(seconds: 4),
             ),
           );
@@ -453,18 +531,29 @@ class _MainShellState extends ConsumerState<MainShell> {
     socketService.onEvent('lostfound:new', (data) {
       if (!mounted) return;
       try {
-        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
+        final d = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
         final isLost = d['type'] == 'lost';
-        notifier.addNotification(AppNotification(
-          id: 'lf_${d['id'] ?? DateTime.now().millisecondsSinceEpoch}',
-          type: NotificationType.lostFoundNearby,
-          title: isLost ? 'Kayip Hayvan Ilani' : 'Bulunan Hayvan Ilani',
-          body: isLost
-              ? '${d['petName'] ?? d['species'] ?? 'Bir hayvan'} kayip! ${d['lastSeenAddress'] ?? ''}'
-              : '${d['species'] ?? 'Bir hayvan'} bulundu! ${d['lastSeenAddress'] ?? ''}',
-          data: {'reportId': d['id']?.toString()},
-          createdAt: DateTime.now(),
-        ));
+        notifier.addNotification(
+          AppNotification(
+            id: 'lf_${d['id'] ?? DateTime.now().millisecondsSinceEpoch}',
+            type: NotificationType.lostFoundNearby,
+            title: isLost ? l10n.shellLostPetTitle : l10n.shellFoundPetTitle,
+            body: isLost
+                ? l10n.shellLostPetBody(
+                    (d['petName'] ?? d['species'] ?? l10n.shellAnimalDefault)
+                        .toString(),
+                    d['lastSeenAddress']?.toString() ?? '',
+                  )
+                : l10n.shellFoundPetBody(
+                    (d['species'] ?? l10n.shellAnimalDefault).toString(),
+                    d['lastSeenAddress']?.toString() ?? '',
+                  ),
+            data: {'reportId': d['id']?.toString()},
+            createdAt: DateTime.now(),
+          ),
+        );
       } catch (_) {}
     });
 
@@ -472,28 +561,34 @@ class _MainShellState extends ConsumerState<MainShell> {
     socketService.onEvent('order:status_update', (data) {
       if (!mounted) return;
       try {
-        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
+        final d = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
         final status = d['status']?.toString() ?? '';
-        final statusLabel = {
-          'processing': 'Hazırlanıyor',
-          'shipped': 'Kargoya Verildi',
-          'delivered': 'Teslim Edildi',
-          'cancelled': 'İptal Edildi',
-        }[status] ?? status;
-        notifier.addNotification(AppNotification(
-          id: 'order_${d['orderId'] ?? DateTime.now().millisecondsSinceEpoch}',
-          type: NotificationType.general,
-          title: 'Sipariş Güncellendi',
-          body: 'Siparişiniz: $statusLabel',
-          data: {'orderId': d['orderId']?.toString()},
-          createdAt: DateTime.now(),
-        ));
+        final statusLabel =
+            {
+              'processing': l10n.shellOrderProcessing,
+              'shipped': l10n.shellOrderShipped,
+              'delivered': l10n.shellOrderDelivered,
+              'cancelled': l10n.shellOrderCancelled,
+            }[status] ??
+            status;
+        notifier.addNotification(
+          AppNotification(
+            id: 'order_${d['orderId'] ?? DateTime.now().millisecondsSinceEpoch}',
+            type: NotificationType.general,
+            title: l10n.shellOrderUpdatedTitle,
+            body: l10n.shellOrderUpdatedBody(statusLabel),
+            data: {'orderId': d['orderId']?.toString()},
+            createdAt: DateTime.now(),
+          ),
+        );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('📦 Siparişiniz güncellendi: $statusLabel'),
+              content: Text(l10n.shellOrderUpdatedSnack(statusLabel)),
               action: SnackBarAction(
-                label: 'Görüntüle',
+                label: l10n.shellView,
                 onPressed: () => context.push('/store/orders'),
               ),
               duration: const Duration(seconds: 5),
@@ -508,22 +603,30 @@ class _MainShellState extends ConsumerState<MainShell> {
     socketService.onEvent('sitter:new_booking', (data) {
       if (!mounted) return;
       try {
-        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
-        final sitterName = d['petName'] as String? ?? 'Yeni rezervasyon';
-        notifier.addNotification(AppNotification(
-          id: 'sitter_booking_${d['bookingId'] ?? DateTime.now().millisecondsSinceEpoch}',
-          type: NotificationType.general,
-          title: 'Yeni Rezervasyon Talebi',
-          body: '$sitterName için rezervasyon talebi geldi.',
-          data: {'bookingId': d['bookingId']?.toString()},
-          createdAt: DateTime.now(),
-        ));
+        final d = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
+        final sitterName =
+            d['petName'] as String? ?? l10n.shellNewBookingDefault;
+        notifier.addNotification(
+          AppNotification(
+            id: 'sitter_booking_${d['bookingId'] ?? DateTime.now().millisecondsSinceEpoch}',
+            type: NotificationType.general,
+            title: l10n.shellSitterNewBookingTitle,
+            body: l10n.shellPetBookingBody(sitterName),
+            data: {'bookingId': d['bookingId']?.toString()},
+            createdAt: DateTime.now(),
+          ),
+        );
         ref.invalidate(incomingBookingsProvider);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('🐾 Yeni rezervasyon talebi var!'),
-              action: SnackBarAction(label: 'Görüntüle', onPressed: () => context.push('/sitters/bookings')),
+              content: Text(l10n.shellNewBookingSnack),
+              action: SnackBarAction(
+                label: l10n.shellView,
+                onPressed: () => context.push('/sitters/bookings'),
+              ),
               duration: const Duration(seconds: 5),
             ),
           );
@@ -535,30 +638,39 @@ class _MainShellState extends ConsumerState<MainShell> {
     socketService.onEvent('sitter:booking_update', (data) {
       if (!mounted) return;
       try {
-        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
+        final d = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
         final status = d['status']?.toString() ?? '';
-        final statusLabel = {
-          'accepted': 'Kabul Edildi',
-          'active': 'Bakim Aktif',
-          'rejected': 'Reddedildi',
-          'completed': 'Tamamlandı',
-          'cancelled': 'İptal Edildi',
-        }[status] ?? status;
-        notifier.addNotification(AppNotification(
-          id: 'sitter_update_${d['bookingId'] ?? DateTime.now().millisecondsSinceEpoch}',
-          type: NotificationType.general,
-          title: 'Rezervasyon Güncellendi',
-          body: 'Rezervasyonunuz: $statusLabel',
-          data: {'bookingId': d['bookingId']?.toString()},
-          createdAt: DateTime.now(),
-        ));
+        final statusLabel =
+            {
+              'accepted': l10n.shellBookingAccepted,
+              'active': l10n.shellBookingActive,
+              'rejected': l10n.shellBookingRejected,
+              'completed': l10n.shellBookingCompleted,
+              'cancelled': l10n.shellBookingCancelled,
+            }[status] ??
+            status;
+        notifier.addNotification(
+          AppNotification(
+            id: 'sitter_update_${d['bookingId'] ?? DateTime.now().millisecondsSinceEpoch}',
+            type: NotificationType.general,
+            title: l10n.shellSitterUpdatedTitle,
+            body: l10n.shellBookingUpdatedBody(statusLabel),
+            data: {'bookingId': d['bookingId']?.toString()},
+            createdAt: DateTime.now(),
+          ),
+        );
         ref.invalidate(myBookingsProvider);
         ref.invalidate(incomingBookingsProvider);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('🐾 Rezervasyon güncellendi: $statusLabel'),
-              action: SnackBarAction(label: 'Görüntüle', onPressed: () => context.push('/sitters/bookings')),
+              content: Text(l10n.shellBookingUpdatedSnack(statusLabel)),
+              action: SnackBarAction(
+                label: l10n.shellView,
+                onPressed: () => context.push('/sitters/bookings'),
+              ),
               duration: const Duration(seconds: 5),
             ),
           );
@@ -569,21 +681,34 @@ class _MainShellState extends ConsumerState<MainShell> {
     socketService.onEvent('advert:expiry_warning', (data) {
       if (!mounted) return;
       try {
-        final d = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
-        notifier.addNotification(AppNotification(
-          id: 'expiry_${d['petId'] ?? DateTime.now().millisecondsSinceEpoch}',
-          type: NotificationType.general,
-          title: 'İlan Süresi Dolmak Üzere',
-          body: d['message'] as String? ?? '"${d['petName']}" ilanınızın süresi doluyor.',
-          data: {'petId': d['petId']?.toString()},
-          createdAt: DateTime.now(),
-        ));
+        final d = data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
+        notifier.addNotification(
+          AppNotification(
+            id: 'expiry_${d['petId'] ?? DateTime.now().millisecondsSinceEpoch}',
+            type: NotificationType.general,
+            title: l10n.shellAdvertExpiryTitle,
+            body:
+                d['message'] as String? ??
+                l10n.shellAdvertExpiryBody(
+                  (d['petName'] ?? l10n.shellAnimalDefault).toString(),
+                ),
+            data: {'petId': d['petId']?.toString()},
+            createdAt: DateTime.now(),
+          ),
+        );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(d['message'] as String? ?? '"${d['petName']}" ilanınızın süresi doluyor.'),
+              content: Text(
+                d['message'] as String? ??
+                    l10n.shellAdvertExpiryBody(
+                      (d['petName'] ?? l10n.shellAnimalDefault).toString(),
+                    ),
+              ),
               action: SnackBarAction(
-                label: AppLocalizations.of(context)!.shellAdvertsNav,
+                label: l10n.shellAdvertsNav,
                 onPressed: () => context.goNamed('profile'),
               ),
               duration: const Duration(seconds: 6),
@@ -597,31 +722,71 @@ class _MainShellState extends ConsumerState<MainShell> {
   void _onItemTapped(int index, BuildContext context) {
     HapticFeedback.lightImpact();
     final currentUser = ref.read(authProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     // Misafir için sadece mesajlar (0) ve profil (4) giriş gerektirir
     if (currentUser == null && (index == 0 || index == 4)) {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Row(children: [
-            Icon(Icons.lock_outline, color: Color(0xFF2D6A4F), size: 22),
-            SizedBox(width: 8),
-            Text('Giriş Gerekiyor', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
-          ]),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              const Icon(
+                Icons.lock_outline,
+                color: Color(0xFF2D6A4F),
+                size: 22,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                l10n.shellLoginRequiredTitle,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
           content: Text(
-            index == 0 ? 'Mesajlara erişmek için giriş yapman gerekiyor.' : 'Profilini görmek için giriş yapman gerekiyor.',
+            index == 0
+                ? l10n.shellMessagesLoginRequired
+                : l10n.shellProfileLoginRequired,
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Vazgeç', style: TextStyle(color: Colors.grey))),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(
+                l10n.cancel,
+                style: const TextStyle(color: Colors.grey),
+              ),
+            ),
             FilledButton(
-              onPressed: () { Navigator.pop(ctx); context.goNamed('login'); },
-              style: FilledButton.styleFrom(backgroundColor: const Color(0xFF2D6A4F), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-              child: const Text('Giriş Yap'),
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.goNamed('login');
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF2D6A4F),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Text(l10n.login),
             ),
             TextButton(
-              onPressed: () { Navigator.pop(ctx); context.goNamed('register'); },
-              child: const Text('Kayıt Ol', style: TextStyle(color: Color(0xFF40916C), fontWeight: FontWeight.w600)),
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.goNamed('register');
+              },
+              child: Text(
+                l10n.register,
+                style: const TextStyle(
+                  color: Color(0xFF40916C),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),
@@ -676,21 +841,28 @@ class _MainShellState extends ConsumerState<MainShell> {
           cartCount += guestItems.length;
         } catch (_) {}
         final msg = cartCount > 0
-            ? 'Sepetinizde $cartCount ürün var. Yine de çıkmak istiyor musunuz?'
-            : 'Uygulamadan çıkmak istediğinize emin misiniz?';
+            ? l10n.shellCartExitMessage(cartCount)
+            : l10n.shellExitMessage;
         final exit = await showDialog<bool>(
           context: context,
           builder: (_) => AlertDialog(
-            title: Text(cartCount > 0 ? 'Sepetinizde ürün var!' : 'Çıkış'),
+            title: Text(
+              cartCount > 0 ? l10n.shellCartExitTitle : l10n.shellExitTitle,
+            ),
             content: Text(msg),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: Text(l10n.no, style: const TextStyle(color: Colors.grey)),
+                child: Text(
+                  l10n.no,
+                  style: const TextStyle(color: Colors.grey),
+                ),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                style: FilledButton.styleFrom(backgroundColor: const Color(0xFF2D6A4F)),
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF2D6A4F),
+                ),
                 child: Text(l10n.yes),
               ),
             ],
@@ -699,140 +871,157 @@ class _MainShellState extends ConsumerState<MainShell> {
         if (exit == true) SystemNavigator.pop();
       },
       child: SafeArea(
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        // Rehber Pati — uygulama içi AI navigasyon asistanı
-        floatingActionButton: Padding(
-          padding: const EdgeInsets.only(bottom: 76),
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [Color(0xFF2D6A4F), Color(0xFF52B788)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF52B788).withOpacity(0.4),
-                  blurRadius: 20,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: FloatingActionButton.small(
-              onPressed: () => context.pushNamed('guide'),
-              backgroundColor: Colors.transparent,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              tooltip: l10n.shellGuideFab,
-              child: const Icon(Icons.assistant_rounded, size: 20),
-            ),
-          )
-              .animate(
-                onPlay: (ctrl) => ctrl.repeat(reverse: true, period: const Duration(seconds: 3)),
-              )
-              .scale(
-                begin: const Offset(1, 1),
-                end: const Offset(1.1, 1.1),
-                duration: 900.ms,
-                curve: Curves.easeInOut,
-              ),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        body: Column(
-          children: [
-            // ─── Çevrimdışı banner ────────────────────────────────────────
-            AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              child: _isOffline
-                  ? Container(
-                      width: double.infinity,
-                      color: Colors.red.shade700,
-                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.wifi_off, color: Colors.white, size: 16),
-                          const SizedBox(width: 8),
-                          Text(
-                            l10n.shellOfflineBanner,
-                            style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          // Rehber Pati — uygulama içi AI navigasyon asistanı
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.only(bottom: 76),
+            child:
+                Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2D6A4F), Color(0xFF52B788)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF52B788).withOpacity(0.4),
+                            blurRadius: 20,
+                            spreadRadius: 2,
                           ),
                         ],
                       ),
+                      child: FloatingActionButton.small(
+                        onPressed: () => context.pushNamed('guide'),
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        tooltip: l10n.shellGuideFab,
+                        child: const Icon(Icons.assistant_rounded, size: 20),
+                      ),
                     )
-                  : const SizedBox.shrink(),
-            ),
-            Expanded(child: widget.child),
-          ],
-        ),
-        bottomNavigationBar: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(32),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-              child: Container(
-            clipBehavior: Clip.none,
-            decoration: BoxDecoration(
-              color: context.isDark
-                  ? const Color(0xFF1E1E1E).withOpacity(0.88)
-                  : Colors.white.withOpacity(0.88),
-              borderRadius: BorderRadius.circular(32),
-              border: Border.all(
-                color: context.isDark
-                    ? Colors.white.withOpacity(0.08)
-                    : Colors.grey.shade200,
-                width: 0.5,
+                    .animate(
+                      onPlay: (ctrl) => ctrl.repeat(
+                        reverse: true,
+                        period: const Duration(seconds: 3),
+                      ),
+                    )
+                    .scale(
+                      begin: const Offset(1, 1),
+                      end: const Offset(1.1, 1.1),
+                      duration: 900.ms,
+                      curve: Curves.easeInOut,
+                    ),
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          body: Column(
+            children: [
+              // ─── Çevrimdışı banner ────────────────────────────────────────
+              AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                child: _isOffline
+                    ? Container(
+                        width: double.infinity,
+                        color: Colors.red.shade700,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 6,
+                          horizontal: 16,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.wifi_off,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              l10n.shellOfflineBanner,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : const SizedBox.shrink(),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: kPrimaryGreen.withOpacity(0.12),
-                  blurRadius: 20,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: _PillNavBar(
-              selectedIndex: _selectedIndex,
-              onTap: (index) => _onItemTapped(index, context),
-              items: [
-                _PillNavItem(
-                  icon: Icons.chat_bubble_outline,
-                  activeIcon: Icons.chat_bubble,
-                  label: AppLocalizations.of(context)?.navMessages ?? 'Sohbetler',
-                  customIcon: const _MessagesNavIcon(isActive: false),
-                  customActiveIcon: const _MessagesNavIcon(isActive: true),
-                ),
-                _PillNavItem(
-                  icon: Icons.pets_outlined,
-                  activeIcon: Icons.pets,
-                  label: AppLocalizations.of(context)?.navAdopt ?? 'Sahiplen',
-                ),
-                _PillNavItem(
-                  icon: Icons.local_hospital_outlined,
-                  activeIcon: Icons.local_hospital,
-                  label: AppLocalizations.of(context)?.navVet ?? 'Veteriner',
-                ),
-                _PillNavItem(
-                  icon: Icons.store_mall_directory_outlined,
-                  activeIcon: Icons.store,
-                  label: AppLocalizations.of(context)?.navStore ?? 'Mağaza',
-                ),
-                _PillNavItem(
-                  icon: Icons.person_outline,
-                  activeIcon: Icons.person,
-                  label: AppLocalizations.of(context)?.navProfile ?? 'Profil',
-                ),
-              ],
-            ),
+              Expanded(child: widget.child),
+            ],
           ),
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(32),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                child: Container(
+                  clipBehavior: Clip.none,
+                  decoration: BoxDecoration(
+                    color: context.isDark
+                        ? const Color(0xFF1E1E1E).withOpacity(0.88)
+                        : Colors.white.withOpacity(0.88),
+                    borderRadius: BorderRadius.circular(32),
+                    border: Border.all(
+                      color: context.isDark
+                          ? Colors.white.withOpacity(0.08)
+                          : Colors.grey.shade200,
+                      width: 0.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: kPrimaryGreen.withOpacity(0.12),
+                        blurRadius: 20,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: _PillNavBar(
+                    selectedIndex: _selectedIndex,
+                    onTap: (index) => _onItemTapped(index, context),
+                    items: [
+                      _PillNavItem(
+                        icon: Icons.chat_bubble_outline,
+                        activeIcon: Icons.chat_bubble,
+                        label: l10n.navMessages,
+                        customIcon: const _MessagesNavIcon(isActive: false),
+                        customActiveIcon: const _MessagesNavIcon(
+                          isActive: true,
+                        ),
+                      ),
+                      _PillNavItem(
+                        icon: Icons.pets_outlined,
+                        activeIcon: Icons.pets,
+                        label: l10n.navAdopt,
+                      ),
+                      _PillNavItem(
+                        icon: Icons.local_hospital_outlined,
+                        activeIcon: Icons.local_hospital,
+                        label: l10n.navVet,
+                      ),
+                      _PillNavItem(
+                        icon: Icons.store_mall_directory_outlined,
+                        activeIcon: Icons.store,
+                        label: l10n.navStore,
+                      ),
+                      _PillNavItem(
+                        icon: Icons.person_outline,
+                        activeIcon: Icons.person,
+                        label: l10n.navProfile,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ),
-      ),
       ), // SafeArea
     ); // PopScope
   }
@@ -852,7 +1041,9 @@ class _MessagesNavIcon extends ConsumerWidget {
     final hasInitial = (user?.name ?? '').isNotEmpty;
     final initial = hasInitial ? user!.name[0].toUpperCase() : null;
 
-    final borderColor = isActive ? theme.colorScheme.primary : theme.colorScheme.primary.withOpacity(0.2);
+    final borderColor = isActive
+        ? theme.colorScheme.primary
+        : theme.colorScheme.primary.withOpacity(0.2);
 
     return Stack(
       clipBehavior: Clip.none,
@@ -870,15 +1061,10 @@ class _MessagesNavIcon extends ConsumerWidget {
                 ? Image.network(
                     avatarUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _NavIconFallback(
-                      isActive: isActive,
-                      initial: initial,
-                    ),
+                    errorBuilder: (_, __, ___) =>
+                        _NavIconFallback(isActive: isActive, initial: initial),
                   )
-                : _NavIconFallback(
-                    isActive: isActive,
-                    initial: initial,
-                  ),
+                : _NavIconFallback(isActive: isActive, initial: initial),
           ),
         ),
         if (unreadCount > 0)
@@ -925,7 +1111,9 @@ class _NavIconFallback extends StatelessWidget {
           initial!,
           style: theme.textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.bold,
-            color: isActive ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+            color: isActive
+                ? theme.colorScheme.primary
+                : theme.colorScheme.onSurfaceVariant,
           ),
         ),
       );
@@ -933,7 +1121,9 @@ class _NavIconFallback extends StatelessWidget {
 
     return Icon(
       isActive ? Icons.chat_bubble : Icons.chat_bubble_outline,
-      color: isActive ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+      color: isActive
+          ? theme.colorScheme.primary
+          : theme.colorScheme.onSurfaceVariant,
       size: 20,
     );
   }
@@ -1015,71 +1205,90 @@ class _PillNavItemWidget extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeInOut,
-        transform: Matrix4.translationValues(0, isSelected ? -10.0 : 0.0, 0),
-        transformAlignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-        decoration: BoxDecoration(
-          color: isSelected ? kPrimaryPale : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: kPrimaryGreen.withOpacity(0.20),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
-              child: item.customIcon != null
-                  ? (isSelected
-                      ? KeyedSubtree(key: const ValueKey('active'), child: item.customActiveIcon ?? item.customIcon!)
-                      : KeyedSubtree(key: const ValueKey('inactive'), child: item.customIcon!))
-                  : Icon(
-                      isSelected ? item.activeIcon : item.icon,
-                      key: ValueKey(isSelected),
-                      color: isSelected ? primaryColor : mutedColor,
-                      size: 22,
+      child:
+          AnimatedContainer(
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeInOut,
+                transform: Matrix4.translationValues(
+                  0,
+                  isSelected ? -10.0 : 0.0,
+                  0,
+                ),
+                transformAlignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected ? kPrimaryPale : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: kPrimaryGreen.withOpacity(0.20),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ]
+                      : [],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      transitionBuilder: (child, anim) =>
+                          ScaleTransition(scale: anim, child: child),
+                      child: item.customIcon != null
+                          ? (isSelected
+                                ? KeyedSubtree(
+                                    key: const ValueKey('active'),
+                                    child:
+                                        item.customActiveIcon ??
+                                        item.customIcon!,
+                                  )
+                                : KeyedSubtree(
+                                    key: const ValueKey('inactive'),
+                                    child: item.customIcon!,
+                                  ))
+                          : Icon(
+                              isSelected ? item.activeIcon : item.icon,
+                              key: ValueKey(isSelected),
+                              color: isSelected ? primaryColor : mutedColor,
+                              size: 22,
+                            ),
                     ),
-            ),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 240),
-              curve: Curves.easeInOut,
-              child: isSelected
-                  ? Padding(
-                      padding: const EdgeInsets.only(top: 3),
-                      child: Text(
-                        item.label,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: primaryColor,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 9,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ],
-        ),
-      )
-          .animate(key: ValueKey(isSelected))
-          .scale(
-            begin: isSelected ? const Offset(0.88, 0.88) : const Offset(1.0, 1.0),
-            end: const Offset(1.0, 1.0),
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOut,
-          ),
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 240),
+                      curve: Curves.easeInOut,
+                      child: isSelected
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 3),
+                              child: Text(
+                                item.label,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 9,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
+              )
+              .animate(key: ValueKey(isSelected))
+              .scale(
+                begin: isSelected
+                    ? const Offset(0.88, 0.88)
+                    : const Offset(1.0, 1.0),
+                end: const Offset(1.0, 1.0),
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
+              ),
     );
   }
 }

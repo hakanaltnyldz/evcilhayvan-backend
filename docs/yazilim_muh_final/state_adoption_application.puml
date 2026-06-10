@@ -1,0 +1,12 @@
+@startuml
+[*] --> Taslak
+Taslak --> Gonderildi : Basvuru gonder
+Gonderildi --> Incelemede : Ilan sahibi inceler
+Incelemede --> GorusmePlanlandi : Uygun goruldu
+Incelemede --> Reddedildi : Uygun degil
+GorusmePlanlandi --> Onaylandi : Gorusme olumlu
+GorusmePlanlandi --> Reddedildi : Gorusme olumsuz
+Onaylandi --> Tamamlandi : Sahiplenme tamamlandi
+Reddedildi --> [*]
+Tamamlandi --> [*]
+@enduml

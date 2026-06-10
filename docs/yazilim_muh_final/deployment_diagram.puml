@@ -1,0 +1,29 @@
+@startuml
+skinparam componentStyle rectangle
+
+node "Mobil İstemci\nFlutter Uygulaması" as mobile
+node "Admin Web Paneli\nReact/Vite" as adminweb
+node "Satıcı Web Paneli\nReact/Vite" as sellerweb
+
+node "Bulut Uygulama Sunucusu" {
+  component "REST API\nNode.js + Express" as api
+  component "Gerçek Zamanlı Katman\nSocket.io" as socket
+}
+
+database "MongoDB Atlas" as mongo
+cloud "Firebase FCM" as fcm
+cloud "Google Places API" as places
+storage "Dosya Depolama\nUpload Servisi" as storage
+
+mobile --> api : HTTPS
+mobile --> socket : WebSocket
+adminweb --> api : HTTPS
+sellerweb --> api : HTTPS
+
+api --> mongo : CRUD
+api --> fcm : Bildirim
+api --> places : Konum/Veteriner arama
+api --> storage : Dosya yükleme
+socket --> mongo : Mesaj/Konum durumu
+
+@enduml

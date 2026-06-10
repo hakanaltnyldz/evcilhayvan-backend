@@ -182,6 +182,12 @@ abstract class AppLocalizations {
   /// **'Onayla'**
   String get confirm;
 
+  /// No description provided for @ok.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamam'**
+  String get ok;
+
   /// No description provided for @back.
   ///
   /// In tr, this message translates to:
@@ -511,6 +517,78 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Aşılı'**
   String get matingVaccinated;
+
+  /// No description provided for @matingDetailUnavailable.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlan detayı açılamadı.'**
+  String get matingDetailUnavailable;
+
+  /// No description provided for @matingLoginRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşleştirme isteği için önce giriş yapmalısın.'**
+  String get matingLoginRequired;
+
+  /// No description provided for @matingSelectAdvertTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşleştirme için ilan seç'**
+  String get matingSelectAdvertTitle;
+
+  /// No description provided for @matingUnnamedAdvert.
+  ///
+  /// In tr, this message translates to:
+  /// **'İsimsiz ilan'**
+  String get matingUnnamedAdvert;
+
+  /// No description provided for @matingNoDetails.
+  ///
+  /// In tr, this message translates to:
+  /// **'Detay yok'**
+  String get matingNoDetails;
+
+  /// No description provided for @matingContinue.
+  ///
+  /// In tr, this message translates to:
+  /// **'Devam et'**
+  String get matingContinue;
+
+  /// No description provided for @matingAdvertRequiredTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşleştirme ilanı gerekli'**
+  String get matingAdvertRequiredTitle;
+
+  /// No description provided for @matingAdvertRequiredDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşleştirme isteği göndermek için önce kendi eşleştirme ilanını oluşturmalısın.'**
+  String get matingAdvertRequiredDesc;
+
+  /// No description provided for @matingAdvertRequiredForSpecies.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşleştirme isteği göndermek için önce aynı türden ilan oluşturmalısın: {species}.'**
+  String matingAdvertRequiredForSpecies(String species);
+
+  /// No description provided for @matingCreateAdvertNow.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şimdi ilan oluştur'**
+  String get matingCreateAdvertNow;
+
+  /// No description provided for @matingClearFilter.
+  ///
+  /// In tr, this message translates to:
+  /// **'Filtreyi Temizle'**
+  String get matingClearFilter;
+
+  /// No description provided for @matingErrorTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir sorun oluştu'**
+  String get matingErrorTitle;
 
   /// No description provided for @messagesTitle.
   ///
@@ -1880,6 +1958,174 @@ abstract class AppLocalizations {
   /// **'Profil başarıyla sahiplenildi! Artık mesaj alabilirsiniz.'**
   String get vetClaimSuccess;
 
+  /// No description provided for @vetDetailLoginRequiredTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Giriş Gerekli'**
+  String get vetDetailLoginRequiredTitle;
+
+  /// No description provided for @vetDetailMessageLoginRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veterinerle iletişime geçmek için giriş yapmalısınız.'**
+  String get vetDetailMessageLoginRequired;
+
+  /// No description provided for @vetClaimRequestSubmitted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Talebiniz alındı. Admin onayı sonrası profilinize atanacak.'**
+  String get vetClaimRequestSubmitted;
+
+  /// No description provided for @vetClaimRequestTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik Sahiplenme Talebi'**
+  String get vetClaimRequestTitle;
+
+  /// No description provided for @vetClaimRequestDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bilgileriniz admin tarafından doğrulanacak ve onay sonrası klinik profilinize atanacak.'**
+  String get vetClaimRequestDesc;
+
+  /// No description provided for @vetClaimFullName.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ad Soyad'**
+  String get vetClaimFullName;
+
+  /// No description provided for @vetClaimFullNameRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ad soyad gerekli'**
+  String get vetClaimFullNameRequired;
+
+  /// No description provided for @vetClaimPhone.
+  ///
+  /// In tr, this message translates to:
+  /// **'Telefon Numarası'**
+  String get vetClaimPhone;
+
+  /// No description provided for @vetClaimPhoneInvalid.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçerli telefon girin'**
+  String get vetClaimPhoneInvalid;
+
+  /// No description provided for @vetClaimRole.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinikteki Rolünüz'**
+  String get vetClaimRole;
+
+  /// No description provided for @vetClaimRoleVet.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner'**
+  String get vetClaimRoleVet;
+
+  /// No description provided for @vetClaimRoleOwner.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik Sahibi'**
+  String get vetClaimRoleOwner;
+
+  /// No description provided for @vetClaimRoleStaff.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çalışan'**
+  String get vetClaimRoleStaff;
+
+  /// No description provided for @vetClaimRoleOther.
+  ///
+  /// In tr, this message translates to:
+  /// **'Diğer'**
+  String get vetClaimRoleOther;
+
+  /// No description provided for @vetClaimNote.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ek Açıklama (opsiyonel)'**
+  String get vetClaimNote;
+
+  /// No description provided for @vetClaimSubmit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Talebi Gönder'**
+  String get vetClaimSubmit;
+
+  /// No description provided for @vetClaimStatusTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik Sahiplenme Taleplerim'**
+  String get vetClaimStatusTitle;
+
+  /// No description provided for @vetClaimStatusEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz klinik sahiplenme talebiniz yok.'**
+  String get vetClaimStatusEmpty;
+
+  /// No description provided for @vetClaimStatusLoadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Talepler yüklenemedi: {error}'**
+  String vetClaimStatusLoadError(String error);
+
+  /// No description provided for @vetClaimStatusClinicFallback.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik'**
+  String get vetClaimStatusClinicFallback;
+
+  /// No description provided for @vetClaimStatusApproved.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onaylandı'**
+  String get vetClaimStatusApproved;
+
+  /// No description provided for @vetClaimStatusRejected.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reddedildi'**
+  String get vetClaimStatusRejected;
+
+  /// No description provided for @vetClaimStatusPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'İnceleniyor'**
+  String get vetClaimStatusPending;
+
+  /// No description provided for @vetClaimStatusRole.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rol'**
+  String get vetClaimStatusRole;
+
+  /// No description provided for @vetClaimStatusNote.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıklama'**
+  String get vetClaimStatusNote;
+
+  /// No description provided for @vetClaimStatusSubmittedAt.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru Tarihi'**
+  String get vetClaimStatusSubmittedAt;
+
+  /// No description provided for @vetClaimStatusReviewedAt.
+  ///
+  /// In tr, this message translates to:
+  /// **'Karar Tarihi'**
+  String get vetClaimStatusReviewedAt;
+
+  /// No description provided for @vetClaimStatusPendingMessage.
+  ///
+  /// In tr, this message translates to:
+  /// **'Talebiniz admin tarafından inceleniyor. Sonuç bildirim olarak iletilecektir.'**
+  String get vetClaimStatusPendingMessage;
+
   /// No description provided for @vetReviews.
   ///
   /// In tr, this message translates to:
@@ -2221,6 +2467,114 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Kupon kullanım limitine ulaşıldı'**
   String get checkoutErrCouponUsageLimit;
+
+  /// No description provided for @checkoutErrCouponLoginRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kupon kullanmak için giriş yapmalısınız'**
+  String get checkoutErrCouponLoginRequired;
+
+  /// No description provided for @checkoutErrCartTotalUnavailable.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sepet toplamı hesaplanamadı, lütfen sayfayı yenileyin'**
+  String get checkoutErrCartTotalUnavailable;
+
+  /// No description provided for @checkoutCouponRemovedCartChanged.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sepet değiştiği için kupon kaldırıldı. Yeni tutara göre tekrar uygulayın.'**
+  String get checkoutCouponRemovedCartChanged;
+
+  /// No description provided for @checkoutErrGuestRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ad, telefon ve e-posta zorunludur'**
+  String get checkoutErrGuestRequired;
+
+  /// No description provided for @checkoutErrGuestNationalId.
+  ///
+  /// In tr, this message translates to:
+  /// **'TC Kimlik No 11 haneli olmalıdır'**
+  String get checkoutErrGuestNationalId;
+
+  /// No description provided for @checkoutTrackingNumber.
+  ///
+  /// In tr, this message translates to:
+  /// **'Takip Numaranız'**
+  String get checkoutTrackingNumber;
+
+  /// No description provided for @checkoutTrackingEmailSent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Takip linki {email} adresine gönderildi.'**
+  String checkoutTrackingEmailSent(String email);
+
+  /// No description provided for @checkoutTrackOrder.
+  ///
+  /// In tr, this message translates to:
+  /// **'Siparişi Takip Et'**
+  String get checkoutTrackOrder;
+
+  /// No description provided for @checkoutContinueShopping.
+  ///
+  /// In tr, this message translates to:
+  /// **'Alışverişe Devam'**
+  String get checkoutContinueShopping;
+
+  /// No description provided for @checkoutGuestPersonalInfo.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kişisel Bilgiler'**
+  String get checkoutGuestPersonalInfo;
+
+  /// No description provided for @checkoutGuestName.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ad Soyad *'**
+  String get checkoutGuestName;
+
+  /// No description provided for @checkoutGuestPhone.
+  ///
+  /// In tr, this message translates to:
+  /// **'Telefon *'**
+  String get checkoutGuestPhone;
+
+  /// No description provided for @checkoutGuestEmail.
+  ///
+  /// In tr, this message translates to:
+  /// **'E-posta * (takip linki gönderilecek)'**
+  String get checkoutGuestEmail;
+
+  /// No description provided for @checkoutGuestNationalId.
+  ///
+  /// In tr, this message translates to:
+  /// **'TC Kimlik No (opsiyonel)'**
+  String get checkoutGuestNationalId;
+
+  /// No description provided for @checkoutGuestNationalIdHelper.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şifreli olarak saklanır'**
+  String get checkoutGuestNationalIdHelper;
+
+  /// No description provided for @checkoutGuestCity.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şehir'**
+  String get checkoutGuestCity;
+
+  /// No description provided for @checkoutGuestDistrict.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlçe'**
+  String get checkoutGuestDistrict;
+
+  /// No description provided for @checkoutGuestStreet.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açık Adres'**
+  String get checkoutGuestStreet;
 
   /// No description provided for @couponsMyCouponsTitle.
   ///
@@ -3104,6 +3458,18 @@ abstract class AppLocalizations {
   /// **'Sağlık Günlüğü'**
   String get petDetailHealthJournal;
 
+  /// No description provided for @petDetailOpenHealthCard.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sağlık Kartını Aç'**
+  String get petDetailOpenHealthCard;
+
+  /// No description provided for @petDetailActivityHistory.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aktivite Geçmişi'**
+  String get petDetailActivityHistory;
+
   /// No description provided for @petDetailMessage.
   ///
   /// In tr, this message translates to:
@@ -3181,6 +3547,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Eşleştirme isteği göndermek için giriş yapmalısınız.'**
   String get petDetailErrMatingLogin;
+
+  /// No description provided for @petDetailErrAdoptionLogin.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sahiplendirme başvurusu yapabilmek için giriş yapmalısınız.'**
+  String get petDetailErrAdoptionLogin;
 
   /// No description provided for @petDetailNoPetDialog.
   ///
@@ -3349,6 +3721,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Mesajlarda ara...'**
   String get chatSearchHint;
+
+  /// No description provided for @chatRecording.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kayıt yapılıyor...'**
+  String get chatRecording;
 
   /// No description provided for @chatErrMicPermission.
   ///
@@ -3637,6 +4015,180 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Puanınız: {rating}'**
   String orderMyRating(int rating);
+
+  /// No description provided for @orderDetailTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sipariş Detayı'**
+  String get orderDetailTitle;
+
+  /// No description provided for @orderDetailLoadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sipariş yüklenemedi: {error}'**
+  String orderDetailLoadError(String error);
+
+  /// No description provided for @orderDetailOrderNo.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sipariş No'**
+  String get orderDetailOrderNo;
+
+  /// No description provided for @orderDetailCopied.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sipariş ID kopyalandı'**
+  String get orderDetailCopied;
+
+  /// No description provided for @orderDetailOrderDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sipariş Tarihi'**
+  String get orderDetailOrderDate;
+
+  /// No description provided for @orderDetailPayment.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ödeme'**
+  String get orderDetailPayment;
+
+  /// No description provided for @orderDetailTotal.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplam Tutar'**
+  String get orderDetailTotal;
+
+  /// No description provided for @orderDetailNote.
+  ///
+  /// In tr, this message translates to:
+  /// **'Not'**
+  String get orderDetailNote;
+
+  /// No description provided for @orderTrackAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Takip Et'**
+  String get orderTrackAction;
+
+  /// No description provided for @orderDetailCancelling.
+  ///
+  /// In tr, this message translates to:
+  /// **'İptal ediliyor...'**
+  String get orderDetailCancelling;
+
+  /// No description provided for @orderDetailReturnRequest.
+  ///
+  /// In tr, this message translates to:
+  /// **'İade Talebi Oluştur'**
+  String get orderDetailReturnRequest;
+
+  /// No description provided for @orderDetailAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Detay'**
+  String get orderDetailAction;
+
+  /// No description provided for @returnRequestTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'İade Talebi'**
+  String get returnRequestTitle;
+
+  /// No description provided for @returnRequestSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'İade talebiniz alındı. Ekibimiz en kısa sürede dönüş yapacak.'**
+  String get returnRequestSuccess;
+
+  /// No description provided for @returnRequestSubmitError.
+  ///
+  /// In tr, this message translates to:
+  /// **'İade talebi gönderilemedi: {error}'**
+  String returnRequestSubmitError(String error);
+
+  /// No description provided for @returnRequestReasonLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'İade Nedeni'**
+  String get returnRequestReasonLabel;
+
+  /// No description provided for @returnRequestReasonHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir neden seçin'**
+  String get returnRequestReasonHint;
+
+  /// No description provided for @returnRequestReasonRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Lütfen bir neden seçin'**
+  String get returnRequestReasonRequired;
+
+  /// No description provided for @returnRequestReasonWrongProduct.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yanlış ürün gönderildi'**
+  String get returnRequestReasonWrongProduct;
+
+  /// No description provided for @returnRequestReasonDamaged.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hasarlı / kırık geldi'**
+  String get returnRequestReasonDamaged;
+
+  /// No description provided for @returnRequestReasonMismatch.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ürün açıklamayla uyuşmuyor'**
+  String get returnRequestReasonMismatch;
+
+  /// No description provided for @returnRequestReasonExpectation.
+  ///
+  /// In tr, this message translates to:
+  /// **'Beklentimi karşılamadı'**
+  String get returnRequestReasonExpectation;
+
+  /// No description provided for @returnRequestReasonOther.
+  ///
+  /// In tr, this message translates to:
+  /// **'Diğer'**
+  String get returnRequestReasonOther;
+
+  /// No description provided for @returnRequestDescriptionLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıklama (opsiyonel)'**
+  String get returnRequestDescriptionLabel;
+
+  /// No description provided for @returnRequestDescriptionHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Daha fazla detay ekleyin...'**
+  String get returnRequestDescriptionHint;
+
+  /// No description provided for @returnRequestInfo.
+  ///
+  /// In tr, this message translates to:
+  /// **'İade talebi oluşturduktan sonra ekibimiz 1-3 iş günü içinde size dönüş yapacak. Onay durumunda ürünü orijinal ambalajında kargolayabilirsiniz.'**
+  String get returnRequestInfo;
+
+  /// No description provided for @returnRequestSubmitting.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gönderiliyor...'**
+  String get returnRequestSubmitting;
+
+  /// No description provided for @returnRequestSubmit.
+  ///
+  /// In tr, this message translates to:
+  /// **'İade Talebi Gönder'**
+  String get returnRequestSubmit;
+
+  /// No description provided for @returnRequestMoreItems.
+  ///
+  /// In tr, this message translates to:
+  /// **'+{count} ürün daha'**
+  String returnRequestMoreItems(int count);
 
   /// No description provided for @nearbyTitle.
   ///
@@ -4261,6 +4813,216 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Yenile'**
   String get sellerRetry;
+
+  /// No description provided for @sellerStockLoadErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Stok verileri yüklenemedi.'**
+  String get sellerStockLoadErr;
+
+  /// No description provided for @sellerStoreProfileEdit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza Profilini Düzenle'**
+  String get sellerStoreProfileEdit;
+
+  /// No description provided for @sellerStoreProfileUpdated.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza profili güncellendi'**
+  String get sellerStoreProfileUpdated;
+
+  /// No description provided for @sellerStoreProfileUpdateErr.
+  ///
+  /// In tr, this message translates to:
+  /// **'Güncelleme başarısız: {error}'**
+  String sellerStoreProfileUpdateErr(String error);
+
+  /// No description provided for @sellerStoreNameLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza Adı'**
+  String get sellerStoreNameLabel;
+
+  /// No description provided for @sellerStoreDescLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıklama'**
+  String get sellerStoreDescLabel;
+
+  /// No description provided for @sellerStorePhoneLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Telefon'**
+  String get sellerStorePhoneLabel;
+
+  /// No description provided for @sellerStoreWebsiteLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Web Sitesi'**
+  String get sellerStoreWebsiteLabel;
+
+  /// No description provided for @sellerStoreInstagramLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Instagram (kullanıcı adı)'**
+  String get sellerStoreInstagramLabel;
+
+  /// No description provided for @sellerStoreTwitterLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Twitter/X (kullanıcı adı)'**
+  String get sellerStoreTwitterLabel;
+
+  /// No description provided for @sellerStoreFacebookLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Facebook (kullanıcı adı)'**
+  String get sellerStoreFacebookLabel;
+
+  /// No description provided for @sellerStoreWorkingHoursLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çalışma Saatleri (örn: Pzt-Cum 09:00-18:00)'**
+  String get sellerStoreWorkingHoursLabel;
+
+  /// No description provided for @editStoreTabBasic.
+  ///
+  /// In tr, this message translates to:
+  /// **'Temel'**
+  String get editStoreTabBasic;
+
+  /// No description provided for @editStoreTabContact.
+  ///
+  /// In tr, this message translates to:
+  /// **'İletişim'**
+  String get editStoreTabContact;
+
+  /// No description provided for @editStoreTabHours.
+  ///
+  /// In tr, this message translates to:
+  /// **'Saatler'**
+  String get editStoreTabHours;
+
+  /// No description provided for @editStoreNameHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza adınızı girin'**
+  String get editStoreNameHint;
+
+  /// No description provided for @editStoreNameRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağaza adı zorunlu'**
+  String get editStoreNameRequired;
+
+  /// No description provided for @editStoreNameMin.
+  ///
+  /// In tr, this message translates to:
+  /// **'En az 2 karakter olmalı'**
+  String get editStoreNameMin;
+
+  /// No description provided for @editStoreDescHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mağazanız hakkında kısa bir açıklama yazın'**
+  String get editStoreDescHint;
+
+  /// No description provided for @editStoreDescInfo.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıklama, mağaza profilinizde müşterilere gösterilir.'**
+  String get editStoreDescInfo;
+
+  /// No description provided for @editStoreSocialMedia.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sosyal Medya'**
+  String get editStoreSocialMedia;
+
+  /// No description provided for @editStoreInstagramHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Instagram kullanıcı adı'**
+  String get editStoreInstagramHint;
+
+  /// No description provided for @editStoreTwitterHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Twitter/X kullanıcı adı'**
+  String get editStoreTwitterHint;
+
+  /// No description provided for @editStoreFacebookHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Facebook sayfa adı'**
+  String get editStoreFacebookHint;
+
+  /// No description provided for @editStoreWorkingHoursInfo.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çalışma saatleriniz mağaza profilinizde gösterilir.'**
+  String get editStoreWorkingHoursInfo;
+
+  /// No description provided for @editStoreOpenTime.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açılış'**
+  String get editStoreOpenTime;
+
+  /// No description provided for @editStoreCloseTime.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kapanış'**
+  String get editStoreCloseTime;
+
+  /// No description provided for @editStoreClosed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kapalı'**
+  String get editStoreClosed;
+
+  /// No description provided for @editStoreDayMon.
+  ///
+  /// In tr, this message translates to:
+  /// **'Pzt'**
+  String get editStoreDayMon;
+
+  /// No description provided for @editStoreDayTue.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sal'**
+  String get editStoreDayTue;
+
+  /// No description provided for @editStoreDayWed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çar'**
+  String get editStoreDayWed;
+
+  /// No description provided for @editStoreDayThu.
+  ///
+  /// In tr, this message translates to:
+  /// **'Per'**
+  String get editStoreDayThu;
+
+  /// No description provided for @editStoreDayFri.
+  ///
+  /// In tr, this message translates to:
+  /// **'Cum'**
+  String get editStoreDayFri;
+
+  /// No description provided for @editStoreDaySat.
+  ///
+  /// In tr, this message translates to:
+  /// **'Cmt'**
+  String get editStoreDaySat;
+
+  /// No description provided for @editStoreDaySun.
+  ///
+  /// In tr, this message translates to:
+  /// **'Paz'**
+  String get editStoreDaySun;
 
   /// No description provided for @productMgmtTitle.
   ///
@@ -4934,6 +5696,452 @@ abstract class AppLocalizations {
   /// **'Rehber Pati'**
   String get shellGuideFab;
 
+  /// No description provided for @shellMatchRequestTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşleştirme İsteği'**
+  String get shellMatchRequestTitle;
+
+  /// No description provided for @shellMatchRequestBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'{senderName} sana {petName} için eşleştirme isteği gönderdi.'**
+  String shellMatchRequestBody(String senderName, String petName);
+
+  /// No description provided for @shellMatchAcceptedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşleştirme Kabul Edildi'**
+  String get shellMatchAcceptedTitle;
+
+  /// No description provided for @shellMatchAcceptedBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'{partnerName} eşleştirme isteğini kabul etti! Artık mesajlaşabilirsiniz.'**
+  String shellMatchAcceptedBody(String partnerName);
+
+  /// No description provided for @shellMatchRejectedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşleştirme Reddedildi'**
+  String get shellMatchRejectedTitle;
+
+  /// No description provided for @shellMatchRejectedBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'{rejectorName} eşleştirme isteğini reddetti.'**
+  String shellMatchRejectedBody(String rejectorName);
+
+  /// No description provided for @shellNewMessageTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni Mesaj'**
+  String get shellNewMessageTitle;
+
+  /// No description provided for @shellUnknownPet.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bilinmeyen'**
+  String get shellUnknownPet;
+
+  /// No description provided for @shellUnknownVaccine.
+  ///
+  /// In tr, this message translates to:
+  /// **'bilinmeyen'**
+  String get shellUnknownVaccine;
+
+  /// No description provided for @shellVaccinationReminderTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aşı Hatırlatması'**
+  String get shellVaccinationReminderTitle;
+
+  /// No description provided for @shellVaccinationReminderBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'{petName} için {vaccineName} aşısı {days} gün içinde yapılmalı.'**
+  String shellVaccinationReminderBody(
+    String petName,
+    String vaccineName,
+    String days,
+  );
+
+  /// No description provided for @shellSomeone.
+  ///
+  /// In tr, this message translates to:
+  /// **'Birisi'**
+  String get shellSomeone;
+
+  /// No description provided for @shellAdoptionNewTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni Sahiplendirme Başvurusu'**
+  String get shellAdoptionNewTitle;
+
+  /// No description provided for @shellAdoptionNewBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'{applicantName} ilanınıza başvuru yaptı.'**
+  String shellAdoptionNewBody(String applicantName);
+
+  /// No description provided for @shellAdoptionAcceptedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru Kabul Edildi'**
+  String get shellAdoptionAcceptedTitle;
+
+  /// No description provided for @shellAdoptionAcceptedBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sahiplendirme başvurunuz kabul edildi!'**
+  String get shellAdoptionAcceptedBody;
+
+  /// No description provided for @shellSitterNewBookingTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni Rezervasyon Talebi'**
+  String get shellSitterNewBookingTitle;
+
+  /// No description provided for @shellSitterNewBookingBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'{ownerName} {serviceType} için rezervasyon istedi.'**
+  String shellSitterNewBookingBody(String ownerName, String serviceType);
+
+  /// No description provided for @shellSitterNameDefault.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcı'**
+  String get shellSitterNameDefault;
+
+  /// No description provided for @shellSitterAcceptedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rezervasyon Kabul Edildi'**
+  String get shellSitterAcceptedTitle;
+
+  /// No description provided for @shellSitterActiveTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakım Başladı'**
+  String get shellSitterActiveTitle;
+
+  /// No description provided for @shellSitterRejectedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rezervasyon Reddedildi'**
+  String get shellSitterRejectedTitle;
+
+  /// No description provided for @shellSitterUpdatedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rezervasyon Güncellendi'**
+  String get shellSitterUpdatedTitle;
+
+  /// No description provided for @shellSitterAcceptedBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'{sitterName} rezervasyonunuzu kabul etti!'**
+  String shellSitterAcceptedBody(String sitterName);
+
+  /// No description provided for @shellSitterActiveBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'{sitterName} evcil hayvanı teslim aldı. Canlı konum açıldı.'**
+  String shellSitterActiveBody(String sitterName);
+
+  /// No description provided for @shellSitterRejectedBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'{sitterName} rezervasyonunuzu reddetti.'**
+  String shellSitterRejectedBody(String sitterName);
+
+  /// No description provided for @shellSitterUpdatedBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rezervasyonunuz {status} durumuna güncellendi.'**
+  String shellSitterUpdatedBody(String status);
+
+  /// No description provided for @shellBirthdayTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Doğum Günü! 🎂'**
+  String get shellBirthdayTitle;
+
+  /// No description provided for @shellVetDefault.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner'**
+  String get shellVetDefault;
+
+  /// No description provided for @shellAppointmentReminderTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'🗓️ Randevu Hatırlatıcısı'**
+  String get shellAppointmentReminderTitle;
+
+  /// No description provided for @shellAppointmentReminderBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'{petName} için yarın {vetName} randevunuz var. {dateStr}'**
+  String shellAppointmentReminderBody(
+    String petName,
+    String vetName,
+    String dateStr,
+  );
+
+  /// No description provided for @shellAppointmentReminderSnack.
+  ///
+  /// In tr, this message translates to:
+  /// **'🗓️ {petName} için yarın {vetName} randevunuz var!'**
+  String shellAppointmentReminderSnack(String petName, String vetName);
+
+  /// No description provided for @shellSitterLocationOfflineTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcı Konumu Kesildi'**
+  String get shellSitterLocationOfflineTitle;
+
+  /// No description provided for @shellSitterLocationOfflineBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'Konum 1 dakikadır alınamıyor. Son görülen konum gösteriliyor ve ödeme durduruldu.'**
+  String get shellSitterLocationOfflineBody;
+
+  /// No description provided for @shellSitterLocationOfflineSnack.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcı konumu kesildi. Ödeme durduruldu.'**
+  String get shellSitterLocationOfflineSnack;
+
+  /// No description provided for @shellView.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görüntüle'**
+  String get shellView;
+
+  /// No description provided for @shellAppointmentUpdatedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevu Güncellendi'**
+  String get shellAppointmentUpdatedTitle;
+
+  /// No description provided for @shellAppointmentUpdatedBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'{vetName} randevunuz: {status}'**
+  String shellAppointmentUpdatedBody(String vetName, String status);
+
+  /// No description provided for @shellStatusConfirmed.
+  ///
+  /// In tr, this message translates to:
+  /// **'✅ Onaylandı'**
+  String get shellStatusConfirmed;
+
+  /// No description provided for @shellStatusCancelled.
+  ///
+  /// In tr, this message translates to:
+  /// **'❌ İptal edildi'**
+  String get shellStatusCancelled;
+
+  /// No description provided for @shellStatusCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'🎉 Tamamlandı'**
+  String get shellStatusCompleted;
+
+  /// No description provided for @shellStatusNoShow.
+  ///
+  /// In tr, this message translates to:
+  /// **'⚠️ Gelmedi'**
+  String get shellStatusNoShow;
+
+  /// No description provided for @shellAnimalDefault.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir hayvan'**
+  String get shellAnimalDefault;
+
+  /// No description provided for @shellLostPetTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kayıp Hayvan İlanı'**
+  String get shellLostPetTitle;
+
+  /// No description provided for @shellFoundPetTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bulunan Hayvan İlanı'**
+  String get shellFoundPetTitle;
+
+  /// No description provided for @shellLostPetBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'{petName} kayıp! {address}'**
+  String shellLostPetBody(String petName, String address);
+
+  /// No description provided for @shellFoundPetBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'{species} bulundu! {address}'**
+  String shellFoundPetBody(String species, String address);
+
+  /// No description provided for @shellOrderProcessing.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hazırlanıyor'**
+  String get shellOrderProcessing;
+
+  /// No description provided for @shellOrderShipped.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kargoya Verildi'**
+  String get shellOrderShipped;
+
+  /// No description provided for @shellOrderDelivered.
+  ///
+  /// In tr, this message translates to:
+  /// **'Teslim Edildi'**
+  String get shellOrderDelivered;
+
+  /// No description provided for @shellOrderCancelled.
+  ///
+  /// In tr, this message translates to:
+  /// **'İptal Edildi'**
+  String get shellOrderCancelled;
+
+  /// No description provided for @shellOrderUpdatedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sipariş Güncellendi'**
+  String get shellOrderUpdatedTitle;
+
+  /// No description provided for @shellOrderUpdatedBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'Siparişiniz: {status}'**
+  String shellOrderUpdatedBody(String status);
+
+  /// No description provided for @shellOrderUpdatedSnack.
+  ///
+  /// In tr, this message translates to:
+  /// **'📦 Siparişiniz güncellendi: {status}'**
+  String shellOrderUpdatedSnack(String status);
+
+  /// No description provided for @shellNewBookingDefault.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni rezervasyon'**
+  String get shellNewBookingDefault;
+
+  /// No description provided for @shellPetBookingBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'{petName} için rezervasyon talebi geldi.'**
+  String shellPetBookingBody(String petName);
+
+  /// No description provided for @shellNewBookingSnack.
+  ///
+  /// In tr, this message translates to:
+  /// **'🐾 Yeni rezervasyon talebi var!'**
+  String get shellNewBookingSnack;
+
+  /// No description provided for @shellBookingAccepted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kabul Edildi'**
+  String get shellBookingAccepted;
+
+  /// No description provided for @shellBookingActive.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakım Aktif'**
+  String get shellBookingActive;
+
+  /// No description provided for @shellBookingRejected.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reddedildi'**
+  String get shellBookingRejected;
+
+  /// No description provided for @shellBookingCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlandı'**
+  String get shellBookingCompleted;
+
+  /// No description provided for @shellBookingCancelled.
+  ///
+  /// In tr, this message translates to:
+  /// **'İptal Edildi'**
+  String get shellBookingCancelled;
+
+  /// No description provided for @shellBookingUpdatedBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rezervasyonunuz: {status}'**
+  String shellBookingUpdatedBody(String status);
+
+  /// No description provided for @shellBookingUpdatedSnack.
+  ///
+  /// In tr, this message translates to:
+  /// **'🐾 Rezervasyon güncellendi: {status}'**
+  String shellBookingUpdatedSnack(String status);
+
+  /// No description provided for @shellAdvertExpiryTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlan Süresi Dolmak Üzere'**
+  String get shellAdvertExpiryTitle;
+
+  /// No description provided for @shellAdvertExpiryBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'\"{petName}\" ilanınızın süresi doluyor.'**
+  String shellAdvertExpiryBody(String petName);
+
+  /// No description provided for @shellLoginRequiredTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Giriş Gerekiyor'**
+  String get shellLoginRequiredTitle;
+
+  /// No description provided for @shellMessagesLoginRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mesajlara erişmek için giriş yapman gerekiyor.'**
+  String get shellMessagesLoginRequired;
+
+  /// No description provided for @shellProfileLoginRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Profilini görmek için giriş yapman gerekiyor.'**
+  String get shellProfileLoginRequired;
+
+  /// No description provided for @shellCartExitMessage.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sepetinizde {count} ürün var. Yine de çıkmak istiyor musunuz?'**
+  String shellCartExitMessage(int count);
+
+  /// No description provided for @shellExitMessage.
+  ///
+  /// In tr, this message translates to:
+  /// **'Uygulamadan çıkmak istediğinize emin misiniz?'**
+  String get shellExitMessage;
+
+  /// No description provided for @shellCartExitTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sepetinizde ürün var!'**
+  String get shellCartExitTitle;
+
+  /// No description provided for @shellExitTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çıkış'**
+  String get shellExitTitle;
+
   /// No description provided for @addressEditTitle.
   ///
   /// In tr, this message translates to:
@@ -4945,6 +6153,54 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Yeni Adres'**
   String get addressNewTitle;
+
+  /// No description provided for @myAddressesTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Adreslerim'**
+  String get myAddressesTitle;
+
+  /// No description provided for @myAddressesLoadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Adresler yüklenemedi: {error}'**
+  String myAddressesLoadError(String error);
+
+  /// No description provided for @myAddressesEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz adres eklenmedi'**
+  String get myAddressesEmpty;
+
+  /// No description provided for @myAddressesAdd.
+  ///
+  /// In tr, this message translates to:
+  /// **'Adres Ekle'**
+  String get myAddressesAdd;
+
+  /// No description provided for @myAddressesDeleteTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Adresi Sil'**
+  String get myAddressesDeleteTitle;
+
+  /// No description provided for @myAddressesDeleteConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'\"{title}\" adresini silmek istediğinize emin misiniz?'**
+  String myAddressesDeleteConfirm(String title);
+
+  /// No description provided for @myAddressesDefault.
+  ///
+  /// In tr, this message translates to:
+  /// **'Varsayılan'**
+  String get myAddressesDefault;
+
+  /// No description provided for @myAddressesSetDefault.
+  ///
+  /// In tr, this message translates to:
+  /// **'Varsayılan Yap'**
+  String get myAddressesSetDefault;
 
   /// No description provided for @addressUpdated.
   ///
@@ -5479,6 +6735,144 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Hata: {error}'**
   String vetHomeLoadError(String error);
+
+  /// No description provided for @vetHomeTabClinic.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik'**
+  String get vetHomeTabClinic;
+
+  /// No description provided for @vetHomeClaimStatus.
+  ///
+  /// In tr, this message translates to:
+  /// **'Talep Durumum'**
+  String get vetHomeClaimStatus;
+
+  /// No description provided for @vetHomeCalendarTwoWeeks.
+  ///
+  /// In tr, this message translates to:
+  /// **'2 Hafta'**
+  String get vetHomeCalendarTwoWeeks;
+
+  /// No description provided for @vetHomeSelectedAppointments.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} - {count} randevu'**
+  String vetHomeSelectedAppointments(String date, int count);
+
+  /// No description provided for @vetHomeShowAll.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tümünü Göster'**
+  String get vetHomeShowAll;
+
+  /// No description provided for @vetHomeSelectedDayEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu günde randevu yok'**
+  String get vetHomeSelectedDayEmpty;
+
+  /// No description provided for @vetHomeLoginRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu özellik için giriş yapmalısın'**
+  String get vetHomeLoginRequired;
+
+  /// No description provided for @vetHomeAppointmentCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} randevu'**
+  String vetHomeAppointmentCount(int count);
+
+  /// No description provided for @vetHomeFilterAll.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tümü'**
+  String get vetHomeFilterAll;
+
+  /// No description provided for @vetHomeStatusUpdated.
+  ///
+  /// In tr, this message translates to:
+  /// **'{status} olarak güncellendi'**
+  String vetHomeStatusUpdated(String status);
+
+  /// No description provided for @vetHomeUpdateError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Güncelleme hatası: {error}'**
+  String vetHomeUpdateError(String error);
+
+  /// No description provided for @vetHomeNoRegisteredClinic.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kayıtlı kliniğiniz yok'**
+  String get vetHomeNoRegisteredClinic;
+
+  /// No description provided for @vetHomeScheduleLoadFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevular yüklenemedi'**
+  String get vetHomeScheduleLoadFailed;
+
+  /// No description provided for @vetHomeNoClinicDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner olarak klinik kaydı yapın veya bir kliniği sahiplenin.'**
+  String get vetHomeNoClinicDesc;
+
+  /// No description provided for @vetHomeNoStatusAppointments.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu durumda randevu yok'**
+  String get vetHomeNoStatusAppointments;
+
+  /// No description provided for @vetHomeNoAppointmentsReceived.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz randevu alınmamış'**
+  String get vetHomeNoAppointmentsReceived;
+
+  /// No description provided for @vetHomePetInfoMissing.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hayvan bilgisi yok'**
+  String get vetHomePetInfoMissing;
+
+  /// No description provided for @vetHomeClinicVisit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinikte'**
+  String get vetHomeClinicVisit;
+
+  /// No description provided for @vacStatusCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlandı'**
+  String get vacStatusCompleted;
+
+  /// No description provided for @vacStatusOverdue.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gecikti'**
+  String get vacStatusOverdue;
+
+  /// No description provided for @vacStatusDueSoon.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yaklaşıyor'**
+  String get vacStatusDueSoon;
+
+  /// No description provided for @vacStatusUpcoming.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelecek'**
+  String get vacStatusUpcoming;
+
+  /// No description provided for @vacStatusNotStarted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başlamadı'**
+  String get vacStatusNotStarted;
 
   /// No description provided for @storeHomeLive.
   ///
@@ -6047,31 +7441,31 @@ abstract class AppLocalizations {
   /// No description provided for @applySellerOpenBtn.
   ///
   /// In tr, this message translates to:
-  /// **'Mağazamı Aç'**
+  /// **'Başvuruyu Gönder'**
   String get applySellerOpenBtn;
 
   /// No description provided for @applySellerApprovalNote.
   ///
   /// In tr, this message translates to:
-  /// **'Mağazanız onaylandıktan sonra ürün eklemeye başlayabilirsiniz.'**
+  /// **'Başvurunuz incelendikten sonra size bildirim göndereceğiz.'**
   String get applySellerApprovalNote;
 
   /// No description provided for @applySellerSuccessTitle.
   ///
   /// In tr, this message translates to:
-  /// **'Tebrikler!'**
+  /// **'Başvurunuz Alındı!'**
   String get applySellerSuccessTitle;
 
   /// No description provided for @applySellerSuccessDesc.
   ///
   /// In tr, this message translates to:
-  /// **'\"{storeName}\" mağazanız başarıyla oluşturuldu!'**
+  /// **'\"{storeName}\" için başvurunuz iletildi. Admin onayından sonra mağazanız aktif olacak.'**
   String applySellerSuccessDesc(String storeName);
 
   /// No description provided for @applySellerGoToStore.
   ///
   /// In tr, this message translates to:
-  /// **'Mağazama Git'**
+  /// **'Tamam'**
   String get applySellerGoToStore;
 
   /// No description provided for @applySellerGenericError.
@@ -6080,27 +7474,227 @@ abstract class AppLocalizations {
   /// **'Bir hata oluştu, lütfen tekrar deneyin.'**
   String get applySellerGenericError;
 
+  /// No description provided for @applySellerCompanyTitleLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şirket Unvanı *'**
   String get applySellerCompanyTitleLabel;
+
+  /// No description provided for @applySellerCompanyTitleHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn: ABC Evcil Hayvan Ürünleri Ltd. Şti.'**
   String get applySellerCompanyTitleHint;
+
+  /// No description provided for @applySellerCompanyTitleRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şirket unvanı gerekli'**
   String get applySellerCompanyTitleRequired;
+
+  /// No description provided for @applySellerTaxNumberLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Vergi Numarası *'**
   String get applySellerTaxNumberLabel;
+
+  /// No description provided for @applySellerTaxNumberHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'10 haneli vergi numarası'**
   String get applySellerTaxNumberHint;
+
+  /// No description provided for @applySellerTaxNumberRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Vergi numarası gerekli'**
   String get applySellerTaxNumberRequired;
+
+  /// No description provided for @applySellerTaxOfficeLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Vergi Dairesi *'**
   String get applySellerTaxOfficeLabel;
+
+  /// No description provided for @applySellerTaxOfficeHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn: Kadıköy Vergi Dairesi'**
   String get applySellerTaxOfficeHint;
+
+  /// No description provided for @applySellerTaxOfficeRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Vergi dairesi gerekli'**
   String get applySellerTaxOfficeRequired;
+
+  /// No description provided for @applySellerAddressLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şirket Adresi *'**
   String get applySellerAddressLabel;
+
+  /// No description provided for @applySellerAddressHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tam adres giriniz...'**
   String get applySellerAddressHint;
+
+  /// No description provided for @applySellerAddressRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şirket adresi gerekli'**
   String get applySellerAddressRequired;
+
+  /// No description provided for @applySellerContactInfoLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'İletişim Bilgisi *'**
   String get applySellerContactInfoLabel;
+
+  /// No description provided for @applySellerContactInfoHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Telefon veya e-posta'**
   String get applySellerContactInfoHint;
+
+  /// No description provided for @applySellerContactInfoRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'İletişim bilgisi gerekli'**
   String get applySellerContactInfoRequired;
+
+  /// No description provided for @applySellerIbanLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'IBAN *'**
   String get applySellerIbanLabel;
+
+  /// No description provided for @applySellerIbanHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'TR ile başlayan 26 haneli IBAN'**
   String get applySellerIbanHint;
+
+  /// No description provided for @applySellerIbanRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'IBAN gerekli'**
   String get applySellerIbanRequired;
+
+  /// No description provided for @applySellerIbanInvalid.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçerli bir IBAN giriniz (TR ile başlamalı)'**
   String get applySellerIbanInvalid;
+
+  /// No description provided for @applySellerNameTooLong.
+  ///
+  /// In tr, this message translates to:
+  /// **'En fazla 120 karakter olabilir'**
   String get applySellerNameTooLong;
+
+  /// No description provided for @applySellerLegalInfoSection.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yasal Bilgiler'**
   String get applySellerLegalInfoSection;
+
+  /// No description provided for @sellerAppStatusTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru Durumum'**
+  String get sellerAppStatusTitle;
+
+  /// No description provided for @sellerAppStatusLoadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru bilgisi alınamadı.'**
+  String get sellerAppStatusLoadError;
+
+  /// No description provided for @sellerAppStatusNoneTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz başvuru yapılmamış'**
+  String get sellerAppStatusNoneTitle;
+
+  /// No description provided for @sellerAppStatusNoneDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satıcı olmak için başvuru yapın.'**
+  String get sellerAppStatusNoneDesc;
+
+  /// No description provided for @sellerAppStatusApply.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru Yap'**
+  String get sellerAppStatusApply;
+
+  /// No description provided for @sellerAppStatusReapply.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni Başvuru Yap'**
+  String get sellerAppStatusReapply;
+
+  /// No description provided for @sellerAppStatusApprovedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvurunuz Onaylandı'**
+  String get sellerAppStatusApprovedTitle;
+
+  /// No description provided for @sellerAppStatusApprovedDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tebrikler! Mağazanız aktif.'**
+  String get sellerAppStatusApprovedDesc;
+
+  /// No description provided for @sellerAppStatusRejectedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvurunuz Reddedildi'**
+  String get sellerAppStatusRejectedTitle;
+
+  /// No description provided for @sellerAppStatusRejectedDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni bir başvuru yapabilirsiniz.'**
+  String get sellerAppStatusRejectedDesc;
+
+  /// No description provided for @sellerAppStatusPendingTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvurunuz İnceleniyor'**
+  String get sellerAppStatusPendingTitle;
+
+  /// No description provided for @sellerAppStatusPendingDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ekibimiz başvurunuzu değerlendiriyor.'**
+  String get sellerAppStatusPendingDesc;
+
+  /// No description provided for @sellerAppStatusSubmittedAt.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru tarihi: {date}'**
+  String sellerAppStatusSubmittedAt(String date);
+
+  /// No description provided for @sellerAppStatusInfoTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başvuru Bilgileri'**
+  String get sellerAppStatusInfoTitle;
+
+  /// No description provided for @sellerAppStatusCompanyName.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şirket Adı'**
+  String get sellerAppStatusCompanyName;
+
+  /// No description provided for @sellerAppStatusRejectionReason.
+  ///
+  /// In tr, this message translates to:
+  /// **'Red Gerekçesi'**
+  String get sellerAppStatusRejectionReason;
 
   /// No description provided for @addProductTitle.
   ///
@@ -6516,6 +8110,96 @@ abstract class AppLocalizations {
   /// **'Lütfen pet, tarih ve saat seçin'**
   String get apptCreateValidation;
 
+  /// No description provided for @apptCreateStepPet.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hayvan'**
+  String get apptCreateStepPet;
+
+  /// No description provided for @apptCreateStepDateTime.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarih & Saat'**
+  String get apptCreateStepDateTime;
+
+  /// No description provided for @apptCreateStepConfirm.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onay'**
+  String get apptCreateStepConfirm;
+
+  /// No description provided for @apptCreateNoSlotsDay.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu gün için uygun saat yok'**
+  String get apptCreateNoSlotsDay;
+
+  /// No description provided for @apptCreateChooseAnotherDay.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başka bir gün seçin'**
+  String get apptCreateChooseAnotherDay;
+
+  /// No description provided for @apptCreateAvailableSlots.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} uygun saat'**
+  String apptCreateAvailableSlots(int count);
+
+  /// No description provided for @apptCreateMorning.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sabah'**
+  String get apptCreateMorning;
+
+  /// No description provided for @apptCreateAfternoon.
+  ///
+  /// In tr, this message translates to:
+  /// **'Öğleden Sonra'**
+  String get apptCreateAfternoon;
+
+  /// No description provided for @apptCreateEvening.
+  ///
+  /// In tr, this message translates to:
+  /// **'Akşam'**
+  String get apptCreateEvening;
+
+  /// No description provided for @apptCreateType.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevu Türü'**
+  String get apptCreateType;
+
+  /// No description provided for @apptCreateClinicType.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinikte'**
+  String get apptCreateClinicType;
+
+  /// No description provided for @apptCreateOnlineType.
+  ///
+  /// In tr, this message translates to:
+  /// **'Online'**
+  String get apptCreateOnlineType;
+
+  /// No description provided for @apptCreateClinicSummary.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinikte Randevu'**
+  String get apptCreateClinicSummary;
+
+  /// No description provided for @apptCreateOnlineSummary.
+  ///
+  /// In tr, this message translates to:
+  /// **'Online Randevu'**
+  String get apptCreateOnlineSummary;
+
+  /// No description provided for @apptCreateContinue.
+  ///
+  /// In tr, this message translates to:
+  /// **'Devam'**
+  String get apptCreateContinue;
+
   /// No description provided for @apptCreateSlotsError.
   ///
   /// In tr, this message translates to:
@@ -6611,6 +8295,534 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Randevu iptal edildi'**
   String get apptDetailCancelSuccess;
+
+  /// No description provided for @apptVetFallback.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner'**
+  String get apptVetFallback;
+
+  /// No description provided for @apptFallbackTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevu'**
+  String get apptFallbackTitle;
+
+  /// No description provided for @apptStatusPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Beklemede'**
+  String get apptStatusPending;
+
+  /// No description provided for @apptStatusConfirmed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onaylandı'**
+  String get apptStatusConfirmed;
+
+  /// No description provided for @apptStatusCancelled.
+  ///
+  /// In tr, this message translates to:
+  /// **'İptal Edildi'**
+  String get apptStatusCancelled;
+
+  /// No description provided for @apptStatusCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlandı'**
+  String get apptStatusCompleted;
+
+  /// No description provided for @apptStatusNoShow.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelmedi'**
+  String get apptStatusNoShow;
+
+  /// No description provided for @apptTypeClinic.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik'**
+  String get apptTypeClinic;
+
+  /// No description provided for @apptTypeOnline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Online'**
+  String get apptTypeOnline;
+
+  /// No description provided for @apptCompletedAt.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlanma: {date}'**
+  String apptCompletedAt(String date);
+
+  /// No description provided for @apptVetActions.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner İşlemleri'**
+  String get apptVetActions;
+
+  /// No description provided for @apptClinicalRecordAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik Kaydı'**
+  String get apptClinicalRecordAction;
+
+  /// No description provided for @apptPrescriptionAddAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reçete Ekle'**
+  String get apptPrescriptionAddAction;
+
+  /// No description provided for @apptApproveAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onayla'**
+  String get apptApproveAction;
+
+  /// No description provided for @apptRejectAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reddet'**
+  String get apptRejectAction;
+
+  /// No description provided for @apptCompleteAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamla'**
+  String get apptCompleteAction;
+
+  /// No description provided for @apptNoShowAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelmedi'**
+  String get apptNoShowAction;
+
+  /// No description provided for @apptDetailLoadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevu detayı yüklenemedi:\n{error}'**
+  String apptDetailLoadError(String error);
+
+  /// No description provided for @apptCustomerInfo.
+  ///
+  /// In tr, this message translates to:
+  /// **'Müşteri Bilgisi'**
+  String get apptCustomerInfo;
+
+  /// No description provided for @apptCustomer.
+  ///
+  /// In tr, this message translates to:
+  /// **'Müşteri'**
+  String get apptCustomer;
+
+  /// No description provided for @apptPhone.
+  ///
+  /// In tr, this message translates to:
+  /// **'Telefon'**
+  String get apptPhone;
+
+  /// No description provided for @apptEmail.
+  ///
+  /// In tr, this message translates to:
+  /// **'E-posta'**
+  String get apptEmail;
+
+  /// No description provided for @apptInfo.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevu Bilgileri'**
+  String get apptInfo;
+
+  /// No description provided for @apptMeetingType.
+  ///
+  /// In tr, this message translates to:
+  /// **'Görüşme Tipi'**
+  String get apptMeetingType;
+
+  /// No description provided for @apptOnlineMeeting.
+  ///
+  /// In tr, this message translates to:
+  /// **'Online görüşme'**
+  String get apptOnlineMeeting;
+
+  /// No description provided for @apptClinicExam.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik muayene'**
+  String get apptClinicExam;
+
+  /// No description provided for @apptOwnerNote.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sahip Notu'**
+  String get apptOwnerNote;
+
+  /// No description provided for @apptMeetingLink.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplantı Bağlantısı'**
+  String get apptMeetingLink;
+
+  /// No description provided for @apptMeetingLinkError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplantı bağlantısı açılamadı.'**
+  String get apptMeetingLinkError;
+
+  /// No description provided for @apptClinicalRecord.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik Kaydı'**
+  String get apptClinicalRecord;
+
+  /// No description provided for @apptDiagnosis.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tanı'**
+  String get apptDiagnosis;
+
+  /// No description provided for @apptTreatmentSummary.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tedavi Özeti'**
+  String get apptTreatmentSummary;
+
+  /// No description provided for @apptFollowUpDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Takip Tarihi'**
+  String get apptFollowUpDate;
+
+  /// No description provided for @apptExamFee.
+  ///
+  /// In tr, this message translates to:
+  /// **'Muayene Ücreti'**
+  String get apptExamFee;
+
+  /// No description provided for @apptPrescriptions.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reçeteler'**
+  String get apptPrescriptions;
+
+  /// No description provided for @apptPrescriptionsLoadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reçeteler yüklenemedi: {error}'**
+  String apptPrescriptionsLoadError(String error);
+
+  /// No description provided for @apptNoPrescriptions.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu randevu için henüz reçete oluşturulmadı.'**
+  String get apptNoPrescriptions;
+
+  /// No description provided for @apptPrepareFirstPrescription.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlk Reçeteyi Hazırla'**
+  String get apptPrepareFirstPrescription;
+
+  /// No description provided for @apptRetry.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tekrar Dene'**
+  String get apptRetry;
+
+  /// No description provided for @apptPrescription.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reçete'**
+  String get apptPrescription;
+
+  /// No description provided for @apptPrescriptionStatusActive.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aktif'**
+  String get apptPrescriptionStatusActive;
+
+  /// No description provided for @apptMedicationList.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlaç Listesi'**
+  String get apptMedicationList;
+
+  /// No description provided for @apptMedicationDurationDays.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} gün'**
+  String apptMedicationDurationDays(int count);
+
+  /// No description provided for @apptStatusUpdated.
+  ///
+  /// In tr, this message translates to:
+  /// **'{status} olarak güncellendi'**
+  String apptStatusUpdated(String status);
+
+  /// No description provided for @apptActionFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'İşlem başarısız: {error}'**
+  String apptActionFailed(String error);
+
+  /// No description provided for @apptConfirmApproveTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevuyu onayla'**
+  String get apptConfirmApproveTitle;
+
+  /// No description provided for @apptConfirmCompleteTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevuyu tamamla'**
+  String get apptConfirmCompleteTitle;
+
+  /// No description provided for @apptConfirmNoShowTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelmedi olarak işle'**
+  String get apptConfirmNoShowTitle;
+
+  /// No description provided for @apptConfirmCancelTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevuyu iptal et'**
+  String get apptConfirmCancelTitle;
+
+  /// No description provided for @apptConfirmDefaultTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Durumu güncelle'**
+  String get apptConfirmDefaultTitle;
+
+  /// No description provided for @apptConfirmApproveDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu randevu onaylanacak ve kullanıcıya bildirim gidecek.'**
+  String get apptConfirmApproveDesc;
+
+  /// No description provided for @apptConfirmCompleteDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu randevu tamamlandı olarak işaretlenecek.'**
+  String get apptConfirmCompleteDesc;
+
+  /// No description provided for @apptConfirmNoShowDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hasta gelmedi olarak kaydedilecek.'**
+  String get apptConfirmNoShowDesc;
+
+  /// No description provided for @apptConfirmCancelDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu işlem geri alınmaz. Randevu iptal edilecek.'**
+  String get apptConfirmCancelDesc;
+
+  /// No description provided for @apptConfirmDefaultDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Devam etmek istiyor musun?'**
+  String get apptConfirmDefaultDesc;
+
+  /// No description provided for @apptClinicalRecordEdit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik Kaydı Düzenle'**
+  String get apptClinicalRecordEdit;
+
+  /// No description provided for @apptClinicalRecordEditDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner notları, tanı ve takip planını bu randevuya bağlı olarak kaydet.'**
+  String get apptClinicalRecordEditDesc;
+
+  /// No description provided for @apptDiagnosisHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn. Gastrit şüphesi'**
+  String get apptDiagnosisHint;
+
+  /// No description provided for @apptVetNotesHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Muayene sırasında dikkat çekenler'**
+  String get apptVetNotesHint;
+
+  /// No description provided for @apptTreatmentHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Uygulanan tedavi, öneriler, kontrol planı'**
+  String get apptTreatmentHint;
+
+  /// No description provided for @apptExamFeeField.
+  ///
+  /// In tr, this message translates to:
+  /// **'Muayene Ücreti (TL)'**
+  String get apptExamFeeField;
+
+  /// No description provided for @apptFollowUpNotSelected.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz seçilmedi'**
+  String get apptFollowUpNotSelected;
+
+  /// No description provided for @apptSelect.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seç'**
+  String get apptSelect;
+
+  /// No description provided for @apptFeeNumericError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ücret alanı sayısal olmalıdır.'**
+  String get apptFeeNumericError;
+
+  /// No description provided for @apptClinicalRecordUpdated.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik kaydı güncellendi.'**
+  String get apptClinicalRecordUpdated;
+
+  /// No description provided for @apptClinicalRecordUpdateError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kayıt güncellenemedi: {error}'**
+  String apptClinicalRecordUpdateError(String error);
+
+  /// No description provided for @apptSaving.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydediliyor...'**
+  String get apptSaving;
+
+  /// No description provided for @apptPrescriptionCreate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reçete Oluştur'**
+  String get apptPrescriptionCreate;
+
+  /// No description provided for @apptPrescriptionCreateDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlaçları ve kullanım planını randevu kaydına ekle.'**
+  String get apptPrescriptionCreateDesc;
+
+  /// No description provided for @apptExtraNotes.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ek Notlar'**
+  String get apptExtraNotes;
+
+  /// No description provided for @apptPrescriptionNotesHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kullanım uyarısı veya kontrol notu'**
+  String get apptPrescriptionNotesHint;
+
+  /// No description provided for @apptMedications.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlaçlar'**
+  String get apptMedications;
+
+  /// No description provided for @apptAddMedication.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlaç Ekle'**
+  String get apptAddMedication;
+
+  /// No description provided for @apptMedicationNumber.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlaç {index}'**
+  String apptMedicationNumber(int index);
+
+  /// No description provided for @apptMedicationName.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlaç Adı'**
+  String get apptMedicationName;
+
+  /// No description provided for @apptMedicationNameHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn. Amoksisilin'**
+  String get apptMedicationNameHint;
+
+  /// No description provided for @apptMedicationDose.
+  ///
+  /// In tr, this message translates to:
+  /// **'Doz'**
+  String get apptMedicationDose;
+
+  /// No description provided for @apptMedicationFrequency.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sıklık'**
+  String get apptMedicationFrequency;
+
+  /// No description provided for @apptMedicationFrequencyHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Günde 2 kez'**
+  String get apptMedicationFrequencyHint;
+
+  /// No description provided for @apptMedicationDay.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gün'**
+  String get apptMedicationDay;
+
+  /// No description provided for @apptMedicationUse.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kullanım'**
+  String get apptMedicationUse;
+
+  /// No description provided for @apptMedicationUseHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tok karnına'**
+  String get apptMedicationUseHint;
+
+  /// No description provided for @apptOptional.
+  ///
+  /// In tr, this message translates to:
+  /// **'İsteğe bağlı'**
+  String get apptOptional;
+
+  /// No description provided for @apptDiagnosisRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tanı alanı zorunlu.'**
+  String get apptDiagnosisRequired;
+
+  /// No description provided for @apptMedicationRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'En az bir ilaç girmelisin.'**
+  String get apptMedicationRequired;
+
+  /// No description provided for @apptPrescriptionCreated.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reçete oluşturuldu.'**
+  String get apptPrescriptionCreated;
+
+  /// No description provided for @apptPrescriptionCreateError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reçete oluşturulamadı: {error}'**
+  String apptPrescriptionCreateError(String error);
+
+  /// No description provided for @apptSavePrescription.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reçeteyi Kaydet'**
+  String get apptSavePrescription;
 
   /// No description provided for @apptDetailError.
   ///
@@ -6725,6 +8937,132 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Hata: {error}'**
   String vetRegisterError(String error);
+
+  /// No description provided for @vetRegisterSubmittedTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik Kaydedildi'**
+  String get vetRegisterSubmittedTitle;
+
+  /// No description provided for @vetRegisterSubmittedContent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik kaydınız alındı ve sahiplenme talebiniz admin onayına gönderildi.\n\nTalebinizin durumunu \"Talep Durumum\" ekranından takip edebilirsiniz.'**
+  String get vetRegisterSubmittedContent;
+
+  /// No description provided for @vetRegisterClaimOwnerRole.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik Sahibi'**
+  String get vetRegisterClaimOwnerRole;
+
+  /// No description provided for @vetRegisterAutoClaimNote.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kliniği sisteme ekleyen kullanıcı tarafından otomatik oluşturuldu.'**
+  String get vetRegisterAutoClaimNote;
+
+  /// No description provided for @vacAddTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aşı Kaydı Ekle'**
+  String get vacAddTitle;
+
+  /// No description provided for @vacAddDateRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Uygulama tarihi seçin'**
+  String get vacAddDateRequired;
+
+  /// No description provided for @vacAddSuccess.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aşı kaydı eklendi!'**
+  String get vacAddSuccess;
+
+  /// No description provided for @vacAddError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hata: {error}'**
+  String vacAddError(String error);
+
+  /// No description provided for @vacAddVaccineName.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aşı Adı *'**
+  String get vacAddVaccineName;
+
+  /// No description provided for @vacAddVaccineNameRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aşı adı gerekli'**
+  String get vacAddVaccineNameRequired;
+
+  /// No description provided for @vacAddVaccineCode.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aşı Kodu'**
+  String get vacAddVaccineCode;
+
+  /// No description provided for @vacAddBatchNumber.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seri Numarası'**
+  String get vacAddBatchNumber;
+
+  /// No description provided for @vacAddVetOptional.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner (Opsiyonel)'**
+  String get vacAddVetOptional;
+
+  /// No description provided for @vacAddNoVets.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sistemde kayıtlı veteriner bulunamadı'**
+  String get vacAddNoVets;
+
+  /// No description provided for @vacAddSelectVet.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner seçin'**
+  String get vacAddSelectVet;
+
+  /// No description provided for @vacAddNoSelection.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçim yok'**
+  String get vacAddNoSelection;
+
+  /// No description provided for @vacAddAdminDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Uygulama Tarihi *'**
+  String get vacAddAdminDate;
+
+  /// No description provided for @vacAddSelectDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tarih seçin'**
+  String get vacAddSelectDate;
+
+  /// No description provided for @vacAddNextDueDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sonraki Doz Tarihi'**
+  String get vacAddNextDueDate;
+
+  /// No description provided for @vacAddOptional.
+  ///
+  /// In tr, this message translates to:
+  /// **'Opsiyonel'**
+  String get vacAddOptional;
+
+  /// No description provided for @vacAddNotes.
+  ///
+  /// In tr, this message translates to:
+  /// **'Notlar'**
+  String get vacAddNotes;
 
   /// No description provided for @searchHint.
   ///
@@ -7067,6 +9405,150 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Tımar'**
   String get sitterServiceGrooming;
+
+  /// No description provided for @sitterOpenRequest.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlan Aç'**
+  String get sitterOpenRequest;
+
+  /// No description provided for @sitterMyProfile.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcı Profilim'**
+  String get sitterMyProfile;
+
+  /// No description provided for @sitterProfileActiveShort.
+  ///
+  /// In tr, this message translates to:
+  /// **'✓ Aktif'**
+  String get sitterProfileActiveShort;
+
+  /// No description provided for @sitterProfilePendingShort.
+  ///
+  /// In tr, this message translates to:
+  /// **'⏳ Onay Bekleniyor'**
+  String get sitterProfilePendingShort;
+
+  /// No description provided for @sitterMyRequests.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kendi İlanlarım'**
+  String get sitterMyRequests;
+
+  /// No description provided for @sitterTabSitters.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcılar'**
+  String get sitterTabSitters;
+
+  /// No description provided for @sitterTabRequests.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcı Aranıyor'**
+  String get sitterTabRequests;
+
+  /// No description provided for @sitterRequestsEmptyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz bakıcı ilanı yok'**
+  String get sitterRequestsEmptyTitle;
+
+  /// No description provided for @sitterRequestsEmptySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Birisi bakıcı aradığında burada görünecek'**
+  String get sitterRequestsEmptySubtitle;
+
+  /// No description provided for @sitterContactOwner.
+  ///
+  /// In tr, this message translates to:
+  /// **'İletişime Geç'**
+  String get sitterContactOwner;
+
+  /// No description provided for @sitterNoOwnRequests.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz ilan açmadınız'**
+  String get sitterNoOwnRequests;
+
+  /// No description provided for @sitterRequestClose.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlanı Kapat'**
+  String get sitterRequestClose;
+
+  /// No description provided for @sitterRequestOpen.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlanı Aç'**
+  String get sitterRequestOpen;
+
+  /// No description provided for @sitterRequestFormTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcı İlanı Aç'**
+  String get sitterRequestFormTitle;
+
+  /// No description provided for @sitterRequestDateRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Lütfen tarih aralığı seçin'**
+  String get sitterRequestDateRequired;
+
+  /// No description provided for @sitterRequestPublished.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlanınız yayınlandı!'**
+  String get sitterRequestPublished;
+
+  /// No description provided for @sitterRequestPetTypeMulti.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hayvan Türü (Birden fazla seçilebilir)'**
+  String get sitterRequestPetTypeMulti;
+
+  /// No description provided for @sitterRequestServiceDates.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hizmet Tarihleri'**
+  String get sitterRequestServiceDates;
+
+  /// No description provided for @sitterRequestStartDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başlangıç'**
+  String get sitterRequestStartDate;
+
+  /// No description provided for @sitterRequestEndDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bitiş'**
+  String get sitterRequestEndDate;
+
+  /// No description provided for @sitterRequestSelectDate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Seçiniz'**
+  String get sitterRequestSelectDate;
+
+  /// No description provided for @sitterRequestExtraInfo.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ek Bilgiler (İsteğe bağlı)'**
+  String get sitterRequestExtraInfo;
+
+  /// No description provided for @sitterRequestDescHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Örn: Evcil hayvanım köpektir, günde 2 kez yürüyüş gerekiyor...'**
+  String get sitterRequestDescHint;
+
+  /// No description provided for @sitterRequestPublish.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlanı Yayınla'**
+  String get sitterRequestPublish;
 
   /// No description provided for @sitterEmptyTitle.
   ///
@@ -7452,6 +9934,804 @@ abstract class AppLocalizations {
   /// **'Hata: {error}'**
   String bookingsActionErr(String error);
 
+  /// No description provided for @bookingsCalendarWeek.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hafta'**
+  String get bookingsCalendarWeek;
+
+  /// No description provided for @bookingsCalendarMonth.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ay'**
+  String get bookingsCalendarMonth;
+
+  /// No description provided for @bookingsSelectedDayCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} - {count} rezervasyon'**
+  String bookingsSelectedDayCount(String date, int count);
+
+  /// No description provided for @bookingsAll.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tümü'**
+  String get bookingsAll;
+
+  /// No description provided for @bookingsEmptyForDay.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu günde rezervasyon yok'**
+  String get bookingsEmptyForDay;
+
+  /// No description provided for @bookingsCustomerLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Müşteri'**
+  String get bookingsCustomerLabel;
+
+  /// No description provided for @bookingsPetFallback.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evcil Hayvan'**
+  String get bookingsPetFallback;
+
+  /// No description provided for @bookingsStatusPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bekliyor'**
+  String get bookingsStatusPending;
+
+  /// No description provided for @bookingsStatusAccepted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kabul Edildi'**
+  String get bookingsStatusAccepted;
+
+  /// No description provided for @bookingsStatusActive.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakım Aktif'**
+  String get bookingsStatusActive;
+
+  /// No description provided for @bookingsStatusRejected.
+  ///
+  /// In tr, this message translates to:
+  /// **'Reddedildi'**
+  String get bookingsStatusRejected;
+
+  /// No description provided for @bookingsStatusCancelled.
+  ///
+  /// In tr, this message translates to:
+  /// **'İptal'**
+  String get bookingsStatusCancelled;
+
+  /// No description provided for @bookingsStatusCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlandı'**
+  String get bookingsStatusCompleted;
+
+  /// No description provided for @bookingsCurrentPayment.
+  ///
+  /// In tr, this message translates to:
+  /// **'Güncel ödeme: {amount} TL'**
+  String bookingsCurrentPayment(String amount);
+
+  /// No description provided for @bookingsLiveLocationPaused.
+  ///
+  /// In tr, this message translates to:
+  /// **'Canlı konum kesildi. Ödeme geçici olarak durduruldu.'**
+  String get bookingsLiveLocationPaused;
+
+  /// No description provided for @bookingsDailyReport.
+  ///
+  /// In tr, this message translates to:
+  /// **'Günlük Rapor'**
+  String get bookingsDailyReport;
+
+  /// No description provided for @bookingsCareTimeline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakım Günlüğü'**
+  String get bookingsCareTimeline;
+
+  /// No description provided for @bookingsPhotoTimeline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Fotoğraf Günlüğü'**
+  String get bookingsPhotoTimeline;
+
+  /// No description provided for @bookingsReviewCustomer.
+  ///
+  /// In tr, this message translates to:
+  /// **'Müşteriyi Değerlendir'**
+  String get bookingsReviewCustomer;
+
+  /// No description provided for @bookingsCustomerReviewSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rezervasyon deneyimine göre pet sahibini puanlayın.'**
+  String get bookingsCustomerReviewSubtitle;
+
+  /// No description provided for @bookingsCustomerReviewHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'İletişim, hazırlık ve güvenilirlik notun'**
+  String get bookingsCustomerReviewHint;
+
+  /// No description provided for @bookingsCustomerReviewTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Müşterinin değerlendirmesi'**
+  String get bookingsCustomerReviewTitle;
+
+  /// No description provided for @bookingsYourSitterReviewTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Senin bakıcı değerlendirmen'**
+  String get bookingsYourSitterReviewTitle;
+
+  /// No description provided for @bookingsYourCustomerReviewTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Senin müşteri değerlendirmen'**
+  String get bookingsYourCustomerReviewTitle;
+
+  /// No description provided for @bookingsSitterNoteForYou.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcının senin için notu'**
+  String get bookingsSitterNoteForYou;
+
+  /// No description provided for @bookingsContactTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'İletişim: {name}'**
+  String bookingsContactTitle(String name);
+
+  /// No description provided for @bookingsContactMessage.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mesaj'**
+  String get bookingsContactMessage;
+
+  /// No description provided for @bookingsContactCall.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ara'**
+  String get bookingsContactCall;
+
+  /// No description provided for @bookingsContactEmail.
+  ///
+  /// In tr, this message translates to:
+  /// **'E-posta'**
+  String get bookingsContactEmail;
+
+  /// No description provided for @bookingsPhoneLaunchError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Telefon uygulaması açılamadı'**
+  String get bookingsPhoneLaunchError;
+
+  /// No description provided for @bookingsEmailLaunchError.
+  ///
+  /// In tr, this message translates to:
+  /// **'E-posta uygulaması açılamadı'**
+  String get bookingsEmailLaunchError;
+
+  /// No description provided for @bookingsChatStartError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mesajlaşma başlatılamadı'**
+  String get bookingsChatStartError;
+
+  /// No description provided for @bookingsChatOpenError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mesajlaşma açılamadı: {error}'**
+  String bookingsChatOpenError(String error);
+
+  /// No description provided for @bookingsWalkScreen.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gezi Ekranına Geç'**
+  String get bookingsWalkScreen;
+
+  /// No description provided for @bookingsPhotoSent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Fotoğraf pet sahibine gönderildi!'**
+  String get bookingsPhotoSent;
+
+  /// No description provided for @bookingsPhotoUpload.
+  ///
+  /// In tr, this message translates to:
+  /// **'Foto Paylaş'**
+  String get bookingsPhotoUpload;
+
+  /// No description provided for @bookingsPhotoUploading.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yükleniyor...'**
+  String get bookingsPhotoUploading;
+
+  /// No description provided for @bookingsPhotosLoadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yüklenemedi: {error}'**
+  String bookingsPhotosLoadError(String error);
+
+  /// No description provided for @bookingsNoPhotos.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz fotoğraf paylaşılmadı'**
+  String get bookingsNoPhotos;
+
+  /// No description provided for @bookingsOwnerWaiting.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcı henüz köpeği teslim almadı. Teslim alındığında canlı konum otomatik açılacak.'**
+  String get bookingsOwnerWaiting;
+
+  /// No description provided for @bookingsLiveTracking.
+  ///
+  /// In tr, this message translates to:
+  /// **'Canlı Konum Takip'**
+  String get bookingsLiveTracking;
+
+  /// No description provided for @sitterDashboardTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcı Paneli'**
+  String get sitterDashboardTitle;
+
+  /// No description provided for @sitterDashboardLoadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Panel yüklenemedi'**
+  String get sitterDashboardLoadError;
+
+  /// No description provided for @sitterDashboardRetry.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tekrar Dene'**
+  String get sitterDashboardRetry;
+
+  /// No description provided for @sitterDashboardProfileRequiredTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Panel için bakıcı profili gerekli'**
+  String get sitterDashboardProfileRequiredTitle;
+
+  /// No description provided for @sitterDashboardProfileRequiredSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Önce profilinizi oluşturun. Sonrasında rezervasyonlarınız ve performansınız burada toplanacak.'**
+  String get sitterDashboardProfileRequiredSubtitle;
+
+  /// No description provided for @sitterDashboardCreateProfile.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcı Profili Oluştur'**
+  String get sitterDashboardCreateProfile;
+
+  /// No description provided for @sitterDashboardMetricPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bekleyen'**
+  String get sitterDashboardMetricPending;
+
+  /// No description provided for @sitterDashboardMetricPendingSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onay bekleyen rezervasyon'**
+  String get sitterDashboardMetricPendingSub;
+
+  /// No description provided for @sitterDashboardMetricActive.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aktif'**
+  String get sitterDashboardMetricActive;
+
+  /// No description provided for @sitterDashboardMetricActiveSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Devam eden hizmet'**
+  String get sitterDashboardMetricActiveSub;
+
+  /// No description provided for @sitterDashboardMetricCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlanan'**
+  String get sitterDashboardMetricCompleted;
+
+  /// No description provided for @sitterDashboardMetricCompletedSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kapanan rezervasyon'**
+  String get sitterDashboardMetricCompletedSub;
+
+  /// No description provided for @sitterDashboardMetricRating.
+  ///
+  /// In tr, this message translates to:
+  /// **'Puan'**
+  String get sitterDashboardMetricRating;
+
+  /// No description provided for @sitterDashboardReviewCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} yorum'**
+  String sitterDashboardReviewCount(int count);
+
+  /// No description provided for @sitterDashboardQuickActions.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hızlı Aksiyonlar'**
+  String get sitterDashboardQuickActions;
+
+  /// No description provided for @sitterDashboardQuickActionsDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rezervasyon, profil ve takvim ekranlarına buradan geçin.'**
+  String get sitterDashboardQuickActionsDesc;
+
+  /// No description provided for @sitterDashboardBookingsAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Rezervasyonlar'**
+  String get sitterDashboardBookingsAction;
+
+  /// No description provided for @sitterDashboardEditProfile.
+  ///
+  /// In tr, this message translates to:
+  /// **'Profili Düzenle'**
+  String get sitterDashboardEditProfile;
+
+  /// No description provided for @sitterDashboardAvailabilityCalendar.
+  ///
+  /// In tr, this message translates to:
+  /// **'Müsaitlik Takvimi'**
+  String get sitterDashboardAvailabilityCalendar;
+
+  /// No description provided for @sitterDashboardPortfolio.
+  ///
+  /// In tr, this message translates to:
+  /// **'Portfolyo'**
+  String get sitterDashboardPortfolio;
+
+  /// No description provided for @sitterDashboardEarningsReport.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kazanç Raporu'**
+  String get sitterDashboardEarningsReport;
+
+  /// No description provided for @sitterDashboardRevenueSummary.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelir Özeti'**
+  String get sitterDashboardRevenueSummary;
+
+  /// No description provided for @sitterDashboardRevenueSummaryDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mevcut rezervasyonlardan türetilen operasyonel finans görünümü.'**
+  String get sitterDashboardRevenueSummaryDesc;
+
+  /// No description provided for @sitterDashboardThisMonthEarned.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu ay kazanılan'**
+  String get sitterDashboardThisMonthEarned;
+
+  /// No description provided for @sitterDashboardTotalCompletedRevenue.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplam tamamlanan gelir'**
+  String get sitterDashboardTotalCompletedRevenue;
+
+  /// No description provided for @sitterDashboardPipeline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Beklenen gelir'**
+  String get sitterDashboardPipeline;
+
+  /// No description provided for @sitterDashboardAcceptedJobs.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kabul edilen iş'**
+  String get sitterDashboardAcceptedJobs;
+
+  /// No description provided for @sitterDashboardPausedPayment.
+  ///
+  /// In tr, this message translates to:
+  /// **'Duraklayan ödeme'**
+  String get sitterDashboardPausedPayment;
+
+  /// No description provided for @sitterDashboardServiceDistribution.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hizmet Dağılımı'**
+  String get sitterDashboardServiceDistribution;
+
+  /// No description provided for @sitterDashboardServiceDistributionDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Talep yoğunluğunun hangi hizmetlere kaydığını gösterir.'**
+  String get sitterDashboardServiceDistributionDesc;
+
+  /// No description provided for @sitterDashboardNoServiceHistory.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz hizmet geçmişi oluşmadı.'**
+  String get sitterDashboardNoServiceHistory;
+
+  /// No description provided for @sitterDashboardJobCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} iş'**
+  String sitterDashboardJobCount(int count);
+
+  /// No description provided for @sitterDashboardUpcomingJobs.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yaklaşan İşler'**
+  String get sitterDashboardUpcomingJobs;
+
+  /// No description provided for @sitterDashboardUpcomingJobsDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başlangıç tarihi yaklaşan aktif ve onaylı rezervasyonlar.'**
+  String get sitterDashboardUpcomingJobsDesc;
+
+  /// No description provided for @sitterDashboardNoUpcoming.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yaklaşan rezervasyon bulunmuyor.'**
+  String get sitterDashboardNoUpcoming;
+
+  /// No description provided for @sitterDashboardRecentReviews.
+  ///
+  /// In tr, this message translates to:
+  /// **'Son Yorumlar'**
+  String get sitterDashboardRecentReviews;
+
+  /// No description provided for @sitterDashboardRecentReviewsDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Müşteri memnuniyetini tek panelden takip edin.'**
+  String get sitterDashboardRecentReviewsDesc;
+
+  /// No description provided for @sitterDashboardNoReviews.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz yorum yok.'**
+  String get sitterDashboardNoReviews;
+
+  /// No description provided for @sitterDashboardAvailabilityOnMsg.
+  ///
+  /// In tr, this message translates to:
+  /// **'Profil müsait olarak açıldı.'**
+  String get sitterDashboardAvailabilityOnMsg;
+
+  /// No description provided for @sitterDashboardAvailabilityOffMsg.
+  ///
+  /// In tr, this message translates to:
+  /// **'Profil müsait değil olarak güncellendi.'**
+  String get sitterDashboardAvailabilityOffMsg;
+
+  /// No description provided for @sitterDashboardAvailabilityError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Müsaitlik güncellenemedi: {error}'**
+  String sitterDashboardAvailabilityError(String error);
+
+  /// No description provided for @sitterDashboardAddressMissing.
+  ///
+  /// In tr, this message translates to:
+  /// **'Adres eklenmedi'**
+  String get sitterDashboardAddressMissing;
+
+  /// No description provided for @sitterDashboardVerifiedProfile.
+  ///
+  /// In tr, this message translates to:
+  /// **'Doğrulanmış Profil'**
+  String get sitterDashboardVerifiedProfile;
+
+  /// No description provided for @sitterDashboardPendingProfile.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onay Bekleyen Profil'**
+  String get sitterDashboardPendingProfile;
+
+  /// No description provided for @sitterDashboardPendingQueue.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} talep sırada'**
+  String sitterDashboardPendingQueue(int count);
+
+  /// No description provided for @sitterDashboardActiveService.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} aktif hizmet'**
+  String sitterDashboardActiveService(int count);
+
+  /// No description provided for @sitterDashboardAvailabilityStatus.
+  ///
+  /// In tr, this message translates to:
+  /// **'Müsaitlik Durumu'**
+  String get sitterDashboardAvailabilityStatus;
+
+  /// No description provided for @sitterDashboardAvailabilityOpen.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açık'**
+  String get sitterDashboardAvailabilityOpen;
+
+  /// No description provided for @sitterDashboardAvailabilityClosed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kapalı'**
+  String get sitterDashboardAvailabilityClosed;
+
+  /// No description provided for @sitterFinanceTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kazanç Raporu'**
+  String get sitterFinanceTitle;
+
+  /// No description provided for @sitterFinanceLoadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Finans raporu yüklenemedi: {error}'**
+  String sitterFinanceLoadError(String error);
+
+  /// No description provided for @sitterFinanceThisMonth.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu Ay'**
+  String get sitterFinanceThisMonth;
+
+  /// No description provided for @sitterFinanceThisMonthSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aylık tahsil edilen gelir'**
+  String get sitterFinanceThisMonthSub;
+
+  /// No description provided for @sitterFinancePipeline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Beklenen'**
+  String get sitterFinancePipeline;
+
+  /// No description provided for @sitterFinancePipelineSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aktif ve onaylı işlerden beklenen'**
+  String get sitterFinancePipelineSub;
+
+  /// No description provided for @sitterFinancePaused.
+  ///
+  /// In tr, this message translates to:
+  /// **'Duraklayan'**
+  String get sitterFinancePaused;
+
+  /// No description provided for @sitterFinancePausedSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} iş ödemesi durdu'**
+  String sitterFinancePausedSub(int count);
+
+  /// No description provided for @sitterFinanceCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlanan'**
+  String get sitterFinanceCompleted;
+
+  /// No description provided for @sitterFinanceCompletedSub.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelire dönüşen iş sayısı'**
+  String get sitterFinanceCompletedSub;
+
+  /// No description provided for @sitterFinanceLast14Days.
+  ///
+  /// In tr, this message translates to:
+  /// **'Son 14 Gün'**
+  String get sitterFinanceLast14Days;
+
+  /// No description provided for @sitterFinanceLast14DaysDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Günlük kazançları ve tamamlanan iş adetlerini izleyin.'**
+  String get sitterFinanceLast14DaysDesc;
+
+  /// No description provided for @sitterFinanceMonthlyTrend.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aylık Trend'**
+  String get sitterFinanceMonthlyTrend;
+
+  /// No description provided for @sitterFinanceMonthlyTrendDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Son 6 aydaki gelir dağılımı.'**
+  String get sitterFinanceMonthlyTrendDesc;
+
+  /// No description provided for @sitterFinanceServiceRevenue.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hizmet Bazlı Gelir'**
+  String get sitterFinanceServiceRevenue;
+
+  /// No description provided for @sitterFinanceServiceRevenueDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hangi hizmetin daha çok ciro ve hacim ürettiğini gösterir.'**
+  String get sitterFinanceServiceRevenueDesc;
+
+  /// No description provided for @sitterFinanceNoMovements.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz finansal hareket bulunmuyor.'**
+  String get sitterFinanceNoMovements;
+
+  /// No description provided for @sitterFinanceCompletedJobs.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} iş tamamlandı'**
+  String sitterFinanceCompletedJobs(int count);
+
+  /// No description provided for @sitterFinanceRecentPayments.
+  ///
+  /// In tr, this message translates to:
+  /// **'Son Tahsilatlar'**
+  String get sitterFinanceRecentPayments;
+
+  /// No description provided for @sitterFinanceRecentPaymentsDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni tamamlanan işlerden oluşan yakın gelir kayıtları.'**
+  String get sitterFinanceRecentPaymentsDesc;
+
+  /// No description provided for @sitterFinanceNoCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlanmış iş kaydı yok.'**
+  String get sitterFinanceNoCompleted;
+
+  /// No description provided for @sitterFinanceTotalBookings.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplam {count} rezervasyon'**
+  String sitterFinanceTotalBookings(int count);
+
+  /// No description provided for @sitterFinancePendingRequests.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} bekleyen talep'**
+  String sitterFinancePendingRequests(int count);
+
+  /// No description provided for @sitterFinanceActiveServices.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} aktif hizmet'**
+  String sitterFinanceActiveServices(int count);
+
+  /// No description provided for @sitterFinanceTotalRevenueLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplam tahsil edilen gelir'**
+  String get sitterFinanceTotalRevenueLabel;
+
+  /// No description provided for @careReportDetailTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'{day}. Gün Raporu'**
+  String careReportDetailTitle(int day);
+
+  /// No description provided for @careReportDetailSummary.
+  ///
+  /// In tr, this message translates to:
+  /// **'{day}. Gün Özeti'**
+  String careReportDetailSummary(int day);
+
+  /// No description provided for @careReportDetailShared.
+  ///
+  /// In tr, this message translates to:
+  /// **'Müşteriye gönderildi'**
+  String get careReportDetailShared;
+
+  /// No description provided for @careReportDetailNotShared.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz gönderilmedi'**
+  String get careReportDetailNotShared;
+
+  /// No description provided for @careReportDetailSharedAt.
+  ///
+  /// In tr, this message translates to:
+  /// **'Paylaşım zamanı: {date}'**
+  String careReportDetailSharedAt(String date);
+
+  /// No description provided for @careReportDetailStatus.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakım Durumu'**
+  String get careReportDetailStatus;
+
+  /// No description provided for @careReportDetailFoodEaten.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yemek yedi'**
+  String get careReportDetailFoodEaten;
+
+  /// No description provided for @careReportDetailFoodNotEaten.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yemek yemedi'**
+  String get careReportDetailFoodNotEaten;
+
+  /// No description provided for @careReportDetailSitterNote.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakıcı Notu'**
+  String get careReportDetailSitterNote;
+
+  /// No description provided for @careReportDetailNoNote.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu rapor için not eklenmemiş.'**
+  String get careReportDetailNoNote;
+
+  /// No description provided for @careReportDetailPhotos.
+  ///
+  /// In tr, this message translates to:
+  /// **'Fotoğraflar'**
+  String get careReportDetailPhotos;
+
+  /// No description provided for @careReportDetailNoPhotos.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu rapor için fotoğraf eklenmemiş.'**
+  String get careReportDetailNoPhotos;
+
+  /// No description provided for @careReportActivityWalk.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yürüyüş'**
+  String get careReportActivityWalk;
+
+  /// No description provided for @careReportActivityPlay.
+  ///
+  /// In tr, this message translates to:
+  /// **'Oyun'**
+  String get careReportActivityPlay;
+
+  /// No description provided for @careReportActivityGrooming.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bakım'**
+  String get careReportActivityGrooming;
+
+  /// No description provided for @careReportActivityVetVisit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner'**
+  String get careReportActivityVetVisit;
+
+  /// No description provided for @careReportActivityBath.
+  ///
+  /// In tr, this message translates to:
+  /// **'Banyo'**
+  String get careReportActivityBath;
+
+  /// No description provided for @careReportActivityTraining.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eğitim'**
+  String get careReportActivityTraining;
+
   /// No description provided for @adoptionAppsTitle.
   ///
   /// In tr, this message translates to:
@@ -7601,6 +10881,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Beklemede'**
   String get adoptionAppsStatusPending;
+
+  /// No description provided for @adoptionAppsRespondedAt.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yanıtlandı: {date}'**
+  String adoptionAppsRespondedAt(String date);
 
   /// No description provided for @adoptionAppsTimelineApplication.
   ///
@@ -9053,6 +12339,684 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Hata: {error}'**
   String eventCreateErr(String error);
+
+  /// No description provided for @vetEarningsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Veteriner Kazanç Raporu'**
+  String get vetEarningsTitle;
+
+  /// No description provided for @vetEarningsLoadError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kazanç raporu yüklenemedi: {error}'**
+  String vetEarningsLoadError(String error);
+
+  /// No description provided for @vetEarningsThisMonth.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu Ay'**
+  String get vetEarningsThisMonth;
+
+  /// No description provided for @vetEarningsCompletedRevenue.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlanan randevu geliri'**
+  String get vetEarningsCompletedRevenue;
+
+  /// No description provided for @vetEarningsPendingRevenue.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bekleyen Gelir'**
+  String get vetEarningsPendingRevenue;
+
+  /// No description provided for @vetEarningsExpectedFromConfirmed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onaylı randevulardan beklenen'**
+  String get vetEarningsExpectedFromConfirmed;
+
+  /// No description provided for @vetEarningsAverageExam.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ort. Muayene'**
+  String get vetEarningsAverageExam;
+
+  /// No description provided for @vetEarningsAverageCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlanan randevu ortalaması'**
+  String get vetEarningsAverageCompleted;
+
+  /// No description provided for @vetEarningsNoShow.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelmedi'**
+  String get vetEarningsNoShow;
+
+  /// No description provided for @vetEarningsNoShowCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelmeyen hasta sayısı'**
+  String get vetEarningsNoShowCount;
+
+  /// No description provided for @vetEarningsFeePolicy.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ücret Politikası'**
+  String get vetEarningsFeePolicy;
+
+  /// No description provided for @vetEarningsFeePolicyDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik panelinden güncellenen mevcut randevu fiyatları.'**
+  String get vetEarningsFeePolicyDesc;
+
+  /// No description provided for @vetEarningsClinicFee.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik muayene ücreti'**
+  String get vetEarningsClinicFee;
+
+  /// No description provided for @vetEarningsOnlineFee.
+  ///
+  /// In tr, this message translates to:
+  /// **'Online görüşme ücreti'**
+  String get vetEarningsOnlineFee;
+
+  /// No description provided for @vetEarningsLast14Days.
+  ///
+  /// In tr, this message translates to:
+  /// **'Son 14 Gün'**
+  String get vetEarningsLast14Days;
+
+  /// No description provided for @vetEarningsLast14DaysDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Günlük bazda kapanan randevu sayısı ve ciro.'**
+  String get vetEarningsLast14DaysDesc;
+
+  /// No description provided for @vetEarningsMonthlyTrend.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aylık Trend'**
+  String get vetEarningsMonthlyTrend;
+
+  /// No description provided for @vetEarningsMonthlyTrendDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Son 6 aydaki tamamlanan randevu gelirleri.'**
+  String get vetEarningsMonthlyTrendDesc;
+
+  /// No description provided for @vetEarningsTypeBreakdown.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevu Tipi Dağılımı'**
+  String get vetEarningsTypeBreakdown;
+
+  /// No description provided for @vetEarningsTypeBreakdownDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik ve online görüşmelerin ciro katkısı.'**
+  String get vetEarningsTypeBreakdownDesc;
+
+  /// No description provided for @vetEarningsNoCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz tamamlanan randevu bulunmuyor.'**
+  String get vetEarningsNoCompleted;
+
+  /// No description provided for @vetEarningsAppointmentCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} randevu'**
+  String vetEarningsAppointmentCount(int count);
+
+  /// No description provided for @vetEarningsRecentCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Son Tamamlananlar'**
+  String get vetEarningsRecentCompleted;
+
+  /// No description provided for @vetEarningsRecentCompletedDesc.
+  ///
+  /// In tr, this message translates to:
+  /// **'En son kapanan randevulardan gelir akışı.'**
+  String get vetEarningsRecentCompletedDesc;
+
+  /// No description provided for @vetEarningsNoRecords.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kayıt bulunmuyor.'**
+  String get vetEarningsNoRecords;
+
+  /// No description provided for @vetEarningsTotalAppointments.
+  ///
+  /// In tr, this message translates to:
+  /// **'Toplam {count} randevu'**
+  String vetEarningsTotalAppointments(int count);
+
+  /// No description provided for @vetEarningsConfirmedCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} onaylı'**
+  String vetEarningsConfirmedCount(int count);
+
+  /// No description provided for @vetEarningsCompletedCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} tamamlandı'**
+  String vetEarningsCompletedCount(int count);
+
+  /// No description provided for @vetEarningsTotalCompletedRevenue.
+  ///
+  /// In tr, this message translates to:
+  /// **'{vetName} için toplam tamamlanan gelir'**
+  String vetEarningsTotalCompletedRevenue(String vetName);
+
+  /// No description provided for @clinicPanelTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik Panelim'**
+  String get clinicPanelTitle;
+
+  /// No description provided for @clinicPanelAppScore.
+  ///
+  /// In tr, this message translates to:
+  /// **'App Puanı'**
+  String get clinicPanelAppScore;
+
+  /// No description provided for @clinicPanelReviewCount.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} yorum'**
+  String clinicPanelReviewCount(int count);
+
+  /// No description provided for @clinicPanelPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bekleyen'**
+  String get clinicPanelPending;
+
+  /// No description provided for @clinicPanelPendingSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onay bekleyen randevu'**
+  String get clinicPanelPendingSubtitle;
+
+  /// No description provided for @clinicPanelConfirmed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onaylı'**
+  String get clinicPanelConfirmed;
+
+  /// No description provided for @clinicPanelConfirmedSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Takvimde aktif randevu'**
+  String get clinicPanelConfirmedSubtitle;
+
+  /// No description provided for @clinicPanelCompleted.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tamamlanan'**
+  String get clinicPanelCompleted;
+
+  /// No description provided for @clinicPanelCompletedSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kapanan randevu'**
+  String get clinicPanelCompletedSubtitle;
+
+  /// No description provided for @clinicPanelProfileTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Profil Bilgileri'**
+  String get clinicPanelProfileTitle;
+
+  /// No description provided for @clinicPanelProfileSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik vitrini, iletişim bilgileri ve randevu tercihlerini bu alandan yönetin.'**
+  String get clinicPanelProfileSubtitle;
+
+  /// No description provided for @clinicPanelClinicName.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik Adı'**
+  String get clinicPanelClinicName;
+
+  /// No description provided for @clinicPanelClinicNameRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik adı gerekli'**
+  String get clinicPanelClinicNameRequired;
+
+  /// No description provided for @clinicPanelAddress.
+  ///
+  /// In tr, this message translates to:
+  /// **'Adres'**
+  String get clinicPanelAddress;
+
+  /// No description provided for @clinicPanelAddressRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'Adres gerekli'**
+  String get clinicPanelAddressRequired;
+
+  /// No description provided for @clinicPanelPhone.
+  ///
+  /// In tr, this message translates to:
+  /// **'Telefon'**
+  String get clinicPanelPhone;
+
+  /// No description provided for @clinicPanelEmail.
+  ///
+  /// In tr, this message translates to:
+  /// **'E-posta'**
+  String get clinicPanelEmail;
+
+  /// No description provided for @clinicPanelWebsite.
+  ///
+  /// In tr, this message translates to:
+  /// **'Website'**
+  String get clinicPanelWebsite;
+
+  /// No description provided for @clinicPanelDescription.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıklama'**
+  String get clinicPanelDescription;
+
+  /// No description provided for @clinicPanelAcceptOnline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Online randevu kabul et'**
+  String get clinicPanelAcceptOnline;
+
+  /// No description provided for @clinicPanelAcceptOnlineSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açıksa kullanıcılar video görüşme tipi randevu oluşturabilir.'**
+  String get clinicPanelAcceptOnlineSubtitle;
+
+  /// No description provided for @clinicPanelSlotMinutes.
+  ///
+  /// In tr, this message translates to:
+  /// **'Randevu Slot Dakikası'**
+  String get clinicPanelSlotMinutes;
+
+  /// No description provided for @clinicPanelClinicFee.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik Ücreti (TL)'**
+  String get clinicPanelClinicFee;
+
+  /// No description provided for @clinicPanelOnlineFee.
+  ///
+  /// In tr, this message translates to:
+  /// **'Online Ücret (TL)'**
+  String get clinicPanelOnlineFee;
+
+  /// No description provided for @clinicPanelServicesTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hizmetler'**
+  String get clinicPanelServicesTitle;
+
+  /// No description provided for @clinicPanelServicesSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Öne çıkan hizmetleri seçin. Profil kartlarında chip olarak gösterilir.'**
+  String get clinicPanelServicesSubtitle;
+
+  /// No description provided for @clinicPanelSpeciesTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hizmet Verilen Türler'**
+  String get clinicPanelSpeciesTitle;
+
+  /// No description provided for @clinicPanelSpeciesSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Arama ve filtrelerde eşleşme için hizmet verilen hayvan türlerini seçin.'**
+  String get clinicPanelSpeciesSubtitle;
+
+  /// No description provided for @clinicPanelWorkingHoursTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çalışma Saatleri'**
+  String get clinicPanelWorkingHoursTitle;
+
+  /// No description provided for @clinicPanelWorkingHoursSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Takvim yönetiminin temelini oluşturur. Kapalı günleri ve saat aralıklarını düzenleyin.'**
+  String get clinicPanelWorkingHoursSubtitle;
+
+  /// No description provided for @clinicPanelAvailabilityTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Takvim ve Uygunluk'**
+  String get clinicPanelAvailabilityTitle;
+
+  /// No description provided for @clinicPanelAvailabilitySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Gelecek 14 gün için kliniği kapatabilir veya günlük saat istisnası tanımlayabilirsiniz.'**
+  String get clinicPanelAvailabilitySubtitle;
+
+  /// No description provided for @clinicPanelReviewsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yorum Paneli'**
+  String get clinicPanelReviewsTitle;
+
+  /// No description provided for @clinicPanelReviewsSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tüm yorumları, puan ortalamasını ve son geri bildirimleri bu alandan izleyin.'**
+  String get clinicPanelReviewsSubtitle;
+
+  /// No description provided for @clinicPanelSaveChanges.
+  ///
+  /// In tr, this message translates to:
+  /// **'Değişiklikleri Kaydet'**
+  String get clinicPanelSaveChanges;
+
+  /// No description provided for @clinicPanelSlotMinError.
+  ///
+  /// In tr, this message translates to:
+  /// **'Slot süresi en az 10 dakika olmalı.'**
+  String get clinicPanelSlotMinError;
+
+  /// No description provided for @clinicPanelAvailabilityRangeRequired.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} için açılış ve kapanış birlikte girilmeli.'**
+  String clinicPanelAvailabilityRangeRequired(String date);
+
+  /// No description provided for @clinicPanelAvailabilityCloseAfterOpen.
+  ///
+  /// In tr, this message translates to:
+  /// **'{date} için kapanış saati açılıştan sonra olmalı.'**
+  String clinicPanelAvailabilityCloseAfterOpen(String date);
+
+  /// No description provided for @clinicPanelSaved.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik bilgileri güncellendi.'**
+  String get clinicPanelSaved;
+
+  /// No description provided for @clinicPanelSaveFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kayıt başarısız: {error}'**
+  String clinicPanelSaveFailed(String error);
+
+  /// No description provided for @clinicPanelClaimApproved.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sahiplik onaylı'**
+  String get clinicPanelClaimApproved;
+
+  /// No description provided for @clinicPanelClaimRejected.
+  ///
+  /// In tr, this message translates to:
+  /// **'Talep reddedildi'**
+  String get clinicPanelClaimRejected;
+
+  /// No description provided for @clinicPanelClaimPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Onay bekliyor'**
+  String get clinicPanelClaimPending;
+
+  /// No description provided for @clinicPanelVerifiedClinic.
+  ///
+  /// In tr, this message translates to:
+  /// **'Doğrulanmış Klinik'**
+  String get clinicPanelVerifiedClinic;
+
+  /// No description provided for @clinicPanelOnlineOpen.
+  ///
+  /// In tr, this message translates to:
+  /// **'Online Randevu Açık'**
+  String get clinicPanelOnlineOpen;
+
+  /// No description provided for @clinicPanelPhoneMissing.
+  ///
+  /// In tr, this message translates to:
+  /// **'Telefon eklenmedi'**
+  String get clinicPanelPhoneMissing;
+
+  /// No description provided for @clinicPanelEmailMissing.
+  ///
+  /// In tr, this message translates to:
+  /// **'E-posta eklenmedi'**
+  String get clinicPanelEmailMissing;
+
+  /// No description provided for @clinicPanelWebsiteMissing.
+  ///
+  /// In tr, this message translates to:
+  /// **'Website eklenmedi'**
+  String get clinicPanelWebsiteMissing;
+
+  /// No description provided for @clinicPanelClosed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kapalı'**
+  String get clinicPanelClosed;
+
+  /// No description provided for @clinicPanelOpen.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açık'**
+  String get clinicPanelOpen;
+
+  /// No description provided for @clinicPanelOpening.
+  ///
+  /// In tr, this message translates to:
+  /// **'Açılış'**
+  String get clinicPanelOpening;
+
+  /// No description provided for @clinicPanelClosing.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kapanış'**
+  String get clinicPanelClosing;
+
+  /// No description provided for @clinicPanelDateClosed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu tarih randevuya kapatıldı'**
+  String get clinicPanelDateClosed;
+
+  /// No description provided for @clinicPanelDateCustomHours.
+  ///
+  /// In tr, this message translates to:
+  /// **'Haftalık planı bu tarih için değiştirir'**
+  String get clinicPanelDateCustomHours;
+
+  /// No description provided for @clinicPanelDateDefaultHours.
+  ///
+  /// In tr, this message translates to:
+  /// **'Haftalık plana göre çalışır'**
+  String get clinicPanelDateDefaultHours;
+
+  /// No description provided for @clinicPanelBookingLoad.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} randevu'**
+  String clinicPanelBookingLoad(int count);
+
+  /// No description provided for @clinicPanelDefault.
+  ///
+  /// In tr, this message translates to:
+  /// **'Varsayılan'**
+  String get clinicPanelDefault;
+
+  /// No description provided for @clinicPanelResetWeeklyPlan.
+  ///
+  /// In tr, this message translates to:
+  /// **'Haftalık plana dön'**
+  String get clinicPanelResetWeeklyPlan;
+
+  /// No description provided for @clinicPanelReviewsEmpty.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz uygulama içi yorum yok.'**
+  String get clinicPanelReviewsEmpty;
+
+  /// No description provided for @clinicPanelRecentReviews.
+  ///
+  /// In tr, this message translates to:
+  /// **'Son yorumlar'**
+  String get clinicPanelRecentReviews;
+
+  /// No description provided for @clinicPanelQualityTracking.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kalite takibi'**
+  String get clinicPanelQualityTracking;
+
+  /// No description provided for @clinicPanelAllReviews.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tüm Klinik Yorumları'**
+  String get clinicPanelAllReviews;
+
+  /// No description provided for @clinicPanelReviewSummary.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} yorum | Ortalama {rating}'**
+  String clinicPanelReviewSummary(int count, String rating);
+
+  /// No description provided for @clinicPanelSeeAllReviews.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tüm yorumları gör'**
+  String get clinicPanelSeeAllReviews;
+
+  /// No description provided for @clinicPanelLoadFailed.
+  ///
+  /// In tr, this message translates to:
+  /// **'Klinik paneli yüklenemedi'**
+  String get clinicPanelLoadFailed;
+
+  /// No description provided for @clinicPanelNoClinicTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yönetilecek klinik bulunamadı'**
+  String get clinicPanelNoClinicTitle;
+
+  /// No description provided for @clinicPanelNoClinicSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Önce bir klinik kaydı yapın veya mevcut klinik talebinizin onaylanmasını bekleyin.'**
+  String get clinicPanelNoClinicSubtitle;
+
+  /// No description provided for @clinicPanelSpeciesFish.
+  ///
+  /// In tr, this message translates to:
+  /// **'Balık'**
+  String get clinicPanelSpeciesFish;
+
+  /// No description provided for @clinicPanelSpeciesRodent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kemirgen'**
+  String get clinicPanelSpeciesRodent;
+
+  /// No description provided for @clinicPanelServiceExam.
+  ///
+  /// In tr, this message translates to:
+  /// **'Muayene'**
+  String get clinicPanelServiceExam;
+
+  /// No description provided for @clinicPanelServiceVaccination.
+  ///
+  /// In tr, this message translates to:
+  /// **'Aşı'**
+  String get clinicPanelServiceVaccination;
+
+  /// No description provided for @clinicPanelServiceSurgery.
+  ///
+  /// In tr, this message translates to:
+  /// **'Cerrahi'**
+  String get clinicPanelServiceSurgery;
+
+  /// No description provided for @clinicPanelServiceEmergencyCare.
+  ///
+  /// In tr, this message translates to:
+  /// **'Acil Bakım'**
+  String get clinicPanelServiceEmergencyCare;
+
+  /// No description provided for @clinicPanelServiceLaboratory.
+  ///
+  /// In tr, this message translates to:
+  /// **'Laboratuvar'**
+  String get clinicPanelServiceLaboratory;
+
+  /// No description provided for @clinicPanelServiceDentalCare.
+  ///
+  /// In tr, this message translates to:
+  /// **'Diş Bakımı'**
+  String get clinicPanelServiceDentalCare;
+
+  /// No description provided for @clinicPanelServiceCheckup.
+  ///
+  /// In tr, this message translates to:
+  /// **'Check-up'**
+  String get clinicPanelServiceCheckup;
+
+  /// No description provided for @clinicPanelServiceOnlineConsultation.
+  ///
+  /// In tr, this message translates to:
+  /// **'Online Danışma'**
+  String get clinicPanelServiceOnlineConsultation;
+
+  /// No description provided for @weekdayMonday.
+  ///
+  /// In tr, this message translates to:
+  /// **'Pazartesi'**
+  String get weekdayMonday;
+
+  /// No description provided for @weekdayTuesday.
+  ///
+  /// In tr, this message translates to:
+  /// **'Salı'**
+  String get weekdayTuesday;
+
+  /// No description provided for @weekdayWednesday.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çarşamba'**
+  String get weekdayWednesday;
+
+  /// No description provided for @weekdayThursday.
+  ///
+  /// In tr, this message translates to:
+  /// **'Perşembe'**
+  String get weekdayThursday;
+
+  /// No description provided for @weekdayFriday.
+  ///
+  /// In tr, this message translates to:
+  /// **'Cuma'**
+  String get weekdayFriday;
+
+  /// No description provided for @weekdaySaturday.
+  ///
+  /// In tr, this message translates to:
+  /// **'Cumartesi'**
+  String get weekdaySaturday;
+
+  /// No description provided for @weekdaySunday.
+  ///
+  /// In tr, this message translates to:
+  /// **'Pazar'**
+  String get weekdaySunday;
 
   /// No description provided for @themeSelectTitle.
   ///

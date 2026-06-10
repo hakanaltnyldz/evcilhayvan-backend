@@ -2,6 +2,7 @@ import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/features/pet_sitter/data/repositories/pet_sitter_repository.dart';
 import 'package:evcilhayvan_mobil2/features/pet_sitter/domain/models/sitter_financial_summary_model.dart';
 import 'package:evcilhayvan_mobil2/features/pet_sitter/presentation/screens/sitter_financials_screen.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -68,7 +69,10 @@ void main() {
           ),
         ],
         child: MaterialApp(
-          localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            ...GlobalMaterialLocalizations.delegates,
+          ],
           supportedLocales: const [Locale('tr', 'TR')],
           home: const SitterFinancialsScreen(),
         ),
@@ -77,16 +81,16 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Kazanc Raporu'), findsOneWidget);
+    expect(find.text('Kazanç Raporu'), findsOneWidget);
     expect(find.text('Toplam 14 rezervasyon'), findsOneWidget);
     expect(find.text('Bu Ay'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('Hizmet Bazli Gelir'),
+      find.text('Hizmet Bazlı Gelir'),
       400,
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    expect(find.text('Hizmet Bazli Gelir'), findsOneWidget);
+    expect(find.text('Hizmet Bazlı Gelir'), findsOneWidget);
     expect(find.text('Gezdirme'), findsNWidgets(2));
     await tester.scrollUntilVisible(
       find.textContaining('Boncuk'),

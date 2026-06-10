@@ -2,6 +2,7 @@ import 'package:evcilhayvan_mobil2/core/http.dart';
 import 'package:evcilhayvan_mobil2/features/veterinary/data/repositories/appointment_repository.dart';
 import 'package:evcilhayvan_mobil2/features/veterinary/domain/models/vet_earnings_summary_model.dart';
 import 'package:evcilhayvan_mobil2/features/veterinary/presentation/screens/vet_earnings_screen.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -85,8 +86,12 @@ void main() {
           ),
         ],
         child: MaterialApp(
-          localizationsDelegates: GlobalMaterialLocalizations.delegates,
-          supportedLocales: const [Locale('tr', 'TR')],
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            ...GlobalMaterialLocalizations.delegates,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('tr'),
           home: const VetEarningsScreen(),
         ),
       ),
@@ -94,23 +99,23 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Veteriner Kazanc Raporu'), findsOneWidget);
+    expect(find.text('Veteriner Kazanç Raporu'), findsOneWidget);
     expect(find.text('Toplam 24 randevu'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('Ucret Politikasi'),
+      find.text('Ücret Politikası'),
       400,
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    expect(find.text('Ucret Politikasi'), findsOneWidget);
-    expect(find.text('Klinik muayene ucreti'), findsOneWidget);
+    expect(find.text('Ücret Politikası'), findsOneWidget);
+    expect(find.text('Klinik muayene ücreti'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('Randevu Tipi Dagilimi'),
+      find.text('Randevu Tipi Dağılımı'),
       400,
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    expect(find.text('Randevu Tipi Dagilimi'), findsOneWidget);
+    expect(find.text('Randevu Tipi Dağılımı'), findsOneWidget);
     expect(find.text('Klinik'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.textContaining('Mars'),

@@ -83,6 +83,7 @@ import '../features/pet_sitter/domain/models/sitter_booking_model.dart';
 import '../features/pet_sitter/presentation/screens/my_bookings_screen.dart';
 import '../features/pet_sitter/presentation/screens/become_sitter_screen.dart';
 import '../features/pet_sitter/presentation/screens/sitter_dashboard_screen.dart';
+import '../features/pet_sitter/presentation/screens/sitter_financials_screen.dart';
 import '../features/pet_sitter/presentation/screens/sitter_portfolio_screen.dart';
 import '../features/pet_sitter/presentation/screens/sitter_request_form_screen.dart';
 import '../features/pet_sitter/domain/models/pet_sitter_model.dart';
@@ -171,6 +172,19 @@ bool _isGuestBrowsable(String location) {
 }
 
 bool isGuestBrowsableRoute(String location) => _isGuestBrowsable(location);
+
+String _loginLocationWithReturn(GoRouterState state) {
+  final from = state.uri.toString();
+  if (from.isEmpty || from == '/login') return '/login';
+  return '/login?from=${Uri.encodeComponent(from)}';
+}
+
+String? _safeReturnLocation(String? from) {
+  if (from == null || from.isEmpty) return null;
+  if (!from.startsWith('/') || from.startsWith('//')) return null;
+  if (from.startsWith('/login') || from.startsWith('/register')) return null;
+  return from;
+}
 
 /// MongoDB ObjectId format doğrulama (24 hex karakter).
 bool _isValidObjectId(String id) =>
@@ -286,7 +300,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (isLoggedIn &&
           (state.matchedLocation == '/login' ||
               state.matchedLocation == '/register')) {
-        return '/';
+        return _safeReturnLocation(state.uri.queryParameters['from']) ?? '/';
       }
 
       if (!isLoggedIn &&
@@ -300,11 +314,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (!isLoggedIn && !isPublicRoute) {
         if (!guestModeActive) {
           // Misafir modu açık değil → her şey login'e
-          return '/login';
+          return _loginLocationWithReturn(state);
         }
         // Misafir modu açık → browsable olmayan sayfalara login'e yönlendir
         if (!_isGuestBrowsable(state.matchedLocation)) {
-          return '/login';
+          return _loginLocationWithReturn(state);
         }
       }
 
@@ -330,8 +344,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/store',
             name: 'store',
-            pageBuilder: (context, state) =>
-                const NoTransitionPage(child: StoreHomeScreen()),
+            builder: (context, state) => const StoreHomeScreen(),
           ),
           GoRoute(
             path: '/profile',
@@ -779,6 +792,12 @@ final routerProvider = Provider<GoRouter>((ref) {
             _buildPage(state, const SitterDashboardScreen()),
       ),
       GoRoute(
+        path: '/sitters/financials',
+        name: 'sitter-financials',
+        pageBuilder: (context, state) =>
+            _buildPage(state, const SitterFinancialsScreen()),
+      ),
+      GoRoute(
         path: '/sitters/portfolio',
         name: 'sitter-portfolio',
         pageBuilder: (context, state) =>
@@ -964,6 +983,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             AppointmentCreateScreen(
               vetId: extra['vetId'] as String,
               vetName: extra['vetName'] as String,
+              acceptsOnlineAppointments:
+                  extra.containsKey('acceptsOnlineAppointments')
+                  ? extra['acceptsOnlineAppointments'] == true
+                  : true,
             ),
           );
         },

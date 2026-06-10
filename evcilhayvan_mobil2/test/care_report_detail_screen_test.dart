@@ -1,6 +1,7 @@
 import 'package:evcilhayvan_mobil2/features/pet_sitter/domain/models/care_report_model.dart';
 import 'package:evcilhayvan_mobil2/features/pet_sitter/domain/models/sitter_booking_model.dart';
 import 'package:evcilhayvan_mobil2/features/pet_sitter/presentation/screens/care_report_detail_screen.dart';
+import 'package:evcilhayvan_mobil2/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -31,7 +32,10 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
         supportedLocales: const [Locale('tr', 'TR')],
         home: CareReportDetailScreen(booking: booking, report: report),
       ),
@@ -39,12 +43,12 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('1. Gun Raporu'), findsAtLeastNWidgets(1));
+    expect(find.text('1. Gün Raporu'), findsAtLeastNWidgets(1));
     expect(find.text('Boncuk'), findsOneWidget);
-    expect(find.text('Musteriye gonderildi'), findsOneWidget);
+    expect(find.text('Müşteriye gönderildi'), findsOneWidget);
     expect(find.text('Parkta enerjisi cok iyiydi.'), findsOneWidget);
     expect(find.text('Yemek yedi'), findsOneWidget);
-    expect(find.text('Yuruyus'), findsOneWidget);
+    expect(find.text('Yürüyüş'), findsOneWidget);
     expect(find.text('Oyun'), findsOneWidget);
   });
 }

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1250" height="760" viewBox="0 0 1250 760">
+  <defs>
+    <style>
+      .bg{fill:#fff7ed}.head{fill:#ffedd5;stroke:#ea580c;stroke-width:2;rx:10}.life{stroke:#fdba74;stroke-width:2;stroke-dasharray:8 7}.msg{stroke:#7c2d12;stroke-width:2.2;fill:none}.ret{stroke:#9a3412;stroke-width:2;stroke-dasharray:7 6;fill:none}.txt{font-family:Arial, sans-serif;font-size:18px;fill:#0f172a}.title{font-family:Arial, sans-serif;font-size:30px;font-weight:700;fill:#0f172a}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#7c2d12"/></marker>
+  </defs>
+  <rect class="bg" width="1250" height="760"/>
+  <text class="title" x="50" y="55">Satıcı Sipariş Durumu Güncelleme Sıralama Diyagramı</text>
+  <rect class="head" x="55" y="95" width="130" height="48"/><text class="txt" x="96" y="125">Satıcı</text>
+  <rect class="head" x="255" y="95" width="155" height="48"/><text class="txt" x="285" y="125">Satıcı Paneli</text>
+  <rect class="head" x="485" y="95" width="150" height="48"/><text class="txt" x="515" y="125">API Sunucu</text>
+  <rect class="head" x="700" y="95" width="130" height="48"/><text class="txt" x="735" y="125">MongoDB</text>
+  <rect class="head" x="890" y="95" width="170" height="48"/><text class="txt" x="910" y="125">Bildirim Servisi</text>
+  <rect class="head" x="1110" y="95" width="105" height="48"/><text class="txt" x="1128" y="125">Müşteri</text>
+  <line class="life" x1="120" y1="143" x2="120" y2="705"/><line class="life" x1="332" y1="143" x2="332" y2="705"/><line class="life" x1="560" y1="143" x2="560" y2="705"/><line class="life" x1="765" y1="143" x2="765" y2="705"/><line class="life" x1="975" y1="143" x2="975" y2="705"/><line class="life" x1="1162" y1="143" x2="1162" y2="705"/>
+  <line class="msg" x1="120" y1="205" x2="332" y2="205" marker-end="url(#arrow)"/><text class="txt" x="150" y="195">Siparişi aç</text>
+  <line class="msg" x1="332" y1="265" x2="560" y2="265" marker-end="url(#arrow)"/><text class="txt" x="370" y="255">GET /orders/{id}</text>
+  <line class="msg" x1="560" y1="325" x2="765" y2="325" marker-end="url(#arrow)"/><text class="txt" x="600" y="315">Sipariş oku</text>
+  <line class="ret" x1="765" y1="380" x2="560" y2="380" marker-end="url(#arrow)"/><text class="txt" x="610" y="370">Sipariş detayı</text>
+  <line class="ret" x1="560" y1="435" x2="332" y2="435" marker-end="url(#arrow)"/><text class="txt" x="385" y="425">Detay göster</text>
+  <line class="msg" x1="120" y1="490" x2="332" y2="490" marker-end="url(#arrow)"/><text class="txt" x="145" y="480">Durumu güncelle</text>
+  <line class="msg" x1="332" y1="545" x2="560" y2="545" marker-end="url(#arrow)"/><text class="txt" x="360" y="535">PATCH /orders/{id}/status</text>
+  <line class="msg" x1="560" y1="600" x2="765" y2="600" marker-end="url(#arrow)"/><text class="txt" x="595" y="590">Durum + takip kodu</text>
+  <line class="msg" x1="560" y1="655" x2="975" y2="655" marker-end="url(#arrow)"/><text class="txt" x="670" y="645">Push bildirimi hazırla</text>
+  <line class="msg" x1="975" y1="700" x2="1162" y2="700" marker-end="url(#arrow)"/><text class="txt" x="1005" y="690">Sipariş bildirimi</text>
+</svg>

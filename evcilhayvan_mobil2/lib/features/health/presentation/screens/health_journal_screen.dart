@@ -12,28 +12,28 @@ import 'package:evcilhayvan_mobil2/core/widgets/animated_empty_state.dart';
 import 'package:evcilhayvan_mobil2/core/widgets/paw_loading.dart';
 import 'package:evcilhayvan_mobil2/core/http.dart';
 
-
 // ── Providers ──────────────────────────────────────────────────────────────
 
-final healthRepoProvider = Provider<HealthRepository>((_) => HealthRepository());
-
-final healthRecordsProvider =
-    FutureProvider.autoDispose.family<List<HealthRecord>, String>((ref, petId) {
-  return ref.read(healthRepoProvider).getRecords(petId);
-});
-
-final weightChartProvider =
-    FutureProvider.autoDispose.family<List<Map<String, dynamic>>, String>((ref, petId) {
-  return ref.read(healthRepoProvider).getWeightChart(petId);
-});
-
-final _petFeedingProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, String>(
-  (ref, petId) async {
-    final r = await ApiClient().dio.get('/api/pets/$petId');
-    final pet = Map<String, dynamic>.from(r.data as Map);
-    return pet;
-  },
+final healthRepoProvider = Provider<HealthRepository>(
+  (_) => HealthRepository(),
 );
+
+final healthRecordsProvider = FutureProvider.autoDispose
+    .family<List<HealthRecord>, String>((ref, petId) {
+      return ref.read(healthRepoProvider).getRecords(petId);
+    });
+
+final weightChartProvider = FutureProvider.autoDispose
+    .family<List<Map<String, dynamic>>, String>((ref, petId) {
+      return ref.read(healthRepoProvider).getWeightChart(petId);
+    });
+
+final _petFeedingProvider = FutureProvider.autoDispose
+    .family<Map<String, dynamic>, String>((ref, petId) async {
+      final r = await ApiClient().dio.get('/api/pets/$petId');
+      final pet = Map<String, dynamic>.from(r.data as Map);
+      return pet;
+    });
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -79,13 +79,13 @@ class HealthJournalScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<HealthJournalScreen> createState() => _HealthJournalScreenState();
+  ConsumerState<HealthJournalScreen> createState() =>
+      _HealthJournalScreenState();
 }
 
 class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen>
     with SingleTickerProviderStateMixin {
   String? _filterType;
-  final _fmt = DateFormat('dd MMM yyyy', 'tr');
   late TabController _tabController;
 
   @override
@@ -111,13 +111,15 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen>
         ref.invalidate(healthRecordsProvider(widget.petId));
         if (mounted) {
           final l10n = AppLocalizations.of(context)!;
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.healthRecordAdded)));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.healthRecordAdded)));
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('$e')));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('$e')));
         }
       }
     }
@@ -132,12 +134,14 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen>
         content: Text(l10n.healthRecordDeleteContent),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(l10n.cancel)),
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
           FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: FilledButton.styleFrom(backgroundColor: Colors.red),
-              child: Text(l10n.delete)),
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: Text(l10n.delete),
+          ),
         ],
       ),
     );
@@ -147,8 +151,9 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen>
       ref.invalidate(healthRecordsProvider(widget.petId));
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('$e')));
       }
     }
   }
@@ -156,6 +161,10 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final fmt = DateFormat(
+      'dd MMM yyyy',
+      Localizations.localeOf(context).toString(),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -163,7 +172,10 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(icon: Icon(Icons.medical_information), text: 'Sağlık Kayıtları'),
+            Tab(
+              icon: Icon(Icons.medical_information),
+              text: 'Sağlık Kayıtları',
+            ),
             Tab(icon: Icon(Icons.restaurant), text: 'Beslenme'),
           ],
         ),
@@ -190,7 +202,7 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen>
             petId: widget.petId,
             filterType: _filterType,
             onFilterChanged: (t) => setState(() => _filterType = t),
-            fmt: _fmt,
+            fmt: fmt,
             onAddRecord: _addRecord,
             onDelete: _delete,
           ),
@@ -211,27 +223,44 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          20,
+          20,
+          MediaQuery.of(ctx).viewInsets.bottom + 20,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Öğün Ekle', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const Text(
+              'Öğün Ekle',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: timeCtrl,
-              decoration: const InputDecoration(labelText: 'Saat (ör: 08:00)', prefixIcon: Icon(Icons.access_time)),
+              decoration: const InputDecoration(
+                labelText: 'Saat (ör: 08:00)',
+                prefixIcon: Icon(Icons.access_time),
+              ),
               keyboardType: TextInputType.datetime,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: amountCtrl,
-              decoration: const InputDecoration(labelText: 'Miktar (ör: 100g)', prefixIcon: Icon(Icons.scale)),
+              decoration: const InputDecoration(
+                labelText: 'Miktar (ör: 100g)',
+                prefixIcon: Icon(Icons.scale),
+              ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: foodCtrl,
-              decoration: const InputDecoration(labelText: 'Mama Türü (ör: Kuru Mama)', prefixIcon: Icon(Icons.pets)),
+              decoration: const InputDecoration(
+                labelText: 'Mama Türü (ör: Kuru Mama)',
+                prefixIcon: Icon(Icons.pets),
+              ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
@@ -239,16 +268,21 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen>
                 Navigator.pop(ctx);
                 try {
                   final petAsync = ref.read(_petFeedingProvider(widget.petId));
-                  final existing = (petAsync.valueOrNull?['feedingSchedule'] as List? ?? [])
-                      .cast<Map<String, dynamic>>();
-                  final updated = [...existing, {
-                    'time': timeCtrl.text.trim(),
-                    'amount': amountCtrl.text.trim(),
-                    'foodType': foodCtrl.text.trim(),
-                  }];
-                  await ApiClient().dio.patch('/api/pets/${widget.petId}/feeding', data: {
-                    'feedingSchedule': updated,
-                  });
+                  final existing =
+                      (petAsync.valueOrNull?['feedingSchedule'] as List? ?? [])
+                          .cast<Map<String, dynamic>>();
+                  final updated = [
+                    ...existing,
+                    {
+                      'time': timeCtrl.text.trim(),
+                      'amount': amountCtrl.text.trim(),
+                      'foodType': foodCtrl.text.trim(),
+                    },
+                  ];
+                  await ApiClient().dio.patch(
+                    '/api/pets/${widget.petId}/feeding',
+                    data: {'feedingSchedule': updated},
+                  );
                   ref.invalidate(_petFeedingProvider(widget.petId));
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -257,7 +291,9 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen>
                   }
                 } catch (e) {
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('$e')));
                   }
                 }
               },
@@ -272,7 +308,6 @@ class _HealthJournalScreenState extends ConsumerState<HealthJournalScreen>
       ),
     );
   }
-
 }
 
 // ── Sağlık Kayıtları Sekmesi ────────────────────────────────────────────────
@@ -319,7 +354,8 @@ class _RecordsTab extends ConsumerWidget {
                     label: Text(_typeLabel(t, l10n)),
                     selected: filterType == t,
                     avatar: Icon(_typeIcons[t]!, size: 16),
-                    onSelected: (_) => onFilterChanged(filterType == t ? null : t),
+                    onSelected: (_) =>
+                        onFilterChanged(filterType == t ? null : t),
                   ),
                 );
               }),
@@ -339,7 +375,8 @@ class _RecordsTab extends ConsumerWidget {
                   const SizedBox(height: 8),
                   Text(l10n.healthLoadError(e.toString())),
                   TextButton(
-                    onPressed: () => ref.invalidate(healthRecordsProvider(petId)),
+                    onPressed: () =>
+                        ref.invalidate(healthRecordsProvider(petId)),
                     child: Text(l10n.healthRefresh),
                   ),
                 ],
@@ -352,7 +389,9 @@ class _RecordsTab extends ConsumerWidget {
               if (filtered.isEmpty) {
                 return AnimatedEmptyState(
                   icon: Icons.health_and_safety_outlined,
-                  title: filterType == null ? l10n.healthNoRecords : l10n.healthNoFilterRecords(filterType!),
+                  title: filterType == null
+                      ? l10n.healthNoRecords
+                      : l10n.healthNoFilterRecords(filterType!),
                   subtitle: l10n.healthAddHint,
                 );
               }
@@ -362,7 +401,11 @@ class _RecordsTab extends ConsumerWidget {
                 separatorBuilder: (_, __) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
                   final record = filtered[index];
-                  return _RecordCard(record: record, fmt: fmt, onDelete: () => onDelete(record.id));
+                  return _RecordCard(
+                    record: record,
+                    fmt: fmt,
+                    onDelete: () => onDelete(record.id),
+                  );
                 },
               );
             },
@@ -406,11 +449,21 @@ class _FeedingTab extends ConsumerWidget {
             // Öğünler başlığı
             Row(
               children: [
-                const Icon(Icons.restaurant, size: 18, color: Color(0xFF2D6A4F)),
+                const Icon(
+                  Icons.restaurant,
+                  size: 18,
+                  color: Color(0xFF2D6A4F),
+                ),
                 const SizedBox(width: 8),
-                const Text('Beslenme Takvimi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                const Text(
+                  'Beslenme Takvimi',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
                 const Spacer(),
-                Text('${schedule.length} öğün', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(
+                  '${schedule.length} öğün',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -423,7 +476,10 @@ class _FeedingTab extends ConsumerWidget {
                     children: [
                       Icon(Icons.no_meals, size: 48, color: Colors.grey),
                       SizedBox(height: 8),
-                      Text('Henüz öğün eklenmedi', style: TextStyle(color: Colors.grey)),
+                      Text(
+                        'Henüz öğün eklenmedi',
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     ],
                   ),
                 ),
@@ -436,22 +492,38 @@ class _FeedingTab extends ConsumerWidget {
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
                     leading: Container(
-                      width: 40, height: 40,
+                      width: 40,
+                      height: 40,
                       decoration: const BoxDecoration(
-                        color: Color(0xFFD8F3DC), shape: BoxShape.circle,
+                        color: Color(0xFFD8F3DC),
+                        shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.restaurant, size: 20, color: Color(0xFF2D6A4F)),
+                      child: const Icon(
+                        Icons.restaurant,
+                        size: 20,
+                        color: Color(0xFF2D6A4F),
+                      ),
                     ),
-                    title: Text(meal['time']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('${meal['amount'] ?? ''} • ${meal['foodType'] ?? ''}'),
+                    title: Text(
+                      meal['time']?.toString() ?? '',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      '${meal['amount'] ?? ''} • ${meal['foodType'] ?? ''}',
+                    ),
                     trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        color: Colors.red,
+                        size: 20,
+                      ),
                       onPressed: () async {
                         final updated = [...schedule]..removeAt(i);
                         try {
-                          await ApiClient().dio.patch('/api/pets/$petId/feeding', data: {
-                            'feedingSchedule': updated,
-                          });
+                          await ApiClient().dio.patch(
+                            '/api/pets/$petId/feeding',
+                            data: {'feedingSchedule': updated},
+                          );
                           ref.invalidate(_petFeedingProvider(petId));
                         } catch (_) {}
                       },
@@ -471,7 +543,12 @@ class _WeightCard extends ConsumerStatefulWidget {
   final double? currentWeight;
   final double? targetWeight;
   final VoidCallback onUpdated;
-  const _WeightCard({required this.petId, this.currentWeight, this.targetWeight, required this.onUpdated});
+  const _WeightCard({
+    required this.petId,
+    this.currentWeight,
+    this.targetWeight,
+    required this.onUpdated,
+  });
 
   @override
   ConsumerState<_WeightCard> createState() => _WeightCardState();
@@ -485,8 +562,12 @@ class _WeightCardState extends ConsumerState<_WeightCard> {
   @override
   void initState() {
     super.initState();
-    _curCtrl = TextEditingController(text: widget.currentWeight?.toString() ?? '');
-    _tgtCtrl = TextEditingController(text: widget.targetWeight?.toString() ?? '');
+    _curCtrl = TextEditingController(
+      text: widget.currentWeight?.toString() ?? '',
+    );
+    _tgtCtrl = TextEditingController(
+      text: widget.targetWeight?.toString() ?? '',
+    );
   }
 
   @override
@@ -516,17 +597,25 @@ class _WeightCardState extends ConsumerState<_WeightCard> {
               children: [
                 const Icon(Icons.monitor_weight, color: Color(0xFF2D6A4F)),
                 const SizedBox(width: 8),
-                const Text('Kilo Takibi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                const Text(
+                  'Kilo Takibi',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
                 const Spacer(),
                 IconButton(
                   icon: Icon(_editing ? Icons.check : Icons.edit, size: 20),
                   onPressed: () async {
                     if (_editing) {
                       try {
-                        await ApiClient().dio.patch('/api/pets/${widget.petId}/feeding', data: {
-                          if (_curCtrl.text.isNotEmpty) 'currentWeight': double.tryParse(_curCtrl.text),
-                          if (_tgtCtrl.text.isNotEmpty) 'targetWeight': double.tryParse(_tgtCtrl.text),
-                        });
+                        await ApiClient().dio.patch(
+                          '/api/pets/${widget.petId}/feeding',
+                          data: {
+                            if (_curCtrl.text.isNotEmpty)
+                              'currentWeight': double.tryParse(_curCtrl.text),
+                            if (_tgtCtrl.text.isNotEmpty)
+                              'targetWeight': double.tryParse(_tgtCtrl.text),
+                          },
+                        );
                         widget.onUpdated();
                       } catch (_) {}
                     }
@@ -542,7 +631,10 @@ class _WeightCardState extends ConsumerState<_WeightCard> {
                   Expanded(
                     child: TextField(
                       controller: _curCtrl,
-                      decoration: const InputDecoration(labelText: 'Mevcut Kilo (kg)', isDense: true),
+                      decoration: const InputDecoration(
+                        labelText: 'Mevcut Kilo (kg)',
+                        isDense: true,
+                      ),
                       keyboardType: TextInputType.number,
                     ),
                   ),
@@ -550,7 +642,10 @@ class _WeightCardState extends ConsumerState<_WeightCard> {
                   Expanded(
                     child: TextField(
                       controller: _tgtCtrl,
-                      decoration: const InputDecoration(labelText: 'Hedef Kilo (kg)', isDense: true),
+                      decoration: const InputDecoration(
+                        labelText: 'Hedef Kilo (kg)',
+                        isDense: true,
+                      ),
                       keyboardType: TextInputType.number,
                     ),
                   ),
@@ -560,11 +655,15 @@ class _WeightCardState extends ConsumerState<_WeightCard> {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Text('Mevcut: ${widget.currentWeight != null ? "${widget.currentWeight} kg" : "—"}',
-                      style: const TextStyle(fontSize: 13)),
+                  Text(
+                    'Mevcut: ${widget.currentWeight != null ? "${widget.currentWeight} kg" : "—"}',
+                    style: const TextStyle(fontSize: 13),
+                  ),
                   const SizedBox(width: 16),
-                  Text('Hedef: ${widget.targetWeight != null ? "${widget.targetWeight} kg" : "—"}',
-                      style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                  Text(
+                    'Hedef: ${widget.targetWeight != null ? "${widget.targetWeight} kg" : "—"}',
+                    style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
                 ],
               ),
               if (progress != null) ...[
@@ -572,7 +671,9 @@ class _WeightCardState extends ConsumerState<_WeightCard> {
                 LinearProgressIndicator(
                   value: progress.clamp(0.0, 1.0),
                   backgroundColor: Colors.grey.shade200,
-                  color: progress > 1.0 ? Colors.orange : const Color(0xFF52B788),
+                  color: progress > 1.0
+                      ? Colors.orange
+                      : const Color(0xFF52B788),
                   minHeight: 8,
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -617,11 +718,14 @@ class _RecordCard extends StatelessWidget {
     if (record.type == 'medication') {
       if (record.medicationName != null) details.add(record.medicationName!);
       if (record.dosage != null) details.add(l10n.healthDose(record.dosage!));
-      if (record.frequency != null) details.add(l10n.healthFrequency(record.frequency!));
+      if (record.frequency != null)
+        details.add(l10n.healthFrequency(record.frequency!));
     }
     if (record.type == 'vet_visit') {
-      if (record.vetName != null) details.add(l10n.healthVetName(record.vetName!));
-      if (record.diagnosis != null) details.add(l10n.healthDiagnosis(record.diagnosis!));
+      if (record.vetName != null)
+        details.add(l10n.healthVetName(record.vetName!));
+      if (record.diagnosis != null)
+        details.add(l10n.healthDiagnosis(record.diagnosis!));
     }
     if (record.notes != null) details.add(record.notes!);
 
@@ -650,16 +754,21 @@ class _RecordCard extends StatelessWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: color.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(label,
-                            style: TextStyle(
-                                color: color,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 11)),
+                        child: Text(
+                          label,
+                          style: TextStyle(
+                            color: color,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 11,
+                          ),
+                        ),
                       ),
                       const Spacer(),
                       Text(
@@ -670,8 +779,12 @@ class _RecordCard extends StatelessWidget {
                   ),
                   if (details.isNotEmpty) ...[
                     const SizedBox(height: 8),
-                    ...details.map((d) => Text(d,
-                        style: Theme.of(context).textTheme.bodyMedium)),
+                    ...details.map(
+                      (d) => Text(
+                        d,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
                   ],
                 ],
               ),
@@ -695,7 +808,8 @@ class _WeightChartSection extends ConsumerStatefulWidget {
   const _WeightChartSection({required this.petId});
 
   @override
-  ConsumerState<_WeightChartSection> createState() => _WeightChartSectionState();
+  ConsumerState<_WeightChartSection> createState() =>
+      _WeightChartSectionState();
 }
 
 class _WeightChartSectionState extends ConsumerState<_WeightChartSection> {
@@ -738,7 +852,10 @@ class _WeightChartSectionState extends ConsumerState<_WeightChartSection> {
               onPressed: () => Navigator.pop(context, -1),
               child: const Text('Kaldır', style: TextStyle(color: Colors.red)),
             ),
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('İptal')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal'),
+          ),
           FilledButton(
             onPressed: () {
               final v = double.tryParse(ctrl.text.replaceAll(',', '.'));
@@ -766,10 +883,8 @@ class _WeightChartSectionState extends ConsumerState<_WeightChartSection> {
     final l10n = AppLocalizations.of(context)!;
     final chartAsync = ref.watch(weightChartProvider(widget.petId));
     return chartAsync.when(
-      loading: () => const SizedBox(
-        height: 160,
-        child: Center(child: PawLoading()),
-      ),
+      loading: () =>
+          const SizedBox(height: 160, child: Center(child: PawLoading())),
       error: (e, _) => Container(
         margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
         padding: const EdgeInsets.all(16),
@@ -785,43 +900,57 @@ class _WeightChartSectionState extends ConsumerState<_WeightChartSection> {
             Expanded(
               child: Text(
                 l10n.healthWeightChartError,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.red),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.red),
               ),
             ),
             TextButton(
-              onPressed: () => ref.invalidate(weightChartProvider(widget.petId)),
+              onPressed: () =>
+                  ref.invalidate(weightChartProvider(widget.petId)),
               child: Text(l10n.healthRefresh),
             ),
           ],
         ),
       ),
       data: (data) {
-        if (data.length < 2) return Container(
-          margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-          decoration: BoxDecoration(
-            color: _chartColor.withOpacity(0.06),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: _chartColor.withOpacity(0.2)),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.show_chart, color: _chartColor.withOpacity(0.5), size: 32),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(l10n.healthWeightChart,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: _chartColor, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 2),
-                  Text(l10n.healthWeightChartMin,
-                    style: Theme.of(context).textTheme.bodySmall),
-                ],
-              ),
-            ],
-          ),
-        );
+        if (data.length < 2)
+          return Container(
+            margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            decoration: BoxDecoration(
+              color: _chartColor.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: _chartColor.withOpacity(0.2)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.show_chart,
+                  color: _chartColor.withOpacity(0.5),
+                  size: 32,
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.healthWeightChart,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: _chartColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.healthWeightChartMin,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
 
         final spots = <FlSpot>[];
         final labels = <String>[];
@@ -836,10 +965,10 @@ class _WeightChartSectionState extends ConsumerState<_WeightChartSection> {
         final avg = weights.reduce((a, b) => a + b) / weights.length;
         final trend = weights.length >= 2
             ? (weights.last > weights[weights.length - 2]
-                ? '↑'
-                : weights.last < weights[weights.length - 2]
-                    ? '↓'
-                    : '→')
+                  ? '↑'
+                  : weights.last < weights[weights.length - 2]
+                  ? '↓'
+                  : '→')
             : '→';
 
         final allValues = [...weights];
@@ -886,9 +1015,14 @@ class _WeightChartSectionState extends ConsumerState<_WeightChartSection> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(left: 8),
-                        child: Text(l10n.healthWeightChart,
-                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: _chartColor, fontWeight: FontWeight.w700)),
+                        child: Text(
+                          l10n.healthWeightChart,
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
+                                color: _chartColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
                       ),
                       const Spacer(),
                       GestureDetector(
@@ -897,13 +1031,23 @@ class _WeightChartSectionState extends ConsumerState<_WeightChartSection> {
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: Row(
                             children: [
-                              Icon(Icons.flag_outlined, size: 14, color: _goalWeight != null ? Colors.red : Colors.grey),
+                              Icon(
+                                Icons.flag_outlined,
+                                size: 14,
+                                color: _goalWeight != null
+                                    ? Colors.red
+                                    : Colors.grey,
+                              ),
                               const SizedBox(width: 2),
                               Text(
-                                _goalWeight != null ? '${_goalWeight!.toStringAsFixed(1)} kg hedef' : 'Hedef ekle',
+                                _goalWeight != null
+                                    ? '${_goalWeight!.toStringAsFixed(1)} kg hedef'
+                                    : 'Hedef ekle',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: _goalWeight != null ? Colors.red : Colors.grey,
+                                  color: _goalWeight != null
+                                      ? Colors.red
+                                      : Colors.grey,
                                 ),
                               ),
                             ],
@@ -929,21 +1073,29 @@ class _WeightChartSectionState extends ConsumerState<_WeightChartSection> {
                         ),
                         borderData: FlBorderData(show: false),
                         extraLinesData: _goalWeight != null
-                            ? ExtraLinesData(horizontalLines: [
-                                HorizontalLine(
-                                  y: _goalWeight!,
-                                  color: Colors.red.withOpacity(0.6),
-                                  strokeWidth: 1.5,
-                                  dashArray: [6, 4],
-                                  label: HorizontalLineLabel(
-                                    show: true,
-                                    alignment: Alignment.topRight,
-                                    padding: const EdgeInsets.only(right: 4, bottom: 2),
-                                    style: const TextStyle(fontSize: 10, color: Colors.red),
-                                    labelResolver: (_) => 'Hedef',
+                            ? ExtraLinesData(
+                                horizontalLines: [
+                                  HorizontalLine(
+                                    y: _goalWeight!,
+                                    color: Colors.red.withOpacity(0.6),
+                                    strokeWidth: 1.5,
+                                    dashArray: [6, 4],
+                                    label: HorizontalLineLabel(
+                                      show: true,
+                                      alignment: Alignment.topRight,
+                                      padding: const EdgeInsets.only(
+                                        right: 4,
+                                        bottom: 2,
+                                      ),
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.red,
+                                      ),
+                                      labelResolver: (_) => 'Hedef',
+                                    ),
                                   ),
-                                ),
-                              ])
+                                ],
+                              )
                             : null,
                         titlesData: FlTitlesData(
                           leftTitles: AxisTitles(
@@ -959,19 +1111,29 @@ class _WeightChartSectionState extends ConsumerState<_WeightChartSection> {
                           bottomTitles: AxisTitles(
                             sideTitles: SideTitles(
                               showTitles: true,
-                              interval: (spots.length / 4).ceilToDouble().clamp(1, 999),
+                              interval: (spots.length / 4).ceilToDouble().clamp(
+                                1,
+                                999,
+                              ),
                               getTitlesWidget: (v, _) {
                                 final i = v.toInt();
-                                if (i < 0 || i >= labels.length) return const SizedBox.shrink();
+                                if (i < 0 || i >= labels.length)
+                                  return const SizedBox.shrink();
                                 return Text(
-                                  labels[i].length >= 7 ? labels[i].substring(5) : labels[i],
+                                  labels[i].length >= 7
+                                      ? labels[i].substring(5)
+                                      : labels[i],
                                   style: const TextStyle(fontSize: 9),
                                 );
                               },
                             ),
                           ),
-                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          topTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
                         ),
                         lineBarsData: [
                           LineChartBarData(
@@ -981,12 +1143,13 @@ class _WeightChartSectionState extends ConsumerState<_WeightChartSection> {
                             barWidth: 2.5,
                             dotData: FlDotData(
                               show: true,
-                              getDotPainter: (spot, _, __, index) => FlDotCirclePainter(
-                                radius: index == spots.length - 1 ? 5 : 3,
-                                color: _chartColor,
-                                strokeWidth: 1.5,
-                                strokeColor: Colors.white,
-                              ),
+                              getDotPainter: (spot, _, __, index) =>
+                                  FlDotCirclePainter(
+                                    radius: index == spots.length - 1 ? 5 : 3,
+                                    color: _chartColor,
+                                    strokeWidth: 1.5,
+                                    strokeColor: Colors.white,
+                                  ),
                             ),
                             belowBarData: BarAreaData(
                               show: true,
@@ -1017,10 +1180,18 @@ class _StatChip extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(value,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2D6A4F))),
-        Text(label,
-          style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2D6A4F),
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+        ),
       ],
     );
   }
@@ -1081,28 +1252,35 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
       case 'weight':
         final w = double.tryParse(_weightCtrl.text.trim());
         if (w == null || w <= 0) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.healthErrWeight)));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.healthErrWeight)));
           return;
         }
         body['weightKg'] = w;
         break;
       case 'medication':
         if (_medNameCtrl.text.trim().isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.healthErrMedName)));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.healthErrMedName)));
           return;
         }
         body['medicationName'] = _medNameCtrl.text.trim();
-        if (_dosageCtrl.text.trim().isNotEmpty) body['dosage'] = _dosageCtrl.text.trim();
-        if (_freqCtrl.text.trim().isNotEmpty) body['frequency'] = _freqCtrl.text.trim();
+        if (_dosageCtrl.text.trim().isNotEmpty)
+          body['dosage'] = _dosageCtrl.text.trim();
+        if (_freqCtrl.text.trim().isNotEmpty)
+          body['frequency'] = _freqCtrl.text.trim();
         break;
       case 'vet_visit':
-        if (_vetNameCtrl.text.trim().isNotEmpty) body['vetName'] = _vetNameCtrl.text.trim();
-        if (_diagCtrl.text.trim().isNotEmpty) body['diagnosis'] = _diagCtrl.text.trim();
+        if (_vetNameCtrl.text.trim().isNotEmpty)
+          body['vetName'] = _vetNameCtrl.text.trim();
+        if (_diagCtrl.text.trim().isNotEmpty)
+          body['diagnosis'] = _diagCtrl.text.trim();
         break;
     }
-    if (_notesCtrl.text.trim().isNotEmpty) body['notes'] = _notesCtrl.text.trim();
+    if (_notesCtrl.text.trim().isNotEmpty)
+      body['notes'] = _notesCtrl.text.trim();
 
     Navigator.pop(context, body);
   }
@@ -1110,7 +1288,10 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final fmt = DateFormat('dd MMM yyyy', 'tr');
+    final fmt = DateFormat(
+      'dd MMM yyyy',
+      Localizations.localeOf(context).toString(),
+    );
 
     return AlertDialog(
       title: Text(l10n.healthAddDialogTitle),
@@ -1125,12 +1306,15 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
               decoration: InputDecoration(labelText: l10n.healthRecordType),
               items: ['weight', 'medication', 'vet_visit', 'note'].map((t) {
                 return DropdownMenuItem(
-                    value: t,
-                    child: Row(children: [
+                  value: t,
+                  child: Row(
+                    children: [
                       Icon(_typeIcons[t]!, size: 18),
                       const SizedBox(width: 8),
                       Text(_typeLabel(t, l10n)),
-                    ]));
+                    ],
+                  ),
+                );
               }).toList(),
               onChanged: (v) => setState(() => _type = v!),
             ),
@@ -1148,8 +1332,9 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
             if (_type == 'weight')
               TextField(
                 controller: _weightCtrl,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: InputDecoration(
                   labelText: l10n.healthWeightKg,
                   prefixIcon: const Icon(Icons.monitor_weight_outlined),
@@ -1179,7 +1364,9 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
               const SizedBox(height: 8),
               TextField(
                 controller: _diagCtrl,
-                decoration: InputDecoration(labelText: l10n.healthDiagnosisTreatment),
+                decoration: InputDecoration(
+                  labelText: l10n.healthDiagnosisTreatment,
+                ),
               ),
             ],
             const SizedBox(height: 8),
@@ -1187,15 +1374,18 @@ class _AddRecordDialogState extends State<_AddRecordDialog> {
               controller: _notesCtrl,
               maxLines: 3,
               decoration: InputDecoration(
-                  labelText: l10n.healthNotes,
-                  alignLabelWithHint: true),
+                labelText: l10n.healthNotes,
+                alignLabelWithHint: true,
+              ),
             ),
           ],
         ),
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.cancel),
+        ),
         FilledButton(onPressed: _submit, child: Text(l10n.save)),
       ],
     );
